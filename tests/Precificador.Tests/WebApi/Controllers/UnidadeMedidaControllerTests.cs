@@ -99,7 +99,7 @@ namespace Precificador.Tests.WebApi.Controllers
 
             var result = await _controller.Post(model);
 
-            var okResult = Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace Precificador.Tests.WebApi.Controllers
 
             var result = await _controller.Post(model);
 
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Precificador.Tests.WebApi.Controllers
 
             var result = await _controller.Put(model);
 
-            var okResult = Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Precificador.Tests.WebApi.Controllers
 
             var result = await _controller.Delete(id);
 
-            var okResult = Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]

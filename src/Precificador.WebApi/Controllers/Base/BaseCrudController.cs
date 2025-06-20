@@ -107,7 +107,13 @@ namespace Precificador.WebApi.Controllers.Base
             try
             {
                 var result = await _service.AddAsync(value);
-                return Ok(result);
+
+                if (!result)
+                {
+                    return BadRequest("Erro ao cadastrar registro.");
+                }
+
+                return Ok();
             }
             catch (Exception ex)
             {
