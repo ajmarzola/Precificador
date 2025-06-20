@@ -12,8 +12,8 @@ using Precificador.Infrastructure.Data;
 namespace Precificador.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250620163050_VersaoFramework")]
-    partial class VersaoFramework
+    [Migration("20250620165236_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,12 +108,14 @@ namespace Precificador.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("QtdPacote")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("UnidadeMedidaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("VlrPacote")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -152,6 +154,7 @@ namespace Precificador.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -183,7 +186,8 @@ namespace Precificador.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Margem")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -191,6 +195,7 @@ namespace Precificador.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("PrecoCusto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -222,6 +227,7 @@ namespace Precificador.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Quantidade")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");

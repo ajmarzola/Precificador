@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Precificador.Application.Services.Base;
+﻿using Precificador.Application.Services.Base;
 using Precificador.Domain.Filters;
 using Precificador.Domain.Repository;
 

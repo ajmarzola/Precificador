@@ -31,11 +31,13 @@ namespace Precificador.Inicializador.Base
             Console.WriteLine(response.Content);
         }
 
-        private bool VerificaExistencia(string nome)
+        private bool VerificaExistencia(string filtro)
         {
             var options = new RestClientOptions("https://localhost:7013");
             var client = new RestClient(options);
             var request = new RestRequest($"/api/{Endpoint}/ByFilter", Method.Get);
+            request.AddHeader("Content-Type", "application/json");
+
             RestResponse response = client.Execute(request);
 
             if (response.IsSuccessStatusCode)
@@ -46,7 +48,6 @@ namespace Precificador.Inicializador.Base
             {
                 Console.WriteLine($"Erro ao verificar existência: {response.ErrorMessage}");
                 return false;
-                //throw new Exception($"Erro ao verificar existência: {response.ErrorMessage}");
             }
         }
     }

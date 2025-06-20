@@ -4,7 +4,6 @@ using Precificador.Application.Services.Base;
 using Precificador.Domain.Entities.Base;
 using Precificador.Domain.Filters;
 using Precificador.Domain.Repository.Base;
-using System.Text.Json;
 
 namespace Precificador.WebApi.Controllers.Base
 {
@@ -15,6 +14,14 @@ namespace Precificador.WebApi.Controllers.Base
         protected TService _service = service;
         protected ILogger _logger = logger;
 
+        /// <summary>
+        /// Retorna todos os registros cadastrados.
+        /// </summary>
+        /// <returns>
+        /// - 200 OK com a lista de registros
+        /// - 204 No Content se não houver registros
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
         [HttpGet]
         public virtual async Task<IActionResult> GetAll()
         {
@@ -22,7 +29,7 @@ namespace Precificador.WebApi.Controllers.Base
             {
                 var result = await _service.GetAllAsync();
 
-                return result == null || !((IEnumerable<TModel>)result).Any() ? NoContent() : Ok(result);
+                return result == null || !result.Any() ? NoContent() : Ok(result);
             }
             catch (Exception ex)
             {
@@ -31,6 +38,15 @@ namespace Precificador.WebApi.Controllers.Base
             }
         }
 
+        /// <summary>
+        /// Retorna o registros pelo ID.
+        /// </summary>
+        /// <param name="id">Id do registro a ser consultado</param>
+        /// <returns>
+        /// - 200 OK com o registro encontrado
+        /// - 204 No Content se não encontrar o registro
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
         [HttpGet("ById")]
         public virtual async Task<IActionResult> GetById([FromBody] Guid id)
         {
@@ -47,6 +63,44 @@ namespace Precificador.WebApi.Controllers.Base
             }
         }
 
+        /// <summary>
+        /// Retorna todos os registros conforme filtro.
+        /// </summary>
+        /// <param name="filter">Filtro a ser aplicado na consulta</param>
+        /// <returns>
+        /// - 200 OK com a lista de registros
+        /// - 204 No Content se não houver registros
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
+        [HttpGet("ByFilter")]
+        public virtual async Task<IActionResult> GetByFilterAsync([FromBody] TFilter filter)
+        {
+            try
+            {
+                if (filter == null)
+                {
+                    return BadRequest("Failed to deserialize filter parameter.");
+                }
+
+                var result = await _service.GetByFilterAsync(filter);
+
+                return result == null || !result.Any() ? NoContent() : Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao listar registros.");
+                return BadRequest("Erro ao listar registros.");
+            }
+        }
+
+        /// <summary>
+        /// Cadastra novo registro.
+        /// </summary>
+        /// <param name="value">Objeto a ser cadastrado</param>
+        /// <returns>
+        /// - 200 OK com o resultado do cadastro
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
         [HttpPost]
         public virtual async Task<IActionResult> Post([FromBody] TModel value)
         {
@@ -62,6 +116,15 @@ namespace Precificador.WebApi.Controllers.Base
             }
         }
 
+        /// <summary>
+        /// Atualiza valores em um registro.
+        /// </summary>
+        /// <param name="value">Objeto a ser atualizado</param>
+        /// <returns>
+        /// - 200 OK com o resultado do cadastro
+        /// - 204 No Content se não encontrar o registro
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
         [HttpPut]
         public virtual async Task<IActionResult> Put([FromBody] TModel value)
         {
@@ -69,7 +132,7 @@ namespace Precificador.WebApi.Controllers.Base
             {
                 var result = await _service.UpdateAsync(value);
 
-                return !(bool)result ? NoContent() : Ok(result);
+                return !result ? NoContent() : Ok(result);
             }
             catch (Exception ex)
             {
@@ -78,34 +141,15 @@ namespace Precificador.WebApi.Controllers.Base
             }
         }
 
-        [HttpGet("ByFilter")]
-        public virtual async Task<IActionResult> GetByFilterAsync([FromBody] string param)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(param))
-                {
-                    return BadRequest("Filter parameter cannot be null or empty.");
-                }
-
-                var filter = JsonSerializer.Deserialize<TFilter>(param);
-
-                if (filter == null)
-                {
-                    return BadRequest("Failed to deserialize filter parameter.");
-                }
-
-                var result = await _service.GetByFilterAsync(filter);
-
-                return result == null || !((IEnumerable<TModel>)result).Any() ? NoContent() : Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao listar registros.");
-                return BadRequest("Erro ao listar registros.");
-            }
-        }
-
+        /// <summary>
+        /// Apaga um registro.
+        /// </summary>
+        /// <param name="id">Id do registro a ser apagado</param>
+        /// <returns>
+        /// - 200 OK com o resultado do cadastro
+        /// - 204 No Content se não encontrar o registro
+        /// - 500 Bad Request em caso de erro.
+        /// </returns>
         [HttpDelete]
         public virtual async Task<IActionResult> Delete([FromBody] Guid id)
         {
@@ -113,7 +157,7 @@ namespace Precificador.WebApi.Controllers.Base
             {
                 var result = await _service.DeleteAsync(id);
 
-                return !(bool)result ? NoContent() : Ok(result);
+                return !result ? NoContent() : Ok(result);
             }
             catch (Exception ex)
             {

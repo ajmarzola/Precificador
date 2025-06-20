@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -17,7 +16,7 @@ namespace Precificador.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Ano = table.Column<int>(type: "int", nullable: false),
                     DataLancamento = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -34,7 +33,7 @@ namespace Precificador.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
@@ -45,19 +44,19 @@ namespace Precificador.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UnidadeMedida",
+                name: "UnidadesMedida",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Abrebiacao = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Abrebiacao = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UnidadeMedida", x => x.Id);
+                    table.PrimaryKey("PK_UnidadesMedida", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,11 +64,11 @@ namespace Precificador.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ColecaoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Margem = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Margem = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     DataCalculoPreco = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PrecoCusto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecoCusto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
@@ -82,7 +81,7 @@ namespace Precificador.Infrastructure.Migrations
                         column: x => x.ColecaoId,
                         principalTable: "Colecoes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,9 +89,9 @@ namespace Precificador.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    QtdPacote = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    VlrPacote = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    QtdPacote = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    VlrPacote = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DataPreco = table.Column<DateTime>(type: "datetime2", nullable: false),
                     GrupoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UnidadeMedidaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -108,13 +107,13 @@ namespace Precificador.Infrastructure.Migrations
                         column: x => x.GrupoId,
                         principalTable: "Grupos",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_MateriasPrimas_UnidadeMedida_UnidadeMedidaId",
+                        name: "FK_MateriasPrimas_UnidadesMedida_UnidadeMedidaId",
                         column: x => x.UnidadeMedidaId,
-                        principalTable: "UnidadeMedida",
+                        principalTable: "UnidadesMedida",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -123,8 +122,8 @@ namespace Precificador.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Local = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Local = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Valor = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DataPesquisa = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -148,7 +147,7 @@ namespace Precificador.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MateriaPrimaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Quantidade = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantidade = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
@@ -221,7 +220,7 @@ namespace Precificador.Infrastructure.Migrations
                 name: "Grupos");
 
             migrationBuilder.DropTable(
-                name: "UnidadeMedida");
+                name: "UnidadesMedida");
 
             migrationBuilder.DropTable(
                 name: "Colecoes");

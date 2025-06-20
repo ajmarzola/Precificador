@@ -22,49 +22,123 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task GetAll_DeveRetornarOkComLista()
+        public async Task GetAll_ReturnsOk_WhenDataExists()
         {
-            var materias = new List<MateriaPrima>
+            var data = new List<MateriaPrima>
             {
-                new() { Id = Guid.NewGuid(), Nome = "Matéria 1", QtdPacote = 10, VlrPacote = 100, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() },
-                new() { Id = Guid.NewGuid(), Nome = "Matéria 2", QtdPacote = 5, VlrPacote = 50, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() }
+                new() {
+                    Id = Guid.NewGuid(),
+                    Nome = "Açúcar",
+                    QtdPacote = 10,
+                    VlrPacote = 20,
+                    DataPreco = DateTime.UtcNow,
+                    VlrUnitario = 2,
+                    UnidadeMedidaId = Guid.NewGuid(),
+                    GrupoId = Guid.NewGuid()
+                }
             };
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(materias);
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(data);
 
             var result = await _controller.GetAll();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(materias, okResult.Value);
+            Assert.Equal(data, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarOkSeEncontrado()
+        public async Task GetAll_ReturnsNoContent_WhenNoData()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync((IEnumerable<MateriaPrima>?)null);
+
+            var result = await _controller.GetAll();
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetById_ReturnsOk_WhenFound()
         {
             var id = Guid.NewGuid();
-            var materia = new MateriaPrima { Id = id, Nome = "Matéria Teste", QtdPacote = 10, VlrPacote = 100, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() };
-            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(materia);
+            var model = new MateriaPrima
+            {
+                Id = id,
+                Nome = "Farinha",
+                QtdPacote = 5,
+                VlrPacote = 15,
+                DataPreco = DateTime.UtcNow,
+                VlrUnitario = 3,
+                UnidadeMedidaId = Guid.NewGuid(),
+                GrupoId = Guid.NewGuid()
+            };
+            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(model);
 
             var result = await _controller.GetById(id);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(materia, okResult.Value);
+            Assert.Equal(model, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarNotFoundSeNaoEncontrado()
+        public async Task GetById_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((MateriaPrima?)null);
 
             var result = await _controller.GetById(id);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Post_DeveRetornarOkSeSucesso()
+        public async Task GetByFilterAsync_ReturnsOk_WhenDataExists()
         {
-            var model = new MateriaPrima { Id = Guid.NewGuid(), Nome = "Nova Matéria", QtdPacote = 10, VlrPacote = 100, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() };
+            var filter = new NomeFilter { Nome = "Açúcar" };
+            var data = new List<MateriaPrima>
+            {
+                new() {
+                    Id = Guid.NewGuid(),
+                    Nome = "Açúcar",
+                    QtdPacote = 10,
+                    VlrPacote = 20,
+                    DataPreco = DateTime.UtcNow,
+                    VlrUnitario = 2,
+                    UnidadeMedidaId = Guid.NewGuid(),
+                    GrupoId = Guid.NewGuid()
+                }
+            };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync(data);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(data, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetByFilterAsync_ReturnsNoContent_WhenNoData()
+        {
+            var filter = new NomeFilter { Nome = "Açúcar" };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync((IEnumerable<MateriaPrima>?)null);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenSuccess()
+        {
+            var model = new MateriaPrima
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Ovo",
+                QtdPacote = 12,
+                VlrPacote = 24,
+                DataPreco = DateTime.UtcNow,
+                VlrUnitario = 2,
+                UnidadeMedidaId = Guid.NewGuid(),
+                GrupoId = Guid.NewGuid()
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Post(model);
@@ -73,9 +147,19 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Post_DeveRetornarBadRequestSeFalha()
+        public async Task Post_ReturnsBadRequest_WhenFailure()
         {
-            var model = new MateriaPrima { Id = Guid.NewGuid(), Nome = "Nova Matéria", QtdPacote = 10, VlrPacote = 100, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() };
+            var model = new MateriaPrima
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Ovo",
+                QtdPacote = 12,
+                VlrPacote = 24,
+                DataPreco = DateTime.UtcNow,
+                VlrUnitario = 2,
+                UnidadeMedidaId = Guid.NewGuid(),
+                GrupoId = Guid.NewGuid()
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Post(model);
@@ -84,9 +168,19 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarOkSeSucesso()
+        public async Task Put_ReturnsOk_WhenSuccess()
         {
-            var model = new MateriaPrima { Id = Guid.NewGuid(), Nome = "Atualizada", QtdPacote = 20, VlrPacote = 200, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() };
+            var model = new MateriaPrima
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Leite",
+                QtdPacote = 1,
+                VlrPacote = 5,
+                DataPreco = DateTime.UtcNow,
+                VlrUnitario = 5,
+                UnidadeMedidaId = Guid.NewGuid(),
+                GrupoId = Guid.NewGuid()
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Put(model);
@@ -95,18 +189,28 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarBadRequestSeFalha()
+        public async Task Put_ReturnsNoContent_WhenNotFound()
         {
-            var model = new MateriaPrima { Id = Guid.NewGuid(), Nome = "Atualizada", QtdPacote = 20, VlrPacote = 200, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() };
+            var model = new MateriaPrima
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Leite",
+                QtdPacote = 1,
+                VlrPacote = 5,
+                DataPreco = DateTime.UtcNow,
+                VlrUnitario = 5,
+                UnidadeMedidaId = Guid.NewGuid(),
+                GrupoId = Guid.NewGuid()
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Put(model);
 
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarOkSeSucesso()
+        public async Task Delete_ReturnsOk_WhenSuccess()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(true);
@@ -117,30 +221,14 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarBadRequestSeFalha()
+        public async Task Delete_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(false);
 
             var result = await _controller.Delete(id);
 
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task GetByFilterAsync_DeveRetornarOkComLista()
-        {
-            var nome = "Matéria";
-            var materias = new List<MateriaPrima>
-            {
-                new() { Id = Guid.NewGuid(), Nome = "Matéria 1", QtdPacote = 10, VlrPacote = 100, GrupoId = Guid.NewGuid(), UnidadeMedidaId = Guid.NewGuid() }
-            };
-            _serviceMock.Setup(s => s.GetByFilterAsync(It.Is<NomeFilter>(f => f.Nome == nome))).ReturnsAsync(materias);
-
-            var result = await _controller.GetByFilterAsync(nome);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(materias, okResult.Value);
+            Assert.IsType<NoContentResult>(result);
         }
     }
 }

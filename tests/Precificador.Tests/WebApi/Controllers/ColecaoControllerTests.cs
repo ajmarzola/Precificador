@@ -22,49 +22,107 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task GetAll_DeveRetornarOkComLista()
+        public async Task GetAll_ReturnsOk_WhenDataExists()
         {
-            var colecoes = new List<Colecao>
+            var data = new List<Colecao>
             {
-                new() { Id = Guid.NewGuid(), Nome = "Coleção 1", Ano = 2024 },
-                new() { Id = Guid.NewGuid(), Nome = "Coleção 2", Ano = 2023 }
+                new() {
+                    Id = Guid.NewGuid(),
+                    Nome = "Coleção Verão",
+                    Ano = 2025,
+                    DataLancamento = DateTime.UtcNow
+                }
             };
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(colecoes);
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(data);
 
             var result = await _controller.GetAll();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(colecoes, okResult.Value);
+            Assert.Equal(data, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarOkSeEncontrado()
+        public async Task GetAll_ReturnsNoContent_WhenNoData()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync((IEnumerable<Colecao>?)null);
+
+            var result = await _controller.GetAll();
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetById_ReturnsOk_WhenFound()
         {
             var id = Guid.NewGuid();
-            var colecao = new Colecao { Id = id, Nome = "Coleção Teste", Ano = 2024 };
-            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(colecao);
+            var model = new Colecao
+            {
+                Id = id,
+                Nome = "Coleção Outono",
+                Ano = 2024,
+                DataLancamento = DateTime.UtcNow
+            };
+            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(model);
 
             var result = await _controller.GetById(id);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(colecao, okResult.Value);
+            Assert.Equal(model, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarNotFoundSeNaoEncontrado()
+        public async Task GetById_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((Colecao?)null);
 
             var result = await _controller.GetById(id);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Post_DeveRetornarOkSeSucesso()
+        public async Task GetByFilterAsync_ReturnsOk_WhenDataExists()
         {
-            var model = new Colecao { Id = Guid.NewGuid(), Nome = "Nova Coleção", Ano = 2025 };
+            var filter = new ColecaoFilter { Nome = "Verão", Ano = 2025 };
+            var data = new List<Colecao>
+            {
+                new() {
+                    Id = Guid.NewGuid(),
+                    Nome = "Coleção Verão",
+                    Ano = 2025,
+                    DataLancamento = DateTime.UtcNow
+                }
+            };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync(data);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(data, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetByFilterAsync_ReturnsNoContent_WhenNoData()
+        {
+            var filter = new ColecaoFilter { Nome = "Inexistente", Ano = 2020 };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync((IEnumerable<Colecao>?)null);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenSuccess()
+        {
+            var model = new Colecao
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Coleção Primavera",
+                Ano = 2026,
+                DataLancamento = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Post(model);
@@ -73,9 +131,15 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Post_DeveRetornarBadRequestSeFalha()
+        public async Task Post_ReturnsBadRequest_WhenFailure()
         {
-            var model = new Colecao { Id = Guid.NewGuid(), Nome = "Nova Coleção", Ano = 2025 };
+            var model = new Colecao
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Coleção Primavera",
+                Ano = 2026,
+                DataLancamento = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Post(model);
@@ -84,9 +148,15 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarOkSeSucesso()
+        public async Task Put_ReturnsOk_WhenSuccess()
         {
-            var model = new Colecao { Id = Guid.NewGuid(), Nome = "Atualizada", Ano = 2025 };
+            var model = new Colecao
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Coleção Atualizada",
+                Ano = 2027,
+                DataLancamento = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Put(model);
@@ -95,18 +165,24 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarBadRequestSeFalha()
+        public async Task Put_ReturnsNoContent_WhenNotFound()
         {
-            var model = new Colecao { Id = Guid.NewGuid(), Nome = "Atualizada", Ano = 2025 };
+            var model = new Colecao
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Coleção Atualizada",
+                Ano = 2027,
+                DataLancamento = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Put(model);
 
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarOkSeSucesso()
+        public async Task Delete_ReturnsOk_WhenSuccess()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(true);
@@ -117,30 +193,14 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarBadRequestSeFalha()
+        public async Task Delete_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(false);
 
             var result = await _controller.Delete(id);
 
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task GetByFilterAsync_DeveRetornarOkComLista()
-        {
-            var nome = "Coleção";
-            var colecoes = new List<Colecao>
-            {
-                new() { Id = Guid.NewGuid(), Nome = "Coleção 1", Ano = 2024 }
-            };
-            _serviceMock.Setup(s => s.GetByFilterAsync(It.Is<ColecaoFilter>(f => f.Nome == nome))).ReturnsAsync(colecoes);
-
-            var result = await _controller.GetByFilterAsync(nome);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(colecoes, okResult.Value);
+            Assert.IsType<NoContentResult>(result);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Precificador.Application.Services.Base
         public virtual async Task<TModel?> GetByIdAsync(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : ConvertToModel(entity as TEntity);
+            return entity == null ? null : ConvertToModel(entity);
         }
 
         public virtual async Task<IEnumerable<TModel>?> GetByFilterAsync(TFilter filter)

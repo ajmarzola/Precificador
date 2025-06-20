@@ -22,60 +22,90 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task GetAll_DeveRetornarOkComLista()
+        public async Task GetAll_ReturnsOk_WhenDataExists()
         {
-            var unidades = new List<UnidadeMedida>
-            {
-                new() { Id = Guid.NewGuid(), Nome = "Litro", Abreviacao = "L" },
-                new() { Id = Guid.NewGuid(), Nome = "Quilo", Abreviacao = "Kg" }
-            };
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(unidades);
+            var data = new List<UnidadeMedida> { new() { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" } };
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(data);
 
             var result = await _controller.GetAll();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(unidades, okResult.Value);
+            Assert.Equal(data, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarOkSeEncontrado()
+        public async Task GetAll_ReturnsNoContent_WhenNoData()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync((IEnumerable<UnidadeMedida>?)null);
+
+            var result = await _controller.GetAll();
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetById_ReturnsOk_WhenFound()
         {
             var id = Guid.NewGuid();
-            var unidade = new UnidadeMedida { Id = id, Nome = "Litro", Abreviacao = "L" };
-            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(unidade);
+            var model = new UnidadeMedida { Id = id, Nome = "Un", Abreviacao = "UN" };
+            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(model);
 
             var result = await _controller.GetById(id);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(unidade, okResult.Value);
+            Assert.Equal(model, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarNotFoundSeNaoEncontrado()
+        public async Task GetById_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
-            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((UnidadeMedida?)null!);
+            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((UnidadeMedida?)null);
 
             var result = await _controller.GetById(id);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Post_DeveRetornarOkSeSucesso()
+        public async Task GetByFilterAsync_ReturnsOk_WhenDataExists()
         {
-            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Metro", Abreviacao = "m" };
+            var filter = new NomeFilter { Nome = "Un" };
+            var data = new List<UnidadeMedida> { new() { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" } };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync(data);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(data, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetByFilterAsync_ReturnsNoContent_WhenNoData()
+        {
+            var filter = new NomeFilter { Nome = "Un" };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync((IEnumerable<UnidadeMedida>?)null);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenSuccess()
+        {
+            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Post(model);
 
-            Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkResult>(result);
         }
 
         [Fact]
-        public async Task Post_DeveRetornarBadRequestSeFalha()
+        public async Task Post_ReturnsBadRequest_WhenFailure()
         {
-            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Metro", Abreviacao = "m" };
+            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Post(model);
@@ -84,63 +114,47 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarOkSeSucesso()
+        public async Task Put_ReturnsOk_WhenSuccess()
         {
-            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Atualizada", Abreviacao = "A" };
+            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Put(model);
 
-            Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkResult>(result);
         }
 
         [Fact]
-        public async Task Put_DeveRetornarBadRequestSeFalha()
+        public async Task Put_ReturnsNoContent_WhenNotFound()
         {
-            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Atualizada", Abreviacao = "A" };
+            var model = new UnidadeMedida { Id = Guid.NewGuid(), Nome = "Un", Abreviacao = "UN" };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Put(model);
 
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarOkSeSucesso()
+        public async Task Delete_ReturnsOk_WhenSuccess()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(true);
 
             var result = await _controller.Delete(id);
 
-            Assert.IsType<OkResult>(result);
+            var okResult = Assert.IsType<OkResult>(result);
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarBadRequestSeFalha()
+        public async Task Delete_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(false);
 
             var result = await _controller.Delete(id);
 
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task GetByFilterAsync_DeveRetornarOkComLista()
-        {
-            var nome = "Litro";
-            var unidades = new List<UnidadeMedida>
-            {
-                new() { Id = Guid.NewGuid(), Nome = "Litro", Abreviacao = "L" }
-            };
-            _serviceMock.Setup(s => s.GetByFilterAsync(It.Is<NomeFilter>(f => f.Nome == nome))).ReturnsAsync(unidades);
-
-            var result = await _controller.GetByFilterAsync(nome);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(unidades, okResult.Value);
+            Assert.IsType<NoContentResult>(result);
         }
     }
 }

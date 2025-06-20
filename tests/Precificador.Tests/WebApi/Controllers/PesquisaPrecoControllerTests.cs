@@ -22,49 +22,111 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task GetAll_DeveRetornarOkComLista()
+        public async Task GetAll_ReturnsOk_WhenDataExists()
         {
-            var pesquisas = new List<PesquisaPreco>
+            var data = new List<PesquisaPreco>
             {
-                new() { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Mercado 1", Valor = 10, DataPesquisa = DateTime.Now },
-                new() { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Mercado 2", Valor = 20, DataPesquisa = DateTime.Now }
+                new() {
+                    Id = Guid.NewGuid(),
+                    ProdutoId = Guid.NewGuid(),
+                    Local = "Supermercado X",
+                    Valor = 10.5m,
+                    DataPesquisa = DateTime.UtcNow
+                }
             };
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(pesquisas);
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(data);
 
             var result = await _controller.GetAll();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(pesquisas, okResult.Value);
+            Assert.Equal(data, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarOkSeEncontrado()
+        public async Task GetAll_ReturnsNoContent_WhenNoData()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync((IEnumerable<PesquisaPreco>?)null);
+
+            var result = await _controller.GetAll();
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetById_ReturnsOk_WhenFound()
         {
             var id = Guid.NewGuid();
-            var pesquisa = new PesquisaPreco { Id = id, ProdutoId = Guid.NewGuid(), Local = "Mercado", Valor = 15, DataPesquisa = DateTime.Now };
-            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(pesquisa);
+            var model = new PesquisaPreco
+            {
+                Id = id,
+                ProdutoId = Guid.NewGuid(),
+                Local = "Supermercado Y",
+                Valor = 12.0m,
+                DataPesquisa = DateTime.UtcNow
+            };
+            _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(model);
 
             var result = await _controller.GetById(id);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(pesquisa, okResult.Value);
+            Assert.Equal(model, okResult.Value);
         }
 
         [Fact]
-        public async Task GetById_DeveRetornarNotFoundSeNaoEncontrado()
+        public async Task GetById_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((PesquisaPreco?)null);
 
             var result = await _controller.GetById(id);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Post_DeveRetornarOkSeSucesso()
+        public async Task GetByFilterAsync_ReturnsOk_WhenDataExists()
         {
-            var model = new PesquisaPreco { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Novo", Valor = 30, DataPesquisa = DateTime.Now };
+            var filter = new PesquisaPrecoFilter { Local = "Supermercado Z" };
+            var data = new List<PesquisaPreco>
+            {
+                new() {
+                    Id = Guid.NewGuid(),
+                    ProdutoId = Guid.NewGuid(),
+                    Local = "Supermercado Z",
+                    Valor = 15.0m,
+                    DataPesquisa = DateTime.UtcNow
+                }
+            };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync(data);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(data, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetByFilterAsync_ReturnsNoContent_WhenNoData()
+        {
+            var filter = new PesquisaPrecoFilter { Local = "Supermercado Z" };
+            _serviceMock.Setup(s => s.GetByFilterAsync(filter)).ReturnsAsync((IEnumerable<PesquisaPreco>?)null);
+
+            var result = await _controller.GetByFilterAsync(filter);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenSuccess()
+        {
+            var model = new PesquisaPreco
+            {
+                Id = Guid.NewGuid(),
+                ProdutoId = Guid.NewGuid(),
+                Local = "Supermercado A",
+                Valor = 20.0m,
+                DataPesquisa = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Post(model);
@@ -73,9 +135,16 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Post_DeveRetornarBadRequestSeFalha()
+        public async Task Post_ReturnsBadRequest_WhenFailure()
         {
-            var model = new PesquisaPreco { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Novo", Valor = 30, DataPesquisa = DateTime.Now };
+            var model = new PesquisaPreco
+            {
+                Id = Guid.NewGuid(),
+                ProdutoId = Guid.NewGuid(),
+                Local = "Supermercado A",
+                Valor = 20.0m,
+                DataPesquisa = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.AddAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Post(model);
@@ -84,9 +153,16 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarOkSeSucesso()
+        public async Task Put_ReturnsOk_WhenSuccess()
         {
-            var model = new PesquisaPreco { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Atualizado", Valor = 40, DataPesquisa = DateTime.Now };
+            var model = new PesquisaPreco
+            {
+                Id = Guid.NewGuid(),
+                ProdutoId = Guid.NewGuid(),
+                Local = "Supermercado B",
+                Valor = 22.0m,
+                DataPesquisa = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
 
             var result = await _controller.Put(model);
@@ -95,18 +171,25 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Put_DeveRetornarBadRequestSeFalha()
+        public async Task Put_ReturnsNoContent_WhenNotFound()
         {
-            var model = new PesquisaPreco { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Atualizado", Valor = 40, DataPesquisa = DateTime.Now };
+            var model = new PesquisaPreco
+            {
+                Id = Guid.NewGuid(),
+                ProdutoId = Guid.NewGuid(),
+                Local = "Supermercado B",
+                Valor = 22.0m,
+                DataPesquisa = DateTime.UtcNow
+            };
             _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
 
             var result = await _controller.Put(model);
 
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarOkSeSucesso()
+        public async Task Delete_ReturnsOk_WhenSuccess()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(true);
@@ -117,30 +200,14 @@ namespace Precificador.Tests.WebApi.Controllers
         }
 
         [Fact]
-        public async Task Delete_DeveRetornarBadRequestSeFalha()
+        public async Task Delete_ReturnsNoContent_WhenNotFound()
         {
             var id = Guid.NewGuid();
             _serviceMock.Setup(s => s.DeleteAsync(id)).ReturnsAsync(false);
 
             var result = await _controller.Delete(id);
 
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task GetByFilterAsync_DeveRetornarOkComLista()
-        {
-            var nome = "Mercado";
-            var pesquisas = new List<PesquisaPreco>
-            {
-                new() { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), Local = "Mercado", Valor = 10, DataPesquisa = DateTime.Now }
-            };
-            _serviceMock.Setup(s => s.GetByFilterAsync(It.Is<PesquisaPrecoFilter>(f => f.Local == nome || f.ProdutoNome == nome))).ReturnsAsync(pesquisas);
-
-            var result = await _controller.GetByFilterAsync(nome);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(pesquisas, okResult.Value);
+            Assert.IsType<NoContentResult>(result);
         }
     }
 }

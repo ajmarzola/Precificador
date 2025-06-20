@@ -16,12 +16,86 @@ namespace Precificador.Infrastructure.Data
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MateriaPrima>()
-                .HasOne(mp => mp.Grupo)
-                .WithMany(g => g.MateriasPrimas)
-                .HasForeignKey(mp => mp.GrupoId)
+            OnMateriaPrimaCreating(modelBuilder);
+            OnProdutoMateriaPrimaCreating(modelBuilder);
+            OnPesquisaPrecoCreating(modelBuilder);
+            OnProdutoCreating(modelBuilder);
+            OnGrupoCreating(modelBuilder);
+            OnColecaoCreating(modelBuilder);
+            OnUnidadeMedidaCreating(modelBuilder);
+        }
+
+        private static void OnUnidadeMedidaCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UnidadeMedida>()
+                .Property(um => um.Nome)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<UnidadeMedida>()
+                .Property(um => um.Abrebiacao)
+                .HasMaxLength(4)
+                .IsRequired();
+        }
+
+        private static void OnColecaoCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Colecao>()
+                .Property(c => c.Nome)
+                .HasMaxLength(100)
+                .IsRequired();
+        }
+
+        private static void OnGrupoCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Grupo>()
+                .Property(g => g.Nome)
+                .HasMaxLength(100)
+                .IsRequired();
+        }
+
+        private static void OnProdutoCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Produto>()
+                .HasOne(p => p.Colecao)
+                .WithMany(c => c.Produtos)
+                .HasForeignKey(p => p.ColecaoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.Nome)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.Margem)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.PrecoCusto)
+                .HasPrecision(18, 2);
+        }
+
+        private static void OnPesquisaPrecoCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PesquisaPreco>()
+                .HasOne(pp => pp.Produto)
+                .WithMany(p => p.Pesquisas)
+                .HasForeignKey(pp => pp.ProdutoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PesquisaPreco>()
+                .Property(pp => pp.Local)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            modelBuilder.Entity<PesquisaPreco>()
+                .Property(p => p.Valor)
+                .HasPrecision(18, 2);
+        }
+
+        private static void OnProdutoMateriaPrimaCreating(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<ProdutoMateriaPrima>()
                 .HasOne(pmp => pmp.MateriaPrima)
                 .WithMany(mp => mp.Produtos)
@@ -34,16 +108,17 @@ namespace Precificador.Infrastructure.Data
                 .HasForeignKey(pmp => pmp.ProdutoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PesquisaPreco>()
-                .HasOne(pp => pp.Produto)
-                .WithMany(p => p.Pesquisas)
-                .HasForeignKey(pp => pp.ProdutoId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ProdutoMateriaPrima>()
+                .Property(p => p.Quantidade)
+                .HasPrecision(18, 2);
+        }
 
-            modelBuilder.Entity<Produto>()
-                .HasOne(p => p.Colecao)
-                .WithMany(c => c.Produtos)
-                .HasForeignKey(p => p.ColecaoId)
+        private static void OnMateriaPrimaCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MateriaPrima>()
+                .HasOne(mp => mp.Grupo)
+                .WithMany(g => g.MateriasPrimas)
+                .HasForeignKey(mp => mp.GrupoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<MateriaPrima>()
@@ -52,40 +127,18 @@ namespace Precificador.Infrastructure.Data
                 .HasForeignKey(mp => mp.UnidadeMedidaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Grupo>()
-                .Property(g => g.Nome)
-                .HasMaxLength(100)
-                .IsRequired();
-
             modelBuilder.Entity<MateriaPrima>()
                 .Property(mp => mp.Nome)
                 .HasMaxLength(200)
                 .IsRequired();
 
-            modelBuilder.Entity<Colecao>()
-                .Property(c => c.Nome)
-                .HasMaxLength(100)
-                .IsRequired();
+            modelBuilder.Entity<MateriaPrima>()
+                .Property(p => p.QtdPacote)
+                .HasPrecision(18, 2);
 
-            modelBuilder.Entity<Produto>()
-                .Property(p => p.Nome)
-                .HasMaxLength(200)
-                .IsRequired();
-
-            modelBuilder.Entity<PesquisaPreco>()
-                .Property(pp => pp.Local)
-                .HasMaxLength(200)
-                .IsRequired();
-
-            modelBuilder.Entity<UnidadeMedida>()
-                .Property(um => um.Nome)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<UnidadeMedida>()
-                .Property(um => um.Abrebiacao)
-                .HasMaxLength(4)
-                .IsRequired();
+            modelBuilder.Entity<MateriaPrima>()
+                .Property(p => p.VlrPacote)
+                .HasPrecision(18, 2);
         }
     }
 }
