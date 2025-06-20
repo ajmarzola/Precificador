@@ -1,15 +1,16 @@
 ﻿using Precificador.Application.Model;
+using Precificador.Domain.Filters;
 using Precificador.Inicializador.Base;
 
-namespace Precificador.Inicializador
+namespace Precificador.Inicializador.Inicializadores
 {
-    public class UnidadeMedidaInit : BaseInit<UnidadeMedida>
+    public class UnidadeMedidaInit : BaseInit<UnidadeMedida, NomeFilter>
     {
         protected override string Endpoint => "UnidadeMedida";
         protected override IEnumerable<UnidadeMedida> Items => unidadesMedida;
 
-        private readonly List<UnidadeMedida> unidadesMedida = new()
-        {
+        private readonly List<UnidadeMedida> unidadesMedida =
+        [
             new UnidadeMedida { Nome = "Folha 1/4 A4", Abreviacao = "1/4A4" },
             new UnidadeMedida { Nome = "Folha A4", Abreviacao = "FA4" },
             new UnidadeMedida { Nome = "Folha A5", Abreviacao = "FA5" },
@@ -24,11 +25,10 @@ namespace Precificador.Inicializador
             new UnidadeMedida { Nome = "Mini", Abreviacao = "mini" },
             new UnidadeMedida { Nome = "Unidade", Abreviacao = "Unid" },
             new UnidadeMedida { Nome = "Unidade 30cm ", Abreviacao = "U30 " },
-        };
+        ];
 
-        protected override string GetNome(UnidadeMedida item) => item.Nome;
+        protected override NomeFilter GetFilter(UnidadeMedida item) => new() { Nome = item.Nome };
 
-        protected override string BuildBody(UnidadeMedida item)
-            => $"{{\"nome\": \"{item.Nome}\", \"abreviacao\": \"{item.Abreviacao}\"}}";
+        protected override string BuildBody(UnidadeMedida item) => $"{{\"nome\": \"{item.Nome}\", \"abreviacao\": \"{item.Abreviacao}\"}}";
     }
 }

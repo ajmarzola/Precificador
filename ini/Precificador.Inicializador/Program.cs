@@ -1,4 +1,6 @@
-﻿namespace Precificador.Inicializador
+﻿using Precificador.Inicializador.Inicializadores;
+
+namespace Precificador.Inicializador
 {
     public class Program
     {

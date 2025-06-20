@@ -1,15 +1,16 @@
 ﻿using Precificador.Application.Model;
+using Precificador.Domain.Filters;
 using Precificador.Inicializador.Base;
 
-namespace Precificador.Inicializador
+namespace Precificador.Inicializador.Inicializadores
 {
-    public class GrupoInit : BaseInit<Grupo>
+    public class GrupoInit : BaseInit<Grupo, NomeFilter>
     {
         protected override string Endpoint => "Grupo";
         protected override IEnumerable<Grupo> Items => grupos;
 
-        private readonly List<Grupo> grupos = new()
-        {
+        private readonly List<Grupo> grupos =
+        [
             new Grupo { Nome = "Acetato" },
             new Grupo { Nome = "Acrilico" },
             new Grupo { Nome = "Armarinhos" },
@@ -55,11 +56,10 @@ namespace Precificador.Inicializador
             new Grupo { Nome = "Post It" },
             new Grupo { Nome = "Pró-labore" },
             new Grupo { Nome = "Tricoline" }
-        };
+        ];
 
-        protected override string GetNome(Grupo item) => item.Nome;
+        protected override NomeFilter GetFilter(Grupo item) => new() { Nome = item.Nome };
 
-        protected override string BuildBody(Grupo item)
-            => $"{{\"nome\": \"{item.Nome}\"}}";
+        protected override string BuildBody(Grupo item) => $"{{\"nome\": \"{item.Nome}\"}}";
     }
 }

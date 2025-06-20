@@ -1,15 +1,16 @@
 ﻿using Precificador.Application.Model;
+using Precificador.Domain.Filters;
 using Precificador.Inicializador.Base;
 
-namespace Precificador.Inicializador
+namespace Precificador.Inicializador.Inicializadores
 {
-    public class ColecaoInit : BaseInit<Colecao>
+    public class ColecaoInit : BaseInit<Colecao, ColecaoFilter>
     {
         protected override string Endpoint => "Colecao";
         protected override IEnumerable<Colecao> Items => colecoes;
 
-        private readonly List<Colecao> colecoes = new()
-        {
+        private readonly List<Colecao> colecoes =
+        [
             new Colecao { Nome = "Mulher 2025", Ano = 2025 },
             new Colecao { Nome = "Volta às Aulas 2025", Ano = 2025 },
             new Colecao { Nome = "Coleção 2025", Ano = 2025 },
@@ -39,11 +40,10 @@ namespace Precificador.Inicializador
             new Colecao { Nome = "Volta às Aulas23", Ano = 2023 },
             new Colecao { Nome = "Coleção 2023", Ano = 2023 },
             new Colecao { Nome = "Natal 2022", Ano = 2022 }
-        };
+        ];
 
-        protected override string GetNome(Colecao item) => item.Nome;
+        protected override ColecaoFilter GetFilter(Colecao item) => new() { Nome = item.Nome, Ano = item.Ano };
 
-        protected override string BuildBody(Colecao item)
-            => $"{{\"nome\": \"{item.Nome}\", \"ano\": {item.Ano}}}";
+        protected override string BuildBody(Colecao item) => $"{{\"nome\": \"{item.Nome}\", \"ano\": {item.Ano}}}";
     }
 }

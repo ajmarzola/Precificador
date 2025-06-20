@@ -1,19 +1,20 @@
 using RestSharp;
+using System.Text.Json;
 
 namespace Precificador.Inicializador.Base
 {
-    public abstract class BaseInit<TModel>
+    public abstract class BaseInit<TModel, TFilter>
     {
         protected abstract string Endpoint { get; }
         protected abstract IEnumerable<TModel> Items { get; }
-        protected abstract string GetNome(TModel item);
+        protected abstract TFilter GetFilter(TModel item);
         protected abstract string BuildBody(TModel item);
 
         public void Inicializar()
         {
             foreach (var item in Items)
             {
-                if (!VerificaExistencia(GetNome(item)))
+                if (!VerificaExistencia(GetFilter(item)))
                 {
                     Incluir(item);
                 }
@@ -22,22 +23,29 @@ namespace Precificador.Inicializador.Base
 
         private void Incluir(TModel item)
         {
-            var options = new RestClientOptions("https://localhost:7013");
-            var client = new RestClient(options);
-            var request = new RestRequest($"/api/{Endpoint}", Method.Post);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddStringBody(BuildBody(item), DataFormat.Json);
+            RestClient client = CreateRestClient();
+            RestRequest request = CreateRequest($"/api/{Endpoint}", Method.Post, BuildBody(item));
             RestResponse response = client.Execute(request);
             Console.WriteLine(response.Content);
         }
 
-        private bool VerificaExistencia(string filtro)
+        private static RestRequest CreateRequest(string endpoint, Method method, string body)
         {
-            var options = new RestClientOptions("https://localhost:7013");
-            var client = new RestClient(options);
-            var request = new RestRequest($"/api/{Endpoint}/ByFilter", Method.Get);
+            var request = new RestRequest(endpoint, method);
             request.AddHeader("Content-Type", "application/json");
+            request.AddStringBody(body, DataFormat.Json);
+            return request;
+        }
 
+        private static RestClient CreateRestClient()
+        {
+            return new RestClient(new RestClientOptions("https://localhost:7013"));
+        }
+
+        private bool VerificaExistencia(TFilter filtro)
+        {
+            RestClient client = CreateRestClient();
+            var request = CreateRequest($"/api/{Endpoint}/ByFilter", Method.Get, JsonSerializer.Serialize(new { filtro }));
             RestResponse response = client.Execute(request);
 
             if (response.IsSuccessStatusCode)
