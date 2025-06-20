@@ -6,9 +6,10 @@ namespace Precificador.Inicializador.Base
     public abstract class BaseInit<TModel, TFilter>
     {
         protected abstract string Endpoint { get; }
+
         protected abstract IEnumerable<TModel> Items { get; }
+
         protected abstract TFilter GetFilter(TModel item);
-        protected abstract string BuildBody(TModel item);
 
         public void Inicializar()
         {
@@ -24,7 +25,7 @@ namespace Precificador.Inicializador.Base
         private void Incluir(TModel item)
         {
             RestClient client = CreateRestClient();
-            RestRequest request = CreateRequest($"/api/{Endpoint}", Method.Post, BuildBody(item));
+            RestRequest request = CreateRequest($"/api/{Endpoint}", Method.Post, JsonSerializer.Serialize(item));
             RestResponse response = client.Execute(request);
             Console.WriteLine(response.Content);
         }

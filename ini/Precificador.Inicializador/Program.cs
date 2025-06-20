@@ -9,6 +9,7 @@ namespace Precificador.Inicializador
             new ColecaoInit().Inicializar();
             new GrupoInit().Inicializar();
             new UnidadeMedidaInit().Inicializar();
+            new MateriaPrimaInit().Inicializar();
         }
     }
 }

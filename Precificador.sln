@@ -21,6 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ini", "ini", "{32951A3A-AAE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Precificador.Inicializador", "ini\Precificador.Inicializador\Precificador.Inicializador.csproj", "{6D92ADBC-EDCE-4F14-8564-95D59C0593E7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ref", "ref", "{B2D8B312-9CE9-41F3-BC48-C5314413699F}"
+	ProjectSection(SolutionItems) = preProject
+		ref\precifica.xlsx = ref\precifica.xlsx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

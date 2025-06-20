@@ -7,6 +7,7 @@ namespace Precificador.Inicializador.Inicializadores
     public class GrupoInit : BaseInit<Grupo, NomeFilter>
     {
         protected override string Endpoint => "Grupo";
+
         protected override IEnumerable<Grupo> Items => grupos;
 
         private readonly List<Grupo> grupos =
@@ -59,7 +60,5 @@ namespace Precificador.Inicializador.Inicializadores
         ];
 
         protected override NomeFilter GetFilter(Grupo item) => new() { Nome = item.Nome };
-
-        protected override string BuildBody(Grupo item) => $"{{\"nome\": \"{item.Nome}\"}}";
     }
 }

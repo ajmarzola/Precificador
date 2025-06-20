@@ -7,6 +7,7 @@ namespace Precificador.Inicializador.Inicializadores
     public class ColecaoInit : BaseInit<Colecao, ColecaoFilter>
     {
         protected override string Endpoint => "Colecao";
+
         protected override IEnumerable<Colecao> Items => colecoes;
 
         private readonly List<Colecao> colecoes =
@@ -43,7 +44,5 @@ namespace Precificador.Inicializador.Inicializadores
         ];
 
         protected override ColecaoFilter GetFilter(Colecao item) => new() { Nome = item.Nome, Ano = item.Ano };
-
-        protected override string BuildBody(Colecao item) => $"{{\"nome\": \"{item.Nome}\", \"ano\": {item.Ano}}}";
     }
 }

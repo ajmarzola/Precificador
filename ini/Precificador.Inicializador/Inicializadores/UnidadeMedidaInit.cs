@@ -7,6 +7,7 @@ namespace Precificador.Inicializador.Inicializadores
     public class UnidadeMedidaInit : BaseInit<UnidadeMedida, NomeFilter>
     {
         protected override string Endpoint => "UnidadeMedida";
+
         protected override IEnumerable<UnidadeMedida> Items => unidadesMedida;
 
         private readonly List<UnidadeMedida> unidadesMedida =
@@ -28,7 +29,5 @@ namespace Precificador.Inicializador.Inicializadores
         ];
 
         protected override NomeFilter GetFilter(UnidadeMedida item) => new() { Nome = item.Nome };
-
-        protected override string BuildBody(UnidadeMedida item) => $"{{\"nome\": \"{item.Nome}\", \"abreviacao\": \"{item.Abreviacao}\"}}";
     }
 }
