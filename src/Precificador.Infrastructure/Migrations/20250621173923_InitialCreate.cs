@@ -9,7 +9,7 @@ namespace Precificador.Infrastructure.Migrations
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Gerado Automaticamente")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arquivo criado automaticamente")]
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -53,9 +53,9 @@ namespace Precificador.Infrastructure.Migrations
                     Margem = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     DataCalculoPreco = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PrecoCusto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    PrecoFinal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PrecoVenda = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PrecoPromocional = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecoFinal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecoVenda = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecoPromocional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
@@ -231,7 +231,7 @@ namespace Precificador.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Gerado Automaticamente")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arquivo criado automaticamente")]
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

@@ -25,6 +25,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpGet]
         public virtual async Task<IActionResult> GetAll()
         {
+            _logger.LogInformation("Lendo dados de {Entity} às {Time}", typeof(TEntity), DateTime.UtcNow);
+
             try
             {
                 var result = await _service.GetAllAsync();
@@ -50,6 +52,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpGet("ById")]
         public virtual async Task<IActionResult> GetById([FromBody] Guid id)
         {
+            _logger.LogInformation("Lendo dados de {Entity} às {Time} com id {id}", typeof(TEntity), DateTime.UtcNow, id);
+
             try
             {
                 var result = await _service.GetByIdAsync(id);
@@ -75,6 +79,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpGet("ByFilter")]
         public virtual async Task<IActionResult> GetByFilterAsync([FromBody] TFilter filter)
         {
+            _logger.LogInformation("Lendo dados de {Entity} às {Time} por filtro", typeof(TEntity), DateTime.UtcNow);
+
             try
             {
                 if (filter == null)
@@ -104,6 +110,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpPost]
         public virtual async Task<IActionResult> Post([FromBody] TModel value)
         {
+            _logger.LogInformation("Inserindo dados em {Entity} às {Time}", typeof(TEntity), DateTime.UtcNow);
+
             try
             {
                 var result = await _service.AddAsync(value);
@@ -134,6 +142,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpPut]
         public virtual async Task<IActionResult> Put([FromBody] TModel value)
         {
+            _logger.LogInformation("Atualizando dados de {Entity} às {Time}", typeof(TEntity), DateTime.UtcNow);
+
             try
             {
                 var result = await _service.UpdateAsync(value);
@@ -159,6 +169,8 @@ namespace Precificador.WebApi.Controllers.Base
         [HttpDelete]
         public virtual async Task<IActionResult> Delete([FromBody] Guid id)
         {
+            _logger.LogInformation("Apagando dados de {Entity} às {Time} com id {id}", typeof(TEntity), DateTime.UtcNow, id);
+
             try
             {
                 var result = await _service.DeleteAsync(id);

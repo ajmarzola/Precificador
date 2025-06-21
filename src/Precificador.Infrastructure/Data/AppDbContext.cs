@@ -85,6 +85,18 @@ namespace Precificador.Infrastructure.Data
             modelBuilder.Entity<Produto>()
                 .Property(p => p.PrecoCusto)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.PrecoFinal)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.PrecoPromocional)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Produto>()
+                .Property(p => p.PrecoVenda)
+                .HasPrecision(18, 2);
         }
 
         private static void OnPesquisaPrecoCreating(ModelBuilder modelBuilder)

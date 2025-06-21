@@ -13,53 +13,16 @@ namespace Precificador.WebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            #region Conexão com o banco de dados
-
-            builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-            #endregion
-
-            #region Repositories
-
-            builder.Services.AddScoped<IColecaoRepository, ColecaoRepository>();
-            builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
-            builder.Services.AddScoped<IMateriaPrimaRepository, MateriaPrimaRepository>();
-            builder.Services.AddScoped<IPesquisaPrecoRepository, PesquisaPrecoRepository>();
-            builder.Services.AddScoped<IProdutoMateriaPrimaRepository, ProdutoMateriaPrimaRepository>();
-            builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
-            builder.Services.AddScoped<IUnidadeMedidaRepository, UnidadeMedidaRepository>();
-
-            #endregion
-
-            #region Services
-
-            builder.Services.AddScoped<IColecaoService, ColecaoService>();
-            builder.Services.AddScoped<IGrupoService, GrupoService>();
-            builder.Services.AddScoped<IMateriaPrimaService, MateriaPrimaService>();
-            builder.Services.AddScoped<IPesquisaPrecoService, PesquisaPrecoService>();
-            builder.Services.AddScoped<IProdutoMateriaPrimaService, ProdutoMateriaPrimaService>();
-            builder.Services.AddScoped<IProdutoService, ProdutoService>();
-            builder.Services.AddScoped<IUnidadeMedidaService, UnidadeMedidaService>();
-
-            #endregion
+            ConfigureDatabase(builder);
+            ConfigureRepositories(builder);
+            ConfigureApplicationServices(builder);
 
             builder.Services.AddControllers();
-
             builder.Services.AddEndpointsApiExplorer();
 
-            #region Swagger
+            ConfigureSwagger(builder);
+            ConfigureLogging(builder);
 
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Precificador WebAPI", Version = "v1" });
-            });
-
-            #endregion
-
-            Log.Logger = new LoggerConfiguration().WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day).CreateLogger();
-            
-            builder.Services.AddLogging();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -76,6 +39,56 @@ namespace Precificador.WebApi
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void ConfigureLogging(WebApplicationBuilder builder)
+        {
+            var newRelicApiKey = builder.Configuration.GetValue<string>("NewRelicApiKey");
+            var newRelicApiName = builder.Configuration.GetValue<string>("NewRelicApiName");
+
+            Log.Logger = new LoggerConfiguration().WriteTo.NewRelicLogs(applicationName: newRelicApiName, licenseKey: newRelicApiKey).Enrich.FromLogContext().CreateLogger();
+
+
+            //Log.Logger = new LoggerConfiguration().WriteTo.NewRelicLogs(newRelicApiKey, newRelicApiName).Enrich.FromLogContext().CreateLogger();
+
+            builder.Services.AddLogging();
+        }
+
+        private static void ConfigureSwagger(WebApplicationBuilder builder)
+        {
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Precificador WebAPI", Version = "v1" });
+            });
+        }
+
+        private static void ConfigureApplicationServices(WebApplicationBuilder builder)
+        {
+            builder.Services.AddScoped<IColecaoService, ColecaoService>();
+            builder.Services.AddScoped<IColecaoProdutoService, ColecaoProdutoService>();
+            builder.Services.AddScoped<IGrupoService, GrupoService>();
+            builder.Services.AddScoped<IMateriaPrimaService, MateriaPrimaService>();
+            builder.Services.AddScoped<IPesquisaPrecoService, PesquisaPrecoService>();
+            builder.Services.AddScoped<IProdutoMateriaPrimaService, ProdutoMateriaPrimaService>();
+            builder.Services.AddScoped<IProdutoService, ProdutoService>();
+            builder.Services.AddScoped<IUnidadeMedidaService, UnidadeMedidaService>();
+        }
+
+        private static void ConfigureRepositories(WebApplicationBuilder builder)
+        {
+            builder.Services.AddScoped<IColecaoRepository, ColecaoRepository>();
+            builder.Services.AddScoped<IColecaoProdutoRepository, ColecaoProdutoRepository>();
+            builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+            builder.Services.AddScoped<IMateriaPrimaRepository, MateriaPrimaRepository>();
+            builder.Services.AddScoped<IPesquisaPrecoRepository, PesquisaPrecoRepository>();
+            builder.Services.AddScoped<IProdutoMateriaPrimaRepository, ProdutoMateriaPrimaRepository>();
+            builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+            builder.Services.AddScoped<IUnidadeMedidaRepository, UnidadeMedidaRepository>();
+        }
+
+        private static void ConfigureDatabase(WebApplicationBuilder builder)
+        {
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
         }
     }
 }

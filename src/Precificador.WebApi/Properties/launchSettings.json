@@ -1,5 +1,10 @@
 ﻿{
   "$schema": "http://json.schemastore.org/launchsettings.json",
+  "environmentVariables": {
+    //"NEW_RELIC_HOME": "C:\\Users\\ajmar\\source\\repos\\ajmarzola\\Precificador\\src\\Precificador.WebApi\\",
+    "NEW_RELIC_APP_NAME": "Precificador.WebAPI",
+    "NEW_RELIC_LICENSE_KEY": "E826A48405C9FE5FC2451EC6919942D5E0EAE04F8250A037F20EB90D17305FFA"
+  },
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
