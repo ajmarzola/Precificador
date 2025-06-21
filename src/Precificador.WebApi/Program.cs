@@ -5,6 +5,7 @@ using Precificador.Domain.Repository;
 using Precificador.Infrastructure.Data;
 using Precificador.Infrastructure.Repository;
 using Serilog;
+using Serilog.Sinks.Http;
 
 namespace Precificador.WebApi
 {
@@ -46,10 +47,15 @@ namespace Precificador.WebApi
             var newRelicApiKey = builder.Configuration.GetValue<string>("NewRelicApiKey");
             var newRelicApiName = builder.Configuration.GetValue<string>("NewRelicApiName");
 
-            Log.Logger = new LoggerConfiguration().WriteTo.NewRelicLogs(applicationName: newRelicApiName, licenseKey: newRelicApiKey).Enrich.FromLogContext().CreateLogger();
-
-
-            //Log.Logger = new LoggerConfiguration().WriteTo.NewRelicLogs(newRelicApiKey, newRelicApiName).Enrich.FromLogContext().CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.DurableHttpUsingFileSizeRolledBuffers(
+                    requestUri: "https://log-api.newrelic.com/log/v1",
+                    textFormatter: new Serilog.Formatting.Json.JsonFormatter(),
+                    batchSizeLimitBytes: 1000000,
+                    period: TimeSpan.FromSeconds(10),
+                    bufferFileSizeLimitBytes: 10000000,
+                    bufferBaseFileName: "./logs/buffer",
+                    httpClient: new Serilog.Sinks.Http.HttpClients.JsonHttpClient()).CreateLogger();
 
             builder.Services.AddLogging();
         }
