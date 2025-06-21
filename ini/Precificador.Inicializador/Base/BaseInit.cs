@@ -1,3 +1,4 @@
+using Precificador.Inicializador.Services;
 using RestSharp;
 using System.Text.Json;
 
@@ -24,30 +25,12 @@ namespace Precificador.Inicializador.Base
 
         private void Incluir(TModel item)
         {
-            RestClient client = CreateRestClient();
-            RestRequest request = CreateRequest($"/api/{Endpoint}", Method.Post, JsonSerializer.Serialize(item));
-            RestResponse response = client.Execute(request);
-            Console.WriteLine(response.Content);
-        }
-
-        private static RestRequest CreateRequest(string endpoint, Method method, string body)
-        {
-            var request = new RestRequest(endpoint, method);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddStringBody(body, DataFormat.Json);
-            return request;
-        }
-
-        private static RestClient CreateRestClient()
-        {
-            return new RestClient(new RestClientOptions("https://localhost:7013"));
+            Console.WriteLine(PrecificadorApiService.Incluir($"/api/{Endpoint}", JsonSerializer.Serialize(item)));
         }
 
         private bool VerificaExistencia(TFilter filtro)
         {
-            RestClient client = CreateRestClient();
-            var request = CreateRequest($"/api/{Endpoint}/ByFilter", Method.Get, JsonSerializer.Serialize(new { filtro }));
-            RestResponse response = client.Execute(request);
+            RestResponse response = PrecificadorApiService.GetByFilter($"/api/{Endpoint}/ByFilter", JsonSerializer.Serialize(filtro));
 
             if (response.IsSuccessStatusCode)
             {

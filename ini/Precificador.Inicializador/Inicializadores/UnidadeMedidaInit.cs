@@ -12,20 +12,18 @@ namespace Precificador.Inicializador.Inicializadores
 
         private readonly List<UnidadeMedida> unidadesMedida =
         [
-            new UnidadeMedida { Nome = "Folha 1/4 A4", Abreviacao = "1/4A4" },
-            new UnidadeMedida { Nome = "Folha A4", Abreviacao = "FA4" },
-            new UnidadeMedida { Nome = "Folha A5", Abreviacao = "FA5" },
-            new UnidadeMedida { Nome = "Folha A6", Abreviacao = "FA6" },
-            new UnidadeMedida { Nome = "Litro", Abreviacao = "l" },
-            new UnidadeMedida { Nome = "Pacote", Abreviacao = "Pct" },
-            new UnidadeMedida { Nome = "caixa", Abreviacao = "cx" },
-            new UnidadeMedida { Nome = "folha A4     ", Abreviacao = "folha A4     " },
+            new UnidadeMedida { Nome = "Caixa", Abreviacao = "cx" },
+            new UnidadeMedida { Nome = "Folha 1/4 A4", Abreviacao = "1/4" },
+            new UnidadeMedida { Nome = "Folha", Abreviacao = "fl" },
+            new UnidadeMedida { Nome = "Folha A4", Abreviacao = "A4" },
+            new UnidadeMedida { Nome = "Folha A5", Abreviacao = "A5" },
+            new UnidadeMedida { Nome = "Folha A6", Abreviacao = "A6" },
             new UnidadeMedida { Nome = "gramas", Abreviacao = "g" },
-            new UnidadeMedida { Nome = "metros", Abreviacao = "m'      " },
-            new UnidadeMedida { Nome = "mililitro", Abreviacao = "ml" },
-            new UnidadeMedida { Nome = "Mini", Abreviacao = "mini" },
-            new UnidadeMedida { Nome = "Unidade", Abreviacao = "Unid" },
-            new UnidadeMedida { Nome = "Unidade 30cm ", Abreviacao = "U30 " },
+            new UnidadeMedida { Nome = "Litro", Abreviacao = "L" },
+            new UnidadeMedida { Nome = "metros", Abreviacao = "m" },
+            new UnidadeMedida { Nome = "mililitro", Abreviacao = "mL" },
+            new UnidadeMedida { Nome = "Pacote", Abreviacao = "pct" },
+            new UnidadeMedida { Nome = "Unidade", Abreviacao = "unid" },
         ];
 
         protected override NomeFilter GetFilter(UnidadeMedida item) => new() { Nome = item.Nome };

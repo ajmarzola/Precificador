@@ -6,10 +6,11 @@ namespace Precificador.Inicializador
     {
         public static void Main()
         {
-            new ColecaoInit().Inicializar();
             new GrupoInit().Inicializar();
             new UnidadeMedidaInit().Inicializar();
             new MateriaPrimaInit().Inicializar();
+            
+            new ColecaoInit().Inicializar();
         }
     }
 }
