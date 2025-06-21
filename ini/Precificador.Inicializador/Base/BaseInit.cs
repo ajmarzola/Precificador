@@ -25,7 +25,17 @@ namespace Precificador.Inicializador.Base
 
         private void Incluir(TModel item)
         {
-            Console.WriteLine(PrecificadorApiService.Incluir($"/api/{Endpoint}", JsonSerializer.Serialize(item)));
+            var body = JsonSerializer.Serialize(item);
+            var response = PrecificadorApiService.Incluir($"/api/{Endpoint}", body);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Registro Incluido com Sucesso: {body}");
+            }
+            else
+            {
+                Console.WriteLine($"Erro ao incluir registro: {response.ErrorMessage}");
+            }
         }
 
         private bool VerificaExistencia(TFilter filtro)
