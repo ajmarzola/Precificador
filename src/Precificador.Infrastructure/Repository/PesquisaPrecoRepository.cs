@@ -16,7 +16,7 @@ namespace Precificador.Infrastructure.Repository
             {
                 var query = Context.PesquisasPrecos.AsQueryable().Where(c => c.Ativo);
 
-                if (filter != null)
+                if ((filter != null) && filter.IsApplied())
                 {
                     if (filter.ProdutoId.HasValue)
                     {

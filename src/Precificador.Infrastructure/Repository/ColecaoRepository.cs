@@ -16,7 +16,7 @@ namespace Precificador.Infrastructure.Repository
             {
                 var query = Context.Colecoes.AsQueryable().Where(c => c.Ativo);
 
-                if (filter != null)
+                if ((filter != null) && filter.IsApplied())
                 {
                     if (!string.IsNullOrEmpty(filter.Nome))
                     {

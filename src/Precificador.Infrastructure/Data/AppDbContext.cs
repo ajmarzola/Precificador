@@ -9,6 +9,7 @@ namespace Precificador.Infrastructure.Data
         public DbSet<MateriaPrima> MateriasPrimas { get; set; }
         public DbSet<Colecao> Colecoes { get; set; }
         public DbSet<Produto> Produtos { get; set; }
+        public DbSet<ColecaoProduto> ColecaoProdutos { get; set; }
         public DbSet<ProdutoMateriaPrima> ProdutoMateriaPrimas { get; set; }
         public DbSet<PesquisaPreco> PesquisasPrecos { get; set; }
         public DbSet<UnidadeMedida> UnidadesMedida { get; set; }
@@ -18,11 +19,27 @@ namespace Precificador.Infrastructure.Data
         {
             OnMateriaPrimaCreating(modelBuilder);
             OnProdutoMateriaPrimaCreating(modelBuilder);
+            OnColecaoProdutoCreating(modelBuilder);
             OnPesquisaPrecoCreating(modelBuilder);
             OnProdutoCreating(modelBuilder);
             OnGrupoCreating(modelBuilder);
             OnColecaoCreating(modelBuilder);
             OnUnidadeMedidaCreating(modelBuilder);
+        }
+
+        private static void OnColecaoProdutoCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ColecaoProduto>()
+                .HasOne(pmp => pmp.Colecao)
+                .WithMany(mp => mp.ColecaoProduto)
+                .HasForeignKey(pmp => pmp.ColecaoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ColecaoProduto>()
+                .HasOne(pmp => pmp.Produto)
+                .WithMany(p => p.ColecaoProduto)
+                .HasForeignKey(pmp => pmp.ProdutoId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         private static void OnUnidadeMedidaCreating(ModelBuilder modelBuilder)
@@ -56,12 +73,6 @@ namespace Precificador.Infrastructure.Data
 
         private static void OnProdutoCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Produto>()
-                .HasOne(p => p.Colecao)
-                .WithMany(c => c.Produtos)
-                .HasForeignKey(p => p.ColecaoId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<Produto>()
                 .Property(p => p.Nome)
                 .HasMaxLength(200)

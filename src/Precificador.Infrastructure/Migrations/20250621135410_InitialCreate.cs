@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -8,7 +9,7 @@ namespace Precificador.Infrastructure.Migrations
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Gerado Automaticamente")]
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -44,6 +45,27 @@ namespace Precificador.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Produtos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Margem = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    DataCalculoPreco = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PrecoCusto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecoFinal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecoVenda = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecoPromocional = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Produtos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UnidadesMedida",
                 columns: table => new
                 {
@@ -60,28 +82,55 @@ namespace Precificador.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Produtos",
+                name: "ColecaoProdutos",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ColecaoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Margem = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    DataCalculoPreco = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PrecoCusto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Produtos", x => x.Id);
+                    table.PrimaryKey("PK_ColecaoProdutos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Produtos_Colecoes_ColecaoId",
+                        name: "FK_ColecaoProdutos_Colecoes_ColecaoId",
                         column: x => x.ColecaoId,
                         principalTable: "Colecoes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ColecaoProdutos_Produtos_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produtos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PesquisasPrecos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Local = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Valor = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DataPesquisa = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PesquisasPrecos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PesquisasPrecos_Produtos_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produtos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -117,30 +166,6 @@ namespace Precificador.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PesquisasPrecos",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Local = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Valor = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DataPesquisa = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DataAlteracao = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Ativo = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PesquisasPrecos", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PesquisasPrecos_Produtos_ProdutoId",
-                        column: x => x.ProdutoId,
-                        principalTable: "Produtos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProdutoMateriaPrimas",
                 columns: table => new
                 {
@@ -170,6 +195,16 @@ namespace Precificador.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ColecaoProdutos_ColecaoId",
+                table: "ColecaoProdutos",
+                column: "ColecaoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ColecaoProdutos_ProdutoId",
+                table: "ColecaoProdutos",
+                column: "ProdutoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MateriasPrimas_GrupoId",
                 table: "MateriasPrimas",
                 column: "GrupoId");
@@ -193,22 +228,23 @@ namespace Precificador.Infrastructure.Migrations
                 name: "IX_ProdutoMateriaPrimas_ProdutoId",
                 table: "ProdutoMateriaPrimas",
                 column: "ProdutoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Produtos_ColecaoId",
-                table: "Produtos",
-                column: "ColecaoId");
         }
 
         /// <inheritdoc />
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Gerado Automaticamente")]
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ColecaoProdutos");
+
             migrationBuilder.DropTable(
                 name: "PesquisasPrecos");
 
             migrationBuilder.DropTable(
                 name: "ProdutoMateriaPrimas");
+
+            migrationBuilder.DropTable(
+                name: "Colecoes");
 
             migrationBuilder.DropTable(
                 name: "MateriasPrimas");
@@ -221,9 +257,6 @@ namespace Precificador.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "UnidadesMedida");
-
-            migrationBuilder.DropTable(
-                name: "Colecoes");
         }
     }
 }

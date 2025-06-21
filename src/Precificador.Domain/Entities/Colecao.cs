@@ -7,6 +7,6 @@ namespace Precificador.Domain.Entities
         public required string Nome { get; set; }
         public int Ano { get; set; }
         public DateTime? DataLancamento { get; set; }
-        public ICollection<Produto>? Produtos { get; }
+        public ICollection<ColecaoProduto>? ColecaoProduto { get; }
     }
 }

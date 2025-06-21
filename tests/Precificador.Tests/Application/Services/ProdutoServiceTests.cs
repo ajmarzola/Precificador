@@ -35,7 +35,6 @@ namespace Precificador.Tests.Application.Services
             Assert.NotNull(entity);
             Assert.Equal(model.Id, entity!.Id);
             Assert.Equal(model.Nome, entity.Nome);
-            Assert.Equal(model.ColecaoId, entity.ColecaoId);
             Assert.Equal(model.Margem, entity.Margem);
             Assert.Equal(model.DataCalculoPreco, entity.DataCalculoPreco);
             Assert.Equal(model.PrecoCusto, entity.PrecoCusto);
@@ -48,7 +47,6 @@ namespace Precificador.Tests.Application.Services
             {
                 Id = Guid.NewGuid(),
                 Nome = "Produto Entity",
-                ColecaoId = Guid.NewGuid(),
                 Margem = 0.30m,
                 DataCalculoPreco = new DateTime(2024, 5, 10),
                 PrecoCusto = 200m
@@ -59,7 +57,6 @@ namespace Precificador.Tests.Application.Services
             Assert.NotNull(model);
             Assert.Equal(entity.Id, model!.Id);
             Assert.Equal(entity.Nome, model.Nome);
-            Assert.Equal(entity.ColecaoId, model.ColecaoId);
             Assert.Equal(entity.Margem, model.Margem);
             Assert.Equal(entity.DataCalculoPreco, model.DataCalculoPreco);
             Assert.Equal(entity.PrecoCusto, model.PrecoCusto);
@@ -76,7 +73,6 @@ namespace Precificador.Tests.Application.Services
             {
                 Id = Guid.NewGuid(),
                 Nome = "Antigo",
-                ColecaoId = Guid.NewGuid(),
                 Margem = 0.10m,
                 DataCalculoPreco = new DateTime(2020, 1, 1),
                 PrecoCusto = 50m
@@ -84,7 +80,6 @@ namespace Precificador.Tests.Application.Services
             var model = new Produto
             {
                 Nome = "Novo",
-                ColecaoId = Guid.NewGuid(),
                 Margem = 0.50m,
                 DataCalculoPreco = new DateTime(2025, 2, 2),
                 PrecoCusto = 300m
@@ -93,7 +88,6 @@ namespace Precificador.Tests.Application.Services
             _service.InvokeUpdateEntityFromModel(entity, model);
 
             Assert.Equal(model.Nome, entity.Nome);
-            Assert.Equal(model.ColecaoId, entity.ColecaoId);
             Assert.Equal(model.Margem, entity.Margem);
             Assert.Equal(model.DataCalculoPreco, entity.DataCalculoPreco);
             Assert.Equal(model.PrecoCusto, entity.PrecoCusto);

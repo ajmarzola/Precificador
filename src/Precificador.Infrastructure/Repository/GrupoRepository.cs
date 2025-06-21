@@ -16,9 +16,12 @@ namespace Precificador.Infrastructure.Repository
             {
                 var query = Context.Grupos.AsQueryable().Where(c => c.Ativo);
 
-                if (filter != null && !string.IsNullOrEmpty(filter.Nome))
+                if ((filter != null) && filter.IsApplied())
                 {
-                    query = query.Where(c => c.Nome.Contains(filter.Nome));
+                    if (!string.IsNullOrEmpty(filter.Nome))
+                    {
+                        query = query.Where(c => c.Nome.Contains(filter.Nome));
+                    }
                 }
 
                 return await query.ToListAsync().ConfigureAwait(false);

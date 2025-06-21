@@ -12,7 +12,6 @@ namespace Precificador.Application.Services
             {
                 Id = model.Id,
                 Nome = model.Nome,
-                ColecaoId = model.ColecaoId,
                 Margem = model.Margem,
                 DataCalculoPreco = model.DataCalculoPreco,
                 PrecoCusto = model.PrecoCusto
@@ -25,7 +24,6 @@ namespace Precificador.Application.Services
             {
                 Id = entity.Id,
                 Nome = entity.Nome,
-                ColecaoId = entity.ColecaoId,
                 Margem = entity.Margem,
                 DataCalculoPreco = entity.DataCalculoPreco,
                 PrecoCusto = entity.PrecoCusto,
@@ -39,7 +37,6 @@ namespace Precificador.Application.Services
         protected override void UpdateEntityFromModel(Domain.Entities.Produto entity, Model.Produto model)
         {
             entity.Nome = model.Nome;
-            entity.ColecaoId = model.ColecaoId;
             entity.Margem = model.Margem;
             entity.DataCalculoPreco = model.DataCalculoPreco;
             entity.PrecoCusto = model.PrecoCusto;

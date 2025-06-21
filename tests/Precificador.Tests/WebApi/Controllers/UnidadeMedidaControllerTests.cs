@@ -99,7 +99,7 @@ namespace Precificador.Tests.WebApi.Controllers
 
             var result = await _controller.Post(model);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsType<OkResult>(result);
         }
 
         [Fact]

@@ -12,7 +12,7 @@ using Precificador.Infrastructure.Data;
 namespace Precificador.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250620165236_InitialCreate")]
+    [Migration("20250621135410_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -54,6 +54,36 @@ namespace Precificador.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Colecoes");
+                });
+
+            modelBuilder.Entity("Precificador.Domain.Entities.ColecaoProduto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ColecaoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DataAlteracao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProdutoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColecaoId");
+
+                    b.HasIndex("ProdutoId");
+
+                    b.ToTable("ColecaoProdutos");
                 });
 
             modelBuilder.Entity("Precificador.Domain.Entities.Grupo", b =>
@@ -173,9 +203,6 @@ namespace Precificador.Infrastructure.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("ColecaoId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("DataAlteracao")
                         .HasColumnType("datetime2");
 
@@ -198,9 +225,16 @@ namespace Precificador.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.Property<decimal>("PrecoFinal")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.HasIndex("ColecaoId");
+                    b.Property<decimal>("PrecoPromocional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PrecoVenda")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Produtos");
                 });
@@ -269,6 +303,25 @@ namespace Precificador.Infrastructure.Migrations
                     b.ToTable("UnidadesMedida");
                 });
 
+            modelBuilder.Entity("Precificador.Domain.Entities.ColecaoProduto", b =>
+                {
+                    b.HasOne("Precificador.Domain.Entities.Colecao", "Colecao")
+                        .WithMany("ColecaoProduto")
+                        .HasForeignKey("ColecaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Precificador.Domain.Entities.Produto", "Produto")
+                        .WithMany("ColecaoProduto")
+                        .HasForeignKey("ProdutoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Colecao");
+
+                    b.Navigation("Produto");
+                });
+
             modelBuilder.Entity("Precificador.Domain.Entities.MateriaPrima", b =>
                 {
                     b.HasOne("Precificador.Domain.Entities.Grupo", "Grupo")
@@ -299,17 +352,6 @@ namespace Precificador.Infrastructure.Migrations
                     b.Navigation("Produto");
                 });
 
-            modelBuilder.Entity("Precificador.Domain.Entities.Produto", b =>
-                {
-                    b.HasOne("Precificador.Domain.Entities.Colecao", "Colecao")
-                        .WithMany("Produtos")
-                        .HasForeignKey("ColecaoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Colecao");
-                });
-
             modelBuilder.Entity("Precificador.Domain.Entities.ProdutoMateriaPrima", b =>
                 {
                     b.HasOne("Precificador.Domain.Entities.MateriaPrima", "MateriaPrima")
@@ -331,7 +373,7 @@ namespace Precificador.Infrastructure.Migrations
 
             modelBuilder.Entity("Precificador.Domain.Entities.Colecao", b =>
                 {
-                    b.Navigation("Produtos");
+                    b.Navigation("ColecaoProduto");
                 });
 
             modelBuilder.Entity("Precificador.Domain.Entities.Grupo", b =>
@@ -346,6 +388,8 @@ namespace Precificador.Infrastructure.Migrations
 
             modelBuilder.Entity("Precificador.Domain.Entities.Produto", b =>
                 {
+                    b.Navigation("ColecaoProduto");
+
                     b.Navigation("MateriasPrimas");
 
                     b.Navigation("Pesquisas");
