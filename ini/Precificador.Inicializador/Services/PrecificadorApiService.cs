@@ -28,7 +28,7 @@ namespace Precificador.Inicializador.Services
 
         private static RestClient CreateRestClient()
         {
-            return new RestClient(new RestClientOptions("https://localhost:7013"));
+            return new RestClient(new RestClientOptions("http://localhost:8080"));
         }
     }
 }

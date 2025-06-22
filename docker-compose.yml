@@ -8,5 +8,8 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - NEW_RELIC_LICENSE_KEY=5c206cb566fcfcd23de603646467f6d2FFFFNRAL
+      - NEW_RELIC_APP_NAME=Precificador.WebApi
       - ASPNETCORE_ENVIRONMENT=Development
-
+      - DOTNET_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080

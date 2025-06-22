@@ -1,0 +1,47 @@
+﻿# Etapa de build (compilação da aplicação)
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY src/Precificador.WebApi/Precificador.WebApi.csproj src/Precificador.WebApi/
+COPY src/Precificador.Application/Precificador.Application.csproj src/Precificador.Application/
+COPY src/Precificador.Infrastructure/Precificador.Infrastructure.csproj src/Precificador.Infrastructure/
+COPY src/Precificador.Domain/Precificador.Domain.csproj src/Precificador.Domain/
+
+RUN dotnet restore src/Precificador.WebApi/Precificador.WebApi.csproj
+
+COPY src/. ./src/
+WORKDIR /src/src/Precificador.WebApi
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+
+# Etapa de runtime (com New Relic instalado)
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
+# ⚠️ Modo root para apt install funcionar
+USER root
+
+# Instala dependências e agente New Relic
+RUN apt-get update && \
+    apt-get install -y wget gnupg ca-certificates && \
+    echo "deb http://apt.newrelic.com/debian/ newrelic non-free" | tee /etc/apt/sources.list.d/newrelic.list && \
+    wget https://download.newrelic.com/548C16BF.gpg && \
+    apt-key add 548C16BF.gpg && \
+    apt-get update && \
+    apt-get install -y newrelic-dotnet-agent && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copia o app publicado
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Configuração do New Relic (substitua com sua key e app name via environment)
+ENV CORECLR_ENABLE_PROFILING=1
+ENV CORECLR_PROFILER="{36032161-FFC0-4B61-B559-F6C5D41BAE5A}"
+ENV CORECLR_PROFILER_PATH="/usr/local/newrelic-netcore20-agent/libNewRelicProfiler.so"
+ENV NEW_RELIC_LICENSE_KEY="5c206cb566fcfcd23de603646467f6d2FFFFNRAL"
+ENV NEW_RELIC_APP_NAME="Precificador.WebApi"
+ENV NEW_RELIC_LOG_LEVEL="info"
+
+# Exponha a porta usada pela aplicação
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "Precificador.WebApi.dll"]
