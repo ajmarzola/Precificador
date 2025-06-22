@@ -4,7 +4,7 @@ using Precificador.Application.Services;
 using Precificador.Domain.Repository;
 using Precificador.Infrastructure.Data;
 using Precificador.Infrastructure.Repository;
-using Serilog;
+using Precificador.WebApi.Infra;
 
 namespace Precificador.WebApi
 {
@@ -13,14 +13,19 @@ namespace Precificador.WebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             ConfigureDatabase(builder);
+
             ConfigureRepositories(builder);
+
             ConfigureApplicationServices(builder);
 
             builder.Services.AddControllers();
+
             builder.Services.AddEndpointsApiExplorer();
 
             ConfigureSwagger(builder);
+
             ConfigureLogging(builder);
 
             var app = builder.Build();
@@ -43,21 +48,8 @@ namespace Precificador.WebApi
 
         private static void ConfigureLogging(WebApplicationBuilder builder)
         {
-            var newRelicLicenseKey = builder.Configuration.GetValue<string>("newRelicLicenseKey");
-            var newRelicApiKey = builder.Configuration.GetValue<string>("NewRelicApiKey");
-            var newRelicApiName = builder.Configuration.GetValue<string>("NewRelicApiName");
-
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Api-Key", newRelicApiKey);
-            httpClient.DefaultRequestHeaders.Add("License-Key", newRelicLicenseKey);
-            httpClient.DefaultRequestHeaders.Add("NewRelic-Api-Name", newRelicApiName);
-
-                Log.Logger = new LoggerConfiguration()
-                    .WriteTo.DurableHttpUsingFileSizeRolledBuffers(
-                        requestUri: $"https://log-api.newrelic.com/log/v1",
-                        httpClient: new Serilog.Sinks.Http.HttpClients.JsonHttpClient(httpClient)).CreateLogger();
-
-            builder.Services.AddLogging();
+            builder.Services.AddCorrelationIdGenerator();
+            builder.Services.AddTransient(typeof(BaseLogger<>));
         }
 
         private static void ConfigureSwagger(WebApplicationBuilder builder)
@@ -70,26 +62,26 @@ namespace Precificador.WebApi
 
         private static void ConfigureApplicationServices(WebApplicationBuilder builder)
         {
-            builder.Services.AddScoped<IColecaoService, ColecaoService>();
-            builder.Services.AddScoped<IColecaoProdutoService, ColecaoProdutoService>();
-            builder.Services.AddScoped<IGrupoService, GrupoService>();
-            builder.Services.AddScoped<IMateriaPrimaService, MateriaPrimaService>();
-            builder.Services.AddScoped<IPesquisaPrecoService, PesquisaPrecoService>();
-            builder.Services.AddScoped<IProdutoMateriaPrimaService, ProdutoMateriaPrimaService>();
-            builder.Services.AddScoped<IProdutoService, ProdutoService>();
-            builder.Services.AddScoped<IUnidadeMedidaService, UnidadeMedidaService>();
+            builder.Services.AddTransient<IColecaoService, ColecaoService>();
+            builder.Services.AddTransient<IColecaoProdutoService, ColecaoProdutoService>();
+            builder.Services.AddTransient<IGrupoService, GrupoService>();
+            builder.Services.AddTransient<IMateriaPrimaService, MateriaPrimaService>();
+            builder.Services.AddTransient<IPesquisaPrecoService, PesquisaPrecoService>();
+            builder.Services.AddTransient<IProdutoMateriaPrimaService, ProdutoMateriaPrimaService>();
+            builder.Services.AddTransient<IProdutoService, ProdutoService>();
+            builder.Services.AddTransient<IUnidadeMedidaService, UnidadeMedidaService>();
         }
 
         private static void ConfigureRepositories(WebApplicationBuilder builder)
         {
-            builder.Services.AddScoped<IColecaoRepository, ColecaoRepository>();
-            builder.Services.AddScoped<IColecaoProdutoRepository, ColecaoProdutoRepository>();
-            builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
-            builder.Services.AddScoped<IMateriaPrimaRepository, MateriaPrimaRepository>();
-            builder.Services.AddScoped<IPesquisaPrecoRepository, PesquisaPrecoRepository>();
-            builder.Services.AddScoped<IProdutoMateriaPrimaRepository, ProdutoMateriaPrimaRepository>();
-            builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
-            builder.Services.AddScoped<IUnidadeMedidaRepository, UnidadeMedidaRepository>();
+            builder.Services.AddTransient<IColecaoRepository, ColecaoRepository>();
+            builder.Services.AddTransient<IColecaoProdutoRepository, ColecaoProdutoRepository>();
+            builder.Services.AddTransient<IGrupoRepository, GrupoRepository>();
+            builder.Services.AddTransient<IMateriaPrimaRepository, MateriaPrimaRepository>();
+            builder.Services.AddTransient<IPesquisaPrecoRepository, PesquisaPrecoRepository>();
+            builder.Services.AddTransient<IProdutoMateriaPrimaRepository, ProdutoMateriaPrimaRepository>();
+            builder.Services.AddTransient<IProdutoRepository, ProdutoRepository>();
+            builder.Services.AddTransient<IUnidadeMedidaRepository, UnidadeMedidaRepository>();
         }
 
         private static void ConfigureDatabase(WebApplicationBuilder builder)
