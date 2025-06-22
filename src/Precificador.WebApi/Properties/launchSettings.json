@@ -1,7 +1,47 @@
-﻿{
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5235"
+    },
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7013;http://localhost:5235"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+        "ASPNETCORE_HTTPS_PORTS": "8081",
+        "ASPNETCORE_HTTP_PORTS": "8080"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "environmentVariables": {
-    //"NEW_RELIC_HOME": "C:\\Users\\ajmar\\source\\repos\\ajmarzola\\Precificador\\src\\Precificador.WebApi\\",
     "NEW_RELIC_APP_NAME": "Precificador.WebAPI",
     "NEW_RELIC_LICENSE_KEY": "E826A48405C9FE5FC2451EC6919942D5E0EAE04F8250A037F20EB90D17305FFA"
   },
@@ -11,36 +51,6 @@
     "iisExpress": {
       "applicationUrl": "http://localhost:17952",
       "sslPort": 44366
-    }
-  },
-  "profiles": {
-    "http": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5235",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "https": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:7013;http://localhost:5235",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
     }
   }
 }
