@@ -9,23 +9,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "Container (Dockerfile)": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:8080/swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "publishAllPorts": true,
-      "useSSL": false
     }
   },
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "environmentVariables": {
-    "NEW_RELIC_APP_NAME": "Precificador.WebAPI",
-    "NEW_RELIC_LICENSE_KEY": "5c206cb566fcfcd23de603646467f6d2FFFFNRAL",
-    "OTLP_ENDPOINT": "https://otlp.nr-data.net:4317",
-    "OTLP_HEADERS": "api-key=5c206cb566fcfcd23de603646467f6d2FFFFNRAL"
-  }
+  "$schema": "http://json.schemastore.org/launchsettings.json"
 }

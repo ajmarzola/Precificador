@@ -1,15 +1,9 @@
 ﻿namespace Precificador.WebApi.Infra
 {
-    public class BaseLogger<T>
+    public class BaseLogger<T>(ILogger<T> logger, ICorrelationIdGenerator correlationId)
     {
-        protected readonly ILogger<T> _logger;
-        protected readonly ICorrelationIdGenerator _correlationId;
-
-        public BaseLogger(ILogger<T> logger, ICorrelationIdGenerator correlationId)
-        {
-            _logger = logger;
-            _correlationId = correlationId;
-        }
+        protected readonly ILogger<T> _logger = logger;
+        protected readonly ICorrelationIdGenerator _correlationId = correlationId;
 
         public virtual void LogInformation(string message)
         {

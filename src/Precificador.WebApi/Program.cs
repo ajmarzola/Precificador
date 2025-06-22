@@ -1,15 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using OpenTelemetry.Trace;
-
 using Precificador.Application.Services;
 using Precificador.Domain.Repository;
 using Precificador.Infrastructure.Data;
 using Precificador.Infrastructure.Repository;
 using Precificador.WebApi.Infra;
-
-using OpenTelemetry;
-using OpenTelemetry.Exporter;
 
 namespace Precificador.WebApi
 {
@@ -54,20 +49,6 @@ namespace Precificador.WebApi
         {
             builder.Services.AddCorrelationIdGenerator();
             builder.Services.AddTransient(typeof(BaseLogger<>));
-
-            builder.Services.AddOpenTelemetry().WithTracing(tracing =>
-            {
-                var endpoint = builder.Configuration["OTLP_ENDPOINT"] ?? string.Empty;
-
-                tracing.AddAspNetCoreInstrumentation()
-                       .AddHttpClientInstrumentation()
-                       .AddSqlClientInstrumentation()
-                       .AddProcessor(new SimpleActivityExportProcessor(new OtlpTraceExporter(new OtlpExporterOptions
-                       {
-                           Endpoint = new Uri(endpoint),
-                           Headers = builder.Configuration["OTLP_HEADERS"]
-                       })));
-            });
         }
 
         private static void ConfigureSwagger(WebApplicationBuilder builder)
