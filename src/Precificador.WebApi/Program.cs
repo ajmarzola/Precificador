@@ -88,6 +88,7 @@ namespace Precificador.WebApi
             builder.Services.AddTransient<IProdutoMateriaPrimaService, ProdutoMateriaPrimaService>();
             builder.Services.AddTransient<IProdutoService, ProdutoService>();
             builder.Services.AddTransient<IUnidadeMedidaService, UnidadeMedidaService>();
+            //TODO: Modelar Fornecedor
         }
 
         private static void ConfigureRepositories(WebApplicationBuilder builder)

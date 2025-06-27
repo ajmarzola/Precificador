@@ -40,13 +40,7 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.Colecao
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Coleção Entity",
-                Ano = 2023,
-                DataLancamento = new DateTime(2023, 5, 10)
-            };
+            var entity = new Domain.Entities.Colecao("Coleção Entity", 2023, new DateTime(2023, 5, 10));
 
             var model = _service.InvokeConvertToModel(entity);
 
@@ -60,13 +54,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.Colecao
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Antigo",
-                Ano = 2020,
-                DataLancamento = new DateTime(2020, 1, 1)
-            };
+            var entity = new Domain.Entities.Colecao("Antigo", 2020, new DateTime(2020, 1, 1));
+
             var model = new Colecao
             {
                 Nome = "Novo",

@@ -51,7 +51,7 @@ namespace Precificador.Application.Services.Base
             if (entity == null)
                 return false;
 
-            entity.Ativo = false;
+            entity.Inativar();
             return await _repository.UpdateAsync(entity);
         }
 

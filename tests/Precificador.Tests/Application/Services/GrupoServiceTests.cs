@@ -36,15 +36,11 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.Grupo
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Grupo Entity"
-            };
+            var entity = new Domain.Entities.Grupo("Grupo Entity");
 
             var model = _service.InvokeConvertToModel(entity);
 
-            Assert.NotNull(model); // Ensure model is not null before accessing its properties  
+            Assert.NotNull(model);
             Assert.Equal(entity.Id, model!.Id);
             Assert.Equal(entity.Nome, model.Nome);
         }
@@ -52,11 +48,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.Grupo
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Antigo"
-            };
+            var entity = new Domain.Entities.Grupo("Antigo");
+
             var model = new Grupo
             {
                 Nome = "Novo"

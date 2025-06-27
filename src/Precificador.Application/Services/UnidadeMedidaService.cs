@@ -8,12 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.UnidadeMedida ConvertToEntity(Model.UnidadeMedida model)
         {
-            return new Domain.Entities.UnidadeMedida
-            {
-                Id = model.Id,
-                Nome = model.Nome,
-                Abrebiacao = model.Abreviacao
-            };
+            var retorno = new Domain.Entities.UnidadeMedida(model.Nome, model.Abreviacao);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.UnidadeMedida ConvertToModel(Domain.Entities.UnidadeMedida entity)
@@ -28,8 +25,8 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.UnidadeMedida entity, Model.UnidadeMedida model)
         {
-            entity.Nome = model.Nome;
-            entity.Abrebiacao = model.Abreviacao;
+            entity.SetNome(model.Nome);
+            entity.SetAbrebiacao(model.Abreviacao);
         }
     }
 }

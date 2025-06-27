@@ -43,14 +43,7 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.Produto
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Produto Entity",
-                Margem = 0.30m,
-                DataCalculoPreco = new DateTime(2024, 5, 10),
-                PrecoCusto = 200m
-            };
+            var entity = new Domain.Entities.Produto("Produto Entity", 0.30m, new DateTime(2024, 5, 10), 200m, 400m, 500m, 450m);
 
             var model = _service.InvokeConvertToModel(entity);
 
@@ -69,14 +62,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.Produto
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Antigo",
-                Margem = 0.10m,
-                DataCalculoPreco = new DateTime(2020, 1, 1),
-                PrecoCusto = 50m
-            };
+            var entity = new Domain.Entities.Produto("Antigo", 0.10m, new DateTime(2020, 1, 1), 50m, 100m, 200m, 150m);
+
             var model = new Produto
             {
                 Nome = "Novo",

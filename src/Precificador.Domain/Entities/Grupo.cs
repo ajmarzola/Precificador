@@ -2,9 +2,10 @@
 
 namespace Precificador.Domain.Entities
 {
-    public class Grupo : CrudBase
+    public class Grupo(string nome) : CrudBase
     {
-        public required string Nome { get; set; }
+        public string Nome { get; private set; } = nome;
         public ICollection<MateriaPrima>? MateriasPrimas { get; }
+        public void SetNome(string nome) => Nome = nome;
     }
 }

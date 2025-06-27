@@ -5,16 +5,13 @@ namespace Precificador.Application.Model
 {
     public class MateriaPrima : ModelBase
     {
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Nome da Materia Prima")]
-        [MaxLength(200, ErrorMessage = "Nome da Materia Prima deve ter no máximo 200 caracteres")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Nome da Materia Prima"), MaxLength(200, ErrorMessage = "Nome da Materia Prima deve ter no máximo 200 caracteres")]
         public required string Nome { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Nome da Materia Prima")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Quantidade do Pacote deve ser maior que zero")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Nome da Materia Prima"), Range(0.01, double.MaxValue, ErrorMessage = "Quantidade do Pacote deve ser maior que zero")]
         public decimal QtdPacote { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Valor da Matéria Prima")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Valor da Matéria Prima deve ser maior que zero")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Necessário Informar o Valor da Matéria Prima"), Range(0.01, double.MaxValue, ErrorMessage = "Valor da Matéria Prima deve ser maior que zero")]
         public decimal VlrPacote { get; set; }
 
         public DateTime DataPreco { get; set; }

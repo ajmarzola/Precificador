@@ -42,18 +42,11 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.PesquisaPreco
-            {
-                Id = Guid.NewGuid(),
-                ProdutoId = Guid.NewGuid(),
-                Local = "Mercado Y",
-                Valor = 20.0m,
-                DataPesquisa = new DateTime(2024, 5, 10)
-            };
+            var entity = new Domain.Entities.PesquisaPreco(Guid.NewGuid(), "Mercado Y", 20.0m);
 
             var model = _service.InvokeConvertToModel(entity);
 
-            Assert.NotNull(model); // Ensure model is not null before dereferencing  
+            Assert.NotNull(model);
             Assert.Equal(entity.Id, model!.Id);
             Assert.Equal(entity.ProdutoId, model.ProdutoId);
             Assert.Equal(entity.Local, model.Local);
@@ -64,14 +57,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.PesquisaPreco
-            {
-                Id = Guid.NewGuid(),
-                ProdutoId = Guid.NewGuid(),
-                Local = "Antigo",
-                Valor = 10.0m,
-                DataPesquisa = new DateTime(2024, 1, 1)
-            };
+            var entity = new Domain.Entities.PesquisaPreco(Guid.NewGuid(), "Antigo", 10.0m);
+
             var model = new PesquisaPreco
             {
                 ProdutoId = Guid.NewGuid(),
@@ -89,7 +76,6 @@ namespace Precificador.Tests.Application.Services
         }
     }
 
-    // Métodos auxiliares para acessar membros protegidos via reflexão
     public static class PesquisaPrecoServiceTestExtensions
     {
         public static Domain.Entities.PesquisaPreco? InvokeConvertToEntity(this PesquisaPrecoService service, PesquisaPreco model)

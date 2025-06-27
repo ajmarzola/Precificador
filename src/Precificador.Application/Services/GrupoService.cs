@@ -8,11 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.Grupo ConvertToEntity(Model.Grupo model)
         {
-            return new Domain.Entities.Grupo
-            {
-                Id = model.Id,
-                Nome = model.Nome
-            };
+            var retorno = new Domain.Entities.Grupo(model.Nome);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.Grupo ConvertToModel(Domain.Entities.Grupo entity)
@@ -26,7 +24,7 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.Grupo entity, Model.Grupo model)
         {
-            entity.Nome = model.Nome;
+            entity.SetNome(model.Nome);
         }
     }
 }

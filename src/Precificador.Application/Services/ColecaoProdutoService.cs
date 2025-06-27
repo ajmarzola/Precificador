@@ -8,13 +8,11 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.ColecaoProduto ConvertToEntity(Model.ColecaoProduto model)
         {
-            return new Domain.Entities.ColecaoProduto
-            {
-                Id = model.Id,
-                ColecaoId = model.ColecaoId,
-                ProdutoId = model.ProdutoId
-            };
+            var retorno = new Domain.Entities.ColecaoProduto(model.ColecaoId, model.ProdutoId);
+            retorno.SetId(model.Id);
+            return retorno;
         }
+
         protected override Model.ColecaoProduto ConvertToModel(Domain.Entities.ColecaoProduto entity)
         {
             return new Model.ColecaoProduto
@@ -24,10 +22,11 @@ namespace Precificador.Application.Services
                 ProdutoId = entity.ProdutoId
             };
         }
+
         protected override void UpdateEntityFromModel(Domain.Entities.ColecaoProduto entity, Model.ColecaoProduto model)
         {
-            entity.ColecaoId = model.ColecaoId;
-            entity.ProdutoId = model.ProdutoId;
+            entity.SetColecaoId(model.ColecaoId);
+            entity.SetProdutoId(model.ProdutoId);
         }
     }
 }

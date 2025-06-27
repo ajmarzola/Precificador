@@ -14,11 +14,10 @@ namespace Precificador.Tests.Application.Services
         public ColecaoProdutoServiceTests()
         {
             _repositoryMock = new Mock<IColecaoProdutoRepository>();
-            _service = new ColecaoProdutoService(_repositoryMock.Object); // Replace with your actual implementation
+            _service = new ColecaoProdutoService(_repositoryMock.Object);
         }
     }
 
-    // Métodos auxiliares para acessar membros protegidos via reflexão
     public static class ColecaoProdutoServiceTestsExtensions
     {
         public static Domain.Entities.ColecaoProduto InvokeConvertToEntity(this ColecaoProdutoService service, ColecaoProduto model)

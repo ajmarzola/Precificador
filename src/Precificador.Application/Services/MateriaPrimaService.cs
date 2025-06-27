@@ -8,16 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.MateriaPrima ConvertToEntity(Model.MateriaPrima model)
         {
-            return new Domain.Entities.MateriaPrima
-            {
-                Id = model.Id,
-                Nome = model.Nome,
-                QtdPacote = model.QtdPacote,
-                VlrPacote = model.VlrPacote,
-                DataPreco = model.DataPreco,
-                GrupoId = model.GrupoId,
-                UnidadeMedidaId = model.UnidadeMedidaId
-            };
+            var retorno = new Domain.Entities.MateriaPrima(model.Nome, model.QtdPacote, model.VlrPacote, model.DataPreco, model.GrupoId, model.UnidadeMedidaId);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.MateriaPrima ConvertToModel(Domain.Entities.MateriaPrima entity)
@@ -37,12 +30,12 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.MateriaPrima entity, Model.MateriaPrima model)
         {
-            entity.Nome = model.Nome;
-            entity.QtdPacote = model.QtdPacote;
-            entity.VlrPacote = model.VlrPacote;
-            entity.DataPreco = model.DataPreco;
-            entity.GrupoId = model.GrupoId;
-            entity.UnidadeMedidaId = model.UnidadeMedidaId;
+            entity.SetNome(model.Nome);
+            entity.SetQtdPacote(model.QtdPacote);
+            entity.SetVlrPacote(model.VlrPacote);
+            entity.SetDataPreco(model.DataPreco);
+            entity.SetGrupoId(model.GrupoId);
+            entity.SetUnidadeMedidaId(model.UnidadeMedidaId);
         }
     }
 }

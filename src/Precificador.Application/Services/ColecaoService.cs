@@ -8,13 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.Colecao ConvertToEntity(Model.Colecao model)
         {
-            return new Domain.Entities.Colecao
-            {
-                Id = model.Id,
-                Nome = model.Nome,
-                Ano = model.Ano,
-                DataLancamento = model.DataLancamento
-            };
+            var retorno = new Domain.Entities.Colecao(model.Nome, model.Ano, model.DataLancamento);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.Colecao ConvertToModel(Domain.Entities.Colecao entity)
@@ -30,9 +26,9 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.Colecao entity, Model.Colecao model)
         {
-            entity.Nome = model.Nome;
-            entity.Ano = model.Ano;
-            entity.DataLancamento = model.DataLancamento;
+            entity.SetNome(model.Nome);
+            entity.SetAno(model.Ano);
+            entity.SetDataLancamento(model.DataLancamento);
         }
     }
 }

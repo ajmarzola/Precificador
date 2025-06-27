@@ -79,9 +79,8 @@ namespace Precificador.Infrastructure.Repository.Base
 
             try
             {
-                entity.Id = Guid.NewGuid();
-                entity.DataCriacao = DateTime.Now;
-                entity.Ativo = true;
+                entity.SetDataCriacao();
+                entity.Ativar();
                 await _context.Set<TModel>().AddAsync(entity).ConfigureAwait(false);
                 var saveResult = await _context.SaveChangesAsync().ConfigureAwait(false);
                 return saveResult > 0;
@@ -112,7 +111,7 @@ namespace Precificador.Infrastructure.Repository.Base
 
             try
             {
-                entity.DataAlteracao = DateTime.UtcNow;
+                entity.SetDataAlterado();
                 _context.Set<TModel>().Update(entity);
                 var saveResult = await _context.SaveChangesAsync().ConfigureAwait(false);
                 return saveResult > 0;
@@ -144,7 +143,7 @@ namespace Precificador.Infrastructure.Repository.Base
                 return false;
             }
 
-            entity.Ativo = false;
+            entity.Inativar();
 
             try
             {

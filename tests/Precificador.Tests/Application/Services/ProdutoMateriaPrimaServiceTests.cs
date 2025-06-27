@@ -18,7 +18,6 @@ namespace Precificador.Tests.Application.Services
         }
     }
 
-    // Métodos auxiliares para acessar membros protegidos via reflexão
     public static class ProdutoMateriaPrimaServiceTestExtensions
     {
         public static Domain.Entities.ProdutoMateriaPrima InvokeConvertToEntity(this ProdutoMateriaPrimaService service, ProdutoMateriaPrima model)

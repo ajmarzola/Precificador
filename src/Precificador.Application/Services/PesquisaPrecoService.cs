@@ -8,14 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.PesquisaPreco ConvertToEntity(Model.PesquisaPreco model)
         {
-            return new Domain.Entities.PesquisaPreco
-            {
-                Id = model.Id,
-                ProdutoId = model.ProdutoId,
-                Local = model.Local,
-                Valor = model.Valor,
-                DataPesquisa = model.DataPesquisa
-            };
+            var retorno = new Domain.Entities.PesquisaPreco(model.ProdutoId, model.Local, model.Valor);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.PesquisaPreco ConvertToModel(Domain.Entities.PesquisaPreco entity)
@@ -32,10 +27,9 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.PesquisaPreco entity, Model.PesquisaPreco model)
         {
-            entity.ProdutoId = model.ProdutoId;
-            entity.Local = model.Local;
-            entity.Valor = model.Valor;
-            entity.DataPesquisa = model.DataPesquisa;
+            entity.SetProdutoId(model.ProdutoId);
+            entity.SetLocal(model.Local);
+            entity.SetValor(model.Valor);
         }
     }
 }

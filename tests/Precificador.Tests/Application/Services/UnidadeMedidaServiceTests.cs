@@ -29,7 +29,7 @@ namespace Precificador.Tests.Application.Services
 
             var entity = _service.InvokeConvertToEntity(model);
 
-            Assert.NotNull(entity); // Ensure entity is not null before dereferencing  
+            Assert.NotNull(entity);
             Assert.Equal(model.Id, entity!.Id);
             Assert.Equal(model.Nome, entity.Nome);
             Assert.Equal(model.Abreviacao, entity.Abrebiacao);
@@ -38,16 +38,11 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.UnidadeMedida
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Quilograma",
-                Abrebiacao = "Kg"
-            };
+            var entity = new Domain.Entities.UnidadeMedida("Quilograma", "Kg");
 
             var model = _service.InvokeConvertToModel(entity);
 
-            Assert.NotNull(model); // Ensure model is not null before dereferencing  
+            Assert.NotNull(model);
             Assert.Equal(entity.Id, model!.Id);
             Assert.Equal(entity.Nome, model.Nome);
             Assert.Equal(entity.Abrebiacao, model.Abreviacao);
@@ -56,12 +51,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.UnidadeMedida
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Antigo",
-                Abrebiacao = "A"
-            };
+            var entity = new Domain.Entities.UnidadeMedida("Antigo", "A");
+
             var model = new UnidadeMedida
             {
                 Nome = "Novo",
@@ -70,7 +61,7 @@ namespace Precificador.Tests.Application.Services
 
             _service.InvokeUpdateEntityFromModel(entity, model);
 
-            Assert.NotNull(entity); // Ensure entity is not null before dereferencing  
+            Assert.NotNull(entity);
             Assert.Equal(model.Nome, entity.Nome);
             Assert.Equal(model.Abreviacao, entity.Abrebiacao);
         }

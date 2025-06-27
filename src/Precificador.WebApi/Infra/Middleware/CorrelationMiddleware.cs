@@ -42,7 +42,6 @@ namespace Precificador.WebApi.Infra.Middleware
        });
     }
 
-    // Extension method used to add the middleware to the HTTP request pipeline.
     public static class CorrelationMiddlewareExtensions
     {
         public static IApplicationBuilder UseCorrelationMiddleware(this IApplicationBuilder builder)

@@ -33,7 +33,7 @@ namespace Precificador.Tests.Application.Services
 
             var entity = _service.InvokeConvertToEntity(model);
 
-            Assert.NotNull(entity); // Ensure entity is not null before dereferencing  
+            Assert.NotNull(entity);
             Assert.Equal(model.Id, entity.Id);
             Assert.Equal(model.Nome, entity.Nome);
             Assert.Equal(model.QtdPacote, entity.QtdPacote);
@@ -46,16 +46,7 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void ConvertToModel_DeveConverterEntityParaModel()
         {
-            var entity = new Domain.Entities.MateriaPrima
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Matéria Prima Entity",
-                QtdPacote = 5,
-                VlrPacote = 50,
-                DataPreco = new DateTime(2023, 5, 10),
-                GrupoId = Guid.NewGuid(),
-                UnidadeMedidaId = Guid.NewGuid()
-            };
+            var entity = new Domain.Entities.MateriaPrima("Matéria Prima Entity", 5, 50, new DateTime(2023, 5, 10), Guid.NewGuid(), Guid.NewGuid());
 
             var model = _service.InvokeConvertToModel(entity);
 
@@ -73,16 +64,8 @@ namespace Precificador.Tests.Application.Services
         [Fact]
         public void UpdateEntityFromModel_DeveAtualizarEntityComDadosDoModel()
         {
-            var entity = new Domain.Entities.MateriaPrima
-            {
-                Id = Guid.NewGuid(),
-                Nome = "Antigo",
-                QtdPacote = 1,
-                VlrPacote = 1,
-                DataPreco = new DateTime(2020, 1, 1),
-                GrupoId = Guid.NewGuid(),
-                UnidadeMedidaId = Guid.NewGuid()
-            };
+            var entity = new Domain.Entities.MateriaPrima("Antigo", 1, 1, new DateTime(2020, 1, 1), Guid.NewGuid(), Guid.NewGuid());
+
             var model = new MateriaPrima
             {
                 Nome = "Novo",

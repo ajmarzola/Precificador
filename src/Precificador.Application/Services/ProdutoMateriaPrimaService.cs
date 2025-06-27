@@ -8,13 +8,9 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.ProdutoMateriaPrima ConvertToEntity(Model.ProdutoMateriaPrima model)
         {
-            return new Domain.Entities.ProdutoMateriaPrima
-            {
-                Id = model.Id,
-                ProdutoId = model.ProdutoId,
-                MateriaPrimaId = model.MateriaPrimaId,
-                Quantidade = model.Quantidade
-            };
+            var retorno = new Domain.Entities.ProdutoMateriaPrima(model.ProdutoId, model.MateriaPrimaId, model.Quantidade);
+            retorno.SetId(model.Id);
+            return retorno;
         }
 
         protected override Model.ProdutoMateriaPrima ConvertToModel(Domain.Entities.ProdutoMateriaPrima entity)
@@ -30,9 +26,9 @@ namespace Precificador.Application.Services
 
         protected override void UpdateEntityFromModel(Domain.Entities.ProdutoMateriaPrima entity, Model.ProdutoMateriaPrima model)
         {
-            entity.ProdutoId = model.ProdutoId;
-            entity.MateriaPrimaId = model.MateriaPrimaId;
-            entity.Quantidade = model.Quantidade;
+            entity.SetProdutoId(model.ProdutoId);
+            entity.SetMateriaPrimaId(model.MateriaPrimaId);
+            entity.SetQuantidade(model.Quantidade);
         }
     }
 }
