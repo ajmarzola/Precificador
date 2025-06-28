@@ -34,7 +34,6 @@
     <ProjectReference Include="..\..\src\Precificador.Domain\Precificador.Domain.csproj" />
     <ProjectReference Include="..\..\src\Precificador.Infrastructure\Precificador.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Precificador.Server\Precificador.Server.csproj" />
-    <ProjectReference Include="..\..\src\Precificador.WebApi\Precificador.WebApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>
