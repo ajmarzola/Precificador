@@ -145,9 +145,9 @@ namespace Precificador.Tests.Server.Controllers
                 Id = Guid.NewGuid(),
                 Nome = "Grupo Atualizado"
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(true);
+            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
 
-            var result = await _controller.Put(model.Id, model);
+            var result = await _controller.Put(model);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -160,9 +160,9 @@ namespace Precificador.Tests.Server.Controllers
                 Id = Guid.NewGuid(),
                 Nome = "Grupo Atualizado"
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(false);
+            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
 
-            var result = await _controller.Put(model.Id, model);
+            var result = await _controller.Put(model);
 
             Assert.IsType<NoContentResult>(result);
         }
