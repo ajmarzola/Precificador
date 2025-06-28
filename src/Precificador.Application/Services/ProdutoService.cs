@@ -8,9 +8,7 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.Produto ConvertToEntity(Model.Produto model)
         {
-            var retorno = new Domain.Entities.Produto(model.Nome, model.Margem, model.DataCalculoPreco, model.PrecoCusto, model.PrecoFinal, model.PrecoVenda, model.PrecoPromocional);
-            retorno.SetId(model.Id);
-            return retorno;
+            return new Domain.Entities.Produto(model.Nome, model.Margem, model.DataCalculoPreco, model.PrecoCusto, model.PrecoFinal, model.PrecoVenda, model.PrecoPromocional);
         }
 
         protected override Model.Produto ConvertToModel(Domain.Entities.Produto entity)

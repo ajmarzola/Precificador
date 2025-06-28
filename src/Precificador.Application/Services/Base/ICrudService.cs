@@ -11,7 +11,7 @@ namespace Precificador.Application.Services.Base
         Task<TModel?> GetByIdAsync(Guid id);
         Task<IEnumerable<TModel>?> GetByFilterAsync(TFilter filter);
         Task<bool> AddAsync(TModel model);
-        Task<bool> UpdateAsync(TModel value);
+        Task<bool> UpdateAsync(Guid id, TModel value);
         Task<bool> DeleteAsync(Guid id);
     }
 }

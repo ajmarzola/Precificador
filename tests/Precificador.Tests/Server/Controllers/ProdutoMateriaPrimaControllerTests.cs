@@ -123,9 +123,9 @@ namespace Precificador.Tests.Server.Controllers
         public async Task Put_ReturnsOk_WhenSuccess()
         {
             var model = new ProdutoMateriaPrima { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), MateriaPrimaId = Guid.NewGuid(), Quantidade = 4.0m };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(true);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -134,9 +134,9 @@ namespace Precificador.Tests.Server.Controllers
         public async Task Put_ReturnsNoContent_WhenNotFound()
         {
             var model = new ProdutoMateriaPrima { Id = Guid.NewGuid(), ProdutoId = Guid.NewGuid(), MateriaPrimaId = Guid.NewGuid(), Quantidade = 4.0m };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(false);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<NoContentResult>(result);
         }

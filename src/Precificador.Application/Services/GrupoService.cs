@@ -8,9 +8,7 @@ namespace Precificador.Application.Services
     {
         protected override Domain.Entities.Grupo ConvertToEntity(Model.Grupo model)
         {
-            var retorno = new Domain.Entities.Grupo(model.Nome);
-            retorno.SetId(model.Id);
-            return retorno;
+            return new Domain.Entities.Grupo(model.Nome);
         }
 
         protected override Model.Grupo ConvertToModel(Domain.Entities.Grupo entity)

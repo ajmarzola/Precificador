@@ -24,14 +24,14 @@ export class AppComponent implements OnInit {
   }
 
   getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
+    //this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
+    //  (result) => {
+    //    this.forecasts = result;
+    //  },
+    //  (error) => {
+    //    console.error(error);
+    //  }
+    //);
   }
 
   title = 'precificador.client';

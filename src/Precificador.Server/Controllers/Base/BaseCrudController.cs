@@ -140,13 +140,13 @@ namespace Precificador.Server.Controllers.Base
         /// - 500 Bad Request em caso de erro.
         /// </returns>
         [HttpPut]
-        public virtual async Task<IActionResult> Put([FromBody] TModel value)
+        public virtual async Task<IActionResult> Put([FromBody] Guid id, [FromBody] TModel value)
         {
             _logger.LogInformation("Atualizando dados de {Entity} às {Time}", typeof(TEntity), DateTime.UtcNow);
 
             try
             {
-                var result = await _service.UpdateAsync(value);
+                var result = await _service.UpdateAsync(id, value);
 
                 return !result ? NoContent() : Ok(result);
             }

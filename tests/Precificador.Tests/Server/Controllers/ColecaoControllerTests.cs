@@ -157,9 +157,9 @@ namespace Precificador.Tests.Server.Controllers
                 Ano = 2027,
                 DataLancamento = DateTime.UtcNow
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(true);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -174,9 +174,9 @@ namespace Precificador.Tests.Server.Controllers
                 Ano = 2027,
                 DataLancamento = DateTime.UtcNow
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(false);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<NoContentResult>(result);
         }

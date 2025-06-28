@@ -15,7 +15,7 @@ namespace Precificador.Domain.Entities.Base
 
         protected CrudBase() => Id = Guid.NewGuid();
 
-        public void SetId(Guid id) => Id = id;
+        //public void SetId(Guid id) => Id = id;
         public void SetDataCriacao() => DataCriacao = DateTime.Now;
         public void SetDataAlterado() => DataAlteracao = DateTime.Now;
         private void SetAtivo(bool ativo) => Ativo = ativo;

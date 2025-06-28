@@ -1,0 +1,23 @@
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Ano</th>
+      <th>Data Lançamento</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let colecao of colecoes">
+      <td>{{ colecao.nome }}</td>
+      <td>{{ colecao.ano }}</td>
+      <td>{{ colecao.dataLancamento | date }}</td>
+      <td>
+        <button (click)="router.navigate(['/colecao', colecao.id])">Detalhes</button>
+        <button (click)="router.navigate(['/colecao/edit', colecao.id])">Editar</button>
+        <button (click)="deleteColecao(colecao.id)">Excluir</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<button (click)="router.navigate(['/colecao/new'])">Nova Coleção</button>

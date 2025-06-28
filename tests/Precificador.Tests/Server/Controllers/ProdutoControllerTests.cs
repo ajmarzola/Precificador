@@ -193,9 +193,9 @@ namespace Precificador.Tests.Server.Controllers
                 PrecoCustoX35 = 1750,
                 PrecoCustoX4 = 2000
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(true);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(true);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -216,9 +216,9 @@ namespace Precificador.Tests.Server.Controllers
                 PrecoCustoX35 = 1750,
                 PrecoCustoX4 = 2000
             };
-            _serviceMock.Setup(s => s.UpdateAsync(model)).ReturnsAsync(false);
+            _serviceMock.Setup(s => s.UpdateAsync(model.Id, model)).ReturnsAsync(false);
 
-            var result = await _controller.Put(model);
+            var result = await _controller.Put(model.Id, model);
 
             Assert.IsType<NoContentResult>(result);
         }

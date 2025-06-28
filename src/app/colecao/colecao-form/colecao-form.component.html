@@ -1,0 +1,17 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <label>Nome:</label>
+  <input formControlName="nome" />
+  <div *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched">Nome obrigatório (máx 100)</div>
+
+  <label>Ano:</label>
+  <select formControlName="ano">
+    <option *ngFor="let y of anos" [value]="y">{{ y }}</option>
+  </select>
+  <div *ngIf="form.get('ano')?.invalid && form.get('ano')?.touched">Ano obrigatório</div>
+
+  <label>Data de Lançamento:</label>
+  <input formControlName="dataLancamento" type="date" min="2016-12-01" />
+
+  <button type="submit" [disabled]="form.invalid">Salvar</button>
+  <button type="button" (click)="router.navigate(['/colecao'])">Cancelar</button>
+</form>

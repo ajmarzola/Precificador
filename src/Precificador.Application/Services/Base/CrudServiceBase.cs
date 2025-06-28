@@ -33,7 +33,7 @@ namespace Precificador.Application.Services.Base
             return await _repository.AddAsync(entity);
         }
 
-        public virtual async Task<bool> UpdateAsync(TModel model)
+        public virtual async Task<bool> UpdateAsync(Guid id, TModel model)
         {
             var entity = await _repository.GetByIdAsync(model.Id);
 
