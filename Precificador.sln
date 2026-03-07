@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{62BF846E-EB4A-4895-B7C6-D96437D81E7B}"
 EndProject
+<<<<<<< Updated upstream
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Precificador.WebApi", "src\Precificador.WebApi\Precificador.WebApi.csproj", "{8766DCC6-4B76-4DAF-982E-7BAB07616EA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Precificador.Application", "src\Precificador.Application\Precificador.Application.csproj", "{61AC093A-2331-4012-934A-371A18C4A32C}"
@@ -26,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ref", "ref", "{B2D8B312-9CE
 		ref\precifica.xlsx = ref\precifica.xlsx
 	EndProjectSection
 EndProject
+=======
+>>>>>>> Stashed changes
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
