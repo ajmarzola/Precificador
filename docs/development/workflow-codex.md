@@ -11,29 +11,45 @@ necessidade
   -> funcionalidade/regra
   -> caso de uso documentado
   -> critérios de aceitação
-  -> instrução de implementação
+  -> instrução de implementação versionada
   -> Codex
   -> build/testes
   -> revisão do diff
-  -> PR
+  -> PR + CI
   -> merge
 ```
 
+Para fundações não funcionais, como a FT001, a especificação técnica substitui o documento de caso de uso, mantendo os mesmos princípios de escopo e revisão.
+
 ## Antes de enviar uma implementação ao Codex
 
-1. confirmar que o UC existe em arquivo individual;
+1. confirmar que o UC (ou fundação técnica) existe em arquivo individual;
 2. confirmar regras de negócio aplicáveis;
 3. fechar critérios de aceitação;
 4. listar explicitamente o que está fora do escopo;
 5. identificar testes esperados;
 6. identificar se haverá migration;
-7. garantir que o UC seja pequeno o suficiente para revisão.
+7. garantir que o incremento seja pequeno o suficiente para revisão;
+8. criar a instrução executável correspondente em `docs/codex/`.
 
-## Conteúdo mínimo de uma instrução futura
+## Instruções versionadas
 
-As instruções de implementação deverão apontar, sem copiar desnecessariamente, para:
+As instruções entregues ao Codex fazem parte do repositório e devem ser armazenadas em:
 
-- UC a implementar;
+```text
+docs/codex/
+```
+
+Convenção inicial:
+
+```text
+FTxxx-nome.md
+UCxxx-nome.md
+```
+
+A instrução deve apontar, sem copiar desnecessariamente, para:
+
+- UC/especificação a implementar;
 - documentos normativos;
 - arquivos/áreas permitidos quando isso for útil;
 - critérios de aceitação;
@@ -41,7 +57,7 @@ As instruções de implementação deverão apontar, sem copiar desnecessariamen
 - Definition of Done;
 - proibição de alterações fora do escopo.
 
-Este documento define o processo, mas não contém prompts de implementação prontos.
+A especificação é a fonte normativa; a instrução do Codex é o roteiro de execução e não deve contradizê-la.
 
 ## Durante a execução
 
@@ -57,13 +73,14 @@ O agente deve:
 
 A revisão humana deve verificar principalmente:
 
-- aderência ao UC;
-- regras financeiras;
+- aderência ao UC/especificação;
+- regras financeiras quando aplicáveis;
 - migrations;
 - testes realmente significativos;
 - ausência de escopo incidental;
 - legibilidade/manutenção;
-- documentação coerente com o comportamento entregue.
+- documentação coerente com o comportamento entregue;
+- CI verde antes do merge.
 
 ## Política de mudança de requisito
 
