@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Precificador.Core/Precificador.Core.csproj" />
+    <Project Path="src/Precificador.Infrastructure/Precificador.Infrastructure.csproj" />
+    <Project Path="src/Precificador.Web/Precificador.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Precificador.Tests.Integration/Precificador.Tests.Integration.csproj" />
+    <Project Path="tests/Precificador.Tests.Unit/Precificador.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
