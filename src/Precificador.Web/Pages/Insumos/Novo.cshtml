@@ -1,0 +1,47 @@
+@page
+@model Precificador.Web.Pages.Insumos.NovoModel
+@using Precificador.Core.Insumos
+@{
+    ViewData["Title"] = "Cadastrar insumo";
+}
+
+<h1>Cadastrar insumo</h1>
+
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Nome" class="form-label"></label>
+        <input asp-for="Input.Nome" class="form-control" />
+        <span asp-validation-for="Input.Nome" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Categoria" class="form-label">Categoria</label>
+        <select asp-for="Input.Categoria" class="form-select">
+            <option value="">Selecione uma categoria</option>
+            <option value="@CategoriaInsumo.Ingrediente">Ingrediente</option>
+            <option value="@CategoriaInsumo.Embalagem">Embalagem</option>
+            <option value="@CategoriaInsumo.Consumivel">Consumível</option>
+        </select>
+        <span asp-validation-for="Input.Categoria" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.UnidadeBase" class="form-label">Unidade base</label>
+        <select asp-for="Input.UnidadeBase" class="form-select">
+            <option value="">Selecione uma unidade</option>
+            <option value="@UnidadeMedida.Grama">g</option>
+            <option value="@UnidadeMedida.Mililitro">ml</option>
+            <option value="@UnidadeMedida.Unidade">un</option>
+        </select>
+        <span asp-validation-for="Input.UnidadeBase" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
