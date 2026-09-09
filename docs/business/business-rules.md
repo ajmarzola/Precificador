@@ -38,6 +38,40 @@ Insumo sem preço vigente possui custo desconhecido. O sistema não deve tratá-
 
 Insumos são desativados, não excluídos fisicamente pelo fluxo normal. Um insumo desativado não pode ser adicionado a novas fichas técnicas, mas referências já existentes devem permanecer legíveis.
 
+### RN028 — Nome do insumo
+
+Todo insumo deve possuir nome válido.
+
+O nome:
+
+- é obrigatório;
+- deve possuir no máximo 120 caracteres após normalização de espaços;
+- deve ter espaços em branco removidos do início e do fim;
+- deve ter sequências internas de whitespace reduzidas a um único espaço;
+- preserva para exibição a capitalização informada pelo usuário após a limpeza de espaços.
+
+Para comparação determinística, o sistema mantém uma representação normalizada do nome em maiúsculas com regra invariável. A normalização de comparação não remove acentos.
+
+### RN029 — Unicidade do nome do insumo
+
+Não podem existir dois insumos com o mesmo nome normalizado, independentemente de estarem ativos ou inativos.
+
+A integridade deve ser protegida pelo banco com índice/restrição única sobre a representação normalizada, além da validação funcional usada para apresentar mensagem amigável ao usuário.
+
+### RN030 — Categoria do insumo
+
+Todo insumo deve pertencer exatamente a uma das categorias do MVP:
+
+- Ingrediente;
+- Embalagem;
+- Consumível.
+
+Nenhum valor indefinido/zero é considerado categoria funcional válida.
+
+### RN031 — Situação inicial do insumo
+
+Todo novo insumo é criado como ativo. A situação inicial não é escolhida pelo usuário no cadastro.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
