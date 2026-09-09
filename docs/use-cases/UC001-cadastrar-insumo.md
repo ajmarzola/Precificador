@@ -1,6 +1,6 @@
 # UC001 — Cadastrar Insumo
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** FT001 — Fundação Técnica implementada
 - **Próximo caso relacionado:** UC002 — Listar e consultar insumos
