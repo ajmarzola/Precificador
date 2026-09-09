@@ -1,6 +1,6 @@
 # FT001 — Fundação Técnica
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Tipo:** Fundação técnica, não é caso de uso funcional
 - **Dependências:** Fundação documental aprovada e mergeada
 - **Próximo incremento:** UC001 — Cadastrar insumo
