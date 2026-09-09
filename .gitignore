@@ -6,3 +6,12 @@
 /.vs/Precificador/FileContentIndex
 /.vs/Precificador/v17
 /.vs
+
+[Bb]in/
+[Oo]bj/
+[Tt]est[Rr]esults/
+*.coverage
+*.coveragexml
+*.db
+*.db-shm
+*.db-wal
