@@ -14,13 +14,13 @@ A fundação técnica não representa funcionalidade de usuário, mas precede os
 - estabelecer infraestrutura de testes;
 - configurar logging e seed mínimo de desenvolvimento.
 
-Essa fundação terá uma instrução própria de implementação, critérios e Definition of Done, sem ser artificialmente tratada como caso de uso de usuário.
+Essa fundação possui especificação própria e foi concluída antes dos casos de uso funcionais.
 
 ## Insumos
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC001 | Cadastrar insumo | Fundação |
+| [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | Fundação |
 | UC002 | Listar e consultar insumos | UC001 |
 | UC003 | Editar insumo | UC001 |
 | UC004 | Desativar insumo | UC001 |
