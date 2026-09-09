@@ -4,15 +4,22 @@ A ordem prioriza dependências do domínio e entrega incremental. Não represent
 
 ## Etapa 0 — Fundação técnica
 
-- criar `Precificador.sln`;
+Especificação: [`foundation-technical.md`](foundation-technical.md).
+
+- criar `Precificador.slnx`;
 - criar projetos de produção e teste;
 - configurar referências;
 - configurar .NET 10;
 - configurar EF Core + SQLite;
-- migration inicial quando o primeiro modelo persistente existir;
-- logging padrão;
-- seed mínimo de desenvolvimento;
-- infraestrutura de testes.
+- configurar tool manifest com `dotnet-ef`;
+- registrar logging padrão;
+- configurar infraestrutura de testes e smoke tests;
+- configurar GitHub Actions para restore/build/test;
+- ajustar `.gitignore` e `.editorconfig`;
+- não criar migration antes do primeiro modelo persistente;
+- não criar seed vazio; iniciar seed de desenvolvimento quando existir a primeira entidade que o justifique.
+
+Instrução Codex: [`../codex/FT001-fundacao-tecnica.md`](../codex/FT001-fundacao-tecnica.md).
 
 ## Etapa 1 — Insumos
 
@@ -52,6 +59,6 @@ Objetivo: transformar os cálculos já estabilizados em visão operacional dos p
 
 Se um UC não puder ser implementado, testado e revisado como um incremento pequeno, deve ser dividido antes de ser enviado ao agente.
 
-## Próximo passo após esta fundação
+## Próximo passo
 
-Detalhar a **Fundação Técnica** como primeira instrução executável pelo Codex, sem iniciar ainda os UCs funcionais. Depois dela, preparar `UC001-cadastrar-insumo.md`.
+Executar e revisar a **FT001 — Fundação Técnica**. Somente após sua aprovação, detalhar `UC001-cadastrar-insumo.md` e gerar a respectiva instrução para Codex.

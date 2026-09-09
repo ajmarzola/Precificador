@@ -25,11 +25,12 @@ SQLite
 - Bootstrap
 - JavaScript mínimo
 - xUnit
+- GitHub Actions para CI
 
 ## Estrutura prevista da solution
 
 ```text
-Precificador.sln
+Precificador.slnx
 
 src/
   Precificador.Web/
@@ -41,7 +42,7 @@ tests/
   Precificador.Tests.Integration/
 ```
 
-Os três projetos em `src` são o limite inicial de projetos de produção. Projetos de teste são separados para preservar clareza das dependências.
+O formato SLNX é adotado conforme ADR-006. Os três projetos em `src` são o limite inicial de projetos de produção. Projetos de teste são separados para preservar clareza das dependências.
 
 ## Responsabilidades
 
@@ -60,7 +61,7 @@ Os três projetos em `src` são o limite inicial de projetos de produção. Proj
 - mapeamentos;
 - migrations;
 - SQLite;
-- seed de desenvolvimento quando aplicável;
+- seed de desenvolvimento quando existir entidade que o justifique;
 - implementações de persistência necessárias.
 
 ### Precificador.Web
@@ -91,7 +92,8 @@ Core -> nenhuma camada da aplicação
 - Não criar API separada para a própria interface Razor Pages no MVP.
 - Não usar SPA framework no MVP.
 - Alterações de banco devem usar migrations.
-- Banco local deve ser reconstruível a partir das migrations e do seed de desenvolvimento.
+- Não criar migrations vazias antes do primeiro modelo persistente real.
+- Banco local deve ser reconstruível a partir das migrations e do seed de desenvolvimento quando este passar a existir.
 
 ## Persistência calculada x armazenada
 
@@ -119,3 +121,7 @@ O MVP é local e de usuário único. Autenticação não será adicionada sem mu
 ## Observabilidade
 
 Utilizar logging padrão do ASP.NET Core. Logs devem ser úteis para diagnóstico e não devem substituir validações ou tratamento de erro para o usuário.
+
+## Integração contínua
+
+Conforme ADR-007, o repositório deve possuir CI simples no GitHub Actions para validar restore, build e testes dos pull requests antes do merge. CI não é mecanismo de deploy no MVP.

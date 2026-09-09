@@ -33,16 +33,25 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 
 ### Desenvolvimento
 
+- [`development/foundation-technical.md`](development/foundation-technical.md) — FT001, primeira entrega executável do projeto.
 - [`development/definition-of-done.md`](development/definition-of-done.md)
 - [`development/testing-strategy.md`](development/testing-strategy.md)
 - [`development/workflow-codex.md`](development/workflow-codex.md)
 - [`development/implementation-order.md`](development/implementation-order.md)
+
+### Instruções para Codex
+
+- [`codex/`](codex/) — instruções executáveis versionadas para cada incremento.
+- [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md) — primeira instrução de implementação.
+
+A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
 ## Hierarquia conceitual
 
 - **Funcionalidade**: o que o sistema oferece ao usuário.
 - **Caso de uso**: uma interação ou comportamento implementável e verificável.
 - **Regra de negócio**: condição que deve permanecer verdadeira independentemente da interface.
+- **Fundação técnica**: incremento não funcional necessário para habilitar os casos de uso.
 - **ADR**: decisão arquitetural com contexto, consequência e status.
 
 Evite duplicar a mesma regra em vários documentos. Casos de uso devem referenciar as RNs aplicáveis.
