@@ -17,19 +17,21 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 |---|---|---|
 | [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | FT001 — implementado |
 | [UC001B](UC001B-generalizar-categoria-unidades-insumo.md) | Generalizar categoria e unidades de insumo | UC001, FT002 — implementado |
-| [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B, FT002 — **revalidado e pronto para implementação** |
-| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 |
+| [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B, FT002 — implementado |
+| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 — **revalidado e pronto para implementação** |
 | UC003 | Editar insumo | UC001A, FT002 |
 | UC004 | Desativar insumo | UC001A, FT002 |
 | UC005 | Registrar preço de insumo | UC001A, FT002 |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
 
-Classificação e unidades aprovadas e já implementadas para o escopo atual:
+Classificação e unidades implementadas:
 
 - categorias: Matéria-prima, Embalagem e Consumível;
 - unidades: `g`, `ml`, `m` e `un`.
 
-O UC001A é o próximo incremento de Insumos e deve preservar o isolamento por Empresa, alterando a unicidade para `(EmpresaId, NomeNormalizado, MarcaNormalizada)`.
+A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, MarcaNormalizada)`.
+
+O UC002 é o próximo incremento de Insumos e deve listar/pesquisar/consultar exclusivamente dados da Empresa Ativa, sem alterar schema ou antecipar operações de escrita.
 
 ## Produtos
 
