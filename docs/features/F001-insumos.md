@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Manter o catálogo de itens usados nas fichas técnicas e seu histórico de preços **por Empresa**.
+Manter o catálogo de itens usados nas fichas técnicas e seu histórico de preços, isolado por Empresa.
 
 ## Capacidades
 
@@ -15,12 +15,6 @@ Manter o catálogo de itens usados nas fichas técnicas e seu histórico de pre�
 - identificar insumos sem preço vigente;
 - calcular custo por unidade base.
 
-## Escopo multiempresa
-
-Após FT002, todo Insumo possui `EmpresaId` obrigatório e operações comuns enxergam somente dados da Empresa Ativa.
-
-A mesma descrição pode existir em empresas diferentes.
-
 ## Dados essenciais
 
 - empresa proprietária;
@@ -31,20 +25,52 @@ A mesma descrição pode existir em empresas diferentes.
 
 ### Cadastro inicial
 
-UC001 foi implementado antes da fundação multiempresa. FT002 adicionará `EmpresaId` sem expor esse campo no formulário.
+No UC001, o cadastro contém somente:
 
-UC001A permanece responsável por Marca e Observação e será revalidado após FT002.
+- Nome;
+- Categoria;
+- Unidade base.
 
-A adequação das categorias/unidades para os dois negócios será detalhada separadamente antes do UC002.
+Todo novo insumo nasce ativo. Preço não faz parte do cadastro inicial e será tratado separadamente pelo UC005, preservando histórico.
 
-## Preços
+O nome deve ser normalizado para eliminar diferenças acidentais de espaços e possuir uma representação técnica normalizada para impedir duplicidades por caixa/espaçamento. A capitalização usada para exibição é preservada após a limpeza de espaços.
 
-Cada registro de preço pertence a um Insumo específico; consequentemente, históricos/custos ficam isolados pela Empresa proprietária do Insumo.
+Com a FT002, todo Insumo passa a possuir `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário. A unicidade do cadastro passa a ser limitada à Empresa proprietária.
+
+Após UC001A, a identidade econômica do Insumo será composta por Nome + Marca dentro da Empresa, e Observação técnica opcional passará a integrar o cadastro.
+
+A adequação de `Ingrediente/Embalagem/Consumível` e das unidades `g/ml/un` para diferentes negócios será detalhada separadamente antes do UC002.
+
+Cada registro de preço deve conter ao menos:
+
+- insumo;
+- data de referência;
+- quantidade comprada na unidade base;
+- preço pago;
+- observação opcional.
+
+Fornecedor poderá ser incorporado futuramente sem transformar cadastro de fornecedores em módulo do MVP.
+
+Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
 
 ## Regras relacionadas
 
-RN001 a RN008 e RN028 a RN039, conforme aplicáveis.
+- RN001 a RN008;
+- RN028 a RN039, conforme aplicáveis.
+
+## Casos de uso
+
+- [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
+- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
+- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
+- UC003 — Editar insumo;
+- UC004 — Desativar insumo;
+- UC005 — Registrar preço de insumo;
+- UC006 — Consultar histórico de preços do insumo.
 
 ## Fora do escopo
 
-Controle de estoque, pedido de compra, fornecedor operacional completo e atualização automática de preço externa.
+- controle de estoque;
+- pedido de compra;
+- fornecedor como entidade operacional completa;
+- atualização automática de preço por integrações externas.

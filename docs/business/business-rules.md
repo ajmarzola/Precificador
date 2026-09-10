@@ -44,23 +44,39 @@ Insumos são desativados, não excluídos fisicamente pelo fluxo normal. Um insu
 
 Todo insumo deve possuir nome válido.
 
-O nome é obrigatório, possui no máximo 120 caracteres após normalização de espaços, remove whitespace externo, reduz sequências internas a um espaço e preserva capitalização para exibição.
+O nome:
 
-Para comparação determinística, o sistema mantém representação normalizada em maiúsculas invariáveis sem remover acentos.
+- é obrigatório;
+- deve possuir no máximo 120 caracteres após normalização de espaços;
+- deve ter espaços em branco removidos do início e do fim;
+- deve ter sequências internas de whitespace reduzidas a um único espaço;
+- preserva para exibição a capitalização informada pelo usuário após a limpeza de espaços.
+
+Para comparação determinística, o sistema mantém uma representação normalizada do nome em maiúsculas com regra invariável. A normalização de comparação não remove acentos.
 
 ### RN029 — Unicidade do insumo por empresa, nome e marca
 
-A identidade funcional de Insumo é limitada à Empresa proprietária.
+A identidade funcional do Insumo é limitada à Empresa proprietária.
 
-Após FT002 e antes do UC001A, não podem existir dois Insumos da mesma Empresa com o mesmo `NomeNormalizado`.
+Após FT002 e antes do UC001A, não podem existir dois Insumos da mesma Empresa com o mesmo `NomeNormalizado`, independentemente de estarem ativos ou inativos.
 
-Após UC001A, a unicidade passa a ser `EmpresaId + NomeNormalizado + MarcaNormalizada`.
+Após UC001A, não podem existir dois Insumos da mesma Empresa com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`.
 
-Empresas diferentes podem cadastrar a mesma combinação Nome/Marca. A unicidade continua incluindo registros inativos.
+Marcas diferentes do mesmo Nome representam Insumos distintos e podem coexistir na mesma Empresa. Empresas diferentes também podem cadastrar a mesma combinação Nome/Marca.
+
+Quando a Marca não for informada, `MarcaNormalizada` deve assumir string vazia como representação técnica.
+
+A integridade deve ser protegida pelo banco com índice/restrição única adequada à fase do modelo, além da validação funcional usada para apresentar mensagem amigável.
 
 ### RN030 — Categoria do insumo
 
-O código atual prevê Ingrediente, Embalagem e Consumível. O vocabulário será revalidado antes do UC002 para suportar negócios não alimentícios; nenhum valor indefinido/zero é válido.
+O código atual prevê:
+
+- Ingrediente;
+- Embalagem;
+- Consumível.
+
+Nenhum valor indefinido/zero é categoria funcional válida. O vocabulário será revalidado antes do UC002 para suportar negócios não alimentícios sem distorção semântica.
 
 ### RN031 — Situação inicial do insumo
 
@@ -70,41 +86,59 @@ Todo novo insumo é criado como ativo. A situação inicial não é escolhida pe
 
 A Marca identifica opcionalmente a variação comercial de um insumo.
 
-A Marca é opcional, possui no máximo 80 caracteres após normalização, preserva capitalização para exibição, mantém `MarcaNormalizada` em maiúsculas invariáveis e não remove acentos. Quando ausente, `Marca = null` e `MarcaNormalizada = ""`.
+A Marca:
+
+- é opcional;
+- possui no máximo 80 caracteres após normalização;
+- remove espaços externos e reduz sequências internas de whitespace a um único espaço;
+- preserva a capitalização informada para exibição;
+- possui representação `MarcaNormalizada` em maiúsculas com regra invariável;
+- não remove acentos durante a normalização de comparação;
+- quando ausente, é armazenada como `null`, enquanto `MarcaNormalizada` usa string vazia.
 
 Marcas diferentes do mesmo Nome representam insumos economicamente distintos e podem possuir preços/custos diferentes dentro da mesma Empresa.
 
 ### RN033 — Observação do insumo
 
-A Observação é anotação técnica global opcional, máximo 1000 caracteres, com trim externo e preservação do conteúdo interno. Whitespace-only é armazenado como `null` e não participa da identidade.
+A Observação do Insumo é uma anotação técnica global e opcional, como força W de uma farinha ou característica relevante de embalagem.
+
+A observação:
+
+- possui no máximo 1000 caracteres;
+- remove apenas whitespace externo;
+- preserva conteúdo interno e quebras de linha;
+- se vazia ou composta apenas por whitespace, é armazenada como `null`;
+- não participa da identidade ou unicidade do Insumo.
 
 ### RN034 — Observação contextual do item da ficha técnica
 
-Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo naquela ficha. Essa observação é independente da Observação global do Insumo.
+Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo na ficha, como a razão para escolher uma marca específica.
 
-A implementação pertence aos UCs de Ficha Técnica, não ao UC001A/UC002.
+Essa observação é independente da Observação global do Insumo e deve permanecer associada ao item da ficha. Alterações posteriores na Observação do Insumo não devem sobrescrever a justificativa registrada.
+
+A implementação desta regra pertence aos UCs de Ficha Técnica, não ao UC001A ou UC002.
 
 ## Multiempresa e acesso
 
 ### RN035 — Propriedade por empresa
 
-Dados operacionais tenant-owned pertencem exatamente a uma Empresa por `EmpresaId` obrigatório.
+Todo dado operacional tenant-owned pertence exatamente a uma Empresa por `EmpresaId` obrigatório.
 
 ### RN036 — Isolamento de empresa
 
-Operações comuns só podem ler ou alterar dados tenant-owned da Empresa Ativa. Ausência de Empresa Ativa não concede acesso implícito a qualquer empresa.
+Operações comuns só podem ler ou alterar dados tenant-owned da Empresa Ativa. Ausência de Empresa Ativa não concede acesso implícito a qualquer Empresa.
 
 ### RN037 — Empresa ativa
 
-Usuário autenticado trabalha no contexto de uma única Empresa Ativa por vez e só pode ativar empresa para a qual possua vínculo ativo e cuja situação esteja ativa.
+Um usuário autenticado trabalha no contexto de uma única Empresa Ativa por vez. Só pode ativar uma Empresa ativa para a qual possua vínculo ativo.
 
 ### RN038 — Vínculo usuário-empresa
 
-Um usuário pode possuir vínculos com múltiplas empresas. Vínculo inativo ou empresa inativa não concede acesso operacional.
+Um usuário pode possuir vínculos com múltiplas Empresas. Vínculo inativo ou Empresa inativa não concede acesso operacional.
 
 ### RN039 — Configurações por empresa
 
-Configurações de precificação pertencem a uma Empresa e alterações não afetam cálculos de outra Empresa.
+Configurações de precificação pertencem a uma Empresa e suas alterações não afetam cálculos de outra Empresa.
 
 ## Produtos e ficha técnica
 
@@ -122,11 +156,11 @@ Para cada item: `CustoItem = QuantidadeUtilizada × CustoUnitarioAtualDoInsumo`.
 
 O custo base dos itens é a soma dos custos dos itens da ficha.
 
-### RN012 — Perdas
+### RN012 — Perdas de material/processo
 
-Perda deixa de ser assumida como atributo obrigatório específico de panificação. Quando aplicável, representa perda de material/processo e seu modelo exato será fechado antes do UC019.
+Perda deixa de ser assumida como atributo obrigatório específico de panificação. Quando aplicável, representa perda de material/processo.
 
-Até esse detalhamento, não implementar nova fórmula além das já aprovadas para o código inexistente.
+O modelo exato e a forma de incidência serão fechados antes do UC019, considerando os diferentes negócios. Até lá, nenhuma implementação nova deve cristalizar uma fórmula específica de panificação.
 
 ### RN013 — Mão de obra
 
@@ -136,15 +170,17 @@ O tempo ativo é informado para o lote/execução.
 
 ### RN014 — Energia de equipamento
 
-Quando houver equipamento mensurável, a fórmula geral é:
+Quando houver equipamento com consumo mensurável:
 
 `CustoEnergiaUso = PotenciaEquipamentoKw × (TempoUsoMinutos / 60) × TarifaKwhDaEmpresa`.
 
-Forno é um equipamento possível, não conceito obrigatório de toda Ficha Técnica. O modelo de equipamentos será detalhado antes do UC021.
+O custo de energia do lote soma os usos aplicáveis. Forno é um possível equipamento, não um conceito universal de toda ficha.
+
+O modelo de Equipamento/Uso será detalhado antes do UC021.
 
 ### RN015 — Custo do lote
 
-O custo do lote soma itens, perdas aplicáveis, mão de obra e recursos/equipamentos aplicáveis.
+O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recursos/equipamentos aplicáveis ao processo.
 
 ### RN016 — Custo unitário do produto
 
@@ -172,6 +208,8 @@ A margem-alvo deve ser maior ou igual a zero e menor que 100%.
 
 O preço sugerido deve ser arredondado **para cima** para o próximo múltiplo do incremento comercial configurado da Empresa, garantindo que o arredondamento não reduza a margem abaixo da margem-alvo.
 
+Exemplo com incremento de R$ 0,50: R$ 25,08 resulta em R$ 25,50.
+
 ### RN022 — Margem atual
 
 Para preço de venda maior que zero:
@@ -188,7 +226,7 @@ Alterar o preço de venda deve preservar o valor anteriormente praticado em hist
 
 ## Configurações
 
-### RN025 — Configurações de precificação
+### RN025 — Configurações de precificação por empresa
 
 Cada Empresa possui configurações para, no mínimo:
 
@@ -197,7 +235,9 @@ Cada Empresa possui configurações para, no mínimo:
 - margem padrão para novos produtos;
 - incremento comercial de arredondamento.
 
-Potência passa a pertencer ao Equipamento quando esse domínio for implementado. Alterações afetam imediatamente apenas cálculos atuais da mesma Empresa.
+A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
+
+Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa.
 
 ## Precisão
 
@@ -211,6 +251,6 @@ Cálculos intermediários não devem ser arredondados para centavos. O arredonda
 
 Para fins de acompanhamento, um produto ativo pode estar pelo menos em um dos estados:
 
-- `Incompleto`;
-- `AbaixoDaMargem`;
-- `DentroDaMargem`.
+- `Incompleto`: não pode ser precificado com segurança;
+- `AbaixoDaMargem`: cálculo válido e margem atual inferior à meta;
+- `DentroDaMargem`: cálculo válido e margem atual igual ou superior à meta.

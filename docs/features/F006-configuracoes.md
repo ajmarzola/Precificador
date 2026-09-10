@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Centralizar parâmetros compartilhados por vários produtos **da mesma Empresa**.
+Centralizar parâmetros compartilhados por vários produtos da mesma Empresa.
 
 ## Configurações mínimas
 
@@ -11,11 +11,11 @@ Centralizar parâmetros compartilhados por vários produtos **da mesma Empresa**
 - margem padrão para novos produtos;
 - incremento comercial de arredondamento.
 
-Potência não é mais tratada como configuração global de um forno universal; pertencerá ao Equipamento quando esse domínio for implementado.
+A potência do forno deixa de ser tratada como configuração global. Quando equipamentos forem modelados, potência será propriedade do equipamento correspondente.
 
 ## Comportamento
 
-Alterar configuração da Empresa A deve afetar somente cálculos atuais dependentes da Empresa A.
+Alterar uma configuração deve afetar os cálculos atuais dos produtos dependentes **somente da mesma Empresa**, sem necessidade de editar cada produto.
 
 A margem padrão vale como valor inicial de novos produtos; depois de criado, cada produto mantém sua margem-alvo própria.
 
