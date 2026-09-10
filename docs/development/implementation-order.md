@@ -12,9 +12,7 @@ UC001 — Cadastrar Insumo — implementado.
 
 ## Etapa 0.6 — FT002 Multiempresa e Autenticação
 
-Implementar antes de evoluir Insumos.
-
-Objetivo: Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa, isolamento tenant-aware e `EmpresaId` em Insumo.
+FT002 concluída: Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa, isolamento tenant-aware e `EmpresaId` em Insumo.
 
 Especificação: [`foundation-multiempresa-auth.md`](foundation-multiempresa-auth.md).
 
@@ -28,6 +26,10 @@ Após FT002:
 2. revalidar a especificação do UC001A contra o modelo tenant-aware e a classificação final de Insumos;
 3. implementar UC001A — Marca e Observação;
 4. seguir UC002 a UC006 já usando `Matéria-prima/Embalagem/Consumível` e `g/ml/m/un`.
+
+Especificação UC001B: [`../use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md).
+
+Instrução Codex UC001B: [`../codex/UC001B-generalizar-categoria-unidades-insumo.md`](../codex/UC001B-generalizar-categoria-unidades-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
@@ -60,10 +62,14 @@ O backlog deverá detalhar posteriormente:
 
 O bootstrap e login mínimos pertencem à FT002 porque são pré-requisitos transversais de isolamento.
 
+## Melhorias não bloqueantes
+
+Melhorias identificadas durante implementação e revisão que não bloqueiam as histórias principais ficam em [`melhorias.md`](melhorias.md) e podem ser executadas quando houver oportunidade técnica adequada.
+
 ## Regra de tamanho
 
 Se um UC não puder ser implementado, testado e revisado como um incremento pequeno, deve ser dividido antes de ser enviado ao agente.
 
 ## Próximo passo
 
-Implementar e revisar a **FT002 — Fundação Multiempresa e Autenticação**. Não executar UC001B/UC001A antes da FT002 estar concluída.
+Implementar e revisar o **UC001B — Generalizar categoria e unidades de insumo**. Depois de concluído, revalidar o UC001A antes de executá-lo.
