@@ -24,12 +24,12 @@ Instrução Codex: [`../codex/FT002-fundacao-multiempresa-autenticacao.md`](../c
 
 Após FT002:
 
-1. revisar a especificação do UC001A para incluir EmpresaId na identidade Nome + Marca;
-2. implementar UC001A — Marca e Observação;
-3. antes do UC002, detalhar um ajuste de classificação/unidades baseado nos insumos reais dos dois negócios, pois `Ingrediente` e `g/ml/un` podem ser específicos demais;
-4. seguir UC002 a UC006.
+1. implementar **UC001B — Generalizar categoria e unidades de insumo**: renomear `Ingrediente` para `MateriaPrima`, preservando o valor numérico `1`, e acrescentar `Metro = 4` às unidades;
+2. revalidar a especificação do UC001A contra o modelo tenant-aware e a classificação final de Insumos;
+3. implementar UC001A — Marca e Observação;
+4. seguir UC002 a UC006 já usando `Matéria-prima/Embalagem/Consumível` e `g/ml/m/un`.
 
-Objetivo: possuir catálogo e histórico de preços confiável e isolado por Empresa antes de precificar Produtos.
+Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
 ## Etapa 2 — Produtos
 
@@ -62,8 +62,8 @@ O bootstrap e login mínimos pertencem à FT002 porque são pré-requisitos tran
 
 ## Regra de tamanho
 
-Se um UC não puder ser implementado, testado e revisado como incremento pequeno, deve ser dividido antes de ser enviado ao agente.
+Se um UC não puder ser implementado, testado e revisado como um incremento pequeno, deve ser dividido antes de ser enviado ao agente.
 
 ## Próximo passo
 
-Implementar e revisar a **FT002 — Fundação Multiempresa e Autenticação**. Não executar UC001A antes da FT002 estar concluída e de sua especificação ser revalidada.
+Implementar e revisar a **FT002 — Fundação Multiempresa e Autenticação**. Não executar UC001B/UC001A antes da FT002 estar concluída.
