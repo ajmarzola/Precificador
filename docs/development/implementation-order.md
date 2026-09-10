@@ -20,16 +20,15 @@ Instrução Codex: [`../codex/FT002-fundacao-multiempresa-autenticacao.md`](../c
 
 ## Etapa 1 — Insumos
 
-Após FT002:
+Estado atual:
 
-1. implementar **UC001B — Generalizar categoria e unidades de insumo**: renomear `Ingrediente` para `MateriaPrima`, preservando o valor numérico `1`, e acrescentar `Metro = 4` às unidades;
-2. revalidar a especificação do UC001A contra o modelo tenant-aware e a classificação final de Insumos;
-3. implementar UC001A — Marca e Observação;
-4. seguir UC002 a UC006 já usando `Matéria-prima/Embalagem/Consumível` e `g/ml/m/un`.
+1. **UC001B — Generalizar categoria e unidades de insumo** — implementado: `MateriaPrima = 1`, `Metro = 4` e compatibilidade preservada;
+2. **UC001A — Marca e Observação** — especificação revalidada após FT002/UC001B e pronta para implementação;
+3. após UC001A, seguir UC002 a UC006 já usando identidade tenant-aware por Empresa + Nome + Marca.
 
-Especificação UC001B: [`../use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md).
+Especificação UC001A: [`../use-cases/UC001A-complementar-insumo-marca-observacao.md`](../use-cases/UC001A-complementar-insumo-marca-observacao.md).
 
-Instrução Codex UC001B: [`../codex/UC001B-generalizar-categoria-unidades-insumo.md`](../codex/UC001B-generalizar-categoria-unidades-insumo.md).
+Instrução Codex UC001A: [`../codex/UC001A-complementar-insumo-marca-observacao.md`](../codex/UC001A-complementar-insumo-marca-observacao.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
@@ -72,4 +71,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC001B — Generalizar categoria e unidades de insumo**. Depois de concluído, revalidar o UC001A antes de executá-lo.
+Implementar e revisar o **UC001A — Complementar cadastro de Insumo com Marca e Observação** usando a especificação revalidada. Não iniciar UC002 antes do UC001A estar concluído.
