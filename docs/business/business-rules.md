@@ -24,7 +24,7 @@ O cálculo deve preservar precisão decimal suficiente para que insumos baratos 
 
 ### RN005 — Histórico de preços
 
-Registrar um novo preço não deve sobrescrever o registro anterior.
+Registrar um novo preço não deve sobrescrever o registro anterior. Cada registro pertence a um Insumo específico; marcas diferentes do mesmo item possuem históricos independentes por serem Insumos distintos.
 
 ### RN006 — Preço atual
 
@@ -52,11 +52,15 @@ O nome:
 
 Para comparação determinística, o sistema mantém uma representação normalizada do nome em maiúsculas com regra invariável. A normalização de comparação não remove acentos.
 
-### RN029 — Unicidade do nome do insumo
+### RN029 — Unicidade do insumo por nome e marca
 
-Não podem existir dois insumos com o mesmo nome normalizado, independentemente de estarem ativos ou inativos.
+Não podem existir dois insumos com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`, independentemente de estarem ativos ou inativos.
 
-A integridade deve ser protegida pelo banco com índice/restrição única sobre a representação normalizada, além da validação funcional usada para apresentar mensagem amigável ao usuário.
+Marcas diferentes do mesmo Nome representam insumos distintos e podem coexistir.
+
+Quando a Marca não for informada, `MarcaNormalizada` deve assumir string vazia como representação técnica, garantindo que dois insumos sem marca e com o mesmo Nome também sejam considerados duplicados.
+
+A integridade deve ser protegida pelo banco com índice/restrição única composta, além da validação funcional usada para apresentar mensagem amigável ao usuário.
 
 ### RN030 — Categoria do insumo
 
@@ -71,6 +75,42 @@ Nenhum valor indefinido/zero é considerado categoria funcional válida.
 ### RN031 — Situação inicial do insumo
 
 Todo novo insumo é criado como ativo. A situação inicial não é escolhida pelo usuário no cadastro.
+
+### RN032 — Marca do insumo
+
+A Marca identifica opcionalmente a variação comercial de um insumo.
+
+A Marca:
+
+- é opcional;
+- possui no máximo 80 caracteres após normalização;
+- remove espaços externos e reduz sequências internas de whitespace a um único espaço;
+- preserva a capitalização informada para exibição;
+- possui representação `MarcaNormalizada` em maiúsculas com regra invariável;
+- não remove acentos durante a normalização de comparação;
+- quando ausente, é armazenada como `null`, enquanto `MarcaNormalizada` usa string vazia.
+
+Marcas diferentes do mesmo Nome representam insumos economicamente distintos e podem possuir preços/custos diferentes.
+
+### RN033 — Observação do insumo
+
+A Observação do Insumo é uma anotação técnica global e opcional, como força W de uma farinha ou característica relevante de embalagem.
+
+A observação:
+
+- possui no máximo 1000 caracteres;
+- remove apenas whitespace externo;
+- preserva conteúdo interno e quebras de linha;
+- se vazia ou composta apenas por whitespace, é armazenada como `null`;
+- não participa da identidade ou unicidade do Insumo.
+
+### RN034 — Observação contextual do item da ficha técnica
+
+Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo na receita, como a razão para escolher uma marca específica.
+
+Essa observação é independente da Observação global do Insumo e deve permanecer associada ao item da ficha. Alterações posteriores na Observação do Insumo não devem sobrescrever a justificativa registrada na receita.
+
+A implementação desta regra pertence ao UC014/UC015, não ao UC001A ou UC002.
 
 ## Produtos e ficha técnica
 
