@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Precificador.Core.Insumos;
 
-public sealed class Insumo
+public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 {
     private const int TamanhoMaximoNome = 120;
 

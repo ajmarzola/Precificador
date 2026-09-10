@@ -4,6 +4,7 @@ namespace Precificador.Core.Empresas;
 
 public sealed class Empresa
 {
+    private const int TamanhoMaximoNome = 120;
     private Empresa()
     {
         Nome = null!;
@@ -17,6 +18,7 @@ public sealed class Empresa
         {
             throw new ArgumentException("O nome da empresa é obrigatório.", nameof(nome));
         }
+        if (Nome.Length > TamanhoMaximoNome) throw new ArgumentException("O nome da empresa deve possuir no máximo 120 caracteres.", nameof(nome));
 
         NomeNormalizado = Nome.ToUpperInvariant();
         Ativo = true;
@@ -29,6 +31,12 @@ public sealed class Empresa
 
     public static Empresa Criar(string nome) => new(nome);
 
+    public static Empresa CriarTecnica(int id, string nome)
+    {
+        var empresa = new Empresa(nome) { Id = id };
+        return empresa;
+    }
+
     public void Renomear(string nome)
     {
         Nome = NormalizarNome(nome);
@@ -36,6 +44,7 @@ public sealed class Empresa
         {
             throw new ArgumentException("O nome da empresa é obrigatório.", nameof(nome));
         }
+        if (Nome.Length > TamanhoMaximoNome) throw new ArgumentException("O nome da empresa deve possuir no máximo 120 caracteres.", nameof(nome));
 
         NomeNormalizado = Nome.ToUpperInvariant();
     }

@@ -1,6 +1,5 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Precificador.Core.Insumos;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
@@ -20,7 +19,7 @@ public sealed class InsumoPersistenceTests
 
         var objetos = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type IN ('table', 'index')").ToListAsync();
         Assert.Contains("Insumos", objetos);
-        Assert.Contains("IX_Insumos_NomeNormalizado", objetos);
+        Assert.Contains("IX_Insumos_EmpresaId_NomeNormalizado", objetos);
     }
 
     [Fact]
@@ -58,7 +57,7 @@ public sealed class InsumoPersistenceTests
     }
 
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)).Options, new EmpresaContextoTeste());
+        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new EmpresaContextoTeste());
 
     private sealed class EmpresaContextoTeste : IEmpresaContext
     {

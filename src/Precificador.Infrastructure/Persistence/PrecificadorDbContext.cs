@@ -39,7 +39,7 @@ public sealed class PrecificadorDbContext(
 
     private void AplicarIsolamentoEmpresa()
     {
-        var alteracoes = ChangeTracker.Entries<Insumo>()
+        var alteracoes = ChangeTracker.Entries<IEntidadeEmpresa>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
 
         foreach (var alteracao in alteracoes)

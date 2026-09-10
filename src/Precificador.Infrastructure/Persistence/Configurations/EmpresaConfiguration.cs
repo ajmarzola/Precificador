@@ -14,5 +14,6 @@ public sealed class EmpresaConfiguration : IEntityTypeConfiguration<Empresa>
         builder.Property(empresa => empresa.NomeNormalizado).IsRequired().HasMaxLength(120);
         builder.Property(empresa => empresa.Ativo).IsRequired();
         builder.HasIndex(empresa => empresa.NomeNormalizado).IsUnique();
+        builder.HasData(Empresa.CriarTecnica(1, "Empresa inicial"));
     }
 }

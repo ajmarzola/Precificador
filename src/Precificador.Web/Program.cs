@@ -4,10 +4,11 @@ using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Empresas;
+using Precificador.Web.Autorizacao;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options => options.Conventions.AuthorizeFolder("/Insumos", "EmpresaAtiva"));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
@@ -28,6 +29,8 @@ builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
 }).AddEntityFrameworkStores<PrecificadorDbContext>().AddDefaultTokenProviders();
 builder.Services.ConfigureApplicationCookie(options => options.Cookie.HttpOnly = true);
+builder.Services.AddAuthorization(options => options.AddPolicy("EmpresaAtiva", policy => policy.Requirements.Add(new EmpresaAtivaRequirement())));
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, EmpresaAtivaHandler>();
 
 var app = builder.Build();
 

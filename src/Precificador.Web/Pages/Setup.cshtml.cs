@@ -9,7 +9,7 @@ using Precificador.Web.Empresas;
 
 namespace Precificador.Web.Pages;
 
-public sealed class SetupModel(PrecificadorDbContext context, UserManager<UsuarioAplicacao> userManager, SignInManager<UsuarioAplicacao> signInManager, EmpresaContext empresaContext) : PageModel
+public sealed class SetupModel(PrecificadorDbContext context, UserManager<UsuarioAplicacao> userManager) : PageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
     public async Task<IActionResult> OnGetAsync() => await userManager.Users.AnyAsync() ? NotFound() : Page();
@@ -17,6 +17,7 @@ public sealed class SetupModel(PrecificadorDbContext context, UserManager<Usuari
     {
         if (await userManager.Users.AnyAsync()) return NotFound();
         if (!ModelState.IsValid) return Page();
+        await using var transaction = await context.Database.BeginTransactionAsync();
         var empresa = await context.Empresas.SingleAsync(empresa => empresa.NomeNormalizado == "EMPRESA INICIAL");
         try { empresa.Renomear(Input.NomeEmpresa); }
         catch (ArgumentException exception) { ModelState.AddModelError("Input.NomeEmpresa", exception.Message); return Page(); }
@@ -25,9 +26,8 @@ public sealed class SetupModel(PrecificadorDbContext context, UserManager<Usuari
         if (!resultado.Succeeded) { foreach (var erro in resultado.Errors) ModelState.AddModelError(string.Empty, erro.Description); return Page(); }
         context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresa.Id, Ativo = true });
         await context.SaveChangesAsync();
-        empresaContext.Definir(empresa.Id);
-        await signInManager.SignInAsync(usuario, false);
-        return RedirectToPage("/Index");
+        await transaction.CommitAsync();
+        return RedirectToPage("/Conta/Login");
     }
     public sealed class InputModel
     {
