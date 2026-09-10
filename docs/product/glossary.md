@@ -2,7 +2,19 @@
 
 ## Insumo
 
-Item consumido ou utilizado na produção de um produto. No MVP, pode representar ingrediente, embalagem ou consumível.
+Item consumido ou utilizado na produção de um produto. No MVP, pode representar ingrediente, embalagem ou consumível. Quando houver marca comercial relevante, cada combinação de item + marca representa um insumo economicamente distinto.
+
+## Marca do insumo
+
+Identificação comercial opcional do insumo. Marcas diferentes de um mesmo item podem possuir históricos de preço e custos distintos.
+
+## Observação do insumo
+
+Anotação técnica global do cadastro, como força W de uma farinha, teor de proteína ou característica de embalagem. Não representa justificativa específica de uma receita.
+
+## Observação do item da ficha técnica
+
+Anotação contextual associada ao uso de um insumo em uma receita, destinada a registrar razões como a escolha de uma marca específica. É independente da observação global do insumo.
 
 ## Ingrediente
 
@@ -22,7 +34,7 @@ Unidade em que o insumo é usado nas fichas técnicas. O MVP trabalha inicialmen
 
 ## Registro de preço
 
-Evento que informa quanto foi pago por determinada quantidade de um insumo em uma data de referência.
+Evento que informa quanto foi pago por determinada quantidade de um insumo em uma data de referência. O registro pertence a um Insumo específico e, portanto, distingue marcas diferentes.
 
 ## Custo unitário do insumo
 
@@ -38,7 +50,7 @@ Item comercializado cuja precificação é calculada pelo sistema.
 
 ## Ficha técnica
 
-Definição da produção de um lote: insumos e respectivas quantidades, rendimento, tempos e parâmetros específicos do produto.
+Definição da produção de um lote: insumos e respectivas quantidades, rendimento, tempos, observações contextuais e parâmetros específicos do produto.
 
 ## Lote
 

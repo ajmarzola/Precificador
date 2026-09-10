@@ -17,24 +17,47 @@ Manter o catálogo de itens usados nas fichas técnicas e seu histórico de pre�
 
 ## Dados essenciais
 
-- nome;
+- nome do item;
+- marca opcional;
+- observação técnica opcional;
 - categoria: ingrediente, embalagem ou consumível;
 - unidade base;
 - situação ativo/inativo.
 
-### Cadastro inicial
+### Identidade do insumo
 
-No UC001, o cadastro contém somente:
+O Nome representa o item genérico e a Marca identifica a variação comercial quando aplicável.
+
+Exemplo:
+
+```text
+Nome: Farinha de Trigo Branca
+Marca: Renata Super Premium
+```
+
+Marcas diferentes do mesmo item são insumos distintos e, quando o UC005 for implementado, possuirão históricos de preço independentes.
+
+A Marca é opcional para suportar itens sem marca relevante.
+
+A unicidade do cadastro é determinada pela combinação normalizada de Nome + Marca, inclusive para registros inativos.
+
+### Observação técnica
+
+A Observação do Insumo guarda características gerais do item, como força W da farinha, teor de proteína ou característica da embalagem.
+
+Justificativas específicas de uso em uma receita pertencem ao item da ficha técnica e serão tratadas no UC014; não devem ser confundidas com a observação global do insumo.
+
+### Cadastro
+
+O cadastro contém:
 
 - Nome;
+- Marca opcional;
 - Categoria;
-- Unidade base.
+- Unidade base;
+- Observação opcional.
 
-Todo novo insumo nasce ativo. Preço não faz parte do cadastro inicial e será tratado separadamente pelo UC005, preservando histórico.
-
-O nome deve ser normalizado para eliminar diferenças acidentais de espaços e possuir uma representação técnica normalizada para impedir duplicidades por caixa/espaçamento. A capitalização usada para exibição é preservada após a limpeza de espaços.
-
-Não podem existir dois insumos com o mesmo nome normalizado, inclusive quando um deles estiver inativo.
+Todo novo insumo nasce ativo. Preço não faz parte do cadastro e será tratado separadamente pelo UC005, preservando histórico.
 
 Cada registro de preço deve conter ao menos:
 
@@ -42,19 +65,20 @@ Cada registro de preço deve conter ao menos:
 - data de referência;
 - quantidade comprada na unidade base;
 - preço pago;
-- observação opcional.
+- observação opcional do evento de compra/preço.
 
 Fornecedor poderá ser incorporado futuramente sem transformar cadastro de fornecedores em módulo do MVP.
 
 ## Regras relacionadas
 
 - RN001 a RN008;
-- RN028 a RN031.
+- RN028 a RN034.
 
 ## Casos de uso
 
 - [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
-- UC002 — Listar e consultar insumos;
+- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
+- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
 - UC003 — Editar insumo;
 - UC004 — Desativar insumo;
 - UC005 — Registrar preço de insumo;

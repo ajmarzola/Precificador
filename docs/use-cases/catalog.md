@@ -21,10 +21,11 @@ Essa fundação possui especificação própria e foi concluída antes dos casos
 | UC | Nome | Dependências |
 |---|---|---|
 | [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | Fundação |
-| UC002 | Listar e consultar insumos | UC001 |
-| UC003 | Editar insumo | UC001 |
-| UC004 | Desativar insumo | UC001 |
-| UC005 | Registrar preço de insumo | UC001 |
+| [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001 |
+| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A |
+| UC003 | Editar insumo | UC001A |
+| UC004 | Desativar insumo | UC001A |
+| UC005 | Registrar preço de insumo | UC001A |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
 
 ## Produtos
@@ -43,8 +44,8 @@ Essa fundação possui especificação própria e foi concluída antes dos casos
 | UC | Nome | Dependências |
 |---|---|---|
 | UC013 | Definir rendimento e tempos do lote | UC007 |
-| UC014 | Adicionar insumo à ficha técnica | UC001, UC007 |
-| UC015 | Alterar quantidade de item da ficha técnica | UC014 |
+| UC014 | Adicionar insumo à ficha técnica com quantidade e observação contextual opcional | UC001A, UC007 |
+| UC015 | Alterar quantidade/observação de item da ficha técnica | UC014 |
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
 
