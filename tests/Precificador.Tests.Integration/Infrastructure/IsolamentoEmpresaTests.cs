@@ -17,7 +17,7 @@ public sealed class IsolamentoEmpresaTests
         await using (var contexto = CriarContexto(connection, empresa1))
         {
             await contexto.Database.MigrateAsync();
-            contexto.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+            contexto.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
             await contexto.SaveChangesAsync();
             contexto.Empresas.Add(Empresa.Criar("Empresa dois"));
             await contexto.SaveChangesAsync();
@@ -26,7 +26,7 @@ public sealed class IsolamentoEmpresaTests
         await using (var contexto = CriarContexto(connection, empresa2))
         {
             Assert.Empty(await contexto.Insumos.ToListAsync());
-            contexto.Insumos.Add(Insumo.Criar(1, "Tentativa", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+            contexto.Insumos.Add(Insumo.Criar(1, "Tentativa", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
             await Assert.ThrowsAsync<InvalidOperationException>(() => contexto.SaveChangesAsync());
         }
         await using var semEmpresa = CriarContexto(connection, new ContextoEmpresa(null));

@@ -1,6 +1,6 @@
 # UC001B — Generalizar categoria e unidades de insumo
 
-- **Status:** Especificado — pronto para implementação
+- **Status:** Implementado
 - **Tipo:** ajuste de domínio do cadastro de Insumo
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001 implementado e FT002 implementada

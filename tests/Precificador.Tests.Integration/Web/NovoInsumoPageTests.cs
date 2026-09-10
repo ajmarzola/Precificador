@@ -32,7 +32,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using var client = await CriarClienteAutenticadoAsync();
         var nome = $"Farinha {Guid.NewGuid():N}";
 
-        var response = await EnviarFormularioAsync(client, nome, "Ingrediente", "Grama");
+        var response = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         using (var scope = factory.Services.CreateScope())
@@ -52,7 +52,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using var client = await CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarInsumosAsync();
 
-        var response = await EnviarFormularioAsync(client, "   ", "Ingrediente", "Grama");
+        var response = await EnviarFormularioAsync(client, "   ", "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(quantidadeAntes, await ContarInsumosAsync());
@@ -63,14 +63,42 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     {
         var nome = $"Açúcar {Guid.NewGuid():N}";
         using var client = await CriarClienteAutenticadoAsync();
-        var primeiroCadastro = await EnviarFormularioAsync(client, nome, "Ingrediente", "Grama");
+        var primeiroCadastro = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Grama");
         Assert.Equal(HttpStatusCode.Redirect, primeiroCadastro.StatusCode);
-        var response = await EnviarFormularioAsync(client, $"  {nome.ToUpperInvariant()}  ", "Ingrediente", "Grama");
+        var response = await EnviarFormularioAsync(client, $"  {nome.ToUpperInvariant()}  ", "MateriaPrima", "Grama");
         var conteudo = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Já existe um insumo cadastrado com esse nome.", WebUtility.HtmlDecode(conteudo));
         Assert.Equal(1, await ContarInsumosAsync(nome));
+    }
+
+    [Fact]
+    public async Task Get_novo_insumo_exibe_materia_prima_e_metro_sem_ingrediente()
+    {
+        using var client = await CriarClienteAutenticadoAsync();
+
+        var conteudo = await (await client.GetAsync("/Insumos/Novo")).Content.ReadAsStringAsync();
+
+        Assert.Contains("Matéria-prima", conteudo);
+        Assert.Contains(">m</option>", conteudo);
+        Assert.DoesNotContain(">Ingrediente</option>", conteudo);
+    }
+
+    [Fact]
+    public async Task Post_valido_com_metro_persiste_insumo()
+    {
+        using var client = await CriarClienteAutenticadoAsync();
+        var nome = $"Fita {Guid.NewGuid():N}";
+
+        var response = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Metro");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var insumo = await context.Insumos.IgnoreQueryFilters().SingleAsync(item => item.Nome == nome);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Metro, insumo.UnidadeBase);
     }
 
     private static async Task<HttpResponseMessage> EnviarFormularioAsync(HttpClient client, string nome, string categoria, string unidadeBase)

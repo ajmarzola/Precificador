@@ -25,6 +25,7 @@ public sealed class MultiempresaMigrationTests
         Assert.Contains("UsuariosEmpresas", objetos);
         var insumo = await contexto.Insumos.SingleAsync();
         Assert.Equal(1, insumo.EmpresaId);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
         Assert.Equal("Empresa inicial", (await contexto.Empresas.SingleAsync(empresa => empresa.Id == 1)).Nome);
     }
 
@@ -37,12 +38,12 @@ public sealed class MultiempresaMigrationTests
         await empresa1.Database.MigrateAsync();
         empresa1.Empresas.Add(Empresa.Criar("Empresa dois"));
         await empresa1.SaveChangesAsync();
-        empresa1.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        empresa1.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
         await empresa1.SaveChangesAsync();
         await using var empresa2 = CriarContexto(connection, 2);
-        empresa2.Insumos.Add(Insumo.Criar(2, "farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        empresa2.Insumos.Add(Insumo.Criar(2, "farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
         await empresa2.SaveChangesAsync();
-        empresa2.Insumos.Add(Insumo.Criar(2, "FARINHA", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        empresa2.Insumos.Add(Insumo.Criar(2, "FARINHA", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
         await Assert.ThrowsAsync<DbUpdateException>(() => empresa2.SaveChangesAsync());
     }
 

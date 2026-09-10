@@ -49,11 +49,28 @@ public sealed class InsumoPersistenceTests
         await using var context = CriarContexto(connection);
         await context.Database.MigrateAsync();
 
-        context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
         await context.SaveChangesAsync();
-        context.Insumos.Add(Insumo.Criar(1, "farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Metro_persiste_como_quatro_e_e_recuperado_corretamente()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+
+        context.Insumos.Add(Insumo.Criar(1, "Fita", CategoriaInsumo.MateriaPrima, UnidadeMedida.Metro));
+        await context.SaveChangesAsync();
+
+        var unidadePersistida = await context.Database.SqlQueryRaw<int>("SELECT UnidadeBase AS Value FROM Insumos").SingleAsync();
+        var insumo = await context.Insumos.AsNoTracking().SingleAsync();
+        Assert.Equal(4, unidadePersistida);
+        Assert.Equal(UnidadeMedida.Metro, insumo.UnidadeBase);
     }
 
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
