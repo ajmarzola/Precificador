@@ -32,7 +32,7 @@ Parta da `master` atualizada após o merge da documentação FT002.
 
 Adicionar a infraestrutura mínima para Empresa, ASP.NET Core Identity, vínculo N:N usuário-empresa, bootstrap do primeiro usuário/empresa, login/logout, Empresa Ativa, isolamento tenant-aware, evolução de `Insumo` para `EmpresaId` obrigatório e migration compatível com banco existente.
 
-Não implemente UC001A ou UC002 nesta entrega.
+Não implemente UC001B, UC001A ou UC002 nesta entrega.
 
 ## Modelo esperado
 
@@ -142,13 +142,13 @@ Use SQLite temporário/in-memory com conexão mantida; nunca `precificador.db` r
 
 ## Restrições
 
-Não implementar Marca/Observação, UC001A, listagem UC002, CRUD administrativo completo, roles, recuperação de senha, confirmação de e-mail, 2FA, Produto, Ficha Técnica, equipamento, preço, API REST, repository genérico, CQRS/MediatR, auto-migration ou troca de SQLite.
+Não implementar Marca/Observação, UC001B, UC001A, listagem UC002, CRUD administrativo completo, roles, recuperação de senha, confirmação de e-mail, 2FA, Produto, Ficha Técnica, equipamento, preço, API REST, repository genérico, CQRS/MediatR, auto-migration ou troca de SQLite.
 
-Também não generalize Categoria/Unidade dentro desta FT.
+Também não altere `CategoriaInsumo` nem `UnidadeMedida` nesta FT. A generalização aprovada (`MateriaPrima = 1` e `Metro = 4`) pertence exclusivamente ao UC001B.
 
 ## Documentação ao concluir
 
-Marcar FT002 como Implementado. Não marcar UC001A/UC002 como implementados. Se houver conflito real, registrar desvio em vez de mudar requisito silenciosamente.
+Marcar FT002 como Implementado. Não marcar UC001B/UC001A/UC002 como implementados. Se houver conflito real, registrar desvio em vez de mudar requisito silenciosamente.
 
 ## Validação
 
