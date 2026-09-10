@@ -4,5 +4,6 @@ public enum UnidadeMedida
 {
     Grama = 1,
     Mililitro = 2,
-    Unidade = 3
+    Unidade = 3,
+    Metro = 4
 }

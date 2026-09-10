@@ -23,7 +23,7 @@
         <label asp-for="Input.Categoria" class="form-label">Categoria</label>
         <select asp-for="Input.Categoria" class="form-select">
             <option value="">Selecione uma categoria</option>
-            <option value="@CategoriaInsumo.Ingrediente">Ingrediente</option>
+            <option value="@CategoriaInsumo.MateriaPrima">Matéria-prima</option>
             <option value="@CategoriaInsumo.Embalagem">Embalagem</option>
             <option value="@CategoriaInsumo.Consumivel">Consumível</option>
         </select>
@@ -35,6 +35,7 @@
             <option value="">Selecione uma unidade</option>
             <option value="@UnidadeMedida.Grama">g</option>
             <option value="@UnidadeMedida.Mililitro">ml</option>
+            <option value="@UnidadeMedida.Metro">m</option>
             <option value="@UnidadeMedida.Unidade">un</option>
         </select>
         <span asp-validation-for="Input.UnidadeBase" class="text-danger"></span>
