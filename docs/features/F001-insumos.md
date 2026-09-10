@@ -78,7 +78,7 @@ Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence
 ## Casos de uso
 
 - [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
-- UC001B — Generalizar categoria e unidades de insumo;
+- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md);
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
 - UC003 — Editar insumo;
