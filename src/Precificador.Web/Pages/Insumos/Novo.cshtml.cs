@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Web.Pages.Insumos;
 
+[Authorize]
 public sealed class NovoModel(PrecificadorDbContext context, ILogger<NovoModel> logger) : PageModel
 {
     private const string MensagemDuplicidade = "Já existe um insumo cadastrado com esse nome.";

@@ -1,0 +1,13 @@
+@page
+@model Precificador.Web.Pages.SetupModel
+@{ ViewData["Title"] = "Configuração inicial"; }
+<h1>Configuração inicial</h1>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.NomeEmpresa"></label><input asp-for="Input.NomeEmpresa" class="form-control" /><span asp-validation-for="Input.NomeEmpresa" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.Email"></label><input asp-for="Input.Email" class="form-control" /><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.Senha"></label><input asp-for="Input.Senha" class="form-control" /><span asp-validation-for="Input.Senha" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.ConfirmacaoSenha"></label><input asp-for="Input.ConfirmacaoSenha" class="form-control" /><span asp-validation-for="Input.ConfirmacaoSenha" class="text-danger"></span></div>
+    <button class="btn btn-primary" type="submit">Criar acesso</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

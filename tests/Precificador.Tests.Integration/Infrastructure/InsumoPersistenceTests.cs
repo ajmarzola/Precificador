@@ -1,6 +1,8 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Precificador.Core.Insumos;
+using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Tests.Integration.Infrastructure;
@@ -56,5 +58,10 @@ public sealed class InsumoPersistenceTests
     }
 
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options);
+        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)).Options, new EmpresaContextoTeste());
+
+    private sealed class EmpresaContextoTeste : IEmpresaContext
+    {
+        public int? EmpresaId => 1;
+    }
 }

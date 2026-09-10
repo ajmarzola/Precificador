@@ -1,0 +1,10 @@
+@page
+@model Precificador.Web.Pages.Empresas.SelecionarModel
+@{ ViewData["Title"] = "Selecionar empresa"; }
+<h1>Selecionar empresa</h1>
+<p>Escolha a empresa que deseja utilizar.</p>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <select asp-for="EmpresaId" asp-items="Model.Empresas" class="form-select"></select>
+    <button class="btn btn-primary mt-3" type="submit">Continuar</button>
+</form>

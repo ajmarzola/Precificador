@@ -1,0 +1,12 @@
+@page
+@model Precificador.Web.Pages.Conta.LoginModel
+@{ ViewData["Title"] = "Entrar"; }
+<h1>Entrar</h1>
+<form method="post">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.Email"></label><input asp-for="Input.Email" class="form-control" /><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.Senha"></label><input asp-for="Input.Senha" class="form-control" /><span asp-validation-for="Input.Senha" class="text-danger"></span></div>
+    <button type="submit" class="btn btn-primary">Entrar</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -27,6 +27,8 @@ public sealed class Insumo
 
     public int Id { get; private set; }
 
+    public int EmpresaId { get; private set; }
+
     public string Nome { get; private set; }
 
     public string NomeNormalizado { get; private set; }
@@ -39,6 +41,21 @@ public sealed class Insumo
 
     public static Insumo Criar(string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase) =>
         new(nome, categoria, unidadeBase);
+
+    public void DefinirEmpresa(int empresaId)
+    {
+        if (empresaId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(empresaId));
+        }
+
+        if (EmpresaId != 0 && EmpresaId != empresaId)
+        {
+            throw new InvalidOperationException("O insumo já pertence a outra empresa.");
+        }
+
+        EmpresaId = empresaId;
+    }
 
     private static string NormalizarNome(string nome) =>
         Regex.Replace(nome?.Trim() ?? string.Empty, @"\s+", " ");
