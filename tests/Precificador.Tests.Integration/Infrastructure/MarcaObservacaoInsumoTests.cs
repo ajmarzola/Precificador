@@ -52,6 +52,7 @@ public sealed class MarcaObservacaoInsumoTests
         empresa1.Empresas.Add(Empresa.Criar("Empresa dois"));
         await empresa1.SaveChangesAsync();
         empresa1.Insumos.Add(Insumo.Criar(1, "Sal", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
+        empresa1.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata"));
         await empresa1.SaveChangesAsync();
         empresa1.Insumos.Add(Insumo.Criar(1, " sal ", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
         await Assert.ThrowsAsync<DbUpdateException>(() => empresa1.SaveChangesAsync());

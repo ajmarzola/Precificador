@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Infrastructure.Autenticacao;
@@ -124,6 +125,43 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     }
 
     [Fact]
+    public async Task Post_com_nome_e_marca_duplicados_nao_persiste_e_exibe_mensagem_funcional()
+    {
+        var nome = $"Farinha {Guid.NewGuid():N}";
+        using var client = await CriarClienteAutenticadoAsync();
+        var primeiroCadastro = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Grama", "Renata");
+        Assert.Equal(HttpStatusCode.Redirect, primeiroCadastro.StatusCode);
+
+        var response = await EnviarFormularioAsync(client, $"  {nome.ToUpperInvariant()}  ", "MateriaPrima", "Grama", "  RENATA  ");
+        var conteudo = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Já existe um insumo cadastrado com esse nome e marca.", WebUtility.HtmlDecode(conteudo));
+        Assert.Equal(1, await ContarInsumosAsync(nome));
+    }
+
+    [Fact]
+    public async Task Post_com_mesma_combinacao_marcada_em_empresas_diferentes_e_permitido_e_isolado()
+    {
+        var empresaDois = await CriarEmpresaAsync();
+        var nome = $"Farinha {Guid.NewGuid():N}";
+        using var clienteEmpresaUm = await CriarClienteAutenticadoAsync();
+        using var clienteEmpresaDois = await CriarClienteAutenticadoAsync(empresaDois);
+
+        var cadastroEmpresaUm = await EnviarFormularioAsync(clienteEmpresaUm, nome, "MateriaPrima", "Grama", "Renata");
+        var cadastroEmpresaDois = await EnviarFormularioAsync(clienteEmpresaDois, nome, "MateriaPrima", "Grama", "Renata");
+
+        Assert.Equal(HttpStatusCode.Redirect, cadastroEmpresaUm.StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, cadastroEmpresaDois.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var contextoEmpresaUm = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        await using var contextoEmpresaDois = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaDois));
+        Assert.Single(await contextoEmpresaUm.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
+        Assert.Single(await contextoEmpresaDois.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
+    }
+
+    [Fact]
     public async Task Get_novo_insumo_exibe_materia_prima_e_metro_sem_ingrediente()
     {
         using var client = await CriarClienteAutenticadoAsync();
@@ -179,7 +217,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
             : await context.Insumos.IgnoreQueryFilters().CountAsync(insumo => insumo.Nome == nome);
     }
 
-    private async Task<HttpClient> CriarClienteAutenticadoAsync()
+    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId = 1)
     {
         var email = $"usuario-{Guid.NewGuid():N}@teste.local";
         const string senha = "SenhaTeste1";
@@ -189,7 +227,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
             var usuario = new UsuarioAplicacao { UserName = email, Email = email };
             Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
+            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
             await context.SaveChangesAsync();
         }
 
@@ -205,5 +243,21 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         }));
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         return client;
+    }
+
+    private async Task<int> CriarEmpresaAsync()
+    {
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
+        context.Empresas.Add(empresa);
+        await context.SaveChangesAsync();
+        return empresa.Id;
+    }
+
+    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
+    {
+        public int? EmpresaId => empresaId;
+        public int EmpresaIdOuSentinela => empresaId;
     }
 }
