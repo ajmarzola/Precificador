@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Precificador.Core.Insumos;
 
-public sealed class Insumo
+public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 {
     private const int TamanhoMaximoNome = 120;
 
@@ -12,8 +12,9 @@ public sealed class Insumo
         NomeNormalizado = null!;
     }
 
-    private Insumo(string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase)
+    private Insumo(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase)
     {
+        DefinirEmpresa(empresaId);
         Nome = NormalizarNome(nome);
         NomeNormalizado = Nome.ToUpperInvariant();
         ValidarNome(Nome);
@@ -27,6 +28,8 @@ public sealed class Insumo
 
     public int Id { get; private set; }
 
+    public int EmpresaId { get; private set; }
+
     public string Nome { get; private set; }
 
     public string NomeNormalizado { get; private set; }
@@ -37,8 +40,23 @@ public sealed class Insumo
 
     public bool Ativo { get; private set; }
 
-    public static Insumo Criar(string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase) =>
-        new(nome, categoria, unidadeBase);
+    public static Insumo Criar(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase) =>
+        new(empresaId, nome, categoria, unidadeBase);
+
+    public void DefinirEmpresa(int empresaId)
+    {
+        if (empresaId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(empresaId));
+        }
+
+        if (EmpresaId != 0 && EmpresaId != empresaId)
+        {
+            throw new InvalidOperationException("O insumo já pertence a outra empresa.");
+        }
+
+        EmpresaId = empresaId;
+    }
 
     private static string NormalizarNome(string nome) =>
         Regex.Replace(nome?.Trim() ?? string.Empty, @"\s+", " ");

@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Insumos;
+using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Tests.Integration.Infrastructure;
@@ -18,7 +19,7 @@ public sealed class InsumoPersistenceTests
 
         var objetos = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type IN ('table', 'index')").ToListAsync();
         Assert.Contains("Insumos", objetos);
-        Assert.Contains("IX_Insumos_NomeNormalizado", objetos);
+        Assert.Contains("IX_Insumos_EmpresaId_NomeNormalizado", objetos);
     }
 
     [Fact]
@@ -29,7 +30,7 @@ public sealed class InsumoPersistenceTests
         await using var context = CriarContexto(connection);
         await context.Database.MigrateAsync();
 
-        context.Insumos.Add(Insumo.Criar("  Copo   200 ml ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade));
+        context.Insumos.Add(Insumo.Criar(1, "  Copo   200 ml ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade));
         await context.SaveChangesAsync();
 
         var insumo = await context.Insumos.AsNoTracking().SingleAsync();
@@ -48,13 +49,19 @@ public sealed class InsumoPersistenceTests
         await using var context = CriarContexto(connection);
         await context.Database.MigrateAsync();
 
-        context.Insumos.Add(Insumo.Criar("Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
         await context.SaveChangesAsync();
-        context.Insumos.Add(Insumo.Criar("farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options);
+        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new EmpresaContextoTeste());
+
+    private sealed class EmpresaContextoTeste : IEmpresaContext
+    {
+        public int? EmpresaId => 1;
+        public int EmpresaIdOuSentinela => 1;
+    }
 }

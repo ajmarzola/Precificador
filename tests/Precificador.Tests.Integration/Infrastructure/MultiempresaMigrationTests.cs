@@ -1,0 +1,58 @@
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Empresas;
+using Precificador.Core.Insumos;
+using Precificador.Infrastructure.Persistence;
+
+namespace Precificador.Tests.Integration.Infrastructure;
+
+public sealed class MultiempresaMigrationTests
+{
+    [Fact]
+    public async Task Upgrade_do_banco_uc001_preserva_insumo_e_o_associa_a_empresa_tecnica()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var contexto = CriarContexto(connection, 1);
+        await contexto.Database.MigrateAsync("20260909200644_CreateInsumos");
+        await contexto.Database.ExecuteSqlRawAsync("INSERT INTO Insumos (Nome, NomeNormalizado, Categoria, UnidadeBase, Ativo) VALUES ('Farinha', 'FARINHA', 1, 1, 1)");
+
+        await contexto.Database.MigrateAsync();
+
+        var objetos = await contexto.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table'").ToListAsync();
+        Assert.Contains("AspNetUsers", objetos);
+        Assert.Contains("Empresas", objetos);
+        Assert.Contains("UsuariosEmpresas", objetos);
+        var insumo = await contexto.Insumos.SingleAsync();
+        Assert.Equal(1, insumo.EmpresaId);
+        Assert.Equal("Empresa inicial", (await contexto.Empresas.SingleAsync(empresa => empresa.Id == 1)).Nome);
+    }
+
+    [Fact]
+    public async Task Mesmo_nome_normalizado_e_permitido_em_empresas_distintas_e_rejeitado_na_mesma()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var empresa1 = CriarContexto(connection, 1);
+        await empresa1.Database.MigrateAsync();
+        empresa1.Empresas.Add(Empresa.Criar("Empresa dois"));
+        await empresa1.SaveChangesAsync();
+        empresa1.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        await empresa1.SaveChangesAsync();
+        await using var empresa2 = CriarContexto(connection, 2);
+        empresa2.Insumos.Add(Insumo.Criar(2, "farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        await empresa2.SaveChangesAsync();
+        empresa2.Insumos.Add(Insumo.Criar(2, "FARINHA", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        await Assert.ThrowsAsync<DbUpdateException>(() => empresa2.SaveChangesAsync());
+    }
+
+    private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) => new(
+        new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options,
+        new ContextoEmpresa(empresaId));
+
+    private sealed class ContextoEmpresa(int empresaId) : IEmpresaContext
+    {
+        public int? EmpresaId => empresaId;
+        public int EmpresaIdOuSentinela => empresaId;
+    }
+}

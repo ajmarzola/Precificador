@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Insumos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Infrastructure.Autenticacao;
+using Microsoft.AspNetCore.Identity;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -13,7 +15,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     [Fact]
     public async Task Get_novo_insumo_retorna_sucesso_e_exibe_campos()
     {
-        using var client = factory.CreateClient();
+        using var client = await CriarClienteAutenticadoAsync();
 
         var response = await client.GetAsync("/Insumos/Novo");
         var conteudo = await response.Content.ReadAsStringAsync();
@@ -27,7 +29,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     [Fact]
     public async Task Post_valido_persiste_redireciona_e_exibe_mensagem_de_sucesso()
     {
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var client = await CriarClienteAutenticadoAsync();
         var nome = $"Farinha {Guid.NewGuid():N}";
 
         var response = await EnviarFormularioAsync(client, nome, "Ingrediente", "Grama");
@@ -36,7 +38,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using (var scope = factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            Assert.True(await context.Insumos.AnyAsync(insumo => insumo.Nome == nome));
+            Assert.True(await context.Insumos.IgnoreQueryFilters().AnyAsync(insumo => insumo.Nome == nome));
         }
 
         var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
@@ -47,7 +49,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     [Fact]
     public async Task Post_invalido_nao_persiste()
     {
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var client = await CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarInsumosAsync();
 
         var response = await EnviarFormularioAsync(client, "   ", "Ingrediente", "Grama");
@@ -60,14 +62,9 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     public async Task Post_com_nome_duplicado_nao_persiste_e_exibe_mensagem_funcional()
     {
         var nome = $"Açúcar {Guid.NewGuid():N}";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            context.Insumos.Add(Insumo.Criar(nome, CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
-            await context.SaveChangesAsync();
-        }
-
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var client = await CriarClienteAutenticadoAsync();
+        var primeiroCadastro = await EnviarFormularioAsync(client, nome, "Ingrediente", "Grama");
+        Assert.Equal(HttpStatusCode.Redirect, primeiroCadastro.StatusCode);
         var response = await EnviarFormularioAsync(client, $"  {nome.ToUpperInvariant()}  ", "Ingrediente", "Grama");
         var conteudo = await response.Content.ReadAsStringAsync();
 
@@ -98,7 +95,35 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
         return nome is null
-            ? await context.Insumos.CountAsync()
-            : await context.Insumos.CountAsync(insumo => insumo.Nome == nome);
+            ? await context.Insumos.IgnoreQueryFilters().CountAsync()
+            : await context.Insumos.IgnoreQueryFilters().CountAsync(insumo => insumo.Nome == nome);
+    }
+
+    private async Task<HttpClient> CriarClienteAutenticadoAsync()
+    {
+        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
+        const string senha = "SenhaTeste1";
+        using (var scope = factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
+            Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
+            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
+            await context.SaveChangesAsync();
+        }
+
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
+        var login = await client.GetAsync("/Conta/Login");
+        var pagina = await login.Content.ReadAsStringAsync();
+        var token = Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = WebUtility.HtmlDecode(token),
+            ["Input.Email"] = email,
+            ["Input.Senha"] = senha
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
+        return client;
     }
 }

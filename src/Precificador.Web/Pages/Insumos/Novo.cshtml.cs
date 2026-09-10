@@ -1,13 +1,16 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Insumos;
+using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Web.Pages.Insumos;
 
-public sealed class NovoModel(PrecificadorDbContext context, ILogger<NovoModel> logger) : PageModel
+[Authorize]
+public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext empresaContext, ILogger<NovoModel> logger) : PageModel
 {
     private const string MensagemDuplicidade = "Já existe um insumo cadastrado com esse nome.";
 
@@ -31,7 +34,7 @@ public sealed class NovoModel(PrecificadorDbContext context, ILogger<NovoModel> 
         Insumo insumo;
         try
         {
-            insumo = Insumo.Criar(Input.Nome!, Input.Categoria!.Value, Input.UnidadeBase!.Value);
+            insumo = Insumo.Criar(empresaContext.EmpresaId!.Value, Input.Nome!, Input.Categoria!.Value, Input.UnidadeBase!.Value);
         }
         catch (ArgumentException exception)
         {

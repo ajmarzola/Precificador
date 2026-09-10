@@ -1,4 +1,6 @@
 ﻿<!DOCTYPE html>
+@using Precificador.Web.Empresas
+@inject EmpresaContext EmpresaContext
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -27,6 +29,11 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Insumos/Novo">Cadastrar insumo</a>
                         </li>
                     </ul>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="navbar-text">Empresa ativa: @(EmpresaContext.Nome ?? "não selecionada")</span>
+                        <form method="post" asp-page="/Conta/Logout"><button class="btn btn-link nav-link" type="submit">Sair</button></form>
+                    }
                 </div>
             </div>
         </nav>
