@@ -8,72 +8,30 @@ Registrar a evolução do Precificador para atender empresas de produção artes
 
 Dados operacionais pertencem a uma Empresa. Usuários acessam somente empresas com vínculo ativo e trabalham no contexto de uma Empresa Ativa.
 
-Entidades tenant-owned previstas:
-
-- Insumo;
-- histórico de preço do Insumo;
-- Produto;
-- Ficha Técnica e seus itens;
-- histórico de preço de venda;
-- configurações de precificação;
-- equipamentos/recursos de produção quando modelados.
+Entidades tenant-owned previstas incluem Insumo, histórico de preço, Produto, Ficha Técnica, preço de venda, configurações e equipamentos/recursos quando modelados.
 
 ## Ficha Técnica genérica
 
-A Ficha Técnica representa a composição e os recursos necessários para uma execução/lote de um produto.
+A Ficha Técnica deve representar composição e recursos necessários para uma execução/lote de um produto, e não especificamente uma receita de panificação.
 
-Ela não deve representar especificamente uma receita de panificação.
+Conceitos comuns permanecem: rendimento, insumos/quantidades, observação contextual por item e tempo ativo de trabalho.
 
-Conceitos comuns:
+Perdas devem ser modeladas como conceito de material/processo quando aplicável, sem obrigar produtos que não possuem essa característica.
 
-- rendimento;
-- materiais/insumos e quantidades;
-- observação contextual por item;
-- tempo ativo de trabalho;
-- perdas de material/processo quando aplicáveis;
-- uso de equipamentos quando aplicável.
+`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais. A direção aprovada é modelar futuramente uso de equipamento de forma genérica — forno, impressora, laminadora ou outro recurso — com potência/tempo quando isso for relevante ao custo.
 
-## Equipamentos
-
-`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais.
-
-A evolução esperada é modelar uso de equipamento de forma genérica:
-
-```text
-Equipamento
-- EmpresaId
-- Nome
-- PotenciaKw
-- Ativo
-
-UsoEquipamentoFicha
-- FichaTecnicaId
-- EquipamentoId
-- TempoMinutos
-```
-
-Assim, forno, impressora, laminadora ou outro equipamento podem usar a mesma fórmula de energia sem tornar qualquer um obrigatório.
-
-O modelo exato será fechado antes dos UCs de ficha técnica/energia.
-
-## Perdas
-
-Perda não deve ser atributo obrigatório específico de panificação no Produto.
-
-Ela deve ser tratada como perda de material/processo quando aplicável. O local exato do percentual e regras de aplicação serão fechados antes do UC019, considerando os dois negócios.
-
-## Mão de obra
-
-Tempo ativo e valor/hora são conceitos gerais e permanecem no modelo de precificação.
+O desenho exato será fechado antes dos UCs de Ficha Técnica e energia.
 
 ## Insumos
 
-A generalização revelou que `Ingrediente` como categoria e apenas `g/ml/un` como unidades não são suficientes para negócios não alimentícios.
+A generalização revelou que `Ingrediente` como categoria e apenas `g/ml/un` como unidades podem ser insuficientes para negócios não alimentícios.
 
-Essa alteração será tratada separadamente no UC001B, baseada em uma lista real de insumos das empresas. A FT002 não deve inventar unidades antecipadamente.
+Essa alteração não pertence à FT002. Antes do UC002, será feito um inventário real dos tipos de insumo dos dois negócios e então será documentado um ajuste específico, sem inventar unidades antecipadamente.
 
 ## Configurações
 
-Configurações deixam de ser globais da aplicação e passam a pertencer a uma Empresa.
+Configurações de precificação passam a pertencer a uma Empresa. Parâmetros específicos de equipamento pertencem ao equipamento quando esse domínio for implementado.
 
-Parâmetros específicos de equipamento pertencem ao Equipamento, não às configurações globais da empresa.
+## Compatibilidade
+
+As regras específicas de panificação atualmente documentadas permanecem como referência histórica até serem revalidadas antes de seus UCs de implementação. Nenhuma tabela de Produto/Ficha Técnica existe hoje, portanto essa generalização pode ser concluída documentalmente sem migration ou retrabalho de código neste momento.

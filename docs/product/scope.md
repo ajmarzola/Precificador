@@ -7,38 +7,39 @@ O MVP contempla:
 - múltiplas empresas no mesmo sistema;
 - autenticação de usuários;
 - vínculo de usuários a uma ou mais empresas;
-- seleção de Empresa Ativa;
-- isolamento de dados por empresa;
+- seleção de Empresa Ativa e isolamento de dados por empresa;
 - bootstrap do primeiro usuário e primeira empresa;
-- cadastro administrativo de empresas e usuários/vínculos em UCs posteriores;
+- cadastro administrativo de empresas/usuários e vínculos em UCs posteriores;
 - cadastro, edição, consulta e desativação de insumos;
 - histórico de preços de insumos;
 - cálculo do custo unitário de compra;
 - cadastro, edição, consulta e desativação de produtos;
-- ficha técnica genérica por lote/execução;
-- rendimento;
-- composição por insumos/materiais;
-- custos de materiais, embalagens e consumíveis;
+- ficha técnica por lote/execução;
+- rendimento do lote em unidades de venda;
+- composição por insumos;
+- custos de ingredientes/materiais, embalagens e consumíveis;
 - perdas de material/processo quando aplicáveis;
 - custo de mão de obra a partir de tempo ativo e valor/hora;
-- custo de energia por uso de equipamentos quando aplicável;
-- cálculo de custo total e unitário;
-- margem-alvo;
-- preço teórico e sugerido;
+- custo de energia/recursos a partir de uso de equipamentos quando aplicável;
+- cálculo do custo total por lote e por unidade;
+- margem-alvo por produto;
+- preço teórico e preço sugerido;
 - preço de venda atual e histórico;
 - margem atual;
-- identificação de produtos abaixo da margem;
+- identificação de produtos abaixo da margem-alvo;
 - precificação incompleta;
-- dashboard;
+- dashboard de acompanhamento;
 - configurações de precificação por empresa.
 
 ## Fora do MVP
 
-- estoque/movimentação;
+Não fazem parte do MVP:
+
+- estoque e movimentação de estoque;
 - compras e contas a pagar;
 - vendas e contas a receber;
 - pedidos;
-- clientes;
+- cadastro de clientes;
 - PDV;
 - emissão fiscal;
 - contabilidade;
@@ -46,25 +47,28 @@ O MVP contempla:
 - permissões granulares/roles complexos;
 - aplicativo móvel nativo;
 - microserviços;
+- integrações externas;
 - BI avançado;
 - previsão de demanda;
 - cálculo automático de frete;
 - autenticação externa/SSO;
-- 2FA, salvo nova avaliação de segurança na publicação.
+- 2FA, salvo nova avaliação de segurança quando a publicação for definida.
 
 ## Decisões desta fase
 
-- SQLite permanece autorizado como persistência atual;
+- SQLite permanece autorizado;
 - multiempresa usa banco/schema compartilhados com `EmpresaId`;
 - ASP.NET Core Identity é o mecanismo de autenticação;
-- publicação e banco servidor serão reavaliados quando houver definição de hospedagem.
+- publicação e eventual banco servidor serão reavaliados quando houver definição de hospedagem.
 
 ## Pós-MVP conhecido
 
+Itens reconhecidos, mas não autorizados para implementação no MVP:
+
 - preparações intermediárias reutilizáveis, como levain, requeijão, geleia, creme ou recheio, compondo outras fichas técnicas;
-- rotina assistida de backup/restauração;
-- gráficos históricos avançados.
+- rotina assistida de backup/restauração pela interface;
+- gráficos históricos de custo e margem.
 
 ## Regra de controle de escopo
 
-Necessidades novas devem ser avaliadas e documentadas antes da implementação. Mudanças transversais não devem ser escondidas dentro de um UC funcional existente.
+Uma necessidade nova deve ser avaliada, documentada e transformada em funcionalidade/caso de uso antes da implementação. Mudanças transversais não devem ser incluídas incidentalmente em outro caso de uso.

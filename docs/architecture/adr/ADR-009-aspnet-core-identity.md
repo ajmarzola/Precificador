@@ -24,9 +24,4 @@ Um vínculo próprio `UsuarioEmpresa` representa a relação N:N entre usuário 
 
 ## Fora da decisão inicial
 
-- autenticação externa;
-- JWT/API tokens;
-- confirmação de e-mail;
-- recuperação de senha;
-- 2FA;
-- roles/permissões granulares.
+Autenticação externa, JWT/API tokens, confirmação de e-mail, recuperação de senha, 2FA e roles granulares.

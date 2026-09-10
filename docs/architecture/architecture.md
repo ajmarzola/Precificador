@@ -2,7 +2,7 @@
 
 ## Estilo
 
-O Precificador permanece um **monólito web local-first**, agora preparado para múltiplas empresas e usuários autenticados.
+O Precificador será um **monólito web local-first**, agora preparado para múltiplas empresas e usuários autenticados.
 
 ```text
 Navegador
@@ -14,62 +14,69 @@ ASP.NET Core / Razor Pages
 Regras de domínio
    |
 Entity Framework Core
-   |-- Global Query Filters tenant-aware
-   |-- guard de escrita tenant-aware
+   |-- isolamento tenant-aware
    |
 SQLite
 ```
 
 ## Stack
 
-- .NET 10 LTS;
-- ASP.NET Core Razor Pages;
-- ASP.NET Core Identity;
-- EF Core;
-- SQLite nesta fase;
-- Bootstrap/JavaScript mínimo;
-- xUnit;
-- GitHub Actions.
+- .NET 10 LTS
+- ASP.NET Core Razor Pages
+- ASP.NET Core Identity
+- Entity Framework Core
+- SQLite nesta fase
+- Bootstrap
+- JavaScript mínimo
+- xUnit
+- GitHub Actions para CI
 
-## Projetos
-
-Mantém-se:
+## Estrutura prevista da solution
 
 ```text
-Precificador.Web
-Precificador.Core
-Precificador.Infrastructure
-Precificador.Tests.Unit
-Precificador.Tests.Integration
+Precificador.slnx
+
+src/
+  Precificador.Web/
+  Precificador.Core/
+  Precificador.Infrastructure/
+
+tests/
+  Precificador.Tests.Unit/
+  Precificador.Tests.Integration/
 ```
 
-Não criar novo projeto apenas para autenticação ou multi-tenancy nesta fase.
+Os três projetos em `src` continuam sendo o limite inicial de projetos de produção. Não criar projeto adicional apenas para autenticação/multi-tenancy sem necessidade real.
 
 ## Responsabilidades
 
-### Core
+### Precificador.Core
 
-- entidades e regras de domínio;
-- `Empresa`;
-- contratos simples necessários ao tenant ownership, sem dependência de HttpContext/Identity;
-- cálculos financeiros.
+- entidades e objetos de domínio;
+- regras de negócio;
+- `Empresa` e contratos estritamente necessários ao tenant ownership;
+- cálculos de custo, margem e preço;
+- nenhuma dependência da camada Web ou de ASP.NET Core Identity.
 
-### Infrastructure
+### Precificador.Infrastructure
 
-- EF Core/SQLite;
-- DbContext/migrations;
-- ASP.NET Core Identity EF integration;
-- `UsuarioAplicacao`;
-- mapeamentos e garantias de persistência;
-- query filters/guard de escrita quando tecnicamente apropriados.
+- EF Core;
+- `DbContext`;
+- mapeamentos;
+- migrations;
+- SQLite;
+- integração Identity/EF;
+- garantias centrais de isolamento de persistência;
+- seed de desenvolvimento quando existir entidade que o justifique.
 
-### Web
+### Precificador.Web
 
 - Razor Pages;
+- PageModels;
 - login/logout/bootstrap;
-- resolução/seleção de Empresa Ativa;
-- implementação de `IEmpresaContext` sobre contexto HTTP/Session;
-- validações e apresentação.
+- seleção/resolução da Empresa Ativa;
+- implementação do contexto de empresa sobre HTTP/Session;
+- validações de entrada e apresentação.
 
 ## Dependências
 
@@ -80,21 +87,19 @@ Infrastructure -> Core
 Core -> nenhuma camada da aplicação
 ```
 
-## Multi-tenancy
+## Multiempresa
 
-Adotar banco compartilhado com `EmpresaId` obrigatório nas entidades tenant-owned.
+Entidades operacionais pertencentes a uma empresa possuem `EmpresaId` obrigatório. `Insumo` é a primeira delas.
 
-Atualmente `Insumo` é tenant-owned. Toda nova entidade operacional deverá declarar explicitamente se pertence a uma empresa.
+Consultas comuns tenant-owned devem ser isoladas centralmente pelo EF Core, preferencialmente com Global Query Filters. Escritas devem validar a Empresa Ativa e rejeitar operações cross-tenant. Índices de unicidade cujo escopo é a empresa incluem `EmpresaId`.
 
-Consultas comuns tenant-owned devem ser isoladas centralmente. Escritas devem validar Empresa Ativa. Índices de unicidade tenant-scoped incluem `EmpresaId`.
-
-`Empresa`, `UsuarioEmpresa` e tabelas Identity não usam o filtro tenant padrão porque são necessárias para autenticação e resolução do contexto.
+`Empresa`, `UsuarioEmpresa` e tabelas Identity precisam permanecer consultáveis para autenticação/resolução de contexto e não usam o filtro tenant padrão.
 
 ## Autenticação e autorização
 
-Identity autentica o usuário. O vínculo `UsuarioEmpresa` autoriza quais empresas podem ser ativadas.
+ASP.NET Core Identity autentica o usuário. `UsuarioEmpresa` determina quais empresas podem ser ativadas.
 
-A primeira versão não usa roles. A regra mínima é:
+A regra inicial é:
 
 ```text
 usuário autenticado
@@ -103,36 +108,42 @@ usuário autenticado
 = acesso aos dados daquela empresa
 ```
 
-## Persistência calculada x armazenada
-
-Continuam armazenados fatos e decisões; custos derivados continuam calculados sob demanda.
-
-Configurações e históricos futuros são scoped por Empresa.
-
-## Modelo produtivo
-
-A Ficha Técnica futura é genérica. Forno não é conceito arquitetural obrigatório; será um Equipamento quando esse domínio for implementado.
-
-## SQLite e publicação
-
-SQLite permanece a decisão atual. A estratégia de publicação não está definida e será reavaliada separadamente. Se houver acesso concorrente remoto relevante, o banco servidor poderá substituir SQLite sem alterar o Core.
+Roles/permissões granulares não são parte da FT002.
 
 ## Diretrizes
 
-- não criar repository genérico/UoW customizado sem necessidade;
-- não usar CQRS/MediatR como padrão;
-- não criar API separada para Razor Pages;
-- não usar SPA framework por padrão;
-- schema muda somente por migrations;
-- não executar auto-migration no startup;
-- não armazenar EmpresaId vindo diretamente de formulário do usuário;
-- `IgnoreQueryFilters` exige justificativa explícita;
+- Regras financeiras não devem residir na UI.
+- EF Core é a abstração padrão de persistência; não criar repository genérico/Unit of Work customizado sem necessidade comprovada.
+- Preferir serviços de domínio simples e funções explícitas a padrões adicionais.
+- Não usar CQRS/MediatR como padrão.
+- Não criar API separada para a interface Razor Pages no MVP.
+- Não usar SPA framework por padrão.
+- Alterações de banco usam migrations.
+- Não executar auto-migration no startup.
+- Não aceitar `EmpresaId` vindo do formulário como fonte de ownership.
+- `IgnoreQueryFilters` exige justificativa explícita.
 - testes cross-tenant são obrigatórios para entidades tenant-owned.
+
+## Persistência calculada x armazenada
+
+Devem ser armazenados fatos e decisões do usuário, como históricos, composição e configurações. Custos atuais, margens e preços derivados continuam calculados sob demanda.
+
+Configurações futuras são scoped por Empresa.
+
+## Modelo produtivo
+
+A Ficha Técnica futura deve ser genérica. Forno não é um conceito obrigatório do modelo; será tratado como equipamento/recurso quando esse domínio for detalhado.
+
+## Segurança e operação
+
+A fase atual continua local-first, porém não é mais de usuário único. Autenticação é obrigatória para áreas de negócio após FT002.
+
+SQLite permanece até definição de publicação. Se houver acesso remoto concorrente relevante, a persistência será reavaliada sem alterar as regras do Core.
 
 ## Observabilidade
 
-Logging padrão ASP.NET Core.
+Utilizar logging padrão do ASP.NET Core.
 
-## CI
+## Integração contínua
 
 Restore, build e testes permanecem gates mínimos do GitHub Actions.

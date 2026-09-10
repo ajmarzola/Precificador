@@ -2,32 +2,32 @@
 
 ## Objetivo
 
-Definir os materiais e recursos necessários para uma execução/lote de um Produto, independentemente do tipo de negócio.
+Definir os recursos necessários para produzir um lote/execução de cada Produto de forma aplicável a diferentes negócios artesanais.
 
-## Capacidades previstas
+## Capacidades
 
-- informar rendimento;
-- adicionar/remover insumos;
-- quantidade por item;
-- observação contextual por item;
-- tempo ativo de trabalho;
-- registrar perdas de material/processo quando aplicáveis;
-- registrar uso de equipamentos quando aplicável;
-- apresentar composição de custo.
+- informar rendimento do lote;
+- adicionar e remover insumos da ficha;
+- informar quantidade de cada insumo na unidade base;
+- registrar observação contextual opcional por item;
+- informar tempo ativo de trabalho por lote;
+- registrar perdas quando aplicáveis;
+- registrar uso de equipamentos/recursos quando aplicável;
+- apresentar composição de custo por item.
 
 ## Modelo
 
-Ficha Técnica não é sinônimo de receita de panificação.
+A ficha técnica representa um lote/execução. O rendimento transforma o custo do lote em custo por unidade de venda.
 
-Insumo referenciado é específico da Empresa e Marca. Observação contextual explica decisões daquela ficha.
+Ela não deve assumir panificação como semântica universal. `TempoForno` será reavaliado como uso de equipamento genérico antes dos UCs correspondentes.
 
-`TempoForno` não será campo universal; forno será tratado como equipamento. Impressora, laminadora e outros recursos poderão usar o mesmo mecanismo.
+Cada item referencia um Insumo específico da mesma Empresa. A observação contextual do item é independente da observação global do Insumo.
 
-A regra detalhada de perdas e equipamentos será fechada antes dos respectivos UCs.
+Insumos desativados já referenciados continuam visíveis para preservar consistência histórica.
 
-## Isolamento
+## Regras relacionadas
 
-Produto, ficha, itens, insumos e equipamentos de uma ficha devem pertencer à mesma Empresa.
+RN009 a RN017, RN034 e regras multiempresa aplicáveis.
 
 ## Fora do escopo do MVP
 

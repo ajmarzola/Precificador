@@ -3,7 +3,7 @@
 - **Status:** Pronto para implementação
 - **Tipo:** fundação técnica transversal
 - **Dependências:** FT001 e UC001 implementados
-- **Bloqueia:** UC001A, UC001B e UC002
+- **Bloqueia:** UC001A e UC002
 
 ## Objetivo
 
@@ -172,7 +172,6 @@ Configurar explicitamente:
 - e-mail único;
 - login por e-mail;
 - cookie HttpOnly;
-- HTTPS requirement deve respeitar ambiente local de desenvolvimento e futura publicação;
 - páginas de negócio exigem autenticação por política fallback ou convenção equivalente;
 - `/Setup`, `/Conta/Login` e páginas de erro necessárias são anônimas;
 - logout somente por POST com antiforgery.
@@ -219,41 +218,21 @@ Cadastro de Insumo sem usuário autenticado/Empresa Ativa não é permitido.
 
 UC001A permanece responsável por Marca e Observação.
 
-Depois da FT002, o índice de unicidade do UC001A deve evoluir de:
-
-```text
-EmpresaId + NomeNormalizado
-```
-
-para:
+Depois da FT002, o índice de unicidade do UC001A deverá incluir a empresa:
 
 ```text
 EmpresaId + NomeNormalizado + MarcaNormalizada
 ```
 
-## Relação com UC001B
+A especificação/instrução do UC001A será revisada após a implementação da FT002 e antes de sua execução.
 
-Foi identificada uma segunda evolução de domínio necessária para atender negócios não alimentícios: `CategoriaInsumo.Ingrediente` e o conjunto fixo `g/ml/un` são específicos demais para o novo escopo.
+## Generalização para diferentes negócios
 
-Esse ajuste não pertence à FT002. Deve ser detalhado como **UC001B — Generalizar classificação e unidades de insumos** antes do UC002.
+A FT002 não deve alterar `CategoriaInsumo`, unidades, Produto ou Ficha Técnica.
 
-Não inventar novas unidades nesta FT002; elas devem ser definidas a partir das necessidades reais dos dois negócios.
+Foi identificado que `Ingrediente` e o conjunto `g/ml/un` precisam ser reavaliados para negócios não alimentícios. Esse ajuste será detalhado separadamente antes do UC002, usando uma lista real de insumos dos dois negócios.
 
-## Ficha técnica genérica
-
-A FT002 não cria tabelas de Produto/Ficha Técnica, mas a documentação futura passa a assumir uma ficha técnica genérica de produção.
-
-Princípios:
-
-- ficha representa um lote ou execução produtiva;
-- rendimento permanece genérico;
-- tempo ativo de trabalho permanece genérico;
-- perda passa a ser conceito de material/processo, não atributo exclusivo de panificação;
-- uso de forno será futuramente modelado como uso de equipamento, permitindo forno, impressora, laminadora etc.;
-- potência deixa de ser configuração global de forno e passa a pertencer ao equipamento;
-- parâmetros não aplicáveis não devem ser obrigatórios para todos os produtos.
-
-O desenho detalhado será fechado antes dos UCs de Ficha Técnica e motor de precificação.
+Também foi aprovada a direção conceitual de tornar a Ficha Técnica genérica: rendimento e tempo ativo permanecem gerais; perdas deixam de ser conceito obrigatório de panificação; forno será futuramente tratado como equipamento/recurso quando esse domínio for detalhado.
 
 ## Critérios de aceitação
 
@@ -323,7 +302,6 @@ O diff não contém CRUD administrativo completo de empresa/usuário, Marca/Obse
 
 - criação válida de Empresa;
 - normalização/validação do nome da Empresa;
-- vínculo `UsuarioEmpresa` não aceita identificadores inválidos, se regra estiver no Core;
 - regras puras de tenant ownership introduzidas no Core.
 
 Não testar internals do Identity como unidade.
@@ -377,8 +355,9 @@ Não adicionar auto-migration ao startup.
 - 2FA;
 - autenticação externa;
 - auditoria completa;
+- Marca/Observação do UC001A;
+- generalização de categorias/unidades;
 - Produto/Ficha Técnica;
-- UC001A e UC001B;
 - UC002+;
 - API REST.
 

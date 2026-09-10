@@ -2,19 +2,23 @@
 
 ## Objetivo
 
-Centralizar parâmetros compartilhados pelos produtos **da mesma Empresa**.
+Centralizar parâmetros compartilhados por vários produtos **da mesma Empresa**.
 
-## Configurações mínimas previstas
+## Configurações mínimas
 
 - valor da hora de trabalho;
 - tarifa de energia em R$/kWh;
 - margem padrão para novos produtos;
 - incremento comercial de arredondamento.
 
-Potência não é configuração global de forno: pertence ao Equipamento quando esse domínio for implementado.
+Potência não é mais tratada como configuração global de um forno universal; pertencerá ao Equipamento quando esse domínio for implementado.
 
 ## Comportamento
 
-Alterar configuração da Empresa A afeta somente cálculos atuais da Empresa A.
+Alterar configuração da Empresa A deve afetar somente cálculos atuais dependentes da Empresa A.
 
-Margem padrão é valor inicial de novo produto; cada produto mantém sua própria margem-alvo depois de criado.
+A margem padrão vale como valor inicial de novos produtos; depois de criado, cada produto mantém sua margem-alvo própria.
+
+## Regras relacionadas
+
+RN013, RN014, RN019, RN021, RN025 e RN039.

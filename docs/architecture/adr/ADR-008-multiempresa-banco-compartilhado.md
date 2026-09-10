@@ -25,6 +25,6 @@ O isolamento de leitura será centralizado no EF Core por Global Query Filters o
 
 ## Alternativas rejeitadas agora
 
-- um SQLite por empresa: aumenta complexidade de seleção, migrations e backup;
-- schema por empresa: não é adequado ao SQLite e adicionaria complexidade;
-- banco servidor agora: adiado até a estratégia de publicação ser definida.
+- um SQLite por empresa;
+- schema por empresa;
+- banco servidor antes da definição de publicação.

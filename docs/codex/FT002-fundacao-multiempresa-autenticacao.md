@@ -30,23 +30,11 @@ Parta da `master` atualizada após o merge da documentação FT002.
 
 ## Objetivo
 
-Adicionar a infraestrutura mínima para:
+Adicionar a infraestrutura mínima para Empresa, ASP.NET Core Identity, vínculo N:N usuário-empresa, bootstrap do primeiro usuário/empresa, login/logout, Empresa Ativa, isolamento tenant-aware, evolução de `Insumo` para `EmpresaId` obrigatório e migration compatível com banco existente.
 
-- Empresa;
-- ASP.NET Core Identity;
-- vínculo N:N usuário-empresa;
-- bootstrap do primeiro usuário/empresa;
-- login/logout;
-- Empresa Ativa;
-- isolamento tenant-aware;
-- evolução de `Insumo` para `EmpresaId` obrigatório;
-- migration compatível com banco existente.
-
-Não implemente UC001A, UC001B ou UC002.
+Não implemente UC001A ou UC002 nesta entrega.
 
 ## Modelo esperado
-
-Conceitualmente:
 
 ```text
 Empresa
@@ -71,179 +59,98 @@ Não coloque `IdentityUser` no Core.
 
 ## Identity
 
-Use ASP.NET Core Identity + EF Core SQLite.
+Use ASP.NET Core Identity + EF Core SQLite no mesmo banco.
 
-Preferir um único `PrecificadorDbContext` herdando de `IdentityDbContext<UsuarioAplicacao>` para manter domínio e Identity na mesma base/migration history.
+Preferir um único `PrecificadorDbContext` herdando de `IdentityDbContext<UsuarioAplicacao>`.
 
-Configurar:
+Configurar e-mail único, login por e-mail, política de senha definida na FT002, cookie HttpOnly e proteção das rotas de negócio.
 
-- e-mail único;
-- login por e-mail;
-- senha mínima 8;
-- maiúscula, minúscula e dígito obrigatórios;
-- não exigir caractere não alfanumérico;
-- cookie HttpOnly;
-- rotas de negócio autenticadas por padrão.
-
-Não usar JWT, OAuth externo, API endpoints de Identity ou auto-registro público.
+Não usar JWT, OAuth externo, auto-registro público ou implementação própria de senha.
 
 ## Empresa Ativa
 
 Crie contrato request-scoped simples, por exemplo `IEmpresaContext`, sem acoplar o Core a `HttpContext`.
 
-A implementação Web pode ler/escrever o ID em Session.
+A implementação Web pode usar Session.
 
-Fluxo após Login:
+Após login: limpar contexto anterior; zero vínculos bloqueia área de negócio; um vínculo seleciona automaticamente; múltiplos vínculos direcionam para `/Empresas/Selecionar`.
 
-- limpar empresa ativa anterior;
-- zero vínculos elegíveis: não liberar área de negócio;
-- um vínculo: ativar automaticamente e ir para Home;
-- mais de um: redirecionar para `/Empresas/Selecionar`.
-
-Seleção deve revalidar `UsuarioId + EmpresaId`, vínculo ativo e empresa ativa antes de armazenar a sessão.
+Seleção sempre revalida usuário, vínculo ativo e empresa ativa.
 
 ## Isolamento EF
 
-`Insumo` deve implementar um contrato tenant-owned e possuir `EmpresaId` obrigatório.
+`Insumo` passa a ter `EmpresaId` obrigatório.
 
-Configure Global Query Filter no EF para que consultas normais retornem somente a Empresa Ativa.
+Configure Global Query Filter para consultas tenant-owned e guard central em `SaveChanges/SaveChangesAsync` para impedir escrita cross-tenant.
 
-Sem Empresa Ativa, não retornar entidade tenant-owned.
+Sem Empresa Ativa, consulta tenant-owned não retorna dados.
 
-Adicione um guard central em SaveChanges/SaveChangesAsync que rejeite Added/Modified/Deleted tenant-owned com empresa divergente da Empresa Ativa.
+`EmpresaId` nunca vem do formulário; a criação usa o contexto resolvido pelo servidor.
 
-Não confie em hidden field ou `EmpresaId` vindo da request.
-
-Atualize a criação de Insumo para receber o EmpresaId resolvido pelo servidor.
-
-Use `IgnoreQueryFilters` somente onde a especificação autoriza explicitamente e com justificativa evidente.
+`IgnoreQueryFilters` somente quando a especificação autoriza e com justificativa evidente.
 
 ## Migration
 
-Crie nova migration, sem editar `CreateInsumos`.
+Crie `AddMultiempresaIdentity` ou nome equivalente, sem editar `CreateInsumos`.
 
-Nome sugerido:
+A migration deve criar Empresa/Identity/UsuarioEmpresa, inserir empresa técnica neutra, adicionar `EmpresaId` obrigatório a Insumos preservando registros existentes, criar FK e substituir a unicidade de `NomeNormalizado` por `(EmpresaId, NomeNormalizado)`.
 
-```text
-AddMultiempresaIdentity
-```
-
-Ela deve:
-
-1. criar Empresas;
-2. inserir empresa técnica inicial neutra;
-3. adicionar `EmpresaId` obrigatório aos Insumos apontando registros existentes para a empresa técnica;
-4. criar FK;
-5. substituir índice `NomeNormalizado` por `(EmpresaId, NomeNormalizado)`;
-6. criar tabelas Identity;
-7. criar UsuarioEmpresas com chave composta e FKs.
-
-Valide dois caminhos:
-
-- banco SQLite vazio;
-- banco migrado até UC001 contendo pelo menos um Insumo.
-
-No upgrade, o Insumo deve sobreviver e ficar associado à empresa técnica.
+Valide banco vazio e upgrade de banco UC001 contendo Insumo.
 
 ## Bootstrap
 
-Crie `/Setup`.
+Crie `/Setup`, disponível somente quando não houver usuários.
 
-Somente disponível enquanto não existir nenhum usuário.
+Campos: NomeEmpresa, Email, Senha e ConfirmacaoSenha.
 
-Input model próprio:
+Use `UserManager`; não manipule hash manualmente.
 
-- NomeEmpresa;
-- Email;
-- Senha;
-- ConfirmacaoSenha.
+Renomeie a empresa técnica para o nome informado e crie `UsuarioEmpresa`.
 
-Use UserManager para criação do usuário. Não manipule hash de senha manualmente.
+Não criar credenciais default/hardcoded.
 
-O setup deve renomear a empresa técnica para o nome informado e criar UsuarioEmpresa.
+## Login/logout/seleção
 
-Não criar senha default, usuário hardcoded ou segredo em appsettings.
+Crie UI Razor Pages mínima para `/Conta/Login` e `/Empresas/Selecionar`.
 
-Depois do primeiro usuário, o fluxo deve ficar indisponível.
+Use `SignInManager`.
 
-## Login/logout
-
-Crie interface Razor Pages mínima, preferencialmente:
-
-```text
-/Conta/Login
-/Empresas/Selecionar
-```
-
-Use SignInManager.
-
-Logout somente POST + antiforgery; limpar session/Empresa Ativa.
-
-Home e páginas de negócio devem exigir autenticação.
-
-## UI
+Logout somente POST + antiforgery e limpa Empresa Ativa.
 
 No layout autenticado, mostrar a Empresa Ativa de forma simples.
 
-Não criar painel administrativo de usuários/empresas.
-
 ## Testes obrigatórios
 
-Preserve os testes existentes e adapte-os ao novo tenant context.
+Preserve/adapte os testes existentes e cubra no mínimo:
 
-Cobrir no mínimo:
-
-- Empresa válida/normalização;
-- migration vazia;
-- migration de upgrade UC001;
-- Identity tables;
+- Empresa válida e normalização;
+- migration em banco vazio;
+- upgrade do UC001;
 - bootstrap único;
 - login válido/inválido;
-- rota de negócio anônima redireciona para login;
+- rota de negócio exige autenticação;
 - uma empresa auto selecionada;
-- duas empresas exigem seleção;
-- seleção não autorizada bloqueada;
+- múltiplas empresas exigem seleção;
+- seleção sem vínculo é negada;
 - leitura cross-tenant isolada;
 - escrita cross-tenant rejeitada;
-- mesmo NomeNormalizado permitido em empresas diferentes;
-- duplicidade na mesma empresa rejeitada;
-- troca de empresa muda visibilidade;
+- mesmo NomeNormalizado permitido entre empresas e rejeitado dentro da mesma;
+- troca de empresa altera visibilidade;
 - logout limpa contexto.
 
-Testes devem usar SQLite temporário/in-memory com conexão mantida. Nunca tocar `precificador.db` real.
+Use SQLite temporário/in-memory com conexão mantida; nunca `precificador.db` real.
 
 ## Restrições
 
-Não implementar:
+Não implementar Marca/Observação, UC001A, listagem UC002, CRUD administrativo completo, roles, recuperação de senha, confirmação de e-mail, 2FA, Produto, Ficha Técnica, equipamento, preço, API REST, repository genérico, CQRS/MediatR, auto-migration ou troca de SQLite.
 
-- Marca/Observação de Insumo;
-- UC001A;
-- generalização Categoria/Unidade do UC001B;
-- listagem/detalhes UC002;
-- CRUD administrativo completo de Empresa/Usuário;
-- roles;
-- recuperação de senha;
-- confirmação de e-mail;
-- 2FA;
-- Produto;
-- Ficha Técnica;
-- equipamento;
-- preço;
-- API REST;
-- repository genérico;
-- CQRS/MediatR;
-- auto-migration no startup;
-- troca de SQLite.
+Também não generalize Categoria/Unidade dentro desta FT.
 
 ## Documentação ao concluir
 
-- alterar FT002 para `Status: Implementado`;
-- não marcar UC001A/UC001B/UC002 como implementados;
-- registrar desvios reais em vez de ajustar requisitos silenciosamente.
+Marcar FT002 como Implementado. Não marcar UC001A/UC002 como implementados. Se houver conflito real, registrar desvio em vez de mudar requisito silenciosamente.
 
 ## Validação
-
-Execute:
 
 ```text
 dotnet tool restore
@@ -254,12 +161,6 @@ dotnet test Precificador.slnx --configuration Release --no-build
 
 Valide também migration em banco vazio e upgrade do UC001.
 
-Revise o diff antes de finalizar.
-
-Commit sugerido:
-
-```text
-feat: adiciona fundacao multiempresa e autenticacao
-```
+Commit sugerido: `feat: adiciona fundacao multiempresa e autenticacao`.
 
 Não faça merge em `master`.
