@@ -29,7 +29,9 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 
 - [`use-cases/catalog.md`](use-cases/catalog.md) — backlog inicial e dependências.
 - [`use-cases/template.md`](use-cases/template.md) — formato obrigatório para novos casos de uso.
-- [`use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — generalização de Matéria-prima e unidades antes do UC001A/UC002.
+- [`use-cases/UC001A-complementar-insumo-marca-observacao.md`](use-cases/UC001A-complementar-insumo-marca-observacao.md) — Marca e Observação do Insumo.
+- [`use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — generalização de Matéria-prima e unidades.
+- [`use-cases/UC002-listar-consultar-insumos.md`](use-cases/UC002-listar-consultar-insumos.md) — listagem, pesquisa e detalhes tenant-aware.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
@@ -41,14 +43,16 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`development/testing-strategy.md`](development/testing-strategy.md)
 - [`development/workflow-codex.md`](development/workflow-codex.md)
 - [`development/implementation-order.md`](development/implementation-order.md)
-- [`development/melhorias.md`](development/melhorias.md) — backlog de melhorias não bloqueantes identificadas durante implementação e revisão.
+- [`development/melhorias.md`](development/melhorias.md) — backlog de melhorias não bloqueantes.
 
 ### Instruções para Codex
 
 - [`codex/`](codex/) — instruções executáveis versionadas para cada incremento.
 - [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md)
 - [`codex/FT002-fundacao-multiempresa-autenticacao.md`](codex/FT002-fundacao-multiempresa-autenticacao.md)
+- [`codex/UC001A-complementar-insumo-marca-observacao.md`](codex/UC001A-complementar-insumo-marca-observacao.md)
 - [`codex/UC001B-generalizar-categoria-unidades-insumo.md`](codex/UC001B-generalizar-categoria-unidades-insumo.md)
+- [`codex/UC002-listar-consultar-insumos.md`](codex/UC002-listar-consultar-insumos.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
