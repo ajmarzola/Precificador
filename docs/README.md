@@ -9,7 +9,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`product/vision.md`](product/vision.md) — problema, objetivos e princípios do produto.
 - [`product/scope.md`](product/scope.md) — escopo do MVP e itens explicitamente excluídos.
 - [`product/glossary.md`](product/glossary.md) — vocabulário comum do domínio.
-- [`product/multiempresa-generalizacao.md`](product/multiempresa-generalizacao.md) — direção aprovada para multiempresa e ficha técnica genérica.
+- [`product/multiempresa-generalizacao.md`](product/multiempresa-generalizacao.md) — direção aprovada para multiempresa, ficha técnica genérica e classificação de Insumos.
 
 ### Negócio
 
@@ -29,6 +29,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 
 - [`use-cases/catalog.md`](use-cases/catalog.md) — backlog inicial e dependências.
 - [`use-cases/template.md`](use-cases/template.md) — formato obrigatório para novos casos de uso.
+- [`use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — generalização de Matéria-prima e unidades antes do UC001A/UC002.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
