@@ -6,7 +6,16 @@ Este documento contém regras normativas do Precificador. Casos de uso devem ref
 
 ### RN001 — Unidade base
 
-Cada insumo deve possuir uma unidade base. No MVP, as unidades previstas são `g`, `ml` e `un`.
+Cada insumo deve possuir uma unidade base.
+
+Após o UC001B, as unidades previstas para o escopo atual são:
+
+- `g` — grama;
+- `ml` — mililitro;
+- `m` — metro;
+- `un` — unidade.
+
+Os valores numéricos existentes do enum devem ser preservados e `Metro` será acrescentado como novo valor funcional.
 
 ### RN002 — Quantidade de compra válida
 
@@ -20,7 +29,7 @@ O preço pago deve ser maior que zero.
 
 `CustoUnitario = PrecoCompra / QuantidadeCompra`.
 
-O cálculo deve preservar precisão decimal suficiente para que insumos baratos por grama/ml não sejam arredondados prematuramente.
+O cálculo deve preservar precisão decimal suficiente para que insumos baratos por unidade base não sejam arredondados prematuramente.
 
 ### RN005 — Histórico de preços
 
@@ -52,25 +61,35 @@ O nome:
 
 Para comparação determinística, o sistema mantém uma representação normalizada do nome em maiúsculas com regra invariável. A normalização de comparação não remove acentos.
 
-### RN029 — Unicidade do insumo por nome e marca
+### RN029 — Unicidade do insumo por empresa, nome e marca
 
-Não podem existir dois insumos com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`, independentemente de estarem ativos ou inativos.
+A identidade funcional do Insumo é limitada à Empresa proprietária.
 
-Marcas diferentes do mesmo Nome representam insumos distintos e podem coexistir.
+Após FT002 e antes do UC001A, não podem existir dois Insumos da mesma Empresa com o mesmo `NomeNormalizado`, independentemente de estarem ativos ou inativos.
 
-Quando a Marca não for informada, `MarcaNormalizada` deve assumir string vazia como representação técnica, garantindo que dois insumos sem marca e com o mesmo Nome também sejam considerados duplicados.
+Após UC001A, não podem existir dois Insumos da mesma Empresa com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`.
 
-A integridade deve ser protegida pelo banco com índice/restrição única composta, além da validação funcional usada para apresentar mensagem amigável ao usuário.
+Marcas diferentes do mesmo Nome representam Insumos distintos e podem coexistir na mesma Empresa. Empresas diferentes também podem cadastrar a mesma combinação Nome/Marca.
+
+Quando a Marca não for informada, `MarcaNormalizada` deve assumir string vazia como representação técnica.
+
+A integridade deve ser protegida pelo banco com índice/restrição única adequada à fase do modelo, além da validação funcional usada para apresentar mensagem amigável.
 
 ### RN030 — Categoria do insumo
 
-Todo insumo deve pertencer exatamente a uma das categorias do MVP:
+Após o UC001B, todo Insumo deve pertencer exatamente a uma das categorias do escopo atual:
 
-- Ingrediente;
+- Matéria-prima;
 - Embalagem;
 - Consumível.
 
+O código deve representar `MateriaPrima = 1`, preservando o mesmo valor numérico anteriormente usado por `Ingrediente`, para que registros existentes continuem semanticamente válidos sem transformação de dados.
+
 Nenhum valor indefinido/zero é considerado categoria funcional válida.
+
+Matéria-prima representa o material que compõe diretamente o produto ou é consumido como material principal de sua produção, independentemente do segmento da Empresa. Exemplos incluem farinha, açúcar, papel e vinil.
+
+A categoria não determina automaticamente regra de perda; perdas serão modeladas como conceito de material/processo quando aplicável.
 
 ### RN031 — Situação inicial do insumo
 
@@ -90,7 +109,7 @@ A Marca:
 - não remove acentos durante a normalização de comparação;
 - quando ausente, é armazenada como `null`, enquanto `MarcaNormalizada` usa string vazia.
 
-Marcas diferentes do mesmo Nome representam insumos economicamente distintos e podem possuir preços/custos diferentes.
+Marcas diferentes do mesmo Nome representam insumos economicamente distintos e podem possuir preços/custos diferentes dentro da mesma Empresa.
 
 ### RN033 — Observação do insumo
 
@@ -106,17 +125,39 @@ A observação:
 
 ### RN034 — Observação contextual do item da ficha técnica
 
-Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo na receita, como a razão para escolher uma marca específica.
+Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo na ficha, como a razão para escolher uma marca específica.
 
-Essa observação é independente da Observação global do Insumo e deve permanecer associada ao item da ficha. Alterações posteriores na Observação do Insumo não devem sobrescrever a justificativa registrada na receita.
+Essa observação é independente da Observação global do Insumo e deve permanecer associada ao item da ficha. Alterações posteriores na Observação do Insumo não devem sobrescrever a justificativa registrada.
 
-A implementação desta regra pertence ao UC014/UC015, não ao UC001A ou UC002.
+A implementação desta regra pertence aos UCs de Ficha Técnica, não ao UC001A ou UC002.
+
+## Multiempresa e acesso
+
+### RN035 — Propriedade por empresa
+
+Todo dado operacional tenant-owned pertence exatamente a uma Empresa por `EmpresaId` obrigatório.
+
+### RN036 — Isolamento de empresa
+
+Operações comuns só podem ler ou alterar dados tenant-owned da Empresa Ativa. Ausência de Empresa Ativa não concede acesso implícito a qualquer Empresa.
+
+### RN037 — Empresa ativa
+
+Um usuário autenticado trabalha no contexto de uma única Empresa Ativa por vez. Só pode ativar uma Empresa ativa para a qual possua vínculo ativo.
+
+### RN038 — Vínculo usuário-empresa
+
+Um usuário pode possuir vínculos com múltiplas Empresas. Vínculo inativo ou Empresa inativa não concede acesso operacional.
+
+### RN039 — Configurações por empresa
+
+Configurações de precificação pertencem a uma Empresa e suas alterações não afetam cálculos de outra Empresa.
 
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
 
-Toda ficha técnica precificável deve possuir rendimento maior que zero, expresso em unidades de venda por lote.
+Toda ficha técnica precificável deve possuir rendimento maior que zero, expresso em unidades de venda por lote/execução.
 
 ### RN010 — Quantidade na ficha
 
@@ -128,27 +169,31 @@ Para cada item: `CustoItem = QuantidadeUtilizada × CustoUnitarioAtualDoInsumo`.
 
 O custo base dos itens é a soma dos custos dos itens da ficha.
 
-### RN012 — Perda de ingredientes
+### RN012 — Perdas de material/processo
 
-O percentual de perda do produto incide apenas sobre itens categorizados como ingrediente. Embalagens e consumíveis não recebem essa perda automaticamente.
+Perda deixa de ser assumida como atributo obrigatório específico de panificação. Quando aplicável, representa perda de material/processo.
 
-`CustoPerda = CustoIngredientes × PercentualPerda`.
+O modelo exato e a forma de incidência serão fechados antes do UC019, considerando os diferentes negócios. Até lá, nenhuma implementação nova deve cristalizar uma fórmula específica de panificação.
 
 ### RN013 — Mão de obra
 
-O tempo ativo é informado para o lote.
+O tempo ativo é informado para o lote/execução.
 
-`CustoMaoDeObraLote = (TempoAtivoMinutos / 60) × ValorHoraTrabalho`.
+`CustoMaoDeObraLote = (TempoAtivoMinutos / 60) × ValorHoraTrabalhoDaEmpresa`.
 
-### RN014 — Energia do forno
+### RN014 — Energia de equipamento
 
-O tempo de forno é informado para o lote.
+Quando houver equipamento com consumo mensurável:
 
-`CustoEnergiaLote = PotenciaFornoKw × (TempoFornoMinutos / 60) × TarifaKwh`.
+`CustoEnergiaUso = PotenciaEquipamentoKw × (TempoUsoMinutos / 60) × TarifaKwhDaEmpresa`.
+
+O custo de energia do lote soma os usos aplicáveis. Forno é um possível equipamento, não um conceito universal de toda ficha.
+
+O modelo de Equipamento/Uso será detalhado antes do UC021.
 
 ### RN015 — Custo do lote
 
-`CustoLote = CustoItens + CustoPerda + CustoMaoDeObraLote + CustoEnergiaLote`.
+O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recursos/equipamentos aplicáveis ao processo.
 
 ### RN016 — Custo unitário do produto
 
@@ -174,7 +219,7 @@ A margem-alvo deve ser maior ou igual a zero e menor que 100%.
 
 ### RN021 — Arredondamento do preço sugerido
 
-O preço sugerido deve ser arredondado **para cima** para o próximo múltiplo do incremento comercial configurado, garantindo que o arredondamento não reduza a margem abaixo da margem-alvo.
+O preço sugerido deve ser arredondado **para cima** para o próximo múltiplo do incremento comercial configurado da Empresa, garantindo que o arredondamento não reduza a margem abaixo da margem-alvo.
 
 Exemplo com incremento de R$ 0,50: R$ 25,08 resulta em R$ 25,50.
 
@@ -194,17 +239,18 @@ Alterar o preço de venda deve preservar o valor anteriormente praticado em hist
 
 ## Configurações
 
-### RN025 — Configurações globais
+### RN025 — Configurações de precificação por empresa
 
-O MVP possui configurações globais para, no mínimo:
+Cada Empresa possui configurações para, no mínimo:
 
 - valor/hora de trabalho;
 - tarifa de energia por kWh;
-- potência do forno em kW;
 - margem padrão para novos produtos;
 - incremento comercial de arredondamento.
 
-Alterações de configuração afetam imediatamente cálculos atuais que dependam delas.
+A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
+
+Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa.
 
 ## Precisão
 

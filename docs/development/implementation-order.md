@@ -4,56 +4,61 @@ A ordem prioriza dependências do domínio e entrega incremental. Não represent
 
 ## Etapa 0 — Fundação técnica
 
-Especificação: [`foundation-technical.md`](foundation-technical.md).
+FT001 concluída: solution, projetos, EF Core/SQLite, testes, logging e CI.
 
-- criar `Precificador.slnx`;
-- criar projetos de produção e teste;
-- configurar referências;
-- configurar .NET 10;
-- configurar EF Core + SQLite;
-- configurar tool manifest com `dotnet-ef`;
-- registrar logging padrão;
-- configurar infraestrutura de testes e smoke tests;
-- configurar GitHub Actions para restore/build/test;
-- ajustar `.gitignore` e `.editorconfig`;
-- não criar migration antes do primeiro modelo persistente;
-- não criar seed vazio; iniciar seed de desenvolvimento quando existir a primeira entidade que o justifique.
+## Etapa 0.5 — Primeiro caso funcional
 
-Instrução Codex: [`../codex/FT001-fundacao-tecnica.md`](../codex/FT001-fundacao-tecnica.md).
+UC001 — Cadastrar Insumo — implementado.
+
+## Etapa 0.6 — FT002 Multiempresa e Autenticação
+
+Implementar antes de evoluir Insumos.
+
+Objetivo: Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa, isolamento tenant-aware e `EmpresaId` em Insumo.
+
+Especificação: [`foundation-multiempresa-auth.md`](foundation-multiempresa-auth.md).
+
+Instrução Codex: [`../codex/FT002-fundacao-multiempresa-autenticacao.md`](../codex/FT002-fundacao-multiempresa-autenticacao.md).
 
 ## Etapa 1 — Insumos
 
-UC001 a UC006.
+Após FT002:
 
-Objetivo: possuir catálogo e histórico de preços confiável antes de tentar precificar produtos.
+1. implementar **UC001B — Generalizar categoria e unidades de insumo**: renomear `Ingrediente` para `MateriaPrima`, preservando o valor numérico `1`, e acrescentar `Metro = 4` às unidades;
+2. revalidar a especificação do UC001A contra o modelo tenant-aware e a classificação final de Insumos;
+3. implementar UC001A — Marca e Observação;
+4. seguir UC002 a UC006 já usando `Matéria-prima/Embalagem/Consumível` e `g/ml/m/un`.
+
+Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
 ## Etapa 2 — Produtos
 
-UC007 a UC012.
-
-Objetivo: manter produtos, margem-alvo e preço praticado com histórico.
+UC007 a UC012. Todo Produto será tenant-owned.
 
 ## Etapa 3 — Ficha técnica
 
-UC013 a UC017.
-
-Objetivo: representar um lote, rendimento, tempos e sua composição de insumos.
+UC013 a UC017 devem ser revalidados antes da implementação para adotar o modelo produtivo genérico registrado em `../product/multiempresa-generalizacao.md`.
 
 ## Etapa 4 — Motor de precificação
 
-UC018 a UC025.
-
-Objetivo: implementar regras financeiras com forte cobertura unitária e golden cases.
+UC018 a UC025. Revalidar especialmente perdas e energia/equipamentos antes de implementar seus UCs.
 
 ## Etapa 5 — Configurações
 
-UC026 e UC027 podem ser antecipados quando forem necessários aos UCs de mão de obra e energia. A dependência será resolvida antes desses cálculos.
+UC026 e UC027 passam a operar por Empresa e podem ser antecipados quando necessários aos cálculos.
 
 ## Etapa 6 — Dashboard
 
-UC028 a UC030.
+UC028 a UC030 operam exclusivamente sobre a Empresa Ativa.
 
-Objetivo: transformar os cálculos já estabilizados em visão operacional dos produtos que exigem atenção.
+## Administração multiempresa
+
+O backlog deverá detalhar posteriormente:
+
+- cadastro/consulta de empresas;
+- cadastro de usuários e gestão de vínculos usuário-empresa.
+
+O bootstrap e login mínimos pertencem à FT002 porque são pré-requisitos transversais de isolamento.
 
 ## Regra de tamanho
 
@@ -61,4 +66,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Executar e revisar a **FT001 — Fundação Técnica**. Somente após sua aprovação, detalhar `UC001-cadastrar-insumo.md` e gerar a respectiva instrução para Codex.
+Implementar e revisar a **FT002 — Fundação Multiempresa e Autenticação**. Não executar UC001B/UC001A antes da FT002 estar concluída.

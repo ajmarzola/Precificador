@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Manter o catálogo de itens usados nas fichas técnicas e seu histórico de preços.
+Manter o catálogo de itens usados nas fichas técnicas e seu histórico de preços, isolado por Empresa.
 
 ## Capacidades
 
@@ -17,47 +17,46 @@ Manter o catálogo de itens usados nas fichas técnicas e seu histórico de pre�
 
 ## Dados essenciais
 
-- nome do item;
-- marca opcional;
-- observação técnica opcional;
-- categoria: ingrediente, embalagem ou consumível;
+- empresa proprietária;
+- nome;
+- categoria;
 - unidade base;
 - situação ativo/inativo.
 
-### Identidade do insumo
+### Cadastro inicial
 
-O Nome representa o item genérico e a Marca identifica a variação comercial quando aplicável.
-
-Exemplo:
-
-```text
-Nome: Farinha de Trigo Branca
-Marca: Renata Super Premium
-```
-
-Marcas diferentes do mesmo item são insumos distintos e, quando o UC005 for implementado, possuirão históricos de preço independentes.
-
-A Marca é opcional para suportar itens sem marca relevante.
-
-A unicidade do cadastro é determinada pela combinação normalizada de Nome + Marca, inclusive para registros inativos.
-
-### Observação técnica
-
-A Observação do Insumo guarda características gerais do item, como força W da farinha, teor de proteína ou característica da embalagem.
-
-Justificativas específicas de uso em uma receita pertencem ao item da ficha técnica e serão tratadas no UC014; não devem ser confundidas com a observação global do insumo.
-
-### Cadastro
-
-O cadastro contém:
+No UC001, o cadastro contém somente:
 
 - Nome;
-- Marca opcional;
 - Categoria;
-- Unidade base;
-- Observação opcional.
+- Unidade base.
 
-Todo novo insumo nasce ativo. Preço não faz parte do cadastro e será tratado separadamente pelo UC005, preservando histórico.
+Todo novo insumo nasce ativo. Preço não faz parte do cadastro inicial e será tratado separadamente pelo UC005, preservando histórico.
+
+O nome deve ser normalizado para eliminar diferenças acidentais de espaços e possuir uma representação técnica normalizada para impedir duplicidades por caixa/espaçamento. A capitalização usada para exibição é preservada após a limpeza de espaços.
+
+Com a FT002, todo Insumo passa a possuir `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário. A unicidade do cadastro passa a ser limitada à Empresa proprietária.
+
+Após UC001A, a identidade econômica do Insumo será composta por Nome + Marca dentro da Empresa, e Observação técnica opcional passará a integrar o cadastro.
+
+### Classificação e unidades generalizadas
+
+Para atender negócios alimentícios e de papelaria sem distorção semântica, o termo `Ingrediente` será substituído por `MateriaPrima`.
+
+Categorias do domínio:
+
+- Matéria-prima;
+- Embalagem;
+- Consumível.
+
+Unidades base do escopo atual:
+
+- `g` — grama;
+- `ml` — mililitro;
+- `m` — metro;
+- `un` — unidade.
+
+A alteração será implementada no **UC001B — Generalizar categoria e unidades de insumo**, após FT002 e antes do UC001A/UC002.
 
 Cada registro de preço deve conter ao menos:
 
@@ -65,18 +64,21 @@ Cada registro de preço deve conter ao menos:
 - data de referência;
 - quantidade comprada na unidade base;
 - preço pago;
-- observação opcional do evento de compra/preço.
+- observação opcional.
 
 Fornecedor poderá ser incorporado futuramente sem transformar cadastro de fornecedores em módulo do MVP.
+
+Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
 
 ## Regras relacionadas
 
 - RN001 a RN008;
-- RN028 a RN034.
+- RN028 a RN039, conforme aplicáveis.
 
 ## Casos de uso
 
 - [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
+- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md);
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
 - UC003 — Editar insumo;

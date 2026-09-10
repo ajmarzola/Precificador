@@ -4,28 +4,32 @@
 
 O MVP contempla:
 
+- múltiplas empresas no mesmo sistema;
+- autenticação de usuários;
+- vínculo de usuários a uma ou mais empresas;
+- seleção de Empresa Ativa e isolamento de dados por empresa;
+- bootstrap do primeiro usuário e primeira empresa;
+- cadastro administrativo de empresas/usuários e vínculos em UCs posteriores;
 - cadastro, edição, consulta e desativação de insumos;
 - histórico de preços de insumos;
 - cálculo do custo unitário de compra;
 - cadastro, edição, consulta e desativação de produtos;
-- ficha técnica por lote;
+- ficha técnica por lote/execução;
 - rendimento do lote em unidades de venda;
 - composição por insumos;
-- custos de ingredientes, embalagens e consumíveis;
-- percentual de perda de ingredientes por produto;
+- custos de matérias-primas, embalagens e consumíveis;
+- perdas de material/processo quando aplicáveis;
 - custo de mão de obra a partir de tempo ativo e valor/hora;
-- custo de energia a partir do tempo de forno, potência e tarifa;
+- custo de energia/recursos a partir de uso de equipamentos quando aplicável;
 - cálculo do custo total por lote e por unidade;
 - margem-alvo por produto;
-- preço teórico para atingir a margem-alvo;
-- preço sugerido com política de arredondamento;
-- preço de venda atual;
+- preço teórico e preço sugerido;
+- preço de venda atual e histórico;
 - margem atual;
 - identificação de produtos abaixo da margem-alvo;
-- indicação de produtos cuja precificação está incompleta por falta de dados;
+- precificação incompleta;
 - dashboard de acompanhamento;
-- configurações globais de produção;
-- histórico de alterações do preço de venda.
+- configurações de precificação por empresa.
 
 ## Fora do MVP
 
@@ -40,15 +44,22 @@ Não fazem parte do MVP:
 - emissão fiscal;
 - contabilidade;
 - fluxo de caixa;
-- autenticação e múltiplos usuários;
-- permissões;
+- permissões granulares/roles complexos;
 - aplicativo móvel nativo;
-- sincronização em nuvem;
 - microserviços;
 - integrações externas;
 - BI avançado;
 - previsão de demanda;
-- cálculo automático de frete.
+- cálculo automático de frete;
+- autenticação externa/SSO;
+- 2FA, salvo nova avaliação de segurança quando a publicação for definida.
+
+## Decisões desta fase
+
+- SQLite permanece autorizado;
+- multiempresa usa banco/schema compartilhados com `EmpresaId`;
+- ASP.NET Core Identity é o mecanismo de autenticação;
+- publicação e eventual banco servidor serão reavaliados quando houver definição de hospedagem.
 
 ## Pós-MVP conhecido
 
@@ -56,10 +67,8 @@ Itens reconhecidos, mas não autorizados para implementação no MVP:
 
 - preparações intermediárias reutilizáveis, como levain, requeijão, geleia, creme ou recheio, compondo outras fichas técnicas;
 - rotina assistida de backup/restauração pela interface;
-- gráficos históricos de custo e margem;
-- publicação web multi-dispositivo;
-- troca de SQLite por banco servidor caso exista necessidade de acesso concorrente.
+- gráficos históricos de custo e margem.
 
 ## Regra de controle de escopo
 
-Uma necessidade nova deve ser avaliada, documentada e transformada em funcionalidade/caso de uso antes da implementação. Não deve ser incluída incidentalmente em outro caso de uso.
+Uma necessidade nova deve ser avaliada, documentada e transformada em funcionalidade/caso de uso antes da implementação. Mudanças transversais não devem ser incluídas incidentalmente em outro caso de uso.

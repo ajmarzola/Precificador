@@ -6,33 +6,36 @@ Um UC deve caber, idealmente, em uma sessão curta de implementação, testes e 
 
 ## Fundação técnica
 
-A fundação técnica não representa funcionalidade de usuário, mas precede os UCs:
+- **FT001 — Fundação Técnica:** implementada.
+- **FT002 — Fundação Multiempresa e Autenticação:** próxima fundação; deve ser implementada antes de UC001B/UC001A/UC002.
 
-- criar solution/projetos;
-- configurar referências;
-- configurar EF Core/SQLite;
-- estabelecer infraestrutura de testes;
-- configurar logging e seed mínimo de desenvolvimento.
-
-Essa fundação possui especificação própria e foi concluída antes dos casos de uso funcionais.
+FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolamento. CRUD administrativo completo será detalhado posteriormente.
 
 ## Insumos
 
 | UC | Nome | Dependências |
 |---|---|---|
-| [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | Fundação |
-| [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001 |
-| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A |
-| UC003 | Editar insumo | UC001A |
-| UC004 | Desativar insumo | UC001A |
-| UC005 | Registrar preço de insumo | UC001A |
+| [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | FT001 — implementado |
+| [UC001B](UC001B-generalizar-categoria-unidades-insumo.md) | Generalizar categoria e unidades de insumo | UC001, FT002 |
+| [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B; **revalidar especificação após FT002/UC001B** |
+| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 |
+| UC003 | Editar insumo | UC001A, FT002 |
+| UC004 | Desativar insumo | UC001A, FT002 |
+| UC005 | Registrar preço de insumo | UC001A, FT002 |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
+
+Classificação e unidades aprovadas para o escopo atual:
+
+- categorias: Matéria-prima, Embalagem e Consumível;
+- unidades: `g`, `ml`, `m` e `un`.
+
+O UC001B implementará essa generalização antes do UC001A/UC002.
 
 ## Produtos
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC007 | Cadastrar produto | Fundação |
+| UC007 | Cadastrar produto | FT002 |
 | UC008 | Listar e consultar produtos | UC007 |
 | UC009 | Editar produto | UC007 |
 | UC010 | Desativar produto | UC007 |
@@ -43,7 +46,7 @@ Essa fundação possui especificação própria e foi concluída antes dos casos
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC013 | Definir rendimento e tempos do lote | UC007 |
+| UC013 | Definir rendimento e tempos/recursos do lote | UC007; **revalidar modelo genérico antes de implementar** |
 | UC014 | Adicionar insumo à ficha técnica com quantidade e observação contextual opcional | UC001A, UC007 |
 | UC015 | Alterar quantidade/observação de item da ficha técnica | UC014 |
 | UC016 | Remover item da ficha técnica | UC014 |
@@ -54,9 +57,9 @@ Essa fundação possui especificação própria e foi concluída antes dos casos
 | UC | Nome | Dependências |
 |---|---|---|
 | UC018 | Calcular custo atual dos itens do lote | UC005, UC014 |
-| UC019 | Calcular perdas de ingredientes | UC018 |
+| UC019 | Calcular perdas aplicáveis | UC018; revalidar antes de implementar |
 | UC020 | Calcular custo de mão de obra | UC013, Configurações |
-| UC021 | Calcular custo de energia | UC013, Configurações |
+| UC021 | Calcular custo de energia/equipamentos | UC013, Configurações; revalidar antes de implementar |
 | UC022 | Calcular custo total e custo unitário | UC018–UC021 |
 | UC023 | Calcular preço teórico e sugerido | UC022 |
 | UC024 | Calcular margem atual e situação | UC011, UC022 |
@@ -66,33 +69,31 @@ Essa fundação possui especificação própria e foi concluída antes dos casos
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC026 | Consultar configurações de precificação | Fundação |
-| UC027 | Alterar configurações de precificação | UC026 |
+| UC026 | Consultar configurações de precificação da Empresa | FT002 |
+| UC027 | Alterar configurações de precificação da Empresa | UC026 |
 
 ## Dashboard
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC028 | Consultar resumo de margens | UC024 |
+| UC028 | Consultar resumo de margens da Empresa Ativa | UC024 |
 | UC029 | Filtrar produtos abaixo da margem | UC028 |
 | UC030 | Identificar produtos com precificação incompleta | UC017, UC028 |
 
-## Pós-MVP já identificado
+## Administração multiempresa
 
-Não detalhar nem implementar sem autorização de escopo:
+Backlog a detalhar:
+
+- cadastro/consulta de empresas;
+- cadastro de usuários e gestão de vínculos usuário-empresa.
+
+## Pós-MVP já identificado
 
 - preparação intermediária reutilizável;
 - backup/restauração pela interface;
 - gráficos históricos;
-- acesso multiusuário;
-- hospedagem.
+- hospedagem a definir.
 
 ## Documentação individual
 
-Ao preparar um caso de uso, criar:
-
-```text
-docs/use-cases/UCxxx-nome-do-caso.md
-```
-
-seguindo `template.md`. O arquivo individual deve existir antes de a instrução de implementação ser entregue ao Codex.
+Ao preparar um caso de uso, criar `docs/use-cases/UCxxx-nome-do-caso.md` seguindo o template. O arquivo individual deve existir antes da instrução de implementação entregue ao Codex.

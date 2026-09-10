@@ -9,6 +9,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`product/vision.md`](product/vision.md) — problema, objetivos e princípios do produto.
 - [`product/scope.md`](product/scope.md) — escopo do MVP e itens explicitamente excluídos.
 - [`product/glossary.md`](product/glossary.md) — vocabulário comum do domínio.
+- [`product/multiempresa-generalizacao.md`](product/multiempresa-generalizacao.md) — direção aprovada para multiempresa, ficha técnica genérica e classificação de Insumos.
 
 ### Negócio
 
@@ -28,12 +29,14 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 
 - [`use-cases/catalog.md`](use-cases/catalog.md) — backlog inicial e dependências.
 - [`use-cases/template.md`](use-cases/template.md) — formato obrigatório para novos casos de uso.
+- [`use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — generalização de Matéria-prima e unidades antes do UC001A/UC002.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
 ### Desenvolvimento
 
-- [`development/foundation-technical.md`](development/foundation-technical.md) — FT001, primeira entrega executável do projeto.
+- [`development/foundation-technical.md`](development/foundation-technical.md) — FT001.
+- [`development/foundation-multiempresa-auth.md`](development/foundation-multiempresa-auth.md) — FT002.
 - [`development/definition-of-done.md`](development/definition-of-done.md)
 - [`development/testing-strategy.md`](development/testing-strategy.md)
 - [`development/workflow-codex.md`](development/workflow-codex.md)
@@ -42,7 +45,8 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 ### Instruções para Codex
 
 - [`codex/`](codex/) — instruções executáveis versionadas para cada incremento.
-- [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md) — primeira instrução de implementação.
+- [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md)
+- [`codex/FT002-fundacao-multiempresa-autenticacao.md`](codex/FT002-fundacao-multiempresa-autenticacao.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 

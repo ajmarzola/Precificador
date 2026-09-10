@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Manter os itens comercializados e seus parâmetros de precificação.
+Manter os itens comercializados e seus parâmetros de precificação por Empresa.
 
 ## Capacidades
 
@@ -16,18 +16,22 @@ Manter os itens comercializados e seus parâmetros de precificação.
 
 ## Dados essenciais
 
+- empresa proprietária;
 - nome;
 - categoria opcional de organização;
 - situação ativo/inativo;
 - preço de venda atual;
-- margem-alvo;
-- percentual de perda de ingredientes.
+- margem-alvo.
 
 Dados de produção e composição pertencem à ficha técnica.
 
+O percentual de perda deixa de ser considerado dado cadastral obrigatório do Produto. Perdas serão revalidadas como conceito de material/processo antes dos UCs correspondentes, permitindo produtos aos quais essa regra não se aplica.
+
+Todo Produto é tenant-owned e só pode ser consultado/alterado no contexto da Empresa Ativa.
+
 ## Regras relacionadas
 
-RN018 a RN024.
+RN018 a RN024 e RN035 a RN039, conforme aplicáveis.
 
 ## Fora do escopo
 

@@ -1,8 +1,12 @@
 # Modelo de Precificação
 
+## Contexto de empresa
+
+Todo cálculo é realizado dentro de uma Empresa Ativa. Insumos, preços, produtos, fichas técnicas, configurações e futuros recursos/equipamentos usados em um cálculo devem pertencer à mesma Empresa.
+
 ## Unidade de cálculo
 
-A ficha técnica representa **um lote**. O produto é vendido em uma ou mais unidades derivadas desse lote. Todos os tempos e quantidades da ficha são informados para o lote.
+A ficha técnica representa **um lote/execução produtiva**. O produto é vendido em uma ou mais unidades derivadas desse lote. Todos os tempos e quantidades da ficha são informados para o lote/execução.
 
 ## Composição do custo
 
@@ -14,36 +18,40 @@ Para cada insumo:
 custo_item = quantidade_utilizada × custo_unitário_atual
 ```
 
-Os itens podem ser ingredientes, embalagens ou consumíveis.
+Os itens podem representar materiais/ingredientes, embalagens ou consumíveis conforme a classificação vigente do domínio.
 
 ### 2. Perdas
 
-A perda percentual é aplicada ao custo dos ingredientes do lote:
+Perdas são opcionais e representam material/processo desperdiçado quando aplicável.
 
-```text
-custo_perda = custo_ingredientes × percentual_perda
-```
+A regra originalmente definida apenas para ingredientes de panificação será revalidada antes do UC019 para atender diferentes processos produtivos sem tornar perda um atributo obrigatório de todos os Produtos.
 
 ### 3. Mão de obra
 
 ```text
-custo_mão_de_obra_lote = tempo_ativo_em_horas × valor_hora
+custo_mão_de_obra_lote = tempo_ativo_em_horas × valor_hora_da_empresa
 ```
 
-### 4. Energia
+### 4. Equipamentos e energia
+
+`TempoForno` e `PotenciaFornoKw` deixam de ser conceitos universais. Quando o consumo de um equipamento for relevante:
 
 ```text
-custo_energia_lote = potência_forno_kW × tempo_forno_h × tarifa_kWh
+custo_energia_uso = potência_equipamento_kW × tempo_uso_h × tarifa_kWh_da_empresa
 ```
 
+O custo de energia do lote é a soma dos usos de equipamentos aplicáveis. Forno é apenas um possível equipamento.
+
 ### 5. Custo do lote
+
+Conceitualmente:
 
 ```text
 custo_lote =
     custo_itens
-  + custo_perda
+  + perdas_aplicáveis
   + custo_mão_de_obra_lote
-  + custo_energia_lote
+  + custos_de_recursos_e_equipamentos_aplicáveis
 ```
 
 ### 6. Custo unitário
@@ -60,7 +68,7 @@ A margem é tratada como margem sobre o preço de venda, não como simples multi
 preço_teórico = custo_unitário / (1 - margem_alvo)
 ```
 
-O preço sugerido é o preço teórico arredondado para cima para o incremento comercial configurado.
+O preço sugerido é o preço teórico arredondado para cima para o incremento comercial configurado da Empresa.
 
 ## Margem atual
 
@@ -68,24 +76,22 @@ O preço sugerido é o preço teórico arredondado para cima para o incremento c
 margem_atual = (preço_venda - custo_unitário) / preço_venda
 ```
 
-A margem atual sempre usa o custo calculado com preços e configurações vigentes.
+A margem atual sempre usa o custo calculado com preços e configurações vigentes da mesma Empresa.
 
 ## Ausência de dados
 
-Se um insumo da ficha não possuir preço vigente ou outro parâmetro obrigatório estiver ausente, o cálculo é **incompleto**. Valores faltantes não devem ser substituídos por zero.
+Se um dado obrigatório estiver ausente ou inválido, o cálculo é **incompleto**. Valores faltantes não devem ser substituídos por zero.
 
 ## Histórico
 
 ### Insumos
 
-O histórico registra as compras/preços conhecidos. O custo atual deriva do registro vigente mais recente.
+O histórico registra compras/preços conhecidos do Insumo. O custo atual deriva do registro vigente mais recente e permanece isolado pela Empresa proprietária do Insumo.
 
 ### Produtos
 
-O preço de venda praticado possui histórico próprio. O custo atual continua calculado sob demanda. Quando snapshots históricos de custo forem necessários para relatórios futuros, deverão ser modelados explicitamente, sem transformar o custo atual em campo redundante.
+O preço de venda praticado possui histórico próprio. O custo atual continua calculado sob demanda. Quando snapshots históricos de custo forem necessários, deverão ser modelados explicitamente.
 
 ## Golden cases
 
-O motor de cálculo deve possuir testes de referência derivados de produtos conferidos na planilha original. Os golden cases devem validar a composição completa do custo e não apenas fórmulas isoladas.
-
-Os valores exatos dos casos canônicos serão congelados no momento da implementação do motor, depois de conferência final da ficha de referência.
+O motor de cálculo deve possuir cenários canônicos derivados de produtos conferidos nos negócios de referência. Os golden cases devem validar a composição completa do custo e respeitar o contexto da Empresa.
