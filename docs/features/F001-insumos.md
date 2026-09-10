@@ -19,56 +19,54 @@ Manter o catálogo de itens usados nas fichas técnicas e seu histórico de pre�
 
 - empresa proprietária;
 - nome;
+- marca opcional;
+- observação técnica opcional;
 - categoria;
 - unidade base;
 - situação ativo/inativo.
 
-### Cadastro inicial
+### Cadastro
 
-No UC001, o cadastro contém somente:
+O cadastro de Insumo atualmente contém:
 
 - Nome;
+- Marca opcional;
 - Categoria;
-- Unidade base.
+- Unidade base;
+- Observação opcional.
 
-Todo novo insumo nasce ativo. Preço não faz parte do cadastro inicial e será tratado separadamente pelo UC005, preservando histórico.
+Todo novo Insumo nasce ativo. Preço não faz parte do cadastro e será tratado separadamente pelo UC005, preservando histórico.
 
-O nome deve ser normalizado para eliminar diferenças acidentais de espaços e possuir uma representação técnica normalizada para impedir duplicidades por caixa/espaçamento. A capitalização usada para exibição é preservada após a limpeza de espaços.
+Com a FT002, todo Insumo possui `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário.
 
-Com a FT002, todo Insumo possui `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário. A unicidade do cadastro é limitada à Empresa proprietária.
-
-O UC001A complementará a identidade econômica do Insumo com Nome + Marca dentro da Empresa e adicionará Observação técnica opcional ao cadastro.
+Após o UC001A, a identidade econômica do Insumo é formada por **Empresa + Nome + Marca**, protegida pelo índice `(EmpresaId, NomeNormalizado, MarcaNormalizada)`.
 
 ### Classificação e unidades generalizadas
 
-O UC001B generalizou o vocabulário para atender negócios alimentícios e de papelaria sem distorção semântica.
+O UC001B generalizou o vocabulário para atender negócios alimentícios e de papelaria.
 
-Categorias atuais do domínio:
+Categorias atuais:
 
 - Matéria-prima;
 - Embalagem;
 - Consumível.
 
-Unidades base do escopo atual:
+Unidades base:
 
 - `g` — grama;
 - `ml` — mililitro;
 - `m` — metro;
 - `un` — unidade.
 
-`MateriaPrima = 1` preserva o valor anteriormente usado por `Ingrediente`, garantindo compatibilidade com registros existentes.
+`MateriaPrima = 1` preserva o valor anteriormente usado por `Ingrediente`.
 
-Cada registro de preço deve conter ao menos:
+### Consulta
 
-- insumo;
-- data de referência;
-- quantidade comprada na unidade base;
-- preço pago;
-- observação opcional.
+O UC002 disponibiliza listagem, pesquisa por Nome/Marca e detalhes, sempre limitados à Empresa Ativa.
 
-Fornecedor poderá ser incorporado futuramente sem transformar cadastro de fornecedores em módulo do MVP.
+Insumos ativos e inativos permanecem consultáveis. Consultas puras usam `AsNoTracking` e preservam o Global Query Filter da FT002.
 
-Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
+Cada registro de preço futuro pertence a um Insumo específico; como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
 
 ## Regras relacionadas
 
@@ -77,10 +75,10 @@ Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence
 
 ## Casos de uso
 
-- [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
+- [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md) — implementado;
 - [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — implementado;
-- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — revalidado e pronto para implementação;
-- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
+- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
+- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — revalidado e pronto para implementação;
 - UC003 — Editar insumo;
 - UC004 — Desativar insumo;
 - UC005 — Registrar preço de insumo;
