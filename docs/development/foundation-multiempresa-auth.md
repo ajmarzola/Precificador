@@ -1,6 +1,6 @@
 # FT002 — Fundação Multiempresa e Autenticação
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Tipo:** fundação técnica transversal
 - **Dependências:** FT001 e UC001 implementados
 - **Bloqueia:** UC001B, UC001A e UC002
