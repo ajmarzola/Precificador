@@ -1,6 +1,6 @@
 # UC002 — Listar e consultar insumos
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001, FT002, UC001B e UC001A implementados
 - **Próximo caso relacionado:** UC003 — Editar insumo
