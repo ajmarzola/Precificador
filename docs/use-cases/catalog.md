@@ -16,7 +16,7 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | UC | Nome | Dependências |
 |---|---|---|
 | [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | FT001 — implementado |
-| UC001B | Generalizar categoria e unidades de insumo | UC001, FT002 |
+| [UC001B](UC001B-generalizar-categoria-unidades-insumo.md) | Generalizar categoria e unidades de insumo | UC001, FT002 |
 | [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B; **revalidar especificação após FT002/UC001B** |
 | [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 |
 | UC003 | Editar insumo | UC001A, FT002 |
