@@ -35,15 +35,15 @@ Todo novo insumo nasce ativo. Preço não faz parte do cadastro inicial e será 
 
 O nome deve ser normalizado para eliminar diferenças acidentais de espaços e possuir uma representação técnica normalizada para impedir duplicidades por caixa/espaçamento. A capitalização usada para exibição é preservada após a limpeza de espaços.
 
-Com a FT002, todo Insumo passa a possuir `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário. A unicidade do cadastro passa a ser limitada à Empresa proprietária.
+Com a FT002, todo Insumo possui `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário. A unicidade do cadastro é limitada à Empresa proprietária.
 
-Após UC001A, a identidade econômica do Insumo será composta por Nome + Marca dentro da Empresa, e Observação técnica opcional passará a integrar o cadastro.
+O UC001A complementará a identidade econômica do Insumo com Nome + Marca dentro da Empresa e adicionará Observação técnica opcional ao cadastro.
 
 ### Classificação e unidades generalizadas
 
-Para atender negócios alimentícios e de papelaria sem distorção semântica, o termo `Ingrediente` será substituído por `MateriaPrima`.
+O UC001B generalizou o vocabulário para atender negócios alimentícios e de papelaria sem distorção semântica.
 
-Categorias do domínio:
+Categorias atuais do domínio:
 
 - Matéria-prima;
 - Embalagem;
@@ -56,7 +56,7 @@ Unidades base do escopo atual:
 - `m` — metro;
 - `un` — unidade.
 
-A alteração será implementada no **UC001B — Generalizar categoria e unidades de insumo**, após FT002 e antes do UC001A/UC002.
+`MateriaPrima = 1` preserva o valor anteriormente usado por `Ingrediente`, garantindo compatibilidade com registros existentes.
 
 Cada registro de preço deve conter ao menos:
 
@@ -78,8 +78,8 @@ Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence
 ## Casos de uso
 
 - [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
-- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md);
-- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
+- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — implementado;
+- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — revalidado e pronto para implementação;
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
 - UC003 — Editar insumo;
 - UC004 — Desativar insumo;
