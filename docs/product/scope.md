@@ -17,7 +17,7 @@ O MVP contempla:
 - ficha técnica por lote/execução;
 - rendimento do lote em unidades de venda;
 - composição por insumos;
-- custos de ingredientes/materiais, embalagens e consumíveis;
+- custos de matérias-primas, embalagens e consumíveis;
 - perdas de material/processo quando aplicáveis;
 - custo de mão de obra a partir de tempo ativo e valor/hora;
 - custo de energia/recursos a partir de uso de equipamentos quando aplicável;
