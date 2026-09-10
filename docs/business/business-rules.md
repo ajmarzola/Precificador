@@ -6,9 +6,16 @@ Este documento contém regras normativas do Precificador. Casos de uso devem ref
 
 ### RN001 — Unidade base
 
-Cada insumo deve possuir uma unidade base. No código atual, as unidades previstas são `g`, `ml` e `un`.
+Cada insumo deve possuir uma unidade base.
 
-A adequação desse conjunto para diferentes tipos de negócio será revalidada antes do UC002; a FT002 não altera unidades.
+Após o UC001B, as unidades previstas para o escopo atual são:
+
+- `g` — grama;
+- `ml` — mililitro;
+- `m` — metro;
+- `un` — unidade.
+
+Os valores numéricos existentes do enum devem ser preservados e `Metro` será acrescentado como novo valor funcional.
 
 ### RN002 — Quantidade de compra válida
 
@@ -70,13 +77,19 @@ A integridade deve ser protegida pelo banco com índice/restrição única adequ
 
 ### RN030 — Categoria do insumo
 
-O código atual prevê:
+Após o UC001B, todo Insumo deve pertencer exatamente a uma das categorias do escopo atual:
 
-- Ingrediente;
+- Matéria-prima;
 - Embalagem;
 - Consumível.
 
-Nenhum valor indefinido/zero é categoria funcional válida. O vocabulário será revalidado antes do UC002 para suportar negócios não alimentícios sem distorção semântica.
+O código deve representar `MateriaPrima = 1`, preservando o mesmo valor numérico anteriormente usado por `Ingrediente`, para que registros existentes continuem semanticamente válidos sem transformação de dados.
+
+Nenhum valor indefinido/zero é considerado categoria funcional válida.
+
+Matéria-prima representa o material que compõe diretamente o produto ou é consumido como material principal de sua produção, independentemente do segmento da Empresa. Exemplos incluem farinha, açúcar, papel e vinil.
+
+A categoria não determina automaticamente regra de perda; perdas serão modeladas como conceito de material/processo quando aplicável.
 
 ### RN031 — Situação inicial do insumo
 
