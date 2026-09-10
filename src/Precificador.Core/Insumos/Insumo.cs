@@ -5,19 +5,27 @@ namespace Precificador.Core.Insumos;
 public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 {
     private const int TamanhoMaximoNome = 120;
+    private const int TamanhoMaximoMarca = 80;
+    private const int TamanhoMaximoObservacao = 1000;
 
     private Insumo()
     {
         Nome = null!;
         NomeNormalizado = null!;
+        MarcaNormalizada = null!;
     }
 
-    private Insumo(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase)
+    private Insumo(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase, string? marca, string? observacao)
     {
         DefinirEmpresa(empresaId);
         Nome = NormalizarNome(nome);
         NomeNormalizado = Nome.ToUpperInvariant();
+        Marca = NormalizarMarca(marca);
+        MarcaNormalizada = Marca?.ToUpperInvariant() ?? string.Empty;
+        Observacao = NormalizarObservacao(observacao);
         ValidarNome(Nome);
+        ValidarMarca(Marca);
+        ValidarObservacao(Observacao);
         ValidarCategoria(categoria);
         ValidarUnidadeBase(unidadeBase);
 
@@ -34,14 +42,20 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 
     public string NomeNormalizado { get; private set; }
 
+    public string? Marca { get; private set; }
+
+    public string MarcaNormalizada { get; private set; }
+
+    public string? Observacao { get; private set; }
+
     public CategoriaInsumo Categoria { get; private set; }
 
     public UnidadeMedida UnidadeBase { get; private set; }
 
     public bool Ativo { get; private set; }
 
-    public static Insumo Criar(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase) =>
-        new(empresaId, nome, categoria, unidadeBase);
+    public static Insumo Criar(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase, string? marca = null, string? observacao = null) =>
+        new(empresaId, nome, categoria, unidadeBase, marca, observacao);
 
     public void DefinirEmpresa(int empresaId)
     {
@@ -61,6 +75,18 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
     private static string NormalizarNome(string nome) =>
         Regex.Replace(nome?.Trim() ?? string.Empty, @"\s+", " ");
 
+    private static string? NormalizarMarca(string? marca)
+    {
+        var marcaNormalizada = Regex.Replace(marca?.Trim() ?? string.Empty, @"\s+", " ");
+        return string.IsNullOrEmpty(marcaNormalizada) ? null : marcaNormalizada;
+    }
+
+    private static string? NormalizarObservacao(string? observacao)
+    {
+        var observacaoNormalizada = observacao?.Trim();
+        return string.IsNullOrEmpty(observacaoNormalizada) ? null : observacaoNormalizada;
+    }
+
     private static void ValidarNome(string nome)
     {
         if (string.IsNullOrWhiteSpace(nome))
@@ -71,6 +97,22 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
         if (nome.Length > TamanhoMaximoNome)
         {
             throw new ArgumentException("O nome deve possuir no máximo 120 caracteres.", nameof(nome));
+        }
+    }
+
+    private static void ValidarMarca(string? marca)
+    {
+        if (marca?.Length > TamanhoMaximoMarca)
+        {
+            throw new ArgumentException("A marca deve possuir no máximo 80 caracteres.", "marca");
+        }
+    }
+
+    private static void ValidarObservacao(string? observacao)
+    {
+        if (observacao?.Length > TamanhoMaximoObservacao)
+        {
+            throw new ArgumentException("A observação deve possuir no máximo 1000 caracteres.", "observacao");
         }
     }
 

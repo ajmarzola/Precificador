@@ -12,11 +12,14 @@ public sealed class InsumoConfiguration : IEntityTypeConfiguration<Insumo>
         builder.HasKey(insumo => insumo.Id);
         builder.Property(insumo => insumo.Nome).IsRequired().HasMaxLength(120);
         builder.Property(insumo => insumo.NomeNormalizado).IsRequired().HasMaxLength(120);
+        builder.Property(insumo => insumo.Marca).HasMaxLength(80);
+        builder.Property(insumo => insumo.MarcaNormalizada).IsRequired().HasMaxLength(80);
+        builder.Property(insumo => insumo.Observacao).HasMaxLength(1000);
         builder.Property(insumo => insumo.Categoria).IsRequired();
         builder.Property(insumo => insumo.UnidadeBase).IsRequired();
         builder.Property(insumo => insumo.Ativo).IsRequired();
         builder.Property(insumo => insumo.EmpresaId).IsRequired();
-        builder.HasIndex(insumo => new { insumo.EmpresaId, insumo.NomeNormalizado }).IsUnique();
+        builder.HasIndex(insumo => new { insumo.EmpresaId, insumo.NomeNormalizado, insumo.MarcaNormalizada }).IsUnique();
         builder.HasOne<Precificador.Core.Empresas.Empresa>()
             .WithMany()
             .HasForeignKey(insumo => insumo.EmpresaId)

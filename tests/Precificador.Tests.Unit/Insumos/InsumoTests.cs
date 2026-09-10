@@ -84,4 +84,53 @@ public sealed class InsumoTests
         Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
         Assert.Equal(UnidadeMedida.Metro, insumo.UnidadeBase);
     }
+
+    [Fact]
+    public void Criar_com_marca_normaliza_espacos_e_gera_representacao_para_comparacao()
+    {
+        var insumo = Insumo.Criar(7, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "  Renata   Super Premium ");
+
+        Assert.Equal(7, insumo.EmpresaId);
+        Assert.Equal("Renata Super Premium", insumo.Marca);
+        Assert.Equal("RENATA SUPER PREMIUM", insumo.MarcaNormalizada);
+    }
+
+    [Fact]
+    public void Criar_sem_marca_usa_nulo_e_representacao_vazia()
+    {
+        var insumo = Insumo.Criar(1, "Sal", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "   ");
+
+        Assert.Null(insumo.Marca);
+        Assert.Equal(string.Empty, insumo.MarcaNormalizada);
+    }
+
+    [Fact]
+    public void Criar_rejeita_marca_maior_que_80_caracteres_apos_normalizacao()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, new string('a', 81)));
+    }
+
+    [Fact]
+    public void Criar_preserva_conteudo_interno_da_observacao_e_remove_whitespace_externo()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, observacao: "  W 300\nProteína 13,5%  ");
+
+        Assert.Equal("W 300\nProteína 13,5%", insumo.Observacao);
+    }
+
+    [Fact]
+    public void Criar_converte_observacao_apenas_com_whitespace_para_nulo()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, observacao: " \r\n\t ");
+
+        Assert.Null(insumo.Observacao);
+    }
+
+    [Fact]
+    public void Criar_rejeita_observacao_maior_que_1000_caracteres()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, observacao: new string('a', 1001)));
+    }
 }

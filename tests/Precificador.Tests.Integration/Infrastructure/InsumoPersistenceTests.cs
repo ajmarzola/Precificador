@@ -19,7 +19,7 @@ public sealed class InsumoPersistenceTests
 
         var objetos = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type IN ('table', 'index')").ToListAsync();
         Assert.Contains("Insumos", objetos);
-        Assert.Contains("IX_Insumos_EmpresaId_NomeNormalizado", objetos);
+        Assert.Contains("IX_Insumos_EmpresaId_NomeNormalizado_MarcaNormalizada", objetos);
     }
 
     [Fact]
