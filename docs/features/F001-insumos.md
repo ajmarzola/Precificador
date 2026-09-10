@@ -39,7 +39,24 @@ Com a FT002, todo Insumo passa a possuir `EmpresaId` obrigatório, resolvido pel
 
 Após UC001A, a identidade econômica do Insumo será composta por Nome + Marca dentro da Empresa, e Observação técnica opcional passará a integrar o cadastro.
 
-A adequação de `Ingrediente/Embalagem/Consumível` e das unidades `g/ml/un` para diferentes negócios será detalhada separadamente antes do UC002.
+### Classificação e unidades generalizadas
+
+Para atender negócios alimentícios e de papelaria sem distorção semântica, o termo `Ingrediente` será substituído por `MateriaPrima`.
+
+Categorias do domínio:
+
+- Matéria-prima;
+- Embalagem;
+- Consumível.
+
+Unidades base do escopo atual:
+
+- `g` — grama;
+- `ml` — mililitro;
+- `m` — metro;
+- `un` — unidade.
+
+A alteração será implementada no **UC001B — Generalizar categoria e unidades de insumo**, após FT002 e antes do UC001A/UC002.
 
 Cada registro de preço deve conter ao menos:
 
@@ -61,6 +78,7 @@ Cada registro de preço pertence a um Insumo específico. Como o Insumo pertence
 ## Casos de uso
 
 - [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
+- UC001B — Generalizar categoria e unidades de insumo;
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
 - UC003 — Editar insumo;
