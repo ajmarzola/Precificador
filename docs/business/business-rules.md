@@ -15,7 +15,7 @@ Após o UC001B, as unidades previstas para o escopo atual são:
 - `m` — metro;
 - `un` — unidade.
 
-Os valores numéricos existentes do enum devem ser preservados e `Metro` será acrescentado como novo valor funcional.
+Os valores numéricos existentes do enum foram preservados e `Metro = 4` foi acrescentado como valor funcional pelo UC001B.
 
 ### RN002 — Quantidade de compra válida
 
@@ -65,9 +65,9 @@ Para comparação determinística, o sistema mantém uma representação normali
 
 A identidade funcional do Insumo é limitada à Empresa proprietária.
 
-Após FT002 e antes do UC001A, não podem existir dois Insumos da mesma Empresa com o mesmo `NomeNormalizado`, independentemente de estarem ativos ou inativos.
+Antes do UC001A, a unicidade temporária era `(EmpresaId, NomeNormalizado)`.
 
-Após UC001A, não podem existir dois Insumos da mesma Empresa com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`.
+No modelo atual, após o UC001A, não podem existir dois Insumos da mesma Empresa com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`.
 
 Marcas diferentes do mesmo Nome representam Insumos distintos e podem coexistir na mesma Empresa. Empresas diferentes também podem cadastrar a mesma combinação Nome/Marca.
 

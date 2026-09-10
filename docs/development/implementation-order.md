@@ -16,19 +16,18 @@ FT002 concluída: Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inic
 
 Especificação: [`foundation-multiempresa-auth.md`](foundation-multiempresa-auth.md).
 
-Instrução Codex: [`../codex/FT002-fundacao-multiempresa-autenticacao.md`](../codex/FT002-fundacao-multiempresa-autenticacao.md).
-
 ## Etapa 1 — Insumos
 
 Estado atual:
 
-1. **UC001B — Generalizar categoria e unidades de insumo** — implementado: `MateriaPrima = 1`, `Metro = 4` e compatibilidade preservada;
-2. **UC001A — Marca e Observação** — especificação revalidada após FT002/UC001B e pronta para implementação;
-3. após UC001A, seguir UC002 a UC006 já usando identidade tenant-aware por Empresa + Nome + Marca.
+1. **UC001B — Generalizar categoria e unidades** — implementado;
+2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
+3. **UC002 — Listar e consultar Insumos** — revalidado e pronto para implementação;
+4. depois, seguir UC003 a UC006.
 
-Especificação UC001A: [`../use-cases/UC001A-complementar-insumo-marca-observacao.md`](../use-cases/UC001A-complementar-insumo-marca-observacao.md).
+Especificação UC002: [`../use-cases/UC002-listar-consultar-insumos.md`](../use-cases/UC002-listar-consultar-insumos.md).
 
-Instrução Codex UC001A: [`../codex/UC001A-complementar-insumo-marca-observacao.md`](../codex/UC001A-complementar-insumo-marca-observacao.md).
+Instrução Codex UC002: [`../codex/UC002-listar-consultar-insumos.md`](../codex/UC002-listar-consultar-insumos.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
@@ -71,4 +70,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC001A — Complementar cadastro de Insumo com Marca e Observação** usando a especificação revalidada. Não iniciar UC002 antes do UC001A estar concluído.
+Implementar e revisar o **UC002 — Listar e consultar Insumos**. Não iniciar UC003 antes do UC002 estar concluído.
