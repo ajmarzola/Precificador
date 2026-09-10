@@ -41,12 +41,14 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`development/testing-strategy.md`](development/testing-strategy.md)
 - [`development/workflow-codex.md`](development/workflow-codex.md)
 - [`development/implementation-order.md`](development/implementation-order.md)
+- [`development/melhorias.md`](development/melhorias.md) — backlog de melhorias não bloqueantes identificadas durante implementação e revisão.
 
 ### Instruções para Codex
 
 - [`codex/`](codex/) — instruções executáveis versionadas para cada incremento.
 - [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md)
 - [`codex/FT002-fundacao-multiempresa-autenticacao.md`](codex/FT002-fundacao-multiempresa-autenticacao.md)
+- [`codex/UC001B-generalizar-categoria-unidades-insumo.md`](codex/UC001B-generalizar-categoria-unidades-insumo.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
