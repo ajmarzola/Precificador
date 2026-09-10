@@ -24,9 +24,24 @@ O desenho exato será fechado antes dos UCs de Ficha Técnica e energia.
 
 ## Insumos
 
-A generalização revelou que `Ingrediente` como categoria e apenas `g/ml/un` como unidades podem ser insuficientes para negócios não alimentícios.
+A classificação de Insumos deve usar vocabulário aplicável tanto à Grana Sancta quanto à Carinho e Amor.
 
-Essa alteração não pertence à FT002. Antes do UC002, será feito um inventário real dos tipos de insumo dos dois negócios e então será documentado um ajuste específico, sem inventar unidades antecipadamente.
+Categorias aprovadas:
+
+- `MateriaPrima` — material que compõe diretamente o produto ou é consumido como material principal do processo, como farinha, açúcar, papel ou vinil;
+- `Embalagem` — material utilizado para acondicionar/apresentar o produto;
+- `Consumivel` — item consumido no processo sem ser tratado como matéria-prima principal ou embalagem.
+
+O termo anterior `Ingrediente` será substituído por `MateriaPrima`, preservando o valor numérico `1` do enum para manter compatibilidade com registros existentes.
+
+Unidades base aprovadas para o escopo atual:
+
+- `g` — grama;
+- `ml` — mililitro;
+- `m` — metro;
+- `un` — unidade.
+
+`Metro` será acrescentado ao enum de unidades como novo valor funcional. Essa evolução será implementada em incremento próprio, **UC001B — Generalizar categoria e unidades de insumo**, após FT002 e antes do UC001A/UC002.
 
 ## Configurações
 
