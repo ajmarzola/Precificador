@@ -26,8 +26,8 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
         }
         await signInManager.SignInAsync(usuario, false);
         var empresas = await context.UsuariosEmpresas.Where(v => v.UsuarioId == usuario.Id && v.Ativo)
-            .Join(context.Empresas.Where(e => e.Ativo), v => v.EmpresaId, e => e.Id, (v, e) => e.Id).ToListAsync();
-        if (empresas.Count == 1) { empresaContext.Definir(empresas[0]); return LocalRedirect(ReturnUrl ?? "/"); }
+            .Join(context.Empresas.Where(e => e.Ativo), v => v.EmpresaId, e => e.Id, (v, e) => new { e.Id, e.Nome }).ToListAsync();
+        if (empresas.Count == 1) { empresaContext.Definir(empresas[0].Id, empresas[0].Nome); return LocalRedirect(ReturnUrl ?? "/"); }
         return RedirectToPage("/Empresas/Selecionar");
     }
     public sealed class InputModel { [Required, EmailAddress] public string Email { get; set; } = string.Empty; [Required, DataType(DataType.Password)] public string Senha { get; set; } = string.Empty; }

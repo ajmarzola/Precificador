@@ -13,5 +13,6 @@ public sealed class DesignTimePrecificadorDbContextFactory : IDesignTimeDbContex
     private sealed class EmpresaContextVazio : IEmpresaContext
     {
         public int? EmpresaId => null;
+        public int EmpresaIdOuSentinela => -1;
     }
 }

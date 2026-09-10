@@ -63,7 +63,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using (var scope = factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            context.Insumos.Add(Insumo.Criar(nome, CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+            context.Insumos.Add(Insumo.Criar(1, nome, CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
             await context.SaveChangesAsync();
         }
 

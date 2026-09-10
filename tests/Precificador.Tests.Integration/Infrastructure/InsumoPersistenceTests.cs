@@ -30,7 +30,7 @@ public sealed class InsumoPersistenceTests
         await using var context = CriarContexto(connection);
         await context.Database.MigrateAsync();
 
-        context.Insumos.Add(Insumo.Criar("  Copo   200 ml ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade));
+        context.Insumos.Add(Insumo.Criar(1, "  Copo   200 ml ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade));
         await context.SaveChangesAsync();
 
         var insumo = await context.Insumos.AsNoTracking().SingleAsync();
@@ -49,9 +49,9 @@ public sealed class InsumoPersistenceTests
         await using var context = CriarContexto(connection);
         await context.Database.MigrateAsync();
 
-        context.Insumos.Add(Insumo.Criar("Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
         await context.SaveChangesAsync();
-        context.Insumos.Add(Insumo.Criar("farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
+        context.Insumos.Add(Insumo.Criar(1, "farinha", CategoriaInsumo.Ingrediente, UnidadeMedida.Grama));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
@@ -62,5 +62,6 @@ public sealed class InsumoPersistenceTests
     private sealed class EmpresaContextoTeste : IEmpresaContext
     {
         public int? EmpresaId => 1;
+        public int EmpresaIdOuSentinela => 1;
     }
 }

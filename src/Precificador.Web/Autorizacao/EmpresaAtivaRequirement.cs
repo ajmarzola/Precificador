@@ -1,18 +1,28 @@
 using Microsoft.AspNetCore.Authorization;
 using Precificador.Core.Empresas;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Empresas;
 
 namespace Precificador.Web.Autorizacao;
 
 public sealed class EmpresaAtivaRequirement : IAuthorizationRequirement;
 
-public sealed class EmpresaAtivaHandler(IEmpresaContext empresaContext) : AuthorizationHandler<EmpresaAtivaRequirement>
+public sealed class EmpresaAtivaHandler(PrecificadorDbContext dbContext, EmpresaContext empresaContext) : AuthorizationHandler<EmpresaAtivaRequirement>
 {
-    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, EmpresaAtivaRequirement requirement)
+    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, EmpresaAtivaRequirement requirement)
     {
-        if (context.User.Identity?.IsAuthenticated == true && empresaContext.EmpresaId.HasValue)
+        var usuarioId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var empresaId = empresaContext.EmpresaId;
+        if (usuarioId is not null && empresaId.HasValue && await dbContext.UsuariosEmpresas.AnyAsync(v =>
+                v.UsuarioId == usuarioId && v.EmpresaId == empresaId.Value && v.Ativo &&
+                dbContext.Empresas.Any(empresa => empresa.Id == empresaId.Value && empresa.Ativo)))
         {
             context.Succeed(requirement);
+            return;
         }
-        return Task.CompletedTask;
+
+        empresaContext.Limpar();
     }
 }

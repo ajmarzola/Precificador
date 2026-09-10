@@ -28,7 +28,12 @@ builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
 }).AddEntityFrameworkStores<PrecificadorDbContext>().AddDefaultTokenProviders();
-builder.Services.ConfigureApplicationCookie(options => options.Cookie.HttpOnly = true);
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.LoginPath = "/Conta/Login";
+    options.AccessDeniedPath = "/Conta/Login";
+});
 builder.Services.AddAuthorization(options => options.AddPolicy("EmpresaAtiva", policy => policy.Requirements.Add(new EmpresaAtivaRequirement())));
 builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, EmpresaAtivaHandler>();
 

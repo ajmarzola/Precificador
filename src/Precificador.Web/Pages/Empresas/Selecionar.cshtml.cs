@@ -20,7 +20,8 @@ public sealed class SelecionarModel(PrecificadorDbContext context, EmpresaContex
         var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var autorizada = await context.UsuariosEmpresas.AnyAsync(v => v.UsuarioId == usuarioId && v.EmpresaId == EmpresaId && v.Ativo && context.Empresas.Any(e => e.Id == EmpresaId && e.Ativo));
         if (!autorizada) { ModelState.AddModelError(string.Empty, "Empresa indisponível para este usuário."); Empresas = await ObterEmpresasAsync(); return Page(); }
-        empresaContext.Definir(EmpresaId);
+        var empresa = await context.Empresas.SingleAsync(empresa => empresa.Id == EmpresaId);
+        empresaContext.Definir(EmpresaId, empresa.Nome);
         return RedirectToPage("/Index");
     }
     private async Task<List<SelectListItem>> ObterEmpresasAsync()

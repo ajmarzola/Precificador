@@ -22,7 +22,7 @@ public sealed class PrecificadorDbContext(
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
         modelBuilder.Entity<Insumo>().HasQueryFilter(insumo =>
-            empresaContext.EmpresaId.HasValue && insumo.EmpresaId == empresaContext.EmpresaId.Value);
+            insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -48,11 +48,6 @@ public sealed class PrecificadorDbContext(
             if (!empresaId.HasValue)
             {
                 throw new InvalidOperationException("Uma empresa ativa é necessária para alterar insumos.");
-            }
-
-            if (alteracao.State == EntityState.Added && alteracao.Entity.EmpresaId == 0)
-            {
-                alteracao.Entity.DefinirEmpresa(empresaId.Value);
             }
 
             if (alteracao.Entity.EmpresaId != empresaId.Value)
