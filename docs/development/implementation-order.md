@@ -1,64 +1,78 @@
 # Ordem Inicial de Implementação
 
-A ordem prioriza dependências do domínio e entrega incremental. Não representa calendário rígido.
+A ordem prioriza dependências do domínio e entrega incremental.
 
-## Etapa 0 — Fundação técnica
+## Etapa 0 — FT001 Fundação Técnica
 
-Especificação: [`foundation-technical.md`](foundation-technical.md).
+Concluída.
 
-- criar `Precificador.slnx`;
-- criar projetos de produção e teste;
-- configurar referências;
-- configurar .NET 10;
-- configurar EF Core + SQLite;
-- configurar tool manifest com `dotnet-ef`;
-- registrar logging padrão;
-- configurar infraestrutura de testes e smoke tests;
-- configurar GitHub Actions para restore/build/test;
-- ajustar `.gitignore` e `.editorconfig`;
-- não criar migration antes do primeiro modelo persistente;
-- não criar seed vazio; iniciar seed de desenvolvimento quando existir a primeira entidade que o justifique.
+## Etapa 0.5 — UC001 Cadastro básico de Insumo
 
-Instrução Codex: [`../codex/FT001-fundacao-tecnica.md`](../codex/FT001-fundacao-tecnica.md).
+Concluído.
 
-## Etapa 1 — Insumos
+## Etapa 0.6 — FT002 Fundação Multiempresa e Autenticação
 
-UC001 a UC006.
+Executar antes de qualquer evolução adicional de Insumos.
 
-Objetivo: possuir catálogo e histórico de preços confiável antes de tentar precificar produtos.
+Objetivo:
+
+- Empresa;
+- Identity;
+- UsuarioEmpresa;
+- bootstrap inicial;
+- login/logout;
+- Empresa Ativa;
+- isolamento centralizado;
+- adicionar EmpresaId ao Insumo;
+- preservar banco UC001.
+
+Especificação: [`foundation-multiempresa-auth.md`](foundation-multiempresa-auth.md).
+
+Instrução: [`../codex/FT002-fundacao-multiempresa-autenticacao.md`](../codex/FT002-fundacao-multiempresa-autenticacao.md).
+
+## Etapa 1 — Evoluções de Insumo
+
+Ordem:
+
+1. UC001A — Marca e Observação, já especificado, mas depende agora da FT002;
+2. UC001B — Generalizar classificação/unidades para os dois negócios; detalhar após inventário real de insumos;
+3. UC002 a UC006.
+
+UC002 não deve ser implementado antes dessas correções porque sua UI e consultas devem nascer tenant-aware e com vocabulário genérico.
 
 ## Etapa 2 — Produtos
 
-UC007 a UC012.
+UC007 a UC012. Todo Produto será tenant-owned.
 
-Objetivo: manter produtos, margem-alvo e preço praticado com histórico.
+## Etapa 3 — Ficha Técnica genérica
 
-## Etapa 3 — Ficha técnica
-
-UC013 a UC017.
-
-Objetivo: representar um lote, rendimento, tempos e sua composição de insumos.
+UC013 a UC017 devem ser revalidados antes da implementação para remover suposições específicas de panificação e detalhar uso de equipamento/perdas.
 
 ## Etapa 4 — Motor de precificação
 
-UC018 a UC025.
-
-Objetivo: implementar regras financeiras com forte cobertura unitária e golden cases.
+UC018 a UC025. Revalidar especialmente UC019 (perdas) e UC021 (energia/equipamentos) antes da implementação.
 
 ## Etapa 5 — Configurações
 
-UC026 e UC027 podem ser antecipados quando forem necessários aos UCs de mão de obra e energia. A dependência será resolvida antes desses cálculos.
+UC026/UC027 passam a operar por Empresa.
 
 ## Etapa 6 — Dashboard
 
-UC028 a UC030.
+UC028 a UC030 sempre filtrados pela Empresa Ativa.
 
-Objetivo: transformar os cálculos já estabilizados em visão operacional dos produtos que exigem atenção.
+## Administração multiempresa
+
+Adicionar ao backlog funcional, a detalhar antes da implementação:
+
+- UC031 — Cadastrar/consultar empresas;
+- UC032 — Cadastrar usuários e gerenciar vínculos usuário-empresa.
+
+O login mínimo e o bootstrap pertencem à FT002 porque são pré-requisito de isolamento para todos os UCs seguintes.
 
 ## Regra de tamanho
 
-Se um UC não puder ser implementado, testado e revisado como um incremento pequeno, deve ser dividido antes de ser enviado ao agente.
+Se um incremento não puder ser implementado, testado e revisado de forma pequena, dividir antes do Codex.
 
 ## Próximo passo
 
-Executar e revisar a **FT001 — Fundação Técnica**. Somente após sua aprovação, detalhar `UC001-cadastrar-insumo.md` e gerar a respectiva instrução para Codex.
+Implementar e revisar **FT002**. Não executar UC001A antes da FT002 estar mergeada.

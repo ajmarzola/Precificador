@@ -2,36 +2,28 @@
 
 ## Objetivo
 
-Manter os itens comercializados e seus parâmetros de precificação.
+Manter os itens comercializados por cada Empresa e seus parâmetros comerciais de precificação.
 
 ## Capacidades
 
-- cadastrar produto;
-- listar e pesquisar produtos;
-- editar dados cadastrais;
-- desativar produto;
+- cadastrar/listar/pesquisar/editar/desativar produto;
 - definir preço de venda atual;
 - definir margem-alvo;
-- preservar histórico de preço de venda.
+- preservar histórico de preço.
 
 ## Dados essenciais
 
+- Empresa proprietária;
 - nome;
 - categoria opcional de organização;
-- situação ativo/inativo;
+- situação;
 - preço de venda atual;
-- margem-alvo;
-- percentual de perda de ingredientes.
+- margem-alvo.
 
-Dados de produção e composição pertencem à ficha técnica.
+Dados de produção, perdas e equipamentos pertencem à Ficha Técnica/processo e não devem ser campos obrigatórios de Produto específicos de panificação.
 
-## Regras relacionadas
-
-RN018 a RN024.
+Todo acesso é limitado à Empresa Ativa.
 
 ## Fora do escopo
 
-- estoque de produto acabado;
-- vendas;
-- catálogo público/e-commerce;
-- promoções e cupons.
+Estoque acabado, vendas, catálogo público, promoções/cupons.

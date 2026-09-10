@@ -2,64 +2,63 @@
 
 ## Objetivo
 
-Dar alta confiança às regras financeiras sem criar uma suíte de UI cara de manter.
+Dar alta confiança às regras financeiras, persistência e isolamento entre empresas sem criar suíte de UI cara de manter.
 
-## 1. Testes unitários
+## 1. Unitários
 
-São obrigatórios para toda regra de negócio nova ou alterada.
+Obrigatórios para regras puras de domínio novas/alteradas.
 
-Prioridade alta para:
+Prioridades incluem normalização/identidade de entidades, custo, perda, rendimento, mão de obra, energia, margem e precificação.
 
-- custo unitário de insumo;
-- seleção do preço vigente;
-- custo de item da ficha;
-- perda de ingredientes;
-- rendimento;
-- mão de obra;
-- energia;
-- custo do lote;
-- custo unitário do produto;
-- margem;
-- preço teórico;
-- arredondamento comercial;
-- identificação de produto abaixo da margem;
-- precificação incompleta.
+Não testar internals do ASP.NET Core Identity como teste unitário próprio.
 
-Os testes devem evitar dependências de EF Core e HTTP quando o comportamento puder ser validado no núcleo.
+## 2. Integração de persistência
 
-## 2. Testes de integração
+Usar SQLite real temporário ou `:memory:` com conexão mantida.
 
-Usar SQLite real temporário para comportamentos em que persistência e consulta fazem parte do risco, por exemplo:
+Cobrir especialmente:
 
-- manter histórico ao registrar novo preço;
-- recuperar o preço vigente correto;
-- preservar histórico de preço de venda;
-- desativação e filtros;
-- migrations e restrições relevantes.
+- migrations e upgrades;
+- FKs e índices únicos;
+- históricos;
+- filtros tenant-aware;
+- rejeição de escrita cross-tenant;
+- seleção de preço vigente;
+- desativação.
 
-Não usar mocks de repositório como substitutos desses testes.
+Não usar EF InMemory como substituto de SQLite para esses riscos.
 
-## 3. Testes web/smoke
+## 3. Testes de autenticação/multiempresa
 
-Manter poucos e focados. Podem validar que páginas essenciais respondem e que fluxos críticos estão integrados.
+Toda entidade tenant-owned deve possuir pelo menos cenários que provem:
 
-No MVP, não adotar Selenium/Playwright como requisito geral. Automação E2E completa só deve ser adicionada se o custo de regressões de UI justificar sua manutenção.
+- Empresa A não lê dados da Empresa B;
+- Empresa A não altera dados da Empresa B por fluxo normal;
+- mesma identidade de negócio pode coexistir em empresas diferentes quando permitido;
+- ausência de Empresa Ativa não vaza dados;
+- troca de Empresa Ativa altera corretamente o conjunto visível.
 
-## 4. Golden cases
+Autenticação deve ter smoke/integration para login, logout, rota protegida e vínculo usuário-empresa.
 
-O motor de precificação terá cenários canônicos obtidos da planilha de referência. Eles devem atravessar a composição completa do cálculo e proteger contra alterações involuntárias de fórmula.
+## 4. Web/smoke
 
-Golden cases não substituem testes unitários das fórmulas; complementam-nos.
+Poucos e focados em fluxos críticos. Selenium/Playwright não é requisito geral.
 
-## 5. Dados de teste
+## 5. Golden cases
 
-- usar dados fictícios para testes comuns;
-- não depender do banco real do usuário;
-- testes devem ser determinísticos;
-- datas relevantes devem ser controladas no teste, evitando dependência implícita do relógio atual.
+Motor de precificação terá cenários canônicos dos negócios de referência. Os casos devem declarar a Empresa/contexto quando isso afetar configurações.
 
-## 6. Convenções
+## 6. Dados de teste
 
-- framework padrão: xUnit;
-- nomes devem explicitar cenário e resultado esperado;
-- cada bug de regra confirmado deve, quando possível, ganhar teste de regressão antes ou junto da correção.
+- fictícios;
+- nunca usar banco real do usuário;
+- determinísticos;
+- relógio controlado quando relevante;
+- pelo menos duas empresas nos testes de isolamento.
+
+## 7. Convenções
+
+- xUnit;
+- nomes explicam cenário/resultado;
+- bug de regra confirmado ganha teste de regressão quando possível;
+- critérios de segurança/isolamento têm prioridade equivalente às regras financeiras.

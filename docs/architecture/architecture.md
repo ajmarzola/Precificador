@@ -2,79 +2,76 @@
 
 ## Estilo
 
-O Precificador será um **monólito web local-first**, executado inicialmente na máquina do usuário e acessado pelo navegador em endereço local.
+O Precificador permanece um **monólito web local-first**, agora preparado para múltiplas empresas e usuários autenticados.
 
 ```text
 Navegador
    |
 ASP.NET Core / Razor Pages
+   |-- ASP.NET Core Identity
+   |-- Empresa Ativa
    |
 Regras de domínio
    |
 Entity Framework Core
+   |-- Global Query Filters tenant-aware
+   |-- guard de escrita tenant-aware
    |
 SQLite
 ```
 
 ## Stack
 
-- .NET 10 LTS
-- ASP.NET Core Razor Pages
-- Entity Framework Core
-- SQLite
-- Bootstrap
-- JavaScript mínimo
-- xUnit
-- GitHub Actions para CI
+- .NET 10 LTS;
+- ASP.NET Core Razor Pages;
+- ASP.NET Core Identity;
+- EF Core;
+- SQLite nesta fase;
+- Bootstrap/JavaScript mínimo;
+- xUnit;
+- GitHub Actions.
 
-## Estrutura prevista da solution
+## Projetos
+
+Mantém-se:
 
 ```text
-Precificador.slnx
-
-src/
-  Precificador.Web/
-  Precificador.Core/
-  Precificador.Infrastructure/
-
-tests/
-  Precificador.Tests.Unit/
-  Precificador.Tests.Integration/
+Precificador.Web
+Precificador.Core
+Precificador.Infrastructure
+Precificador.Tests.Unit
+Precificador.Tests.Integration
 ```
 
-O formato SLNX é adotado conforme ADR-006. Os três projetos em `src` são o limite inicial de projetos de produção. Projetos de teste são separados para preservar clareza das dependências.
+Não criar novo projeto apenas para autenticação ou multi-tenancy nesta fase.
 
 ## Responsabilidades
 
-### Precificador.Core
+### Core
 
-- entidades e objetos de domínio;
-- regras de negócio;
-- cálculos de custo, margem e preço;
-- contratos estritamente necessários para o núcleo;
-- nenhuma dependência da camada web.
+- entidades e regras de domínio;
+- `Empresa`;
+- contratos simples necessários ao tenant ownership, sem dependência de HttpContext/Identity;
+- cálculos financeiros.
 
-### Precificador.Infrastructure
+### Infrastructure
 
-- EF Core;
-- `DbContext`;
-- mapeamentos;
-- migrations;
-- SQLite;
-- seed de desenvolvimento quando existir entidade que o justifique;
-- implementações de persistência necessárias.
+- EF Core/SQLite;
+- DbContext/migrations;
+- ASP.NET Core Identity EF integration;
+- `UsuarioAplicacao`;
+- mapeamentos e garantias de persistência;
+- query filters/guard de escrita quando tecnicamente apropriados.
 
-### Precificador.Web
+### Web
 
 - Razor Pages;
-- PageModels;
-- composição da aplicação;
-- validações de entrada próprias da interface;
-- apresentação de resultados e mensagens.
+- login/logout/bootstrap;
+- resolução/seleção de Empresa Ativa;
+- implementação de `IEmpresaContext` sobre contexto HTTP/Session;
+- validações e apresentação.
 
 ## Dependências
-
-A direção desejada é:
 
 ```text
 Web -> Core
@@ -83,45 +80,59 @@ Infrastructure -> Core
 Core -> nenhuma camada da aplicação
 ```
 
-## Diretrizes
+## Multi-tenancy
 
-- Regras financeiras não devem residir na UI.
-- EF Core é a abstração padrão de persistência; não criar repository genérico/Unit of Work customizado sem necessidade comprovada.
-- Preferir serviços de domínio simples e funções explícitas a padrões arquiteturais adicionais.
-- Não usar CQRS/MediatR como padrão do projeto.
-- Não criar API separada para a própria interface Razor Pages no MVP.
-- Não usar SPA framework no MVP.
-- Alterações de banco devem usar migrations.
-- Não criar migrations vazias antes do primeiro modelo persistente real.
-- Banco local deve ser reconstruível a partir das migrations e do seed de desenvolvimento quando este passar a existir.
+Adotar banco compartilhado com `EmpresaId` obrigatório nas entidades tenant-owned.
+
+Atualmente `Insumo` é tenant-owned. Toda nova entidade operacional deverá declarar explicitamente se pertence a uma empresa.
+
+Consultas comuns tenant-owned devem ser isoladas centralmente. Escritas devem validar Empresa Ativa. Índices de unicidade tenant-scoped incluem `EmpresaId`.
+
+`Empresa`, `UsuarioEmpresa` e tabelas Identity não usam o filtro tenant padrão porque são necessárias para autenticação e resolução do contexto.
+
+## Autenticação e autorização
+
+Identity autentica o usuário. O vínculo `UsuarioEmpresa` autoriza quais empresas podem ser ativadas.
+
+A primeira versão não usa roles. A regra mínima é:
+
+```text
+usuário autenticado
++ vínculo ativo
++ empresa ativa
+= acesso aos dados daquela empresa
+```
 
 ## Persistência calculada x armazenada
 
-Devem ser armazenados fatos e decisões do usuário, como:
+Continuam armazenados fatos e decisões; custos derivados continuam calculados sob demanda.
 
-- registros de preço de insumo;
-- composição da ficha técnica;
-- configurações;
-- preço de venda praticado e seu histórico.
+Configurações e históricos futuros são scoped por Empresa.
 
-Devem ser calculados sob demanda sempre que possível:
+## Modelo produtivo
 
-- preço atual do insumo;
-- custo atual do lote;
-- custo unitário atual;
-- margem atual;
-- preço teórico;
-- preço sugerido;
-- situação frente à margem-alvo.
+A Ficha Técnica futura é genérica. Forno não é conceito arquitetural obrigatório; será um Equipamento quando esse domínio for implementado.
 
-## Segurança e operação do MVP
+## SQLite e publicação
 
-O MVP é local e de usuário único. Autenticação não será adicionada sem mudança de escopo. O arquivo SQLite deve ficar fora de caminhos versionados no Git.
+SQLite permanece a decisão atual. A estratégia de publicação não está definida e será reavaliada separadamente. Se houver acesso concorrente remoto relevante, o banco servidor poderá substituir SQLite sem alterar o Core.
+
+## Diretrizes
+
+- não criar repository genérico/UoW customizado sem necessidade;
+- não usar CQRS/MediatR como padrão;
+- não criar API separada para Razor Pages;
+- não usar SPA framework por padrão;
+- schema muda somente por migrations;
+- não executar auto-migration no startup;
+- não armazenar EmpresaId vindo diretamente de formulário do usuário;
+- `IgnoreQueryFilters` exige justificativa explícita;
+- testes cross-tenant são obrigatórios para entidades tenant-owned.
 
 ## Observabilidade
 
-Utilizar logging padrão do ASP.NET Core. Logs devem ser úteis para diagnóstico e não devem substituir validações ou tratamento de erro para o usuário.
+Logging padrão ASP.NET Core.
 
-## Integração contínua
+## CI
 
-Conforme ADR-007, o repositório deve possuir CI simples no GitHub Actions para validar restore, build e testes dos pull requests antes do merge. CI não é mecanismo de deploy no MVP.
+Restore, build e testes permanecem gates mínimos do GitHub Actions.
