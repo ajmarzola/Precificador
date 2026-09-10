@@ -3,7 +3,7 @@
 - **Status:** Pronto para implementação
 - **Tipo:** fundação técnica transversal
 - **Dependências:** FT001 e UC001 implementados
-- **Bloqueia:** UC001A e UC002
+- **Bloqueia:** UC001B, UC001A e UC002
 
 ## Objetivo
 
@@ -214,25 +214,40 @@ O formulário `/Insumos/Novo` não exibe EmpresaId. Ele utiliza a Empresa Ativa.
 
 Cadastro de Insumo sem usuário autenticado/Empresa Ativa não é permitido.
 
-## Relação com UC001A
+## Relação com UC001B e UC001A
 
-UC001A permanece responsável por Marca e Observação.
+A FT002 não altera categoria/unidades de Insumo, Marca ou Observação.
 
-Depois da FT002, o índice de unicidade do UC001A deverá incluir a empresa:
+Após a FT002, o **UC001B** generaliza o vocabulário de Insumos para:
+
+```text
+CategoriaInsumo
+- MateriaPrima = 1
+- Embalagem = 2
+- Consumivel = 3
+
+UnidadeMedida
+- Grama = 1
+- Mililitro = 2
+- Unidade = 3
+- Metro = 4
+```
+
+A troca `Ingrediente -> MateriaPrima` preserva o valor numérico `1`; `Metro = 4` é apenas novo valor funcional. O UC001B não deve gerar migration vazia.
+
+Depois do UC001B, o UC001A permanece responsável por Marca e Observação. Seu índice de unicidade deverá incluir a empresa:
 
 ```text
 EmpresaId + NomeNormalizado + MarcaNormalizada
 ```
 
-A especificação/instrução do UC001A será revisada após a implementação da FT002 e antes de sua execução.
+A especificação/instrução do UC001A será revisada após a implementação da FT002/UC001B e antes de sua execução.
 
 ## Generalização para diferentes negócios
 
-A FT002 não deve alterar `CategoriaInsumo`, unidades, Produto ou Ficha Técnica.
+Foi aprovada a direção conceitual de tornar a Ficha Técnica genérica: rendimento e tempo ativo permanecem gerais; perdas deixam de ser conceito obrigatório de panificação; forno será futuramente tratado como equipamento/recurso quando esse domínio for detalhado.
 
-Foi identificado que `Ingrediente` e o conjunto `g/ml/un` precisam ser reavaliados para negócios não alimentícios. Esse ajuste será detalhado separadamente antes do UC002, usando uma lista real de insumos dos dois negócios.
-
-Também foi aprovada a direção conceitual de tornar a Ficha Técnica genérica: rendimento e tempo ativo permanecem gerais; perdas deixam de ser conceito obrigatório de panificação; forno será futuramente tratado como equipamento/recurso quando esse domínio for detalhado.
+A classificação de Insumos também foi generalizada: `Matéria-prima` substitui `Ingrediente`, e o conjunto de unidades passa a contemplar `g`, `ml`, `m` e `un`. Essa alteração pertence ao UC001B e **não deve ser implementada na FT002**.
 
 ## Critérios de aceitação
 
@@ -294,7 +309,7 @@ Logout invalida autenticação e limpa a Empresa Ativa.
 
 ### CA15 — Sem escopo antecipado
 
-O diff não contém CRUD administrativo completo de empresa/usuário, Marca/Observação do UC001A, listagem do UC002, Produto, Ficha Técnica ou precificação.
+O diff não contém CRUD administrativo completo de empresa/usuário, generalização de categoria/unidades do UC001B, Marca/Observação do UC001A, listagem do UC002, Produto, Ficha Técnica ou precificação.
 
 ## Testes obrigatórios
 
@@ -355,8 +370,8 @@ Não adicionar auto-migration ao startup.
 - 2FA;
 - autenticação externa;
 - auditoria completa;
+- UC001B — generalização de categoria/unidades;
 - Marca/Observação do UC001A;
-- generalização de categorias/unidades;
 - Produto/Ficha Técnica;
 - UC002+;
 - API REST.
