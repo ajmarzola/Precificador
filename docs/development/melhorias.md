@@ -18,7 +18,7 @@ Status possíveis:
 
 ### MEL001 — Teste explícito da FK Insumo → Empresa
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** revisão da FT002
 - **Objetivo:** adicionar teste de integração que valide explicitamente a restrição de chave estrangeira entre `Insumo.EmpresaId` e `Empresas.Id`, além do guard de tenant já existente.
 - **Especificação:** [MEL001 — Teste explícito da FK Insumo → Empresa](improvements/MEL001-teste-fk-insumo-empresa.md)
