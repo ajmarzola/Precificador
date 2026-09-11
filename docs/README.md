@@ -15,6 +15,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 
 - [`business/business-rules.md`](business/business-rules.md) — regras normativas identificadas por RN.
 - [`business/pricing-model.md`](business/pricing-model.md) — composição de custos, margem e preço sugerido.
+- [`business/insumo-historical-stability.md`](business/insumo-historical-stability.md) — motivação e consequências da RN040 sobre estabilidade cadastral após histórico de preços.
 
 ### Arquitetura
 
