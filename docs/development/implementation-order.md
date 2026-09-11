@@ -23,14 +23,17 @@ Estado atual:
 1. **UC001B — Generalizar categoria e unidades** — implementado;
 2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
 3. **UC002 — Listar e consultar Insumos** — implementado;
-4. **UC003 — Editar Insumo** — próximo passo a detalhar/revalidar antes da implementação;
-5. depois, seguir UC004 a UC006.
+4. **UC003 — Editar Insumo** — revalidado e pronto para implementação;
+5. **UC004 — Desativar Insumo** — só deve ser detalhado/revalidado após a implementação do UC003;
+6. depois, seguir UC005 e UC006.
 
-Especificação UC002: [`../use-cases/UC002-listar-consultar-insumos.md`](../use-cases/UC002-listar-consultar-insumos.md).
+Especificação UC003: [`../use-cases/UC003-editar-insumo.md`](../use-cases/UC003-editar-insumo.md).
 
-Instrução Codex UC002: [`../codex/UC002-listar-consultar-insumos.md`](../codex/UC002-listar-consultar-insumos.md).
+Instrução Codex UC003: [`../codex/UC003-editar-insumo.md`](../codex/UC003-editar-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
+
+Antes de UC005 ou de UCs de Ficha Técnica criarem dados históricos/dependentes de Insumo, revalidar restrições de edição de Nome, Marca e Unidade base.
 
 ## Etapa 2 — Produtos
 
@@ -39,6 +42,8 @@ UC007 a UC012. Todo Produto será tenant-owned.
 ## Etapa 3 — Ficha técnica
 
 UC013 a UC017 devem ser revalidados antes da implementação para adotar o modelo produtivo genérico registrado em `../product/multiempresa-generalizacao.md`.
+
+UC014 também deve revalidar as restrições de edição dos dados de Insumo após existirem referências em fichas técnicas.
 
 ## Etapa 4 — Motor de precificação
 
@@ -71,4 +76,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Detalhar e revalidar o **UC003 — Editar Insumo** antes da implementação.
+Implementar e revisar o **UC003 — Editar Insumo** quando chegar sua vez na fila de implementação. Somente após o merge do UC003 detalhar/revalidar o UC004.
