@@ -1,6 +1,6 @@
 # MEL003 — Assert direto de limpeza da Empresa Ativa no logout
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de autenticação e sessão
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada

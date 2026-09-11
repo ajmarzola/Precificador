@@ -36,7 +36,7 @@ Status possíveis:
 
 ### MEL003 — Assert direto de limpeza da Empresa Ativa no logout
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** revisão da FT002
 - **Objetivo:** complementar o teste Web de logout com verificação direta de que ID, Nome e chaves da Empresa Ativa são removidos da sessão.
 - **Especificação:** [MEL003 — Limpeza da Empresa Ativa no logout](improvements/MEL003-limpeza-empresa-logout.md)
