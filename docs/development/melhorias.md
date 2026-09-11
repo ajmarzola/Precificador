@@ -27,10 +27,12 @@ Status possíveis:
 
 ### MEL002 — Teste de tentativa de reatribuição de tenant no domínio
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** revisão da FT002
-- **Objetivo:** cobrir explicitamente que uma entidade tenant-owned já associada a uma Empresa não pode ser reatribuída para outra Empresa pelo domínio.
-- **Prioridade:** baixa; conveniente ao evoluir regras de ownership ou adicionar novas entidades `IEntidadeEmpresa`.
+- **Objetivo:** cobrir explicitamente que um `Insumo` já associado a uma Empresa não pode ser reatribuído para outra Empresa pelo domínio e preserva o ownership original após a tentativa.
+- **Especificação:** [MEL002 — Reatribuição de tenant no domínio](improvements/MEL002-reatribuicao-tenant-insumo.md)
+- **Instrução Codex:** [MEL002 — implementação](../codex/MEL002-reatribuicao-tenant-insumo.md)
+- **Prioridade:** baixa; selecionada para execução antes do UC003.
 
 ### MEL003 — Assert direto de limpeza da Empresa Ativa no logout
 
