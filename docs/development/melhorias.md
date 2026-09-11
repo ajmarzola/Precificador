@@ -62,13 +62,15 @@ Status possíveis:
 - **Decisão:** a duplicação já é suficiente para justificar a refatoração; consultas de duplicidade, RN040 e markup Razor permanecem específicos de cada fluxo para evitar abstração excessiva.
 - **Prioridade:** baixa; pronta para execução quando houver janela técnica apropriada.
 
-### MEL006 — Tornar a data efetiva dependente do timezone da Empresa
+### MEL006 — Tornar a data operacional dependente do timezone da Empresa
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** especificação do UC006
-- **Objetivo:** substituir a dependência da data local do processo por uma data operacional derivada de timezone/configuração da Empresa quando a aplicação precisar operar em hospedagem ou empresas com fusos diferentes.
-- **Motivação:** RN006 depende da fronteira de calendário entre preço vigente e futuro; perto da meia-noite, timezone do servidor pode divergir do timezone do negócio.
-- **Prioridade:** baixa no MVP atual; não introduzir configuração de timezone no UC006 sem requisito operacional concreto.
+- **Objetivo:** eliminar a dependência do timezone do processo/servidor, persistindo `TimeZoneId` por Empresa e fornecendo uma data operacional derivada de `TimeProvider` + timezone da Empresa Ativa.
+- **Especificação:** [MEL006 — Timezone e data operacional da Empresa](improvements/MEL006-timezone-empresa.md)
+- **Instrução Codex:** [MEL006 — implementação](../codex/MEL006-timezone-empresa.md)
+- **Decisão:** usar `America/Sao_Paulo` como padrão de compatibilidade para Empresas existentes e `TimeProvider` para testes determinísticos; não criar CRUD de timezone nesta melhoria.
+- **Prioridade:** recomendada antes da implementação do UC006 para evitar introduzir dependência temporária de `DateTime.Now`.
 
 ## Regra de uso
 
