@@ -36,6 +36,13 @@ Status possíveis:
 - **Objetivo:** complementar o teste atual de logout com uma verificação direta de que o contexto/sessão da Empresa Ativa foi limpo, além de validar indiretamente a perda de acesso operacional.
 - **Prioridade:** baixa; executar quando houver evolução da estratégia de sessão/autenticação.
 
+### MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
+
+- **Status:** Pendente
+- **Origem:** revisão do UC002
+- **Objetivo:** centralizar futuramente a tradução de `CategoriaInsumo` e `UnidadeMedida` para rótulos de apresentação, evitando repetição de mapeamentos como `Matéria-prima`, `Consumível`, `g`, `ml`, `m` e `un` entre Razor Pages.
+- **Prioridade:** baixa; executar quando houver evolução relevante das telas de Insumos ou quando surgir um ponto compartilhado natural para apresentação desses enums.
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade.
