@@ -8,8 +8,9 @@ As melhorias podem ser executadas depois do fluxo principal ou antecipadas quand
 
 Status possíveis:
 
-- `Pendente` — registrada e ainda não executada;
-- `Em andamento` — incorporada a uma entrega conveniente;
+- `Pendente` — registrada e ainda não especificada para execução;
+- `Pronto para implementação` — especificação, matriz de testes e instrução do agente estão fechadas;
+- `Em andamento` — incorporada a uma entrega em execução;
 - `Concluída` — implementada e validada;
 - `Descartada` — reavaliada e considerada desnecessária.
 
@@ -17,10 +18,12 @@ Status possíveis:
 
 ### MEL001 — Teste explícito da FK Insumo → Empresa
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** revisão da FT002
 - **Objetivo:** adicionar teste de integração que valide explicitamente a restrição de chave estrangeira entre `Insumo.EmpresaId` e `Empresas.Id`, além do guard de tenant já existente.
-- **Prioridade:** baixa; executar quando houver alteração relevante em persistência de Insumo/Empresa.
+- **Especificação:** [MEL001 — Teste explícito da FK Insumo → Empresa](improvements/MEL001-teste-fk-insumo-empresa.md)
+- **Instrução Codex:** [MEL001 — implementação](../codex/MEL001-teste-fk-insumo-empresa.md)
+- **Prioridade:** baixa; selecionada para execução antes do UC003.
 
 ### MEL002 — Teste de tentativa de reatribuição de tenant no domínio
 
