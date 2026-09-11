@@ -20,8 +20,8 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B, FT002 — implementado |
 | [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 — implementado |
 | [UC003](UC003-editar-insumo.md) | Editar insumo | UC002, UC001A, FT002 — **implementado** |
-| [UC004](UC004-desativar-reativar-insumo.md) | Desativar e reativar insumo | UC003, FT002 — **revalidado e pronto para implementação** |
-| UC005 | Registrar preço de insumo | UC001A, FT002; revalidar restrições de edição antes de implementar |
+| [UC004](UC004-desativar-reativar-insumo.md) | Desativar e reativar insumo | UC003, FT002 — **implementado** |
+| UC005 | Registrar preço de insumo | UC001A, FT002; próximo caso a detalhar/revalidar, preservando a revalidação das restrições de edição |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
 
 Classificação e unidades implementadas:
@@ -31,7 +31,7 @@ Classificação e unidades implementadas:
 
 A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, MarcaNormalizada)` e independe de Ativo/Inativo.
 
-UC004 é o próximo incremento funcional. Ele altera somente a situação operacional do registro, sem exclusão física.
+UC004 foi implementado e altera somente a situação operacional do registro, sem exclusão física. UC005 é o próximo caso a detalhar/revalidar.
 
 **Gate futuro:** antes de implementar UC005 ou UCs de Ficha Técnica que criem referências históricas/dependentes, revalidar se Nome, Marca e Unidade base continuam livremente editáveis após existirem esses registros.
 

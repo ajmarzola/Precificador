@@ -82,7 +82,7 @@ Antes da implementação de preço/histórico e ficha técnica, a liberdade de a
 
 ### Situação
 
-O UC004 está especificado para tornar a situação reversível:
+O UC004 torna a situação reversível:
 
 - Ativo -> Desativar -> Inativo;
 - Inativo -> Reativar -> Ativo.
@@ -107,7 +107,7 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
-- [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — revalidado e pronto para implementação;
+- [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
 - UC005 — Registrar preço de insumo;
 - UC006 — Consultar histórico de preços do insumo.
 

@@ -1,6 +1,6 @@
 # UC004 — Desativar e reativar insumo
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC003 e FT002 implementados
 - **Não depende de:** MEL005, UC005 ou funcionalidades posteriores
