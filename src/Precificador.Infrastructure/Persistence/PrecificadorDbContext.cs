@@ -15,6 +15,7 @@ public sealed class PrecificadorDbContext(
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
+    public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
     public DbSet<UsuarioEmpresa> UsuariosEmpresas => Set<UsuarioEmpresa>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -23,6 +24,8 @@ public sealed class PrecificadorDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
         modelBuilder.Entity<Insumo>().HasQueryFilter(insumo =>
             insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<PrecoInsumo>().HasQueryFilter(preco =>
+            preco.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -47,12 +50,12 @@ public sealed class PrecificadorDbContext(
             var empresaId = empresaContext.EmpresaId;
             if (!empresaId.HasValue)
             {
-                throw new InvalidOperationException("Uma empresa ativa é necessária para alterar insumos.");
+                throw new InvalidOperationException("Uma empresa ativa é necessária para alterar dados da empresa.");
             }
 
             if (alteracao.Entity.EmpresaId != empresaId.Value)
             {
-                throw new InvalidOperationException("Não é permitido alterar insumos de outra empresa.");
+                throw new InvalidOperationException("Não é permitido alterar dados de outra empresa.");
             }
         }
     }

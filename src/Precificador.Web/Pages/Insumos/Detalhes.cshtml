@@ -19,6 +19,7 @@
     <dt class="col-sm-3">Observação</dt><dd class="col-sm-9" style="white-space: pre-wrap">@(insumo.Observacao ?? "—")</dd>
 </dl>
 <a asp-page="/Insumos/Editar" asp-route-id="@RouteData.Values["id"]" class="btn btn-primary">Editar</a>
+<a asp-page="/Insumos/Precos/Novo" asp-route-id="@RouteData.Values["id"]" class="btn btn-outline-primary">Registrar preço</a>
 @if (insumo.Ativo)
 {
     <form method="post" asp-page-handler="Desativar" class="d-inline">

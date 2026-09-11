@@ -1,6 +1,6 @@
 # UC005 — Registrar preço de insumo
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001A, UC002, UC003, UC004, FT002 e RN040
 - **Próximo caso relacionado:** UC006 — Consultar histórico de preços do insumo

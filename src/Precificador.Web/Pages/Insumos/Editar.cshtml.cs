@@ -16,6 +16,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
+    public bool PossuiHistorico { get; private set; }
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var insumo = await context.Insumos.AsNoTracking()
@@ -36,6 +38,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         }
 
         Input = insumo;
+        PossuiHistorico = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == id);
         return Page();
     }
 
@@ -45,6 +48,14 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         if (insumo is null)
         {
             return NotFound();
+        }
+
+        PossuiHistorico = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == id);
+        if (PossuiHistorico)
+        {
+            Input.Nome = insumo.Nome;
+            Input.Marca = insumo.Marca;
+            Input.UnidadeBase = insumo.UnidadeBase;
         }
 
         ValidarCamposObrigatorios();

@@ -9,14 +9,32 @@
 
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @if (Model.PossuiHistorico)
+    {
+        <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.</div>
+    }
     <div class="mb-3">
         <label asp-for="Input.Nome" class="form-label"></label>
-        <input asp-for="Input.Nome" class="form-control" />
+        @if (Model.PossuiHistorico)
+        {
+            <input asp-for="Input.Nome" class="form-control" readonly />
+        }
+        else
+        {
+            <input asp-for="Input.Nome" class="form-control" />
+        }
         <span asp-validation-for="Input.Nome" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.Marca" class="form-label"></label>
-        <input asp-for="Input.Marca" class="form-control" />
+        @if (Model.PossuiHistorico)
+        {
+            <input asp-for="Input.Marca" class="form-control" readonly />
+        }
+        else
+        {
+            <input asp-for="Input.Marca" class="form-control" />
+        }
         <span asp-validation-for="Input.Marca" class="text-danger"></span>
     </div>
     <div class="mb-3">
@@ -32,13 +50,17 @@
     </div>
     <div class="mb-3">
         <label asp-for="Input.UnidadeBase" class="form-label">Unidade base</label>
-        <select asp-for="Input.UnidadeBase" class="form-select">
+        <select asp-for="Input.UnidadeBase" class="form-select" disabled="@Model.PossuiHistorico">
             <option value="">Selecione uma unidade</option>
             @foreach (var unidade in InsumoRotulos.Unidades)
             {
                 <option value="@unidade">@InsumoRotulos.Unidade(unidade)</option>
             }
         </select>
+        @if (Model.PossuiHistorico)
+        {
+            <input type="hidden" asp-for="Input.UnidadeBase" />
+        }
         <span asp-validation-for="Input.UnidadeBase" class="text-danger"></span>
     </div>
     <div class="mb-3">

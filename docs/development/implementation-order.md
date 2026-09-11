@@ -25,8 +25,8 @@ Estado atual:
 3. **UC002 — Listar e consultar Insumos** — implementado;
 4. **UC003 — Editar Insumo** — implementado;
 5. **UC004 — Desativar e reativar Insumo** — implementado;
-6. **UC005 — Registrar preço de Insumo** — revalidado e pronto para implementação;
-7. depois, seguir UC006.
+6. **UC005 — Registrar preço de Insumo** — implementado;
+7. **UC006 — Consultar histórico de preços do insumo** é o próximo caso a detalhar/revalidar.
 
 Especificação UC005: [`../use-cases/UC005-registrar-preco-insumo.md`](../use-cases/UC005-registrar-preco-insumo.md).
 
@@ -79,4 +79,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC005 — Registrar preço de insumo**. Após seu merge, o UC006 passa a ser o próximo caso a detalhar/revalidar. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Detalhar e revisar o **UC006 — Consultar histórico de preços do insumo**. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.

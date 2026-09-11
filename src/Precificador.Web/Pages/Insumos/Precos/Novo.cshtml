@@ -1,0 +1,41 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Insumos.Precos.NovoModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Registrar preço de insumo";
+    var insumo = Model.Insumo!;
+}
+
+<h1>Registrar preço de insumo</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@insumo.Nome</dd>
+    <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
+    <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(insumo.Ativo ? "Ativo" : "Inativo")</dd>
+</dl>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.QuantidadeCompra" class="form-label">Quantidade comprada (@InsumoRotulos.Unidade(insumo.UnidadeBase))</label>
+        <input asp-for="Input.QuantidadeCompra" class="form-control" />
+        <span asp-validation-for="Input.QuantidadeCompra" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.PrecoCompra" class="form-label"></label>
+        <input asp-for="Input.PrecoCompra" class="form-control" />
+        <span asp-validation-for="Input.PrecoCompra" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.DataReferencia" class="form-label"></label>
+        <input asp-for="Input.DataReferencia" class="form-control" />
+        <span asp-validation-for="Input.DataReferencia" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Registrar preço</button>
+    <a asp-page="/Insumos/Detalhes" asp-route-id="@RouteData.Values["id"]" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

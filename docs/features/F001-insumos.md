@@ -135,7 +135,7 @@ A tela de histórico completo permanece responsabilidade do UC006.
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
 - [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
-- [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — revalidado e pronto para implementação;
+- [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — implementado;
 - UC006 — Consultar histórico de preços do insumo.
 
 ## Fora do escopo
