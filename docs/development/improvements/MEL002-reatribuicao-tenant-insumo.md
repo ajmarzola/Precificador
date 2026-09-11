@@ -1,6 +1,6 @@
 # MEL002 — Teste de tentativa de reatribuição de tenant no domínio
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de domínio
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada
