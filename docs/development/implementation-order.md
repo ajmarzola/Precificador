@@ -24,12 +24,12 @@ Estado atual:
 2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
 3. **UC002 — Listar e consultar Insumos** — implementado;
 4. **UC003 — Editar Insumo** — implementado;
-5. **UC004 — Desativar Insumo** — próximo caso a detalhar/revalidar;
+5. **UC004 — Desativar e reativar Insumo** — revalidado e pronto para implementação;
 6. depois, seguir UC005 e UC006.
 
-Especificação UC003: [`../use-cases/UC003-editar-insumo.md`](../use-cases/UC003-editar-insumo.md).
+Especificação UC004: [`../use-cases/UC004-desativar-reativar-insumo.md`](../use-cases/UC004-desativar-reativar-insumo.md).
 
-Instrução Codex UC003: [`../codex/UC003-editar-insumo.md`](../codex/UC003-editar-insumo.md).
+Instrução Codex UC004: [`../codex/UC004-desativar-reativar-insumo.md`](../codex/UC004-desativar-reativar-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
@@ -76,4 +76,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Detalhar/revalidar o **UC004 — Desativar Insumo**. Antes de UC005 ou UC014, preservar a revalidação das restrições de edição de Nome, Marca e Unidade base após existirem dados históricos ou dependentes.
+Implementar e revisar o **UC004 — Desativar e reativar Insumo**. Após o merge, detalhar/revalidar o UC005 preservando o gate sobre edição de Nome, Marca e Unidade base antes de existir histórico.
