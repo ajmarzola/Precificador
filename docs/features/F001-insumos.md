@@ -9,7 +9,7 @@ Manter o catálogo de itens usados nas fichas técnicas e seu histórico de pre�
 - cadastrar insumo;
 - listar e pesquisar insumos;
 - editar dados cadastrais permitidos;
-- desativar insumo;
+- desativar e reativar insumo;
 - registrar novo preço sem sobrescrever histórico;
 - consultar histórico de preços;
 - identificar insumos sem preço vigente;
@@ -78,9 +78,20 @@ O UC003 permite a alteração de:
 
 A edição preserva `EmpresaId` e `Ativo`, reaplica normalização/validação e mantém a unicidade tenant-aware por Empresa + Nome + Marca.
 
-A situação ativo/inativo permanece responsabilidade do UC004.
-
 Antes da implementação de preço/histórico e ficha técnica, a liberdade de alterar identidade comercial ou unidade base deverá ser reavaliada para não reinterpretar dados históricos já existentes.
+
+### Situação
+
+O UC004 está especificado para tornar a situação reversível:
+
+- Ativo -> Desativar -> Inativo;
+- Inativo -> Reativar -> Ativo.
+
+Não há exclusão física.
+
+Insumos inativos continuam listados, consultáveis, editáveis e participando da unicidade por Empresa + Nome + Marca.
+
+Quando Ficha Técnica existir, Insumo inativo não poderá ser adicionado a novas fichas, conforme RN008.
 
 Cada registro de preço futuro pertence a um Insumo específico; como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
 
@@ -96,7 +107,7 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
-- UC004 — Desativar insumo — detalhar/revalidar como próximo caso;
+- [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — revalidado e pronto para implementação;
 - UC005 — Registrar preço de insumo;
 - UC006 — Consultar histórico de preços do insumo.
 

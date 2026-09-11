@@ -43,9 +43,18 @@ O preço atual é o registro de preço vigente mais recente para o insumo. Regis
 
 Insumo sem preço vigente possui custo desconhecido. O sistema não deve tratá-lo como custo zero.
 
-### RN008 — Desativação de insumo
+### RN008 — Desativação e reativação de insumo
 
-Insumos são desativados, não excluídos fisicamente pelo fluxo normal. Um insumo desativado não pode ser adicionado a novas fichas técnicas, mas referências já existentes devem permanecer legíveis.
+Insumos são desativados, não excluídos fisicamente pelo fluxo normal.
+
+Um Insumo desativado:
+
+- permanece consultável e legível;
+- continua participando da identidade e unicidade por Empresa + Nome + Marca;
+- não pode ser adicionado a novas fichas técnicas quando esse fluxo existir;
+- não perde referências, preços ou históricos existentes.
+
+A desativação é reversível. Ao ser reativado, o Insumo volta ao estado operacional ativo.
 
 ### RN028 — Nome do insumo
 
@@ -70,6 +79,8 @@ Antes do UC001A, a unicidade temporária era `(EmpresaId, NomeNormalizado)`.
 No modelo atual, após o UC001A, não podem existir dois Insumos da mesma Empresa com a mesma combinação de `NomeNormalizado` e `MarcaNormalizada`.
 
 Marcas diferentes do mesmo Nome representam Insumos distintos e podem coexistir na mesma Empresa. Empresas diferentes também podem cadastrar a mesma combinação Nome/Marca.
+
+A situação Ativo/Inativo não participa da identidade. Insumos inativos continuam sujeitos à mesma unicidade.
 
 Quando a Marca não for informada, `MarcaNormalizada` deve assumir string vazia como representação técnica.
 
