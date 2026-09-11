@@ -30,7 +30,7 @@ Insumo de produção associado ao produto e consumido no processo, sem necessari
 
 ## Unidade base
 
-Unidade em que o insumo é usado nas fichas técnicas. O MVP trabalha inicialmente com `g`, `ml` e `un`.
+Unidade em que o insumo é usado nas fichas técnicas. O escopo atual trabalha com `g`, `ml`, `m` e `un`.
 
 ## Registro de preço
 
@@ -47,6 +47,12 @@ Registro de preço vigente mais recente segundo as regras de negócio. Não é u
 ## Produto
 
 Item comercializado cuja precificação é calculada pelo sistema.
+
+No cadastro inicial, Produto possui identidade por Empresa + Nome, Categoria opcional, Margem-alvo e situação. Preço de venda possui histórico próprio e não é um campo obrigatório do cadastro inicial. Produção/composição pertence à Ficha Técnica.
+
+## Categoria do produto
+
+Texto livre opcional usado para organização do catálogo de Produtos dentro de uma Empresa. Não participa da identidade nem altera regras de cálculo.
 
 ## Ficha técnica
 
@@ -70,7 +76,7 @@ Custo do lote dividido pelo rendimento.
 
 ## Margem-alvo
 
-Percentual de margem desejado para um produto.
+Percentual de margem desejado para um produto. Na persistência/domínio é representado como fração decimal: 30% = 0,30.
 
 ## Margem atual
 

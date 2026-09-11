@@ -42,6 +42,21 @@ O gate específico de referências de Ficha Técnica permanece para o UC014.
 
 UC007 a UC012. Todo Produto será tenant-owned.
 
+Estado documental:
+
+1. **UC007 — Cadastrar Produto** — revalidado e pronto para implementação, mas permanece na fila após conclusão/merge do UC006;
+2. UC008 — Listar e consultar Produtos;
+3. UC009 — Editar Produto;
+4. UC010 — Desativar Produto;
+5. UC011 — Alterar preço de venda preservando histórico;
+6. UC012 — Consultar histórico de preço de venda.
+
+Especificação UC007: [`../use-cases/UC007-cadastrar-produto.md`](../use-cases/UC007-cadastrar-produto.md).
+
+Instrução Codex UC007: [`../codex/UC007-cadastrar-produto.md`](../codex/UC007-cadastrar-produto.md).
+
+O UC007 não depende materialmente do UC006, mas sua implementação respeita a fila serial do projeto: primeiro concluir Insumos, depois iniciar Produtos.
+
 ## Etapa 3 — Ficha técnica
 
 UC013 a UC017 devem ser revalidados antes da implementação para adotar o modelo produtivo genérico registrado em `../product/multiempresa-generalizacao.md`.
