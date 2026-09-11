@@ -45,7 +45,7 @@ UC007 a UC012. Todo Produto será tenant-owned.
 Estado documental:
 
 1. **UC007 — Cadastrar Produto** — revalidado e pronto para implementação, mas permanece na fila após conclusão/merge do UC006;
-2. UC008 — Listar e consultar Produtos;
+2. **UC008 — Listar e consultar Produtos** — revalidado e pronto documentalmente; implementar somente após UC007;
 3. UC009 — Editar Produto;
 4. UC010 — Desativar Produto;
 5. UC011 — Alterar preço de venda preservando histórico;
@@ -55,7 +55,11 @@ Especificação UC007: [`../use-cases/UC007-cadastrar-produto.md`](../use-cases/
 
 Instrução Codex UC007: [`../codex/UC007-cadastrar-produto.md`](../codex/UC007-cadastrar-produto.md).
 
-O UC007 não depende materialmente do UC006, mas sua implementação respeita a fila serial do projeto: primeiro concluir Insumos, depois iniciar Produtos.
+Especificação UC008: [`../use-cases/UC008-listar-consultar-produtos.md`](../use-cases/UC008-listar-consultar-produtos.md).
+
+Instrução Codex UC008: [`../codex/UC008-listar-consultar-produtos.md`](../codex/UC008-listar-consultar-produtos.md).
+
+O UC007 não depende materialmente do UC006, mas sua implementação respeita a fila serial do projeto: primeiro concluir Insumos, depois iniciar Produtos. O UC008 permanece bloqueado para implementação até o UC007 estar implementado/revisado/mergeado.
 
 ## Etapa 3 — Ficha técnica
 

@@ -88,10 +88,25 @@ Todo Produto é tenant-owned:
 - RN035 a RN039;
 - RN041 a RN046.
 
+## Consulta — UC008
+
+O UC008 está especificado para:
+
+- listar Produtos da Empresa Ativa;
+- pesquisar por Nome;
+- ordenar por Nome normalizado;
+- exibir Categoria, Margem-alvo e Situação;
+- consultar detalhes cadastrais;
+- preservar isolamento tenant-aware.
+
+A pesquisa não usa Categoria neste incremento, evitando criar normalização/schema apenas para filtro.
+
+Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da consulta até seus respectivos UCs.
+
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — revalidado e pronto para implementação após conclusão do UC006;
-- UC008 — Listar e consultar produtos;
+- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — revalidado e pronto para implementação após UC007;
 - UC009 — Editar produto;
 - UC010 — Desativar produto;
 - UC011 — Alterar preço de venda preservando histórico;
