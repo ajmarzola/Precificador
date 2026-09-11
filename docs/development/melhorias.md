@@ -36,10 +36,12 @@ Status possíveis:
 
 ### MEL003 — Assert direto de limpeza da Empresa Ativa no logout
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** revisão da FT002
-- **Objetivo:** complementar o teste atual de logout com uma verificação direta de que o contexto/sessão da Empresa Ativa foi limpo, além de validar indiretamente a perda de acesso operacional.
-- **Prioridade:** baixa; executar quando houver evolução da estratégia de sessão/autenticação.
+- **Objetivo:** complementar o teste Web de logout com verificação direta de que ID, Nome e chaves da Empresa Ativa são removidos da sessão.
+- **Especificação:** [MEL003 — Limpeza da Empresa Ativa no logout](improvements/MEL003-limpeza-empresa-logout.md)
+- **Instrução Codex:** [MEL003 — implementação](../codex/MEL003-limpeza-empresa-logout.md)
+- **Prioridade:** baixa; selecionada para execução antes do UC003.
 
 ### MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
 
