@@ -52,12 +52,15 @@ Status possíveis:
 - **Instrução Codex:** [MEL004 — implementação](../codex/MEL004-rotulos-insumos-ui.md)
 - **Prioridade:** baixa; selecionada para execução antes do UC003.
 
-### MEL005 — Avaliar centralização de entrada e validação de Insumo entre Novo e Editar
+### MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar
 
-- **Status:** Pendente
-- **Origem:** revisão do UC003
-- **Objetivo:** observar a duplicação emergente entre `NovoModel` e `EditarModel` — especialmente `InputModel`, validação de Categoria/Unidade e mapeamento de erros de domínio — e centralizar somente se novos fluxos confirmarem reutilização suficiente.
-- **Prioridade:** baixa; não refatorar antecipadamente. Reavaliar quando houver nova tela/fluxo de manutenção de Insumo ou quando a duplicação crescer de forma relevante.
+- **Status:** Pronto para implementação
+- **Origem:** revisão do UC003; reavaliada após UC005
+- **Objetivo:** remover a duplicação confirmada entre `NovoModel` e `EditarModel` centralizando o modelo de entrada, validação Web de Categoria/Unidade, mapeamento de erros de domínio e mensagem de duplicidade, sem alterar regras de negócio ou comportamento funcional.
+- **Especificação:** [MEL005 — Centralizar entrada e validação de Insumo](improvements/MEL005-centralizar-formulario-insumo.md)
+- **Instrução Codex:** [MEL005 — implementação](../codex/MEL005-centralizar-formulario-insumo.md)
+- **Decisão:** a duplicação já é suficiente para justificar a refatoração; consultas de duplicidade, RN040 e markup Razor permanecem específicos de cada fluxo para evitar abstração excessiva.
+- **Prioridade:** baixa; pronta para execução quando houver janela técnica apropriada.
 
 ### MEL006 — Tornar a data efetiva dependente do timezone da Empresa
 
