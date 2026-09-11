@@ -266,6 +266,87 @@ Se qualquer dado obrigatório para o cálculo estiver ausente ou inválido — i
 
 Produtos são desativados, não excluídos fisicamente pelo fluxo normal.
 
+### RN041 — Nome do produto
+
+Todo Produto deve possuir Nome válido.
+
+O Nome:
+
+- é obrigatório;
+- possui no máximo 120 caracteres após normalização de espaços;
+- remove whitespace externo;
+- reduz sequências internas de whitespace a um único espaço;
+- preserva a capitalização informada para exibição.
+
+Para comparação determinística, o sistema mantém `NomeNormalizado` em maiúsculas com regra invariável, sem remover acentos.
+
+### RN042 — Unicidade do produto por Empresa e Nome
+
+Na mesma Empresa não podem existir dois Produtos com o mesmo `NomeNormalizado`.
+
+A identidade cadastral inicial é:
+
+`EmpresaId + NomeNormalizado`.
+
+Empresas diferentes podem cadastrar Produtos com o mesmo Nome.
+
+Categoria não participa da identidade.
+
+A situação Ativo/Inativo também não participa da identidade; quando o UC010 existir, Produto inativo continuará ocupando o Nome dentro da Empresa.
+
+A integridade deve ser protegida por validação funcional e índice único no banco.
+
+### RN043 — Categoria opcional do produto
+
+Categoria é um texto livre opcional usado apenas para organização do catálogo.
+
+A Categoria:
+
+- possui no máximo 80 caracteres após normalização;
+- remove whitespace externo;
+- reduz sequências internas de whitespace a um único espaço;
+- preserva capitalização de exibição;
+- se vazia ou composta apenas por whitespace, é armazenada como `null`;
+- não participa da unicidade;
+- não altera regras de cálculo.
+
+Não existe enum ou cadastro global de Categoria de Produto no UC007.
+
+### RN044 — Situação inicial do produto
+
+Todo novo Produto nasce ativo.
+
+A situação inicial não é escolhida pelo usuário no cadastro.
+
+### RN045 — Margem-alvo do produto
+
+Todo Produto possui MargemAlvo própria desde o cadastro.
+
+No domínio/persistência ela é armazenada como fração decimal:
+
+- 30% = `0,30`;
+- 25,5% = `0,255`.
+
+Aplicar RN019: `0 <= MargemAlvo < 1`.
+
+A interface pode receber percentual e convertê-lo para fração antes de criar/atualizar o domínio.
+
+Uma futura margem padrão da Empresa pode pré-preencher novos Produtos, mas não altera silenciosamente Produtos já existentes.
+
+### RN046 — Produto pode existir sem preço de venda
+
+É válido cadastrar Produto sem preço de venda.
+
+O preço praticado possui histórico próprio e será introduzido pelo UC011.
+
+Ausência de preço de venda:
+
+- não impede o cadastro do Produto;
+- não equivale a preço zero;
+- impede o cálculo de margem atual até que os demais dados necessários existam.
+
+O cadastro inicial não persiste `PrecoVendaAtual` diretamente em Produto.
+
 ## Margem e preço
 
 ### RN019 — Margem-alvo válida
