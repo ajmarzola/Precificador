@@ -68,7 +68,7 @@ Insumos ativos e inativos permanecem consultáveis. Consultas puras usam `AsNoTr
 
 ### Edição
 
-O UC003 está especificado para permitir a alteração de:
+O UC003 permite a alteração de:
 
 - Nome;
 - Marca;
@@ -95,8 +95,8 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 - [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — implementado;
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
-- [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — revalidado e pronto para implementação;
-- UC004 — Desativar insumo;
+- [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
+- UC004 — Desativar insumo — detalhar/revalidar como próximo caso;
 - UC005 — Registrar preço de insumo;
 - UC006 — Consultar histórico de preços do insumo.
 

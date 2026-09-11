@@ -1,6 +1,6 @@
 # UC003 — Editar insumo
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001, UC001B, UC001A, UC002 e FT002 implementados
 - **Não depende de:** MEL001–MEL004

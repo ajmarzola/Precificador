@@ -73,6 +73,48 @@ public sealed class InsumoPersistenceTests
         Assert.Equal(UnidadeMedida.Metro, insumo.UnidadeBase);
     }
 
+    [Fact]
+    public async Task CA04_Edicao_valida_e_persistida_sem_alterar_empresa()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+        context.Insumos.Add(insumo);
+        await context.SaveChangesAsync();
+
+        insumo.AtualizarDados("A\u00e7\u00facar", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade, "Uni\u00e3o", "Atualizada");
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var persistido = await context.Insumos.SingleAsync();
+        Assert.Equal(1, persistido.EmpresaId);
+        Assert.True(persistido.Ativo);
+        Assert.Equal("A\u00e7\u00facar", persistido.Nome);
+        Assert.Equal("UNI\u00c3O", persistido.MarcaNormalizada);
+        Assert.Equal(CategoriaInsumo.Embalagem, persistido.Categoria);
+        Assert.Equal(UnidadeMedida.Unidade, persistido.UnidadeBase);
+        Assert.Equal("Atualizada", persistido.Observacao);
+    }
+
+    [Fact]
+    public async Task CA07_Indice_unico_rejeita_edicao_para_nome_marca_duplicados_na_mesma_empresa()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+        context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata"));
+        var editavel = Insumo.Criar(1, "A\u00e7\u00facar", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Uni\u00e3o");
+        context.Insumos.Add(editavel);
+        await context.SaveChangesAsync();
+
+        editavel.AtualizarDados(" farinha ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade, " RENATA ");
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
         new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new EmpresaContextoTeste());
 
