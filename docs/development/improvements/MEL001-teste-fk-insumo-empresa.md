@@ -1,6 +1,6 @@
 # MEL001 — Teste explícito da FK Insumo → Empresa
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de persistência
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada
