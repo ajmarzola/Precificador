@@ -31,13 +31,15 @@ public sealed class PrecificadorDbContext(
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         AplicarIsolamentoEmpresa();
+        ValidarReferenciaInsumoDosPrecos();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         AplicarIsolamentoEmpresa();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        await ValidarReferenciaInsumoDosPrecosAsync(cancellationToken);
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     private void AplicarIsolamentoEmpresa()
@@ -59,4 +61,39 @@ public sealed class PrecificadorDbContext(
             }
         }
     }
+
+    private void ValidarReferenciaInsumoDosPrecos()
+    {
+        foreach (var preco in PrecosAlterados())
+        {
+            var referenciaValida = Insumos.IgnoreQueryFilters()
+                .Any(insumo => insumo.Id == preco.InsumoId && insumo.EmpresaId == preco.EmpresaId);
+
+            if (!referenciaValida)
+            {
+                throw new InvalidOperationException("O insumo referenciado pelo preço não pertence à mesma empresa.");
+            }
+        }
+    }
+
+    private async Task ValidarReferenciaInsumoDosPrecosAsync(CancellationToken cancellationToken)
+    {
+        foreach (var preco in PrecosAlterados())
+        {
+            var referenciaValida = await Insumos.IgnoreQueryFilters()
+                .AnyAsync(
+                    insumo => insumo.Id == preco.InsumoId && insumo.EmpresaId == preco.EmpresaId,
+                    cancellationToken);
+
+            if (!referenciaValida)
+            {
+                throw new InvalidOperationException("O insumo referenciado pelo preço não pertence à mesma empresa.");
+            }
+        }
+    }
+
+    private IEnumerable<PrecoInsumo> PrecosAlterados() =>
+        ChangeTracker.Entries<PrecoInsumo>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity);
 }
