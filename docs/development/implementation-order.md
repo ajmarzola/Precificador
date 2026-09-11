@@ -33,7 +33,9 @@ Instrução Codex UC004: [`../codex/UC004-desativar-reativar-insumo.md`](../code
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
-Antes de UC005 ou de UCs de Ficha Técnica criarem dados históricos/dependentes de Insumo, revalidar restrições de edição de Nome, Marca e Unidade base.
+A revalidação anterior ao UC005 foi concluída pela RN040: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis. O UC005 deve implementar essa restrição junto ao histórico de preços.
+
+O gate específico de referências de Ficha Técnica permanece para o UC014.
 
 ## Etapa 2 — Produtos
 
@@ -76,4 +78,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Após o merge, detalhar/revalidar o **UC005 — Registrar preço de insumo**, preservando o gate sobre edição de Nome, Marca e Unidade base antes de existir histórico.
+Detalhar/revalidar o **UC005 — Registrar preço de insumo**, usando a RN040 como contrato: o primeiro preço consolida Nome, Marca e Unidade base do Insumo. Preservar o gate separado do UC014 para futuras referências de Ficha Técnica.
