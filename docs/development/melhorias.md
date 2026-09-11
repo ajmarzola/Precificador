@@ -27,7 +27,7 @@ Status possíveis:
 
 ### MEL002 — Teste de tentativa de reatribuição de tenant no domínio
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** revisão da FT002
 - **Objetivo:** cobrir explicitamente que um `Insumo` já associado a uma Empresa não pode ser reatribuído para outra Empresa pelo domínio e preserva o ownership original após a tentativa.
 - **Especificação:** [MEL002 — Reatribuição de tenant no domínio](improvements/MEL002-reatribuicao-tenant-insumo.md)

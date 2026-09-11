@@ -13,6 +13,16 @@ public sealed class InsumoTests
     }
 
     [Fact]
+    public void CA01_Reatribuir_insumo_para_outra_empresa_e_rejeitado_e_preserva_empresa_original()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+
+        Assert.Throws<InvalidOperationException>(() => insumo.DefinirEmpresa(2));
+
+        Assert.Equal(1, insumo.EmpresaId);
+    }
+
+    [Fact]
     public void Criar_normaliza_espacos_do_nome()
     {
         var insumo = Insumo.Criar(1, "  Farinha   Renata  ", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
