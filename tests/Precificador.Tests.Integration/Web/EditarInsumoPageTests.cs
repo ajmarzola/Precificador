@@ -27,7 +27,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     public async Task CA02_Get_edicao_carrega_campos_funcionais_sem_campos_tecnicos()
     {
         var nome = Nome("Farinha");
-        var id = await CriarInsumoAsync(1, nome, "Renata", "W 300", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+        var id = await CriarInsumoAsync(1, nome, "Renata", "W 300", CategoriaInsumo.Consumivel, UnidadeMedida.Metro);
         using var client = await CriarClienteAutenticadoAsync();
 
         var response = await client.GetAsync($"/Insumos/Editar/{id}");
@@ -36,7 +36,8 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
         response.EnsureSuccessStatusCode();
         Assert.Contains(nome, conteudo);
         Assert.Contains("Renata", conteudo);
-        Assert.Contains("Matéria-prima", conteudo);
+        Assert.Contains("<option value=\"Consumivel\" selected=\"selected\">Consumível</option>", conteudo);
+        Assert.Contains("<option value=\"Metro\" selected=\"selected\">m</option>", conteudo);
         Assert.Contains("W 300", conteudo);
         Assert.Contains("Salvar", conteudo);
         Assert.DoesNotContain("EmpresaId", conteudo);
@@ -124,17 +125,24 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
         Assert.Equal("Outra empresa", outroTenant.Observacao);
     }
 
-    [Fact]
-    public async Task CA10_Post_com_dados_invalidos_nao_persiste_alteracoes()
+    [Theory]
+    [MemberData(nameof(DadosInvalidosParaEdicao))]
+    public async Task CA10_Post_com_um_dado_invalido_nao_persiste_alteracoes(
+        string nomeEnviado,
+        string categoriaEnviada,
+        string unidadeEnviada,
+        string marcaEnviada,
+        string observacaoEnviada)
     {
-        var id = await CriarInsumoAsync(1, Nome("Farinha"), "Renata", "Original", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+        var nomeOriginal = Nome("Farinha");
+        var id = await CriarInsumoAsync(1, nomeOriginal, "Renata", "Original", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
         using var client = await CriarClienteAutenticadoAsync();
 
-        var response = await EnviarFormularioAsync(client, id, " ", "0", "Grama", "Marca", new string('a', 1001));
+        var response = await EnviarFormularioAsync(client, id, nomeEnviado, categoriaEnviada, unidadeEnviada, marcaEnviada, observacaoEnviada);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var insumo = await ObterInsumoAsync(id, 1);
-        Assert.StartsWith("Farinha", insumo.Nome);
+        Assert.Equal(nomeOriginal, insumo.Nome);
         Assert.Equal("Renata", insumo.Marca);
         Assert.Equal("Original", insumo.Observacao);
         Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
@@ -204,6 +212,15 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     }
 
     private static string Nome(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
+
+    public static IEnumerable<object[]> DadosInvalidosParaEdicao =>
+    [
+        [new string('a', 121), "MateriaPrima", "Grama", "Marca válida", "Observação válida"],
+        ["Nome válido", "MateriaPrima", "Grama", new string('a', 81), "Observação válida"],
+        ["Nome válido", "MateriaPrima", "Grama", "Marca válida", new string('a', 1001)],
+        ["Nome válido", "0", "Grama", "Marca válida", "Observação válida"],
+        ["Nome válido", "MateriaPrima", "0", "Marca válida", "Observação válida"]
+    ];
 
     private async Task<int> CriarEmpresaAsync()
     {
