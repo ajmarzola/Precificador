@@ -22,7 +22,7 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | [UC003](UC003-editar-insumo.md) | Editar insumo | UC002, UC001A, FT002 — **implementado** |
 | [UC004](UC004-desativar-reativar-insumo.md) | Desativar e reativar insumo | UC003, FT002 — **implementado** |
 | [UC005](UC005-registrar-preco-insumo.md) | Registrar preço de insumo | UC004, FT002, RN040 — **implementado** |
-| UC006 | Consultar histórico de preços do insumo | UC005 |
+| [UC006](UC006-consultar-historico-precos-insumo.md) | Consultar histórico de preços do insumo | UC005 — **revalidado e pronto para implementação** |
 
 Classificação e unidades implementadas:
 
@@ -31,7 +31,7 @@ Classificação e unidades implementadas:
 
 A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, MarcaNormalizada)` e independe de Ativo/Inativo.
 
-UC005 foi implementado com histórico append-only de preços, custo unitário calculado sem persistência e aplicação da RN040 no fluxo de edição. UC006 é o próximo caso relacionado a detalhar/revalidar.
+UC005 foi implementado com histórico append-only de preços, custo unitário calculado sem persistência e aplicação da RN040 no fluxo de edição. UC006 está especificado para consulta somente leitura do histórico e seleção do preço vigente pela RN006.
 
 **Gate de preço concluído:** a RN040 mantém Nome, Marca e Unidade base imutáveis após o primeiro registro de preço, inclusive futuro.
 

@@ -102,7 +102,18 @@ O custo unitário não é persistido:
 
 Não há arredondamento intermediário para centavos.
 
-Datas futuras podem ser registradas, mas não são vigentes antes da DataReferencia. Para seleção do preço atual, ordenar por DataReferencia decrescente e, em empate, por Id decrescente.
+Datas futuras podem ser registradas, mas não são vigentes antes da DataReferencia.
+
+Para seleção do preço atual:
+
+1. considerar somente `DataReferencia <= dataAtual`;
+2. ordenar por DataReferencia decrescente;
+3. em empate, ordenar por Id decrescente;
+4. selecionar o primeiro registro.
+
+O histórico completo permanece ordenado por `DataReferencia DESC, Id DESC`, inclusive com futuros no topo quando aplicável. A apresentação deve distinguir **Vigente**, **Anterior** e **Futuro** sem persistir esses estados.
+
+Se só existirem preços futuros, o custo atual continua desconhecido conforme RN007.
 
 A situação Ativo/Inativo do Insumo não impede registro de preço. Registrar preço não reativa o Insumo e não muda sua elegibilidade operacional.
 

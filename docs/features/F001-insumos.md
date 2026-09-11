@@ -85,7 +85,7 @@ A revalidação para histórico de preços foi concluída pela RN040:
 - Categoria e Observação continuam editáveis;
 - mudança de identidade ou unidade após o início do histórico exige novo Insumo, preservando o antigo.
 
-A restrição será aplicada ao fluxo de edição junto ao UC005, quando a existência do histórico passar a ser verificável pelo sistema.
+A restrição foi aplicada ao fluxo de edição no UC005: qualquer histórico, inclusive apenas preço futuro, congela Nome, Marca e Unidade base no servidor e na apresentação.
 
 A revalidação de estabilidade diante de futuras referências em Ficha Técnica permanece reservada ao UC014.
 
@@ -120,7 +120,9 @@ Datas futuras são permitidas e qualquer primeiro preço, inclusive futuro, ativ
 
 Insumos inativos também podem receber registros de preço sem serem reativados.
 
-A tela de histórico completo permanece responsabilidade do UC006.
+O UC006 está especificado para consultar o histórico completo, identificar o preço vigente pela RN006 e distinguir registros anteriores de preços futuros.
+
+Além da página de histórico, Detalhes do Insumo passa a exibir um resumo do preço vigente ou **Sem preço vigente**, sem tratar ausência como custo zero.
 
 ## Regras relacionadas
 
@@ -136,7 +138,7 @@ A tela de histórico completo permanece responsabilidade do UC006.
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
 - [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
 - [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — implementado;
-- UC006 — Consultar histórico de preços do insumo.
+- [UC006 — Consultar histórico de preços do insumo](../use-cases/UC006-consultar-historico-precos-insumo.md) — revalidado e pronto para implementação.
 
 ## Fora do escopo
 
