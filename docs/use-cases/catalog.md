@@ -18,10 +18,10 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | [UC001](UC001-cadastrar-insumo.md) | Cadastrar insumo | FT001 — implementado |
 | [UC001B](UC001B-generalizar-categoria-unidades-insumo.md) | Generalizar categoria e unidades de insumo | UC001, FT002 — implementado |
 | [UC001A](UC001A-complementar-insumo-marca-observacao.md) | Complementar cadastro com marca e observação | UC001B, FT002 — implementado |
-| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 — **implementado** |
-| UC003 | Editar insumo | UC002, UC001A, FT002 — próximo passo a detalhar/revalidar antes da implementação |
-| UC004 | Desativar insumo | UC001A, FT002 |
-| UC005 | Registrar preço de insumo | UC001A, FT002 |
+| [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 — implementado |
+| [UC003](UC003-editar-insumo.md) | Editar insumo | UC002, UC001A, FT002 — **revalidado e pronto para implementação** |
+| UC004 | Desativar insumo | UC003, FT002 — detalhar/revalidar somente após implementação do UC003 |
+| UC005 | Registrar preço de insumo | UC001A, FT002; revalidar restrições de edição antes de implementar |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
 
 Classificação e unidades implementadas:
@@ -31,7 +31,9 @@ Classificação e unidades implementadas:
 
 A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, MarcaNormalizada)`.
 
-O UC002 está implementado e lista/pesquisa/consulta exclusivamente dados da Empresa Ativa, sem alterar schema ou antecipar operações de escrita. O próximo incremento de Insumos é o UC003, que deve ser detalhado e revalidado antes da implementação.
+O UC003 é o próximo incremento funcional de Insumos. Ele altera apenas dados cadastrais permitidos, preservando Empresa e Situação.
+
+**Gate futuro:** antes de implementar UC005 ou UCs de Ficha Técnica que criem referências históricas/dependentes, revalidar se Nome, Marca e Unidade base continuam livremente editáveis após existirem esses registros.
 
 ## Produtos
 
@@ -49,7 +51,7 @@ O UC002 está implementado e lista/pesquisa/consulta exclusivamente dados da Emp
 | UC | Nome | Dependências |
 |---|---|---|
 | UC013 | Definir rendimento e tempos/recursos do lote | UC007; **revalidar modelo genérico antes de implementar** |
-| UC014 | Adicionar insumo à ficha técnica com quantidade e observação contextual opcional | UC001A, UC007 |
+| UC014 | Adicionar insumo à ficha técnica com quantidade e observação contextual opcional | UC001A, UC007; revalidar restrições de edição do Insumo antes de implementar |
 | UC015 | Alterar quantidade/observação de item da ficha técnica | UC014 |
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
