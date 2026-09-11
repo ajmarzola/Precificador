@@ -25,11 +25,12 @@ Estado atual:
 3. **UC002 — Listar e consultar Insumos** — implementado;
 4. **UC003 — Editar Insumo** — implementado;
 5. **UC004 — Desativar e reativar Insumo** — implementado;
-6. próximo: detalhar/revalidar UC005 e depois seguir UC006.
+6. **UC005 — Registrar preço de Insumo** — revalidado e pronto para implementação;
+7. depois, seguir UC006.
 
-Especificação UC004: [`../use-cases/UC004-desativar-reativar-insumo.md`](../use-cases/UC004-desativar-reativar-insumo.md).
+Especificação UC005: [`../use-cases/UC005-registrar-preco-insumo.md`](../use-cases/UC005-registrar-preco-insumo.md).
 
-Instrução Codex UC004: [`../codex/UC004-desativar-reativar-insumo.md`](../codex/UC004-desativar-reativar-insumo.md).
+Instrução Codex UC005: [`../codex/UC005-registrar-preco-insumo.md`](../codex/UC005-registrar-preco-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
@@ -78,4 +79,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Detalhar/revalidar o **UC005 — Registrar preço de insumo**, usando a RN040 como contrato: o primeiro preço consolida Nome, Marca e Unidade base do Insumo. Preservar o gate separado do UC014 para futuras referências de Ficha Técnica.
+Implementar e revisar o **UC005 — Registrar preço de insumo**. Após seu merge, o UC006 passa a ser o próximo caso a detalhar/revalidar. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
