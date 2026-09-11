@@ -52,6 +52,13 @@ Status possíveis:
 - **Instrução Codex:** [MEL004 — implementação](../codex/MEL004-rotulos-insumos-ui.md)
 - **Prioridade:** baixa; selecionada para execução antes do UC003.
 
+### MEL005 — Avaliar centralização de entrada e validação de Insumo entre Novo e Editar
+
+- **Status:** Pendente
+- **Origem:** revisão do UC003
+- **Objetivo:** observar a duplicação emergente entre `NovoModel` e `EditarModel` — especialmente `InputModel`, validação de Categoria/Unidade e mapeamento de erros de domínio — e centralizar somente se novos fluxos confirmarem reutilização suficiente.
+- **Prioridade:** baixa; não refatorar antecipadamente. Reavaliar quando houver nova tela/fluxo de manutenção de Insumo ou quando a duplicação crescer de forma relevante.
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade.
