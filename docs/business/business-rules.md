@@ -19,11 +19,13 @@ Os valores numéricos existentes do enum foram preservados e `Metro = 4` foi acr
 
 ### RN002 — Quantidade de compra válida
 
-A quantidade informada em um registro de preço deve ser maior que zero.
+A quantidade informada em um registro de preço deve ser maior que zero e é expressa na Unidade base do Insumo.
+
+O UC005 não introduz unidade de compra alternativa nem conversões automáticas. Se o Insumo está em `g`, por exemplo, uma compra de 1 kg é registrada como quantidade `1000`.
 
 ### RN003 — Preço de compra válido
 
-O preço pago deve ser maior que zero.
+O preço pago deve ser maior que zero e representa o valor total correspondente à QuantidadeCompra informada.
 
 ### RN004 — Custo unitário do insumo
 
@@ -35,9 +37,21 @@ O cálculo deve preservar precisão decimal suficiente para que insumos baratos 
 
 Registrar um novo preço não deve sobrescrever o registro anterior. Cada registro pertence a um Insumo específico; marcas diferentes do mesmo item possuem históricos independentes por serem Insumos distintos.
 
+O histórico é append-only no MVP:
+
+- cada registro válido cria uma nova linha;
+- registros anteriores não são editados ou excluídos pelo fluxo normal;
+- múltiplos preços na mesma DataReferencia são permitidos;
+- uma correção é representada por novo registro, preservando o anterior.
+
 ### RN006 — Preço atual
 
-O preço atual é o registro de preço vigente mais recente para o insumo. Registros com data futura não são considerados vigentes antes de sua data de referência. Em empate de data, prevalece o registro criado por último.
+O preço atual é o registro de preço vigente mais recente para o insumo. Registros com data futura não são considerados vigentes antes de sua data de referência.
+
+A ordenação normativa é:
+
+1. maior DataReferencia que não esteja no futuro;
+2. em empate de DataReferencia, maior Id, representando o registro inserido por último no MVP.
 
 ### RN007 — Insumo sem preço
 
@@ -52,7 +66,8 @@ Um Insumo desativado:
 - permanece consultável e legível;
 - continua participando da identidade e unicidade por Empresa + Nome + Marca;
 - não pode ser adicionado a novas fichas técnicas quando esse fluxo existir;
-- não perde referências, preços ou históricos existentes.
+- não perde referências, preços ou históricos existentes;
+- pode receber novos registros de preço, pois preço é fato histórico/comercial e seu registro não implica reativação.
 
 A desativação é reversível. Ao ser reativado, o Insumo volta ao estado operacional ativo.
 

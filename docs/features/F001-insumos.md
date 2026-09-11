@@ -102,7 +102,25 @@ Insumos inativos continuam listados, consultáveis, editáveis e participando da
 
 Quando Ficha Técnica existir, Insumo inativo não poderá ser adicionado a novas fichas, conforme RN008.
 
-Cada registro de preço futuro pertence a um Insumo específico; como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
+Cada registro de preço futuro pertence a um Insumo específico; como o preço também é tenant-owned, histórico e custo permanecem isolados pela Empresa Ativa.
+
+### Preços
+
+O UC005 foi revalidado para introduzir `PrecoInsumo` como histórico append-only.
+
+Cada preço registra:
+
+- Quantidade de compra na Unidade base;
+- Preço total da compra;
+- Data de referência.
+
+O custo unitário é calculado por RN004 e não é persistido.
+
+Datas futuras são permitidas e qualquer primeiro preço, inclusive futuro, ativa imediatamente a RN040.
+
+Insumos inativos também podem receber registros de preço sem serem reativados.
+
+A tela de histórico completo permanece responsabilidade do UC006.
 
 ## Regras relacionadas
 
@@ -117,7 +135,7 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
 - [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
-- UC005 — Registrar preço de insumo;
+- [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — revalidado e pronto para implementação;
 - UC006 — Consultar histórico de preços do insumo.
 
 ## Fora do escopo
