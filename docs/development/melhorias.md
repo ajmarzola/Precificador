@@ -45,10 +45,12 @@ Status possíveis:
 
 ### MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** revisão do UC002
-- **Objetivo:** centralizar futuramente a tradução de `CategoriaInsumo` e `UnidadeMedida` para rótulos de apresentação, evitando repetição de mapeamentos como `Matéria-prima`, `Consumível`, `g`, `ml`, `m` e `un` entre Razor Pages.
-- **Prioridade:** baixa; executar quando houver evolução relevante das telas de Insumos ou quando surgir um ponto compartilhado natural para apresentação desses enums.
+- **Objetivo:** centralizar os rótulos de Categoria e Unidade em um único helper de apresentação do projeto Web, removendo duplicação entre cadastro, listagem e detalhes.
+- **Especificação:** [MEL004 — Rótulos de Insumos na UI](improvements/MEL004-rotulos-insumos-ui.md)
+- **Instrução Codex:** [MEL004 — implementação](../codex/MEL004-rotulos-insumos-ui.md)
+- **Prioridade:** baixa; selecionada para execução antes do UC003.
 
 ## Regra de uso
 
