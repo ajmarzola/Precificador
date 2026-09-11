@@ -1,0 +1,55 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Insumos.EditarModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Editar insumo";
+}
+
+<h1>Editar insumo</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Nome" class="form-label"></label>
+        <input asp-for="Input.Nome" class="form-control" />
+        <span asp-validation-for="Input.Nome" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Marca" class="form-label"></label>
+        <input asp-for="Input.Marca" class="form-control" />
+        <span asp-validation-for="Input.Marca" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Categoria" class="form-label">Categoria</label>
+        <select asp-for="Input.Categoria" class="form-select">
+            <option value="">Selecione uma categoria</option>
+            @foreach (var categoria in InsumoRotulos.Categorias)
+            {
+                <option value="@categoria">@InsumoRotulos.Categoria(categoria)</option>
+            }
+        </select>
+        <span asp-validation-for="Input.Categoria" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.UnidadeBase" class="form-label">Unidade base</label>
+        <select asp-for="Input.UnidadeBase" class="form-select">
+            <option value="">Selecione uma unidade</option>
+            @foreach (var unidade in InsumoRotulos.Unidades)
+            {
+                <option value="@unidade">@InsumoRotulos.Unidade(unidade)</option>
+            }
+        </select>
+        <span asp-validation-for="Input.UnidadeBase" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Observacao" class="form-label"></label>
+        <textarea asp-for="Input.Observacao" class="form-control"></textarea>
+        <span asp-validation-for="Input.Observacao" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a asp-page="/Insumos/Detalhes" asp-route-id="@RouteData.Values["id"]" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

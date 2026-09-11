@@ -143,4 +143,73 @@ public sealed class InsumoTests
         Assert.Throws<ArgumentException>(() =>
             Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, observacao: new string('a', 1001)));
     }
+
+    [Fact]
+    public void CA04_Atualizar_dados_validos_altera_campos_editaveis_e_preserva_tenant_e_status()
+    {
+        var insumo = Insumo.Criar(7, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+
+        insumo.AtualizarDados("A\u00e7\u00facar", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade, "Uni\u00e3o", "Atualizada");
+
+        Assert.Equal("A\u00e7\u00facar", insumo.Nome);
+        Assert.Equal("A\u00c7\u00daCAR", insumo.NomeNormalizado);
+        Assert.Equal("Uni\u00e3o", insumo.Marca);
+        Assert.Equal("UNI\u00c3O", insumo.MarcaNormalizada);
+        Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Unidade, insumo.UnidadeBase);
+        Assert.Equal("Atualizada", insumo.Observacao);
+        Assert.Equal(7, insumo.EmpresaId);
+        Assert.True(insumo.Ativo);
+    }
+
+    [Fact]
+    public void CA09_Atualizar_normaliza_nome_marca_e_observacao()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+
+        insumo.AtualizarDados("  A\u00e7\u00facar   cristal  ", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "  Uni\u00e3o   Premium  ", "  W 300\nProte\u00edna 13,5%  ");
+
+        Assert.Equal("A\u00e7\u00facar cristal", insumo.Nome);
+        Assert.Equal("A\u00c7\u00daCAR CRISTAL", insumo.NomeNormalizado);
+        Assert.Equal("Uni\u00e3o Premium", insumo.Marca);
+        Assert.Equal("UNI\u00c3O PREMIUM", insumo.MarcaNormalizada);
+        Assert.Equal("W 300\nProte\u00edna 13,5%", insumo.Observacao);
+    }
+
+    [Theory]
+    [InlineData("   ", null, null)]
+    [InlineData(null, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", null)]
+    [InlineData(null, null, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")]
+    public void CA05_Atualizacao_textual_invalida_preserva_estado_original(string? nome, string? marca, string? observacao)
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+
+        Assert.Throws<ArgumentException>(() => insumo.AtualizarDados(nome ?? "Farinha", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade, marca ?? "Renata", observacao ?? "Original"));
+
+        Assert.Equal("Farinha", insumo.Nome);
+        Assert.Equal("FARINHA", insumo.NomeNormalizado);
+        Assert.Equal("Renata", insumo.Marca);
+        Assert.Equal("RENATA", insumo.MarcaNormalizada);
+        Assert.Equal("Original", insumo.Observacao);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 0)]
+    public void CA05_Atualizacao_com_categoria_ou_unidade_invalida_preserva_estado_original(int categoria, int unidade)
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => insumo.AtualizarDados("A\u00e7\u00facar", (CategoriaInsumo)categoria, (UnidadeMedida)unidade, "Uni\u00e3o", "Nova"));
+
+        Assert.Equal("Farinha", insumo.Nome);
+        Assert.Equal("FARINHA", insumo.NomeNormalizado);
+        Assert.Equal("Renata", insumo.Marca);
+        Assert.Equal("RENATA", insumo.MarcaNormalizada);
+        Assert.Equal("Original", insumo.Observacao);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+    }
 }

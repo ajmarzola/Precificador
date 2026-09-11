@@ -23,8 +23,8 @@ Estado atual:
 1. **UC001B — Generalizar categoria e unidades** — implementado;
 2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
 3. **UC002 — Listar e consultar Insumos** — implementado;
-4. **UC003 — Editar Insumo** — revalidado e pronto para implementação;
-5. **UC004 — Desativar Insumo** — só deve ser detalhado/revalidado após a implementação do UC003;
+4. **UC003 — Editar Insumo** — implementado;
+5. **UC004 — Desativar Insumo** — próximo caso a detalhar/revalidar;
 6. depois, seguir UC005 e UC006.
 
 Especificação UC003: [`../use-cases/UC003-editar-insumo.md`](../use-cases/UC003-editar-insumo.md).
@@ -76,4 +76,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC003 — Editar Insumo** quando chegar sua vez na fila de implementação. Somente após o merge do UC003 detalhar/revalidar o UC004.
+Detalhar/revalidar o **UC004 — Desativar Insumo**. Antes de UC005 ou UC014, preservar a revalidação das restrições de edição de Nome, Marca e Unidade base após existirem dados históricos ou dependentes.

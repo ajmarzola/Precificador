@@ -6,6 +6,10 @@
     var insumo = Model.Insumo!;
 }
 <h1>Consultar insumo</h1>
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
 <dl class="row">
     <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@insumo.Nome</dd>
     <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
@@ -14,4 +18,5 @@
     <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(insumo.Ativo ? "Ativo" : "Inativo")</dd>
     <dt class="col-sm-3">Observação</dt><dd class="col-sm-9" style="white-space: pre-wrap">@(insumo.Observacao ?? "—")</dd>
 </dl>
+<a asp-page="/Insumos/Editar" asp-route-id="@RouteData.Values["id"]" class="btn btn-primary">Editar</a>
 <a asp-page="/Insumos/Index">Voltar para insumos</a>

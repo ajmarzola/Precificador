@@ -57,6 +57,27 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
     public static Insumo Criar(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase, string? marca = null, string? observacao = null) =>
         new(empresaId, nome, categoria, unidadeBase, marca, observacao);
 
+    public void AtualizarDados(string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase, string? marca = null, string? observacao = null)
+    {
+        var novoNome = NormalizarNome(nome);
+        var novaMarca = NormalizarMarca(marca);
+        var novaObservacao = NormalizarObservacao(observacao);
+
+        ValidarNome(novoNome);
+        ValidarMarca(novaMarca);
+        ValidarObservacao(novaObservacao);
+        ValidarCategoria(categoria);
+        ValidarUnidadeBase(unidadeBase);
+
+        Nome = novoNome;
+        NomeNormalizado = novoNome.ToUpperInvariant();
+        Marca = novaMarca;
+        MarcaNormalizada = novaMarca?.ToUpperInvariant() ?? string.Empty;
+        Observacao = novaObservacao;
+        Categoria = categoria;
+        UnidadeBase = unidadeBase;
+    }
+
     public void DefinirEmpresa(int empresaId)
     {
         if (empresaId <= 0)

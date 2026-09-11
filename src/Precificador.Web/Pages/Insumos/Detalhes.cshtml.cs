@@ -10,6 +10,8 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
 {
     public InsumoDetalhes? Insumo { get; private set; }
 
+    public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         Insumo = await context.Insumos.AsNoTracking().Where(insumo => insumo.Id == id)
