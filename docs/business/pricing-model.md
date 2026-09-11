@@ -86,7 +86,25 @@ Se um dado obrigatório estiver ausente ou inválido, o cálculo é **incompleto
 
 ### Insumos
 
-O histórico registra compras/preços conhecidos do Insumo. O custo atual deriva do registro vigente mais recente e permanece isolado pela Empresa proprietária do Insumo.
+O histórico registra compras/preços conhecidos do Insumo e é append-only.
+
+Cada registro contém, no mínimo:
+
+- EmpresaId;
+- InsumoId;
+- QuantidadeCompra na Unidade base do Insumo;
+- PrecoCompra total da quantidade;
+- DataReferencia.
+
+O custo unitário não é persistido:
+
+`CustoUnitario = PrecoCompra / QuantidadeCompra`.
+
+Não há arredondamento intermediário para centavos.
+
+Datas futuras podem ser registradas, mas não são vigentes antes da DataReferencia. Para seleção do preço atual, ordenar por DataReferencia decrescente e, em empate, por Id decrescente.
+
+A situação Ativo/Inativo do Insumo não impede registro de preço. Registrar preço não reativa o Insumo e não muda sua elegibilidade operacional.
 
 A interpretação histórica depende da estabilidade cadastral definida pela RN040: depois do primeiro preço, Nome, Marca e Unidade base do Insumo não podem ser alterados. Isso evita que um preço antigo passe a aparentar pertencer a outra identidade econômica ou que a quantidade de compra histórica mude de significado por troca de unidade.
 
