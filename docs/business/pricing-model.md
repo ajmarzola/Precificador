@@ -88,6 +88,10 @@ Se um dado obrigatório estiver ausente ou inválido, o cálculo é **incompleto
 
 O histórico registra compras/preços conhecidos do Insumo. O custo atual deriva do registro vigente mais recente e permanece isolado pela Empresa proprietária do Insumo.
 
+A interpretação histórica depende da estabilidade cadastral definida pela RN040: depois do primeiro preço, Nome, Marca e Unidade base do Insumo não podem ser alterados. Isso evita que um preço antigo passe a aparentar pertencer a outra identidade econômica ou que a quantidade de compra histórica mude de significado por troca de unidade.
+
+No MVP, os registros de preço referenciam o Insumo por `InsumoId` e **não precisam duplicar snapshots de Nome, Marca e Unidade base**. Se no futuro houver requisito de auditoria que exija reproduzir exatamente a apresentação cadastral de cada momento, snapshots/versionamento deverão ser modelados explicitamente em vez de relaxar a RN040.
+
 ### Produtos
 
 O preço de venda praticado possui histórico próprio. O custo atual continua calculado sob demanda. Quando snapshots históricos de custo forem necessários, deverão ser modelados explicitamente.

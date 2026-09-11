@@ -279,17 +279,20 @@ Se a MEL004 já estiver implementada, reutilizar `InsumoRotulos` (ou o nome efet
 
 Não recriar switches/options duplicados.
 
-## Compatibilidade com histórico futuro
+## Estabilidade após histórico de preços — revalidação RN040
 
-No estado atual do sistema ainda não existem Preço de Insumo ou itens de Ficha Técnica. Portanto, Nome, Marca e Unidade base podem ser corrigidos neste UC.
+O UC003 foi implementado quando ainda não existiam registros de preço e, por isso, originalmente permitia alterar Nome, Marca e Unidade base.
 
-Antes de implementar UC005 e UC014, deve ser reavaliado se alterações desses campos continuam permitidas após existirem registros históricos/dependentes, pois:
+A revalidação anterior ao UC005 foi concluída com a **RN040 — Estabilidade cadastral do Insumo com histórico de preços**:
 
-- mudar Marca pode reinterpretar a identidade econômica ligada a preços anteriores;
-- mudar Unidade base pode reinterpretar quantidades/preços históricos;
-- mudar Nome/Marca pode alterar a leitura histórica de referências existentes.
+- sem qualquer preço registrado, Nome, Marca e Unidade base continuam editáveis;
+- após o primeiro registro de preço, Nome, Marca e Unidade base tornam-se imutáveis;
+- Categoria e Observação permanecem editáveis;
+- qualquer mudança real de identidade/unidade após o início do histórico exige novo Insumo, preservando o anterior e seu histórico.
 
-Essa revalidação futura não bloqueia o UC003 atual.
+A aplicação dessa restrição no fluxo de edição será incorporada junto ao UC005, quando passar a existir a entidade/consulta capaz de determinar se o Insumo possui histórico.
+
+A revalidação relacionada a referências de Ficha Técnica permanece aberta para o UC014: um Insumo sem preços, mas já utilizado por uma ficha futura, também pode exigir estabilidade adicional para não reinterpretar quantidades dependentes.
 
 ## Regras de negócio aplicáveis
 
@@ -302,7 +305,8 @@ Essa revalidação futura não bloqueia o UC003 atual.
 - RN033 — Observação do Insumo;
 - RN035 — Propriedade por Empresa;
 - RN036 — Isolamento de Empresa;
-- RN037 — Empresa Ativa.
+- RN037 — Empresa Ativa;
+- RN040 — Estabilidade cadastral do Insumo com histórico de preços.
 
 ## Critérios de aceitação
 

@@ -142,6 +142,27 @@ Essa observação é independente da Observação global do Insumo e deve perman
 
 A implementação desta regra pertence aos UCs de Ficha Técnica, não ao UC001A ou UC002.
 
+### RN040 — Estabilidade cadastral do Insumo com histórico de preços
+
+Enquanto um Insumo não possuir qualquer registro de preço, Nome, Marca e Unidade base podem ser alterados conforme as regras cadastrais existentes.
+
+A partir da existência do primeiro registro de preço vinculado ao Insumo, independentemente de esse preço estar vigente, vencido ou possuir data de referência futura:
+
+- **Nome torna-se imutável**;
+- **Marca torna-se imutável**;
+- **Unidade base torna-se imutável**;
+- Categoria permanece editável;
+- Observação permanece editável;
+- Situação Ativo/Inativo continua regida pela RN008.
+
+A imutabilidade é integral: não são permitidas alterações apenas de capitalização, espaçamento ou outra forma de apresentação de Nome/Marca depois que houver histórico de preço. A regra prioriza uma fronteira simples e inequívoca entre cadastro ainda corrigível e identidade histórica já consolidada.
+
+Se for necessária uma mudança real de Nome, Marca ou Unidade base depois do início do histórico, deve ser criado um **novo Insumo**. O registro anterior pode ser desativado conforme RN008, preservando seu histórico.
+
+Essa regra protege a interpretação dos registros históricos e permite que o histórico de preços referencie o `InsumoId` sem precisar duplicar snapshots de Nome, Marca e Unidade base em cada registro de preço no MVP.
+
+A motivação, alternativas avaliadas e consequências desta decisão estão documentadas em [Estabilidade cadastral do Insumo com histórico de preços](insumo-historical-stability.md).
+
 ## Multiempresa e acesso
 
 ### RN035 — Propriedade por empresa

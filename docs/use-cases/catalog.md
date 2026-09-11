@@ -21,7 +21,7 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | [UC002](UC002-listar-consultar-insumos.md) | Listar e consultar insumos | UC001A, FT002 — implementado |
 | [UC003](UC003-editar-insumo.md) | Editar insumo | UC002, UC001A, FT002 — **implementado** |
 | [UC004](UC004-desativar-reativar-insumo.md) | Desativar e reativar insumo | UC003, FT002 — **implementado** |
-| UC005 | Registrar preço de insumo | UC001A, FT002; próximo caso a detalhar/revalidar, preservando a revalidação das restrições de edição |
+| UC005 | Registrar preço de insumo | UC004, FT002, RN040 — próximo caso a detalhar/revalidar; deve aplicar a estabilidade cadastral após o primeiro preço |
 | UC006 | Consultar histórico de preços do insumo | UC005 |
 
 Classificação e unidades implementadas:
@@ -33,7 +33,9 @@ A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, M
 
 UC004 foi implementado e altera somente a situação operacional do registro, sem exclusão física. UC005 é o próximo caso a detalhar/revalidar.
 
-**Gate futuro:** antes de implementar UC005 ou UCs de Ficha Técnica que criem referências históricas/dependentes, revalidar se Nome, Marca e Unidade base continuam livremente editáveis após existirem esses registros.
+**Gate de preço concluído:** a RN040 definiu que Nome, Marca e Unidade base ficam imutáveis após o primeiro registro de preço. O UC005 deve implementar essa restrição no fluxo de edição.
+
+**Gate de Ficha Técnica permanece:** antes do UC014, revalidar se referências de ficha também devem congelar campos cadastrais mesmo quando o Insumo ainda não possuir preço.
 
 ## Produtos
 
