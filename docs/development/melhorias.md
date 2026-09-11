@@ -59,6 +59,14 @@ Status possíveis:
 - **Objetivo:** observar a duplicação emergente entre `NovoModel` e `EditarModel` — especialmente `InputModel`, validação de Categoria/Unidade e mapeamento de erros de domínio — e centralizar somente se novos fluxos confirmarem reutilização suficiente.
 - **Prioridade:** baixa; não refatorar antecipadamente. Reavaliar quando houver nova tela/fluxo de manutenção de Insumo ou quando a duplicação crescer de forma relevante.
 
+### MEL006 — Tornar a data efetiva dependente do timezone da Empresa
+
+- **Status:** Pendente
+- **Origem:** especificação do UC006
+- **Objetivo:** substituir a dependência da data local do processo por uma data operacional derivada de timezone/configuração da Empresa quando a aplicação precisar operar em hospedagem ou empresas com fusos diferentes.
+- **Motivação:** RN006 depende da fronteira de calendário entre preço vigente e futuro; perto da meia-noite, timezone do servidor pode divergir do timezone do negócio.
+- **Prioridade:** baixa no MVP atual; não introduzir configuração de timezone no UC006 sem requisito operacional concreto.
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade.
