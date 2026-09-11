@@ -1,6 +1,6 @@
 # MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / apresentação
 - **Origem:** revisão do UC002
 - **Dependências:** UC001B e UC002 implementados

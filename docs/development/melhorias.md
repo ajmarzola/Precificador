@@ -45,7 +45,7 @@ Status possíveis:
 
 ### MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** revisão do UC002
 - **Objetivo:** centralizar os rótulos de Categoria e Unidade em um único helper de apresentação do projeto Web, removendo duplicação entre cadastro, listagem e detalhes.
 - **Especificação:** [MEL004 — Rótulos de Insumos na UI](improvements/MEL004-rotulos-insumos-ui.md)
