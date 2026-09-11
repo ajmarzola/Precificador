@@ -66,6 +66,22 @@ O UC002 disponibiliza listagem, pesquisa por Nome/Marca e detalhes, sempre limit
 
 Insumos ativos e inativos permanecem consultáveis. Consultas puras usam `AsNoTracking` e preservam o Global Query Filter da FT002.
 
+### Edição
+
+O UC003 está especificado para permitir a alteração de:
+
+- Nome;
+- Marca;
+- Categoria;
+- Unidade base;
+- Observação.
+
+A edição preserva `EmpresaId` e `Ativo`, reaplica normalização/validação e mantém a unicidade tenant-aware por Empresa + Nome + Marca.
+
+A situação ativo/inativo permanece responsabilidade do UC004.
+
+Antes da implementação de preço/histórico e ficha técnica, a liberdade de alterar identidade comercial ou unidade base deverá ser reavaliada para não reinterpretar dados históricos já existentes.
+
 Cada registro de preço futuro pertence a um Insumo específico; como o Insumo pertence a uma Empresa, histórico e custo ficam naturalmente isolados por Empresa.
 
 ## Regras relacionadas
@@ -79,7 +95,7 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 - [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — implementado;
 - [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
 - [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
-- UC003 — Editar insumo;
+- [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — revalidado e pronto para implementação;
 - UC004 — Desativar insumo;
 - UC005 — Registrar preço de insumo;
 - UC006 — Consultar histórico de preços do insumo.
