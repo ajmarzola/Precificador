@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -27,13 +28,15 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
     public async Task Listagem_pesquisa_e_detalhes_respeitam_empresa_ativa()
     {
         var empresaDois = await CriarEmpresaAsync();
-        var id = await CriarInsumoAsync(1, $"Farinha {Guid.NewGuid():N}", "Renata", "W 300", true);
-        await CriarInsumoAsync(1, $"Farinha {Guid.NewGuid():N}", "Caputo", null, true);
+        var nomeFarinha = $"Farinha X {Guid.NewGuid():N}";
+        var id = await CriarInsumoAsync(1, nomeFarinha, "Renata", "W 300", true);
+        await CriarInsumoAsync(1, nomeFarinha, "Caputo", null, true);
         await CriarInsumoAsync(1, $"Copo {Guid.NewGuid():N}", null, null, false);
         var idOutroTenant = await CriarInsumoAsync(empresaDois, $"Segredo {Guid.NewGuid():N}", "Outra", null, true);
         using var client = await CriarClienteAutenticadoAsync(1);
 
         var lista = await client.GetStringAsync("/Insumos");
+        Assert.Equal(2, Regex.Matches(lista, Regex.Escape(nomeFarinha)).Count);
         Assert.Contains("Renata", lista);
         Assert.Contains("Caputo", lista);
         Assert.Contains("Inativo", lista);
@@ -51,8 +54,19 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
         Assert.Contains("Nenhum insumo encontrado para a pesquisa.", semResultado);
 
         var detalhes = await client.GetAsync($"/Insumos/Detalhes/{id}");
-        var conteudo = await detalhes.Content.ReadAsStringAsync();
+        var conteudo = WebUtility.HtmlDecode(await LerComoUtf8Async(detalhes));
         detalhes.EnsureSuccessStatusCode();
+        Assert.Contains("Nome", conteudo);
+        Assert.Contains(nomeFarinha, conteudo);
+        Assert.Contains("Marca", conteudo);
+        Assert.Contains("Renata", conteudo);
+        Assert.Contains("Categoria", conteudo);
+        Assert.Contains("Matéria-prima", conteudo);
+        Assert.Contains("Unidade base", conteudo);
+        Assert.Contains("g", conteudo);
+        Assert.Contains("Situação", conteudo);
+        Assert.Contains("Ativo", conteudo);
+        Assert.Contains("Observação", conteudo);
         Assert.Contains("W 300", conteudo);
         Assert.Contains("Voltar para insumos", conteudo);
         Assert.DoesNotContain("EmpresaId", conteudo);
@@ -71,6 +85,8 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
         Assert.Contains("insumos cadastrados para a empresa ativa", pagina);
         Assert.Contains("Cadastrar insumo", pagina);
     }
+
+    private static async Task<string> LerComoUtf8Async(HttpResponseMessage response) => Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync());
 
     private async Task<int> CriarEmpresaAsync()
     {

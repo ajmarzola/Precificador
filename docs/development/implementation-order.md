@@ -22,8 +22,9 @@ Estado atual:
 
 1. **UC001B — Generalizar categoria e unidades** — implementado;
 2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
-3. **UC002 — Listar e consultar Insumos** — revalidado e pronto para implementação;
-4. depois, seguir UC003 a UC006.
+3. **UC002 — Listar e consultar Insumos** — implementado;
+4. **UC003 — Editar Insumo** — próximo passo a detalhar/revalidar antes da implementação;
+5. depois, seguir UC004 a UC006.
 
 Especificação UC002: [`../use-cases/UC002-listar-consultar-insumos.md`](../use-cases/UC002-listar-consultar-insumos.md).
 
@@ -70,4 +71,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC002 — Listar e consultar Insumos**. Não iniciar UC003 antes do UC002 estar concluído.
+Detalhar e revalidar o **UC003 — Editar Insumo** antes da implementação.

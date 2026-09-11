@@ -49,6 +49,23 @@ public sealed class ConsultaInsumosTests
         Assert.Empty(pagina.Insumos);
         await pagina.OnGetAsync("   ");
         Assert.Equal(3, pagina.Insumos.Count);
+        Assert.Collection(
+            pagina.Insumos,
+            insumo =>
+            {
+                Assert.Equal("Farinha", insumo.Nome);
+                Assert.Equal("Caputo", insumo.Marca);
+            },
+            insumo =>
+            {
+                Assert.Equal("Farinha", insumo.Nome);
+                Assert.Equal("Renata", insumo.Marca);
+            },
+            insumo =>
+            {
+                Assert.Equal("Zíper", insumo.Nome);
+                Assert.Equal("Beta", insumo.Marca);
+            });
 
         await using var semEmpresa = new PrecificadorDbContext(opcoes, new ContextoEmpresa(null));
         var paginaSemEmpresa = new IndexModel(semEmpresa);
