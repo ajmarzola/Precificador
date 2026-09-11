@@ -26,15 +26,15 @@ Estado atual:
 4. **UC003 — Editar Insumo** — implementado;
 5. **UC004 — Desativar e reativar Insumo** — implementado;
 6. **UC005 — Registrar preço de Insumo** — implementado;
-7. **UC006 — Consultar histórico de preços do insumo** é o próximo caso a detalhar/revalidar.
+7. **UC006 — Consultar histórico de preços do insumo** — revalidado e pronto para implementação.
 
-Especificação UC005: [`../use-cases/UC005-registrar-preco-insumo.md`](../use-cases/UC005-registrar-preco-insumo.md).
+Especificação UC006: [`../use-cases/UC006-consultar-historico-precos-insumo.md`](../use-cases/UC006-consultar-historico-precos-insumo.md).
 
-Instrução Codex UC005: [`../codex/UC005-registrar-preco-insumo.md`](../codex/UC005-registrar-preco-insumo.md).
+Instrução Codex UC006: [`../codex/UC006-consultar-historico-precos-insumo.md`](../codex/UC006-consultar-historico-precos-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
-A revalidação anterior ao UC005 foi concluída pela RN040: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis. O UC005 deve implementar essa restrição junto ao histórico de preços.
+A revalidação anterior ao UC005 foi concluída pela RN040, e o UC005 implementou a restrição: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis.
 
 O gate específico de referências de Ficha Técnica permanece para o UC014.
 
@@ -79,4 +79,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Detalhar e revisar o **UC006 — Consultar histórico de preços do insumo**. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Implementar e revisar o **UC006 — Consultar histórico de preços do insumo**. Após seu merge, a etapa de Insumos fica funcionalmente fechada e o **UC007 — Cadastrar produto** passa a ser o próximo caso a detalhar/revalidar. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
