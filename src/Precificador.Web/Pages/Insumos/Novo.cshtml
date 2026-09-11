@@ -1,6 +1,6 @@
 @page
 @model Precificador.Web.Pages.Insumos.NovoModel
-@using Precificador.Core.Insumos
+@using Precificador.Web.Apresentacao
 @{
     ViewData["Title"] = "Cadastrar insumo";
 }
@@ -28,9 +28,10 @@
         <label asp-for="Input.Categoria" class="form-label">Categoria</label>
         <select asp-for="Input.Categoria" class="form-select">
             <option value="">Selecione uma categoria</option>
-            <option value="@CategoriaInsumo.MateriaPrima">Matéria-prima</option>
-            <option value="@CategoriaInsumo.Embalagem">Embalagem</option>
-            <option value="@CategoriaInsumo.Consumivel">Consumível</option>
+            @foreach (var categoria in InsumoRotulos.Categorias)
+            {
+                <option value="@categoria">@InsumoRotulos.Categoria(categoria)</option>
+            }
         </select>
         <span asp-validation-for="Input.Categoria" class="text-danger"></span>
     </div>
@@ -38,10 +39,10 @@
         <label asp-for="Input.UnidadeBase" class="form-label">Unidade base</label>
         <select asp-for="Input.UnidadeBase" class="form-select">
             <option value="">Selecione uma unidade</option>
-            <option value="@UnidadeMedida.Grama">g</option>
-            <option value="@UnidadeMedida.Mililitro">ml</option>
-            <option value="@UnidadeMedida.Metro">m</option>
-            <option value="@UnidadeMedida.Unidade">un</option>
+            @foreach (var unidade in InsumoRotulos.Unidades)
+            {
+                <option value="@unidade">@InsumoRotulos.Unidade(unidade)</option>
+            }
         </select>
         <span asp-validation-for="Input.UnidadeBase" class="text-danger"></span>
     </div>

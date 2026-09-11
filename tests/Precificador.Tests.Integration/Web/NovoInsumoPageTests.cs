@@ -166,7 +166,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     {
         using var client = await CriarClienteAutenticadoAsync();
 
-        var conteudo = await (await client.GetAsync("/Insumos/Novo")).Content.ReadAsStringAsync();
+        var conteudo = WebUtility.HtmlDecode(await (await client.GetAsync("/Insumos/Novo")).Content.ReadAsStringAsync());
 
         Assert.Contains("Matéria-prima", conteudo);
         Assert.Contains(">m</option>", conteudo);

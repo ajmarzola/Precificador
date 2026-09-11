@@ -1,6 +1,6 @@
 @page "{id:int}"
 @model Precificador.Web.Pages.Insumos.DetalhesModel
-@using Precificador.Core.Insumos
+@using Precificador.Web.Apresentacao
 @{
     ViewData["Title"] = "Consultar insumo";
     var insumo = Model.Insumo!;
@@ -9,13 +9,9 @@
 <dl class="row">
     <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@insumo.Nome</dd>
     <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
-    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@Categoria(insumo.Categoria)</dd>
-    <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@Unidade(insumo.UnidadeBase)</dd>
+    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@InsumoRotulos.Categoria(insumo.Categoria)</dd>
+    <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
     <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(insumo.Ativo ? "Ativo" : "Inativo")</dd>
     <dt class="col-sm-3">Observação</dt><dd class="col-sm-9" style="white-space: pre-wrap">@(insumo.Observacao ?? "—")</dd>
 </dl>
 <a asp-page="/Insumos/Index">Voltar para insumos</a>
-@functions {
-    private static string Categoria(CategoriaInsumo categoria) => categoria switch { CategoriaInsumo.MateriaPrima => "Matéria-prima", CategoriaInsumo.Embalagem => "Embalagem", CategoriaInsumo.Consumivel => "Consumível", _ => categoria.ToString() };
-    private static string Unidade(UnidadeMedida unidade) => unidade switch { UnidadeMedida.Grama => "g", UnidadeMedida.Mililitro => "ml", UnidadeMedida.Metro => "m", UnidadeMedida.Unidade => "un", _ => unidade.ToString() };
-}

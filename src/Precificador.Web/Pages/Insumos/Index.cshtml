@@ -1,10 +1,9 @@
 @page
 @model Precificador.Web.Pages.Insumos.IndexModel
-@using Precificador.Core.Insumos
+@using Precificador.Web.Apresentacao
 @{
     ViewData["Title"] = "Insumos";
 }
-
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Insumos</h1>
     <a class="btn btn-primary" asp-page="/Insumos/Novo">Cadastrar insumo</a>
@@ -30,15 +29,10 @@ else
         @foreach (var insumo in Model.Insumos)
         {
             <tr>
-                <td>@insumo.Nome</td><td>@(insumo.Marca ?? "—")</td><td>@Categoria(insumo.Categoria)</td><td>@Unidade(insumo.UnidadeBase)</td><td>@(insumo.Ativo ? "Ativo" : "Inativo")</td>
+                <td>@insumo.Nome</td><td>@(insumo.Marca ?? "—")</td><td>@InsumoRotulos.Categoria(insumo.Categoria)</td><td>@InsumoRotulos.Unidade(insumo.UnidadeBase)</td><td>@(insumo.Ativo ? "Ativo" : "Inativo")</td>
                 <td><a asp-page="/Insumos/Detalhes" asp-route-id="@insumo.Id">Consultar</a></td>
             </tr>
         }
         </tbody>
     </table>
-}
-
-@functions {
-    private static string Categoria(CategoriaInsumo categoria) => categoria switch { CategoriaInsumo.MateriaPrima => "Matéria-prima", CategoriaInsumo.Embalagem => "Embalagem", CategoriaInsumo.Consumivel => "Consumível", _ => categoria.ToString() };
-    private static string Unidade(UnidadeMedida unidade) => unidade switch { UnidadeMedida.Grama => "g", UnidadeMedida.Mililitro => "ml", UnidadeMedida.Metro => "m", UnidadeMedida.Unidade => "un", _ => unidade.ToString() };
 }
