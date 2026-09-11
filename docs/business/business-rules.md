@@ -48,14 +48,26 @@ O histórico é append-only no MVP:
 
 O preço atual é o registro de preço vigente mais recente para o insumo. Registros com data futura não são considerados vigentes antes de sua data de referência.
 
-A ordenação normativa é:
+A seleção normativa considera a data corrente da aplicação:
 
-1. maior DataReferencia que não esteja no futuro;
-2. em empate de DataReferencia, maior Id, representando o registro inserido por último no MVP.
+1. filtrar `DataReferencia <= dataAtual`;
+2. ordenar por `DataReferencia DESC`;
+3. em empate de DataReferencia, ordenar por `Id DESC`;
+4. o primeiro registro é o preço vigente.
+
+O status de apresentação não é persistido. No histórico:
+
+- o registro selecionado é **Vigente**;
+- registros com `DataReferencia > dataAtual` são **Futuros**;
+- demais registros são **Anteriores**.
+
+Um registro futuro pode aparecer antes do vigente no histórico completo e ainda assim não ser o preço atual.
 
 ### RN007 — Insumo sem preço
 
 Insumo sem preço vigente possui custo desconhecido. O sistema não deve tratá-lo como custo zero.
+
+A regra também se aplica quando existem registros de preço apenas com DataReferencia futura: existe histórico, mas ainda não existe preço vigente.
 
 ### RN008 — Desativação e reativação de insumo
 
