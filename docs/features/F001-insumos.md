@@ -78,7 +78,16 @@ O UC003 permite a alteração de:
 
 A edição preserva `EmpresaId` e `Ativo`, reaplica normalização/validação e mantém a unicidade tenant-aware por Empresa + Nome + Marca.
 
-Antes da implementação de preço/histórico e ficha técnica, a liberdade de alterar identidade comercial ou unidade base deverá ser reavaliada para não reinterpretar dados históricos já existentes.
+A revalidação para histórico de preços foi concluída pela RN040:
+
+- antes do primeiro preço, Nome, Marca e Unidade base permanecem editáveis;
+- após qualquer preço registrado, Nome, Marca e Unidade base tornam-se imutáveis;
+- Categoria e Observação continuam editáveis;
+- mudança de identidade ou unidade após o início do histórico exige novo Insumo, preservando o antigo.
+
+A restrição será aplicada ao fluxo de edição junto ao UC005, quando a existência do histórico passar a ser verificável pelo sistema.
+
+A revalidação de estabilidade diante de futuras referências em Ficha Técnica permanece reservada ao UC014.
 
 ### Situação
 
@@ -98,7 +107,7 @@ Cada registro de preço futuro pertence a um Insumo específico; como o Insumo p
 ## Regras relacionadas
 
 - RN001 a RN008;
-- RN028 a RN039, conforme aplicáveis.
+- RN028 a RN040, conforme aplicáveis.
 
 ## Casos de uso
 
