@@ -78,6 +78,10 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
         UnidadeBase = unidadeBase;
     }
 
+    public void Desativar() => Ativo = false;
+
+    public void Reativar() => Ativo = true;
+
     public void DefinirEmpresa(int empresaId)
     {
         if (empresaId <= 0)

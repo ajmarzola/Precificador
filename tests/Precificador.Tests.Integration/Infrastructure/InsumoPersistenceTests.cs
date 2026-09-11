@@ -115,6 +115,48 @@ public sealed class InsumoPersistenceTests
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
+    [Fact]
+    public async Task CA03_CA04_Alteracoes_de_status_persistem_no_sqlite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+        context.Insumos.Add(insumo);
+        await context.SaveChangesAsync();
+
+        insumo.Desativar();
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        Assert.False((await context.Insumos.SingleAsync()).Ativo);
+
+        var reativado = await context.Insumos.SingleAsync();
+        reativado.Reativar();
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        Assert.True((await context.Insumos.SingleAsync()).Ativo);
+    }
+
+    [Fact]
+    public async Task CA10_Insumo_inativo_continua_participando_do_indice_unico()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata");
+        context.Insumos.Add(insumo);
+        await context.SaveChangesAsync();
+        insumo.Desativar();
+        await context.SaveChangesAsync();
+
+        context.Insumos.Add(Insumo.Criar(1, " farinha ", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, " RENATA "));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
         new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new EmpresaContextoTeste());
 

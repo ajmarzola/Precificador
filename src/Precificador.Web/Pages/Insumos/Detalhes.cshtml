@@ -19,4 +19,16 @@
     <dt class="col-sm-3">Observação</dt><dd class="col-sm-9" style="white-space: pre-wrap">@(insumo.Observacao ?? "—")</dd>
 </dl>
 <a asp-page="/Insumos/Editar" asp-route-id="@RouteData.Values["id"]" class="btn btn-primary">Editar</a>
+@if (insumo.Ativo)
+{
+    <form method="post" asp-page-handler="Desativar" class="d-inline">
+        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Deseja desativar este insumo?');">Desativar</button>
+    </form>
+}
+else
+{
+    <form method="post" asp-page-handler="Reativar" class="d-inline">
+        <button type="submit" class="btn btn-outline-success">Reativar</button>
+    </form>
+}
 <a asp-page="/Insumos/Index">Voltar para insumos</a>

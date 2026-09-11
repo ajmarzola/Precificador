@@ -20,5 +20,33 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
         return Insumo is null ? NotFound() : Page();
     }
 
+    public async Task<IActionResult> OnPostDesativarAsync(int id)
+    {
+        var insumo = await context.Insumos.SingleOrDefaultAsync(item => item.Id == id);
+        if (insumo is null)
+        {
+            return NotFound();
+        }
+
+        insumo.Desativar();
+        await context.SaveChangesAsync();
+        TempData["MensagemSucesso"] = "Insumo desativado com sucesso.";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostReativarAsync(int id)
+    {
+        var insumo = await context.Insumos.SingleOrDefaultAsync(item => item.Id == id);
+        if (insumo is null)
+        {
+            return NotFound();
+        }
+
+        insumo.Reativar();
+        await context.SaveChangesAsync();
+        TempData["MensagemSucesso"] = "Insumo reativado com sucesso.";
+        return RedirectToPage(new { id });
+    }
+
     public sealed record InsumoDetalhes(string Nome, string? Marca, CategoriaInsumo Categoria, UnidadeMedida UnidadeBase, bool Ativo, string? Observacao);
 }

@@ -212,4 +212,51 @@ public sealed class InsumoTests
         Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
         Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
     }
+
+    [Fact]
+    public void CA03_Desativar_altera_apenas_status_e_preserva_demais_dados()
+    {
+        var insumo = Insumo.Criar(7, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+
+        insumo.Desativar();
+
+        Assert.False(insumo.Ativo);
+        Assert.Equal(7, insumo.EmpresaId);
+        Assert.Equal("Farinha", insumo.Nome);
+        Assert.Equal("Renata", insumo.Marca);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+        Assert.Equal("Original", insumo.Observacao);
+    }
+
+    [Fact]
+    public void CA04_Reativar_altera_apenas_status_e_preserva_demais_dados()
+    {
+        var insumo = Insumo.Criar(7, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+        insumo.Desativar();
+
+        insumo.Reativar();
+
+        Assert.True(insumo.Ativo);
+        Assert.Equal(7, insumo.EmpresaId);
+        Assert.Equal("Farinha", insumo.Nome);
+        Assert.Equal("Renata", insumo.Marca);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+        Assert.Equal("Original", insumo.Observacao);
+    }
+
+    [Fact]
+    public void CA05_Desativar_e_reativar_sao_idempotentes()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+
+        insumo.Desativar();
+        insumo.Desativar();
+        Assert.False(insumo.Ativo);
+        insumo.Reativar();
+        insumo.Reativar();
+
+        Assert.True(insumo.Ativo);
+    }
 }
