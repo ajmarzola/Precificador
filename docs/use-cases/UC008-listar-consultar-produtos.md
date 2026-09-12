@@ -1,9 +1,9 @@
 # UC008 — Listar e consultar produtos
 
-- **Status:** Revalidado — pronto para implementação após UC007
+- **Status:** Revalidado após UC007 — pronto para implementação
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência material:** UC007 implementado
-- **Sequenciamento:** implementar somente após UC007 ser implementado, revisado e mergeado
+- **Sequenciamento:** UC007 já implementado, revisado e mergeado; gate concluído
 - **Próximo caso relacionado:** UC009 — Editar produto
 - **Sem alteração de schema:** este UC é exclusivamente de consulta/apresentação
 
@@ -105,7 +105,11 @@ Exibir:
 - Ativo;
 - Inativo.
 
-Embora Produtos nasçam ativos no UC007 e a desativação só seja implementada no UC010, o UC008 já deve ler e apresentar corretamente o campo `Ativo` existente.
+Na master pós-UC007, Produto nasce ativo e não possui método de domínio para desativação/reativação; essa mutação pertence ao UC010.
+
+O UC008 deve ler e apresentar corretamente o campo `Ativo` existente, mas **não deve fabricar Produto inativo com SQL direto, reflection, setter artificial ou novo método de domínio apenas para teste**.
+
+Nesta implementação, a cobertura obrigatória de Situação usa Produto ativo. Quando UC010 introduzir uma forma legítima de produzir o estado inativo, a regressão de listagem/detalhes para **Inativo** deve ser adicionada naquele UC.
 
 Quando UC010 existir, inativos continuarão visíveis para preservar legibilidade histórica.
 
@@ -136,6 +140,8 @@ A pesquisa procura correspondência parcial **somente em Nome**.
 Categoria é texto livre opcional e, no UC007, não possui `CategoriaNormalizada`.
 
 O UC008 não deve criar schema adicional nem introduzir normalização técnica de Categoria apenas para pesquisa.
+
+A implementação atual de `Insumos/Index` já usa normalização simples da query no próprio PageModel (`trim`, colapso de whitespace e `ToUpperInvariant`). O UC008 pode seguir o mesmo padrão sem extrair agora uma abstração compartilhada entre áreas. Se a duplicação evoluir para um padrão recorrente em mais telas, registrar/refatorar posteriormente com evidência real.
 
 Se pesquisa/filtro por Categoria se tornar necessária, deverá ser avaliada em melhoria/UC próprio.
 
@@ -491,7 +497,11 @@ CA17_Detalhes_cross_tenant_retorna_404
 CA11_Listagem_e_detalhes_apresentam_situacao
 ~~~
 
-Preparar Produto inativo diretamente pelo domínio/persistência somente se o método de domínio já existir no momento da implementação; se UC010 ainda não existir e não houver forma legítima de criar inativo, cobrir a apresentação de Ativo e preservar o requisito para regressão no UC010, sem adicionar método de desativação antecipadamente.
+Na master pós-UC007 não existe forma legítima de desativar Produto. Portanto:
+
+- cobrir nesta UC a apresentação de **Ativo** em listagem e detalhes;
+- não usar SQL direto, reflection ou setter/método novo apenas para fabricar Inativo;
+- registrar a cobertura de **Inativo** como regressão obrigatória do UC010, quando a mutação existir legitimamente.
 
 #### W14
 
@@ -546,6 +556,6 @@ Além da DoD global:
 - UC008 passa para Implementado;
 - F002/catálogo/ordem ficam coerentes;
 - UC009 passa a próximo caso de Produtos;
-- implementação só inicia após UC007 implementado/revisado/mergeado;
+- gate pós-UC007 concluído: especificação revalidada contra a implementação real;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.
