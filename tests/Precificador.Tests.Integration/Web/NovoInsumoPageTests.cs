@@ -110,6 +110,34 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     }
 
     [Fact]
+    public async Task MEL005_Novo_com_categoria_invalida_exibe_erro_e_nao_persiste()
+    {
+        using var client = await CriarClienteAutenticadoAsync();
+        var quantidadeAntes = await ContarInsumosAsync();
+
+        var response = await EnviarFormularioAsync(client, $"Categoria invalida {Guid.NewGuid():N}", "0", "Grama");
+        var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("A categoria é obrigatória.", conteudo);
+        Assert.Equal(quantidadeAntes, await ContarInsumosAsync());
+    }
+
+    [Fact]
+    public async Task MEL005_Novo_com_unidade_invalida_exibe_erro_e_nao_persiste()
+    {
+        using var client = await CriarClienteAutenticadoAsync();
+        var quantidadeAntes = await ContarInsumosAsync();
+
+        var response = await EnviarFormularioAsync(client, $"Unidade invalida {Guid.NewGuid():N}", "MateriaPrima", "0");
+        var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("A unidade base é obrigatória.", conteudo);
+        Assert.Equal(quantidadeAntes, await ContarInsumosAsync());
+    }
+
+    [Fact]
     public async Task Post_com_nome_duplicado_nao_persiste_e_exibe_mensagem_funcional()
     {
         var nome = $"Açúcar {Guid.NewGuid():N}";

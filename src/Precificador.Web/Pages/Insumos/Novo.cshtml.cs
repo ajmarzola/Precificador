@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,10 +11,8 @@ namespace Precificador.Web.Pages.Insumos;
 [Authorize]
 public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext empresaContext, ILogger<NovoModel> logger) : PageModel
 {
-    private const string MensagemDuplicidade = "Já existe um insumo cadastrado com esse nome e marca.";
-
     [BindProperty]
-    public InputModel Input { get; set; } = new();
+    public InsumoInputModel Input { get; set; } = new();
 
     public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
 
@@ -25,7 +22,7 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 
     public async Task<IActionResult> OnPostAsync()
     {
-        ValidarCamposObrigatorios();
+        InsumoFormulario.ValidarCamposObrigatorios(ModelState, Input);
         if (!ModelState.IsValid)
         {
             return Page();
@@ -38,13 +35,13 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
         }
         catch (ArgumentException exception)
         {
-            ModelState.AddModelError(CampoPara(exception.ParamName), exception.Message);
+            InsumoFormulario.AdicionarErroDominio(ModelState, exception);
             return Page();
         }
 
         if (await context.Insumos.AnyAsync(item => item.NomeNormalizado == insumo.NomeNormalizado && item.MarcaNormalizada == insumo.MarcaNormalizada))
         {
-            ModelState.AddModelError("Input.Nome", MensagemDuplicidade);
+            ModelState.AddModelError("Input.Nome", InsumoFormulario.MensagemDuplicidade);
             return Page();
         }
 
@@ -61,42 +58,5 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 
         TempData["MensagemSucesso"] = "Insumo cadastrado com sucesso.";
         return RedirectToPage();
-    }
-
-    private void ValidarCamposObrigatorios()
-    {
-        if (!Input.Categoria.HasValue || !Enum.IsDefined(Input.Categoria.Value))
-        {
-            ModelState.AddModelError("Input.Categoria", "A categoria é obrigatória.");
-        }
-
-        if (!Input.UnidadeBase.HasValue || !Enum.IsDefined(Input.UnidadeBase.Value))
-        {
-            ModelState.AddModelError("Input.UnidadeBase", "A unidade base é obrigatória.");
-        }
-    }
-
-    private static string CampoPara(string? nomeParametro) => nomeParametro switch
-    {
-        "marca" => "Input.Marca",
-        "observacao" => "Input.Observacao",
-        _ => "Input.Nome"
-    };
-
-    public sealed class InputModel
-    {
-        [Display(Name = "Nome")]
-        public string? Nome { get; set; }
-
-        [Display(Name = "Marca")]
-        public string? Marca { get; set; }
-
-        public CategoriaInsumo? Categoria { get; set; }
-
-        [Display(Name = "Unidade base")]
-        public UnidadeMedida? UnidadeBase { get; set; }
-
-        [Display(Name = "Observação")]
-        public string? Observacao { get; set; }
     }
 }
