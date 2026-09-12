@@ -48,9 +48,9 @@ O histórico é append-only no MVP:
 
 O preço atual é o registro de preço vigente mais recente para o insumo. Registros com data futura não são considerados vigentes antes de sua data de referência.
 
-A seleção normativa considera a data corrente da aplicação:
+A seleção normativa considera a data operacional da Empresa:
 
-1. filtrar `DataReferencia <= dataAtual`;
+1. filtrar `DataReferencia <= dataOperacionalEmpresa`;
 2. ordenar por `DataReferencia DESC`;
 3. em empate de DataReferencia, ordenar por `Id DESC`;
 4. o primeiro registro é o preço vigente.
@@ -58,7 +58,7 @@ A seleção normativa considera a data corrente da aplicação:
 O status de apresentação não é persistido. No histórico:
 
 - o registro selecionado é **Vigente**;
-- registros com `DataReferencia > dataAtual` são **Futuros**;
+- registros com `DataReferencia > dataOperacionalEmpresa` são **Futuros**;
 - demais registros são **Anteriores**.
 
 Um registro futuro pode aparecer antes do vigente no histórico completo e ainda assim não ser o preço atual.

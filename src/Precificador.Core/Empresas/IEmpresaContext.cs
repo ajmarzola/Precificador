@@ -4,4 +4,5 @@ public interface IEmpresaContext
 {
     int? EmpresaId { get; }
     int EmpresaIdOuSentinela { get; }
+    string? TimeZoneId { get; }
 }

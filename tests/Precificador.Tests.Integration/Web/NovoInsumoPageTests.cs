@@ -287,5 +287,6 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
     {
         public int? EmpresaId => empresaId;
         public int EmpresaIdOuSentinela => empresaId;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

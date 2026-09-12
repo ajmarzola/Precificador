@@ -14,5 +14,6 @@ public sealed class DesignTimePrecificadorDbContextFactory : IDesignTimeDbContex
     {
         public int? EmpresaId => null;
         public int EmpresaIdOuSentinela => -1;
+        public string? TimeZoneId => null;
     }
 }

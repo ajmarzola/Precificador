@@ -6,25 +6,28 @@ namespace Precificador.Tests.Integration.Web;
 public sealed class EmpresaContextTests
 {
     [Fact]
-    public void CA01_Limpar_remove_id_nome_e_chaves_da_empresa_ativa()
+    public void CA04_CA05_Definir_e_limpar_atualizam_id_nome_timezone_e_chaves_da_empresa_ativa()
     {
         var session = new SessaoEmMemoria();
         var httpContext = new DefaultHttpContext { Session = session };
         var httpContextAccessor = new HttpContextAccessor { HttpContext = httpContext };
         var empresaContext = new EmpresaContext(httpContextAccessor);
 
-        empresaContext.Definir(1, "Empresa teste");
+        empresaContext.Definir(1, "Empresa teste", "UTC");
 
         Assert.Equal(1, empresaContext.EmpresaId);
         Assert.Equal("Empresa teste", empresaContext.Nome);
+        Assert.Equal("UTC", empresaContext.TimeZoneId);
 
         empresaContext.Limpar();
 
         Assert.Null(empresaContext.EmpresaId);
         Assert.Equal(-1, empresaContext.EmpresaIdOuSentinela);
         Assert.Null(empresaContext.Nome);
+        Assert.Null(empresaContext.TimeZoneId);
         Assert.False(session.TryGetValue(EmpresaContext.ChaveSession, out _));
         Assert.False(session.TryGetValue(EmpresaContext.ChaveNomeSession, out _));
+        Assert.False(session.TryGetValue(EmpresaContext.ChaveTimeZoneSession, out _));
     }
 
     private sealed class SessaoEmMemoria : ISession

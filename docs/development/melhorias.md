@@ -64,7 +64,7 @@ Status possíveis:
 
 ### MEL006 — Tornar a data operacional dependente do timezone da Empresa
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** especificação do UC006
 - **Objetivo:** eliminar a dependência do timezone do processo/servidor, persistindo `TimeZoneId` por Empresa e fornecendo uma data operacional derivada de `TimeProvider` + timezone da Empresa Ativa.
 - **Especificação:** [MEL006 — Timezone e data operacional da Empresa](improvements/MEL006-timezone-empresa.md)

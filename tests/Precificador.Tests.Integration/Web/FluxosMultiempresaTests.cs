@@ -1,12 +1,19 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Empresas;
+using Precificador.Web.Pages.Conta;
+using Precificador.Web.Pages.Empresas;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -22,6 +29,40 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         Assert.Equal("/", resposta.Headers.Location!.ToString());
         var pagina = await client.GetStringAsync("/");
         Assert.Contains("Empresa ativa: Empresa inicial", pagina);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Insumos/Novo")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CA06_Login_com_empresa_unica_define_timezone_da_empresa()
+    {
+        var empresaUtc = await CriarEmpresaAsync("Empresa login UTC", "UTC");
+        var usuario = await CriarUsuarioAsync(empresaUtc);
+        using var scope = factory.Services.CreateScope();
+        var signInManager = scope.ServiceProvider.GetRequiredService<SignInManager<UsuarioAplicacao>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+        var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var session = new SessaoEmMemoria();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = scope.ServiceProvider,
+            Session = session
+        };
+        signInManager.Context = httpContext;
+        var empresaContext = new EmpresaContext(new HttpContextAccessor { HttpContext = httpContext });
+        var pagina = new LoginModel(signInManager, userManager, db, empresaContext)
+        {
+            Input = new LoginModel.InputModel { Email = usuario.Email, Senha = usuario.Senha },
+            PageContext = new PageContext { HttpContext = httpContext }
+        };
+
+        var resultado = await pagina.OnPostAsync();
+
+        var redirect = Assert.IsType<LocalRedirectResult>(resultado);
+        Assert.Equal("/", redirect.Url);
+        Assert.Equal(empresaUtc, empresaContext.EmpresaId);
+        Assert.Equal("Empresa login UTC", empresaContext.Nome);
+        Assert.Equal("UTC", empresaContext.TimeZoneId);
+        Assert.True(session.TryGetValue(EmpresaContext.ChaveTimeZoneSession, out _));
     }
 
     [Fact]
@@ -57,6 +98,37 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
     }
 
     [Fact]
+    public async Task CA07_Selecao_de_empresa_atualiza_timezone_ativo()
+    {
+        var empresaUtc = await CriarEmpresaAsync("Empresa UTC", "UTC");
+        var usuario = await CriarUsuarioAsync(1, empresaUtc);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var session = new SessaoEmMemoria();
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session,
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, usuario.Id)],
+                "Teste"))
+        };
+        var empresaContext = new EmpresaContext(new HttpContextAccessor { HttpContext = httpContext });
+        var pagina = new SelecionarModel(db, empresaContext)
+        {
+            EmpresaId = empresaUtc,
+            PageContext = new PageContext { HttpContext = httpContext }
+        };
+
+        var resultado = await pagina.OnPostAsync();
+
+        Assert.IsType<RedirectToPageResult>(resultado);
+        Assert.Equal(empresaUtc, empresaContext.EmpresaId);
+        Assert.Equal("Empresa UTC", empresaContext.Nome);
+        Assert.Equal("UTC", empresaContext.TimeZoneId);
+        Assert.True(session.TryGetValue(EmpresaContext.ChaveTimeZoneSession, out _));
+    }
+
+    [Fact]
     public async Task Logout_limpa_sessao_e_impede_acesso_operacional()
     {
         var usuario = await CriarUsuarioAsync(1);
@@ -70,7 +142,7 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         Assert.Contains("/Conta/Login", protegido.Headers.Location!.ToString());
     }
 
-    private async Task<(string Email, string Senha)> CriarUsuarioAsync(params int[] empresas)
+    private async Task<(string Id, string Email, string Senha)> CriarUsuarioAsync(params int[] empresas)
     {
         var email = $"usuario-{Guid.NewGuid():N}@teste.local";
         const string senha = "SenhaTeste1";
@@ -81,14 +153,16 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
         foreach (var empresa in empresas) db.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresa, Ativo = true });
         await db.SaveChangesAsync();
-        return (email, senha);
+        return (usuario.Id, email, senha);
     }
 
-    private async Task<int> CriarEmpresaAsync(string nome)
+    private Task<int> CriarEmpresaAsync(string nome) => CriarEmpresaAsync(nome, Empresa.TimeZoneIdPadrao);
+
+    private async Task<int> CriarEmpresaAsync(string nome, string timeZoneId)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar(nome);
+        var empresa = Empresa.Criar(nome, timeZoneId);
         db.Empresas.Add(empresa);
         await db.SaveChangesAsync();
         return empresa.Id;
@@ -102,4 +176,20 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
 
     private static FormUrlEncodedContent Form(string token, int empresaId) => new(new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["EmpresaId"] = empresaId.ToString() });
     private static string Token(string pagina) => WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
+
+    private sealed class SessaoEmMemoria : ISession
+    {
+        private readonly Dictionary<string, byte[]> valores = [];
+
+        public bool IsAvailable => true;
+        public string Id => "sessao-em-memoria";
+        public IEnumerable<string> Keys => valores.Keys;
+
+        public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public void Clear() => valores.Clear();
+        public void Remove(string key) => valores.Remove(key);
+        public void Set(string key, byte[] value) => valores[key] = value;
+        public bool TryGetValue(string key, out byte[] value) => valores.TryGetValue(key, out value!);
+    }
 }

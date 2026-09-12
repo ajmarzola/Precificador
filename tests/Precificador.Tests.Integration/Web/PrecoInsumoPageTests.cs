@@ -366,5 +366,6 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
     {
         public int? EmpresaId => empresaId;
         public int EmpresaIdOuSentinela => empresaId;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

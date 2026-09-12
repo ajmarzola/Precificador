@@ -17,6 +17,8 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<EmpresaContext>();
 builder.Services.AddScoped<IEmpresaContext>(provider => provider.GetRequiredService<EmpresaContext>());
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IDataOperacionalEmpresa, DataOperacionalEmpresa>();
 builder.Services.AddDbContext<PrecificadorDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Precificador")));
 builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
