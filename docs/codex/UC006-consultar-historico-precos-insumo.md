@@ -28,6 +28,20 @@ feat/uc006-historico-precos-insumo
 
 Parta da master atualizada após o merge desta especificação.
 
+
+### Precondição obrigatória de Git
+
+Antes de alterar qualquer arquivo:
+
+1. confirme que a `master` é o ponto de partida esperado para esta tarefa;
+2. crie/troque para `feat/uc006-historico-precos-insumo`;
+3. confirme que a branch atual é `feat/uc006-historico-precos-insumo` e **não é `master`**;
+4. somente então inicie qualquer edição.
+
+Se não for possível trabalhar nessa branch, **não altere arquivos** e reporte o impedimento.
+
+É proibido editar, commitar ou fazer push direto em `master`. A entrega termina em branch/PR; não faça merge da própria implementação.
+
 ## Escopo
 
 Entregar:

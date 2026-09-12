@@ -33,6 +33,20 @@ feat/uc007-cadastrar-produto
 
 Parta da master atualizada após o UC006.
 
+
+### Precondição obrigatória de Git
+
+Antes de alterar qualquer arquivo:
+
+1. confirme que a `master` é o ponto de partida esperado para esta tarefa;
+2. crie/troque para `feat/uc007-cadastrar-produto`;
+3. confirme que a branch atual é `feat/uc007-cadastrar-produto` e **não é `master`**;
+4. somente então inicie qualquer edição.
+
+Se não for possível trabalhar nessa branch, **não altere arquivos** e reporte o impedimento.
+
+É proibido editar, commitar ou fazer push direto em `master`. A entrega termina em branch/PR; não faça merge da própria implementação.
+
 ## Modelo
 
 Criar:
