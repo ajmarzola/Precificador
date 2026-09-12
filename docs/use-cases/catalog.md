@@ -22,7 +22,7 @@ FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolame
 | [UC003](UC003-editar-insumo.md) | Editar insumo | UC002, UC001A, FT002 — **implementado** |
 | [UC004](UC004-desativar-reativar-insumo.md) | Desativar e reativar insumo | UC003, FT002 — **implementado** |
 | [UC005](UC005-registrar-preco-insumo.md) | Registrar preço de insumo | UC004, FT002, RN040 — **implementado** |
-| [UC006](UC006-consultar-historico-precos-insumo.md) | Consultar histórico de preços do insumo | UC005, MEL006 — **revalidado pós-MEL006 e pronto para implementação** |
+| [UC006](UC006-consultar-historico-precos-insumo.md) | Consultar histórico de preços do insumo | UC005, MEL006 — **implementado** |
 
 Classificação e unidades implementadas:
 
@@ -31,7 +31,7 @@ Classificação e unidades implementadas:
 
 A identidade atual de Insumo é tenant-aware por `(EmpresaId, NomeNormalizado, MarcaNormalizada)` e independe de Ativo/Inativo.
 
-UC005 foi implementado com histórico append-only de preços, custo unitário calculado sem persistência e aplicação da RN040 no fluxo de edição. MEL006 adicionou a data operacional da Empresa via `IDataOperacionalEmpresa`. UC006 está especificado para consulta somente leitura do histórico e seleção do preço vigente pela RN006 usando essa data operacional.
+UC005 foi implementado com histórico append-only de preços, custo unitário calculado sem persistência e aplicação da RN040 no fluxo de edição. MEL006 adicionou a data operacional da Empresa via `IDataOperacionalEmpresa`. UC006 implementou a consulta somente leitura do histórico, a seleção do preço vigente pela RN006 usando essa data operacional e o resumo de preço vigente em Detalhes.
 
 **Gate de preço concluído:** a RN040 mantém Nome, Marca e Unidade base imutáveis após o primeiro registro de preço, inclusive futuro.
 
