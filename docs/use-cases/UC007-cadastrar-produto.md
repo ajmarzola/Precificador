@@ -1,6 +1,6 @@
 # UC007 — Cadastrar produto
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências materiais:** FT002
 - **Sequenciamento:** implementar somente após concluir/mergear o UC006, preservando a fila serial

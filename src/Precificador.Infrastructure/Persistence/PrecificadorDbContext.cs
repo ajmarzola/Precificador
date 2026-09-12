@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
+using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Autenticacao;
 
 namespace Precificador.Infrastructure.Persistence;
@@ -16,6 +17,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
+    public DbSet<Produto> Produtos => Set<Produto>();
     public DbSet<UsuarioEmpresa> UsuariosEmpresas => Set<UsuarioEmpresa>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +28,8 @@ public sealed class PrecificadorDbContext(
             insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<PrecoInsumo>().HasQueryFilter(preco =>
             preco.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<Produto>().HasQueryFilter(produto =>
+            produto.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)

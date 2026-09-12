@@ -46,8 +46,8 @@ UC007 a UC012. Todo Produto será tenant-owned.
 
 Estado documental:
 
-1. **UC007 — Cadastrar Produto** — revalidado e pronto para implementação, próximo caso após merge do UC006;
-2. **UC008 — Listar e consultar Produtos** — revalidado e pronto documentalmente; implementar somente após UC007;
+1. **UC007 — Cadastrar Produto** — implementado;
+2. **UC008 — Listar e consultar Produtos** — próximo caso de Produtos, revalidado e pronto documentalmente;
 3. UC009 — Editar Produto;
 4. UC010 — Desativar Produto;
 5. UC011 — Alterar preço de venda preservando histórico;
@@ -61,7 +61,7 @@ Especificação UC008: [`../use-cases/UC008-listar-consultar-produtos.md`](../us
 
 Instrução Codex UC008: [`../codex/UC008-listar-consultar-produtos.md`](../codex/UC008-listar-consultar-produtos.md).
 
-O UC007 não depende materialmente do UC006, mas sua implementação respeita a fila serial do projeto: primeiro concluir Insumos, depois iniciar Produtos. O UC008 permanece bloqueado para implementação até o UC007 estar implementado/revisado/mergeado.
+O UC007 respeitou a fila serial do projeto e foi implementado após o merge do UC006. O UC008 permanece bloqueado para implementação até o UC007 estar revisado e mergeado.
 
 ## Etapa 3 — Ficha técnica
 
@@ -100,4 +100,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Revisar e mergear o **UC006 — Consultar histórico de preços do insumo**. Após seu merge, a etapa de Insumos fica funcionalmente fechada e o **UC007 — Cadastrar produto** passa a ser o próximo caso de implementação. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Revisar e mergear o **UC007 — Cadastrar Produto**. Após seu merge, o **UC008 — Listar e consultar Produtos** passa a ser o próximo caso de implementação. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
