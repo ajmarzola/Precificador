@@ -108,7 +108,7 @@ Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da con
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
-- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — próximo caso de Produtos, revalidado e pronto para implementação após UC007;
+- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — próximo caso de Produtos, revalidado contra a implementação real do UC007 e pronto para implementação;
 - UC009 — Editar produto;
 - UC010 — Desativar produto;
 - UC011 — Alterar preço de venda preservando histórico;
