@@ -4,13 +4,14 @@ Implemente o **UC008 — Listar e consultar produtos**.
 
 ## Pré-condição de fila
 
-Não iniciar enquanto o UC007 não estiver implementado, revisado e mergeado na master.
+O gate do UC007 foi concluído e esta instrução foi revalidada contra a implementação real pós-UC007.
 
-Antes de codificar, confirme que:
+Antes de codificar, confirme na master atual que:
 
 - Produto existe no Core;
-- migration de Produtos está na master;
-- UC007 está marcado como Implementado.
+- migration `AddProdutos` está aplicada/versionada;
+- UC007 está marcado como Implementado;
+- Produto continua sem método de desativação/reativação (UC010 ainda não implementado).
 
 ## Leitura obrigatória
 
@@ -101,6 +102,8 @@ Normalizar consulta:
 
 Comparar com `NomeNormalizado.Contains(...)`.
 
+A implementação atual de `Insumos/Index` pode ser usada como referência semântica para normalização simples da query. Não extraia helper/serviço compartilhado entre Insumos e Produtos apenas por esta segunda ocorrência; mantenha a solução local e pequena.
+
 Não criar `CategoriaNormalizada`.
 
 Não pesquisar Categoria.
@@ -150,9 +153,11 @@ Não adicionar Editar.
 
 Não implemente Desativar/Reativar.
 
-Se UC010 ainda não existe, não crie método de domínio para fabricar cenário inativo só para teste.
+Na master pós-UC007 não existe método legítimo para tornar Produto inativo. Portanto:
 
-Apresente corretamente o campo Ativo atual e deixe cobertura de inativos para regressão do UC010 se não houver forma legítima de preparar o estado.
+- teste nesta UC a apresentação de **Ativo**;
+- não use SQL direto, reflection, setter artificial nem adicione método de domínio só para fabricar **Inativo**;
+- deixe a regressão de apresentação de **Inativo** para o UC010, quando a mutação for introduzida legitimamente.
 
 ## Testes
 
