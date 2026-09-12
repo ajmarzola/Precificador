@@ -54,7 +54,7 @@ Status possíveis:
 
 ### MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Origem:** revisão do UC003; reavaliada após UC005
 - **Objetivo:** remover a duplicação confirmada entre `NovoModel` e `EditarModel` centralizando o modelo de entrada, validação Web de Categoria/Unidade, mapeamento de erros de domínio e mensagem de duplicidade, sem alterar regras de negócio ou comportamento funcional.
 - **Especificação:** [MEL005 — Centralizar entrada e validação de Insumo](improvements/MEL005-centralizar-formulario-insumo.md)

@@ -1,6 +1,6 @@
 # MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / refatoração Web
 - **Origem:** revisão do UC003
 - **Dependências:** UC003 e UC005 implementados
