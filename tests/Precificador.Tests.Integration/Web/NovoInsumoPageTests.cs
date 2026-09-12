@@ -115,7 +115,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using var client = await CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarInsumosAsync();
 
-        var response = await EnviarFormularioAsync(client, $"Categoria invalida {Guid.NewGuid():N}", "0", "Grama");
+        var response = await EnviarFormularioAsync(client, $"Categoria invalida {Guid.NewGuid():N}", string.Empty, "Grama");
         var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -129,7 +129,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         using var client = await CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarInsumosAsync();
 
-        var response = await EnviarFormularioAsync(client, $"Unidade invalida {Guid.NewGuid():N}", "MateriaPrima", "0");
+        var response = await EnviarFormularioAsync(client, $"Unidade invalida {Guid.NewGuid():N}", "MateriaPrima", string.Empty);
         var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
