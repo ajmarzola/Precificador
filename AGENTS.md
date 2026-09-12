@@ -2,6 +2,36 @@
 
 Este arquivo define regras permanentes para qualquer agente que altere o repositório Precificador.
 
+## 0. Proteção obrigatória do fluxo Git
+
+A branch `master` é protegida conceitualmente e **nunca deve receber edição, commit ou push direto de um agente**.
+
+Antes de alterar qualquer arquivo, o agente deve obrigatoriamente:
+
+1. identificar a branch atual;
+2. confirmar que a branch atual **não é `master`**;
+3. confirmar que está na branch definida pela instrução versionada da tarefa;
+4. se estiver em `master`, criar/trocar para a branch da tarefa **antes da primeira edição**;
+5. confirmar que a branch da tarefa parte da `master` esperada para aquela implementação.
+
+Se não for possível criar/trocar para a branch correta, **não implementar a tarefa**. Reportar o impedimento sem modificar arquivos.
+
+Regras permanentes:
+
+- não editar arquivos enquanto estiver em `master`;
+- não criar commit em `master`;
+- não fazer push direto para `master`;
+- não fazer merge da própria implementação em `master`;
+- toda alteração de código, teste, migration ou documentação deve chegar à `master` por Pull Request;
+- a branch indicada na instrução Codex prevalece sobre nomes improvisados;
+- uma tarefa por branch/PR, salvo quando a especificação disser explicitamente o contrário;
+- não reutilizar branch de tarefa já concluída para uma nova implementação;
+- antes de concluir, confirmar novamente a branch atual e revisar o diff contra `master`.
+
+A instrução individual da tarefa deve repetir a branch esperada, mas esta regra global continua válida mesmo que uma instrução individual seja omissa.
+
+Fluxo normativo detalhado: `docs/development/workflow-codex.md`.
+
 ## 1. Fonte de verdade
 
 Antes de implementar qualquer caso de uso, leia os documentos aplicáveis em `docs/`, especialmente:
@@ -79,12 +109,15 @@ Ao concluir um caso de uso:
 
 Antes de considerar uma alteração concluída:
 
+- confirme que a branch atual é a branch da tarefa e não `master`;
 - restaure dependências;
 - compile a solution;
 - execute todos os testes;
 - confirme que não foram introduzidos warnings novos relevantes;
 - verifique migrations quando houver alteração de banco;
-- revise o diff e remova mudanças fora do escopo.
+- revise o diff contra `master` e remova mudanças fora do escopo;
+- deixe a entrega pronta para Pull Request;
+- não faça merge em `master`.
 
 Consulte a Definition of Done completa em `docs/development/definition-of-done.md`.
 
