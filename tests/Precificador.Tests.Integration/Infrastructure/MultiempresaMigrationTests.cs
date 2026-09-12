@@ -9,6 +9,7 @@ namespace Precificador.Tests.Integration.Infrastructure;
 public sealed class MultiempresaMigrationTests
 {
     private const string MigrationAddPrecosInsumos = "20260911133743_AddPrecosInsumos";
+    private const string TimeZoneIdPadraoHistorico = "America/Sao_Paulo";
 
     [Fact]
     public async Task Upgrade_do_banco_uc001_preserva_insumo_e_o_associa_a_empresa_tecnica()
@@ -45,7 +46,7 @@ public sealed class MultiempresaMigrationTests
         var timezones = await contexto.Database
             .SqlQueryRaw<string>("SELECT TimeZoneId AS Value FROM Empresas ORDER BY Id")
             .ToListAsync();
-        Assert.All(timezones, timeZoneId => Assert.Equal(Empresa.TimeZoneIdPadrao, timeZoneId));
+        Assert.All(timezones, timeZoneId => Assert.Equal(TimeZoneIdPadraoHistorico, timeZoneId));
     }
 
     [Fact]

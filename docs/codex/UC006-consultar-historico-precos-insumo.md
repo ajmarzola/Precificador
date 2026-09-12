@@ -16,7 +16,7 @@ Leia integralmente antes de alterar código:
 8. `docs/development/testing-strategy.md`;
 9. `docs/development/definition-of-done.md`;
 10. `docs/development/melhorias.md`;
-11. código atual de PrecoInsumo, Detalhes, Novo Preço, DbContext e testes pós-PR #30.
+11. código atual de `PrecoInsumo`, `IDataOperacionalEmpresa`, Detalhes, Novo Preço, DbContext e testes pós-MEL006.
 
 ## Branch
 
@@ -58,25 +58,29 @@ Entregar:
 
 Não implementar UC007+ ou UC018.
 
-## Data atual
+## Data operacional da Empresa
 
-Calcule uma única `dataAtual` por request usando a data local da aplicação.
+Injete `IDataOperacionalEmpresa` no fluxo que consulta o histórico e o resumo do preço vigente.
+
+Obtenha uma única `dataOperacionalEmpresa` por request usando `IDataOperacionalEmpresa.Hoje`.
 
 Reutilize o mesmo valor para:
 
 - seleção do vigente;
 - classificação Futuro/Anterior.
 
-Não criar configuração de timezone neste UC.
+Não usar `DateTime.Now`, `DateTime.Today`, `DateTimeOffset.Now` ou `DateTimeOffset.UtcNow` para decidir vigência.
 
-Testes dependentes de calendário devem usar datas relativas ao dia da execução.
+Não criar CRUD/configuração de timezone neste UC.
+
+Testes dependentes de calendário devem controlar `IDataOperacionalEmpresa` para usar datas determinísticas, independentes do timezone da máquina de CI.
 
 ## RN006
 
 Preço vigente:
 
 ~~~text
-DataReferencia <= dataAtual
+DataReferencia <= dataOperacionalEmpresa
 OrderByDescending(DataReferencia)
 ThenByDescending(Id)
 FirstOrDefault
@@ -94,7 +98,7 @@ ThenByDescending(Id)
 Status:
 
 - Id == vigente.Id => Vigente;
-- DataReferencia > dataAtual => Futuro;
+- DataReferencia > dataOperacionalEmpresa => Futuro;
 - demais => Anterior.
 
 Um preço futuro pode aparecer antes do vigente na tabela. Não promova o futuro.
@@ -239,7 +243,7 @@ Não:
 - criar paginação;
 - criar filtros;
 - criar gráfico/exportação;
-- criar timezone por Empresa;
+- criar CRUD/configuração de timezone por Empresa;
 - implementar Produto/Ficha Técnica;
 - implementar UC018;
 - reimplementar MEL005.
@@ -253,7 +257,7 @@ Não:
 - atualizar pricing-model se necessário para refletir código real;
 - UC007 passa a próximo caso;
 - gate UC014 permanece;
-- manter MEL de timezone como pendente.
+- manter MEL006 como concluída.
 
 ## Validação
 

@@ -12,6 +12,7 @@ using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Empresas;
+using Precificador.Web.Pages.Conta;
 using Precificador.Web.Pages.Empresas;
 
 namespace Precificador.Tests.Integration.Web;
@@ -29,6 +30,39 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         var pagina = await client.GetStringAsync("/");
         Assert.Contains("Empresa ativa: Empresa inicial", pagina);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Insumos/Novo")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CA06_Login_com_empresa_unica_define_timezone_da_empresa()
+    {
+        var empresaUtc = await CriarEmpresaAsync("Empresa login UTC", "UTC");
+        var usuario = await CriarUsuarioAsync(empresaUtc);
+        using var scope = factory.Services.CreateScope();
+        var signInManager = scope.ServiceProvider.GetRequiredService<SignInManager<UsuarioAplicacao>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+        var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var session = new SessaoEmMemoria();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = scope.ServiceProvider,
+            Session = session
+        };
+        signInManager.Context = httpContext;
+        var empresaContext = new EmpresaContext(new HttpContextAccessor { HttpContext = httpContext });
+        var pagina = new LoginModel(signInManager, userManager, db, empresaContext)
+        {
+            Input = new LoginModel.InputModel { Email = usuario.Email, Senha = usuario.Senha },
+            PageContext = new PageContext { HttpContext = httpContext }
+        };
+
+        var resultado = await pagina.OnPostAsync();
+
+        var redirect = Assert.IsType<LocalRedirectResult>(resultado);
+        Assert.Equal("/", redirect.Url);
+        Assert.Equal(empresaUtc, empresaContext.EmpresaId);
+        Assert.Equal("Empresa login UTC", empresaContext.Nome);
+        Assert.Equal("UTC", empresaContext.TimeZoneId);
+        Assert.True(session.TryGetValue(EmpresaContext.ChaveTimeZoneSession, out _));
     }
 
     [Fact]

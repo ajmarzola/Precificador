@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-using Precificador.Core.Empresas;
-
 #nullable disable
 
 namespace Precificador.Infrastructure.Migrations
@@ -9,6 +7,8 @@ namespace Precificador.Infrastructure.Migrations
     /// <inheritdoc />
     public partial class AddEmpresaTimeZone : Migration
     {
+        private const string TimeZoneIdPadraoHistorico = "America/Sao_Paulo";
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,14 +18,14 @@ namespace Precificador.Infrastructure.Migrations
                 type: "TEXT",
                 maxLength: 100,
                 nullable: false,
-                defaultValue: Empresa.TimeZoneIdPadrao);
+                defaultValue: TimeZoneIdPadraoHistorico);
 
             migrationBuilder.UpdateData(
                 table: "Empresas",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "TimeZoneId",
-                value: Empresa.TimeZoneIdPadrao);
+                value: TimeZoneIdPadraoHistorico);
         }
 
         /// <inheritdoc />
