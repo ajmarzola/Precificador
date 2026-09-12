@@ -1,8 +1,8 @@
 # UC006 — Consultar histórico de preços do insumo
 
-- **Status:** Revalidado — pronto para implementação
+- **Status:** Revalidado após MEL006 — pronto para implementação
 - **Funcionalidade:** F001 — Gestão de Insumos
-- **Dependências:** UC005, FT002, RN004, RN005, RN006, RN007 e RN040
+- **Dependências:** UC005, MEL006, FT002, RN004, RN005, RN006, RN007 e RN040
 - **Próximo caso:** UC007 — Cadastrar produto
 - **Sem alteração de schema:** este UC é exclusivamente de consulta/apresentação
 
@@ -29,7 +29,9 @@ Definir uma única data operacional da Empresa por request e reutilizá-la para 
 
 O PageModel deve injetar `IDataOperacionalEmpresa` e usar `IDataOperacionalEmpresa.Hoje` como referência de calendário da Empresa Ativa.
 
-Nos testes, controlar `IDataOperacionalEmpresa` para tornar os cenários de passado/presente/futuro determinísticos e independentes do timezone da máquina de CI.
+Cada GET do Histórico e de Detalhes deve capturar `Hoje` **uma única vez** em variável local e passar esse `DateOnly` para a lógica de seleção/classificação. Não acessar `Hoje` repetidamente dentro de consultas ou durante a renderização, evitando inconsistência se o request atravessar a meia-noite da Empresa.
+
+Nos testes, controlar `IDataOperacionalEmpresa` com valor fixo para tornar os cenários de passado/presente/futuro determinísticos e independentes do timezone da máquina de CI. Não usar `DateTime.Today`, `DateOnly.FromDateTime(DateTime.Now)` ou datas relativas ao relógio do runner.
 
 ## Seleção do preço vigente — RN006
 
@@ -435,10 +437,10 @@ Se for criado helper puro para classificar/selecionar preço, adicionar testes u
 CA03_CA04_Consulta_ordena_por_data_e_id_e_seleciona_vigente
 ~~~
 
-Preparar:
+Preparar, usando uma data operacional fixa/controlada:
 
 - passado;
-- dois registros na data atual;
+- dois registros na data operacional;
 - futuro.
 
 Confirmar ordenação completa e vigente pelo maior Id da maior data não futura.
@@ -580,6 +582,7 @@ Além da DoD global:
 - Global Query Filters preservados;
 - seleção do vigente implementa literalmente RN006;
 - mesma regra usada em Histórico e Detalhes;
+- cada GET captura `IDataOperacionalEmpresa.Hoje` uma única vez e reutiliza o valor;
 - futuro nunca vira vigente antecipadamente;
 - estados Vigente/Anterior/Futuro corretos;
 - estado vazio diferencia ausência de vigente de custo zero;

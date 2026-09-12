@@ -26,13 +26,15 @@ Estado atual:
 4. **UC003 — Editar Insumo** — implementado;
 5. **UC004 — Desativar e reativar Insumo** — implementado;
 6. **UC005 — Registrar preço de Insumo** — implementado;
-7. **UC006 — Consultar histórico de preços do insumo** — revalidado e pronto para implementação.
+7. **UC006 — Consultar histórico de preços do insumo** — revalidado após MEL006 e pronto para implementação.
 
 Especificação UC006: [`../use-cases/UC006-consultar-historico-precos-insumo.md`](../use-cases/UC006-consultar-historico-precos-insumo.md).
 
 Instrução Codex UC006: [`../codex/UC006-consultar-historico-precos-insumo.md`](../codex/UC006-consultar-historico-precos-insumo.md).
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
+
+A MEL006 foi concluída e o UC006 deve consumir `IDataOperacionalEmpresa` para definir vigência/futuro com a data operacional da Empresa, sem depender do timezone do servidor.
 
 A revalidação anterior ao UC005 foi concluída pela RN040, e o UC005 implementou a restrição: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis.
 
