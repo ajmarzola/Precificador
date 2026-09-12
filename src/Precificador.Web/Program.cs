@@ -8,7 +8,11 @@ using Precificador.Web.Autorizacao;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages(options => options.Conventions.AuthorizeFolder("/Insumos", "EmpresaAtiva"));
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/Insumos", "EmpresaAtiva");
+    options.Conventions.AuthorizeFolder("/Produtos", "EmpresaAtiva");
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {

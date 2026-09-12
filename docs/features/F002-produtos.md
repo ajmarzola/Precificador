@@ -16,6 +16,8 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 
 ## Cadastro inicial — UC007
 
+Implementado com a página `/Produtos/Novo`, entidade tenant-owned `Produto`, migration evolutiva e margem-alvo armazenada como fração decimal.
+
 O Produto inicial contém:
 
 - Empresa proprietária;
@@ -105,8 +107,8 @@ Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da con
 
 ## Casos de uso
 
-- [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — revalidado e pronto para implementação após conclusão do UC006;
-- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — revalidado e pronto para implementação após UC007;
+- [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
+- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — próximo caso de Produtos, revalidado e pronto para implementação após UC007;
 - UC009 — Editar produto;
 - UC010 — Desativar produto;
 - UC011 — Alterar preço de venda preservando histórico;

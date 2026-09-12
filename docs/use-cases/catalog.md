@@ -39,12 +39,12 @@ UC005 foi implementado com histórico append-only de preços, custo unitário ca
 
 ## Produtos
 
-O UC007 inaugura o domínio Produto sem antecipar Ficha Técnica ou preço de venda. O cadastro inicial contém Nome, Categoria opcional, Margem-alvo e situação ativa; Produto pode existir sem preço praticado até o UC011.
+O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou preço de venda. O cadastro inicial contém Nome, Categoria opcional, Margem-alvo e situação ativa; Produto pode existir sem preço praticado até o UC011.
 
 | UC | Nome | Dependências |
 |---|---|---|
-| [UC007](UC007-cadastrar-produto.md) | Cadastrar produto | FT002 — **revalidado e pronto; implementar após UC006 pela fila serial** |
-| [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 — **revalidado e pronto após implementação do UC007** |
+| [UC007](UC007-cadastrar-produto.md) | Cadastrar produto | FT002 — **implementado** |
+| [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 — **próximo caso de Produtos; revalidado e pronto para implementação** |
 | UC009 | Editar produto | UC007 |
 | UC010 | Desativar produto | UC007 |
 | UC011 | Alterar preço de venda preservando histórico | UC007 |
