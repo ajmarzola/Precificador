@@ -23,23 +23,19 @@ O UC006 também deve apresentar um resumo do preço vigente na página de detalh
 7. Insumo ativo ou inativo possui histórico consultável;
 8. nenhum preço é editado ou excluído neste UC.
 
-## Data atual usada pela consulta
+## Data operacional usada pela consulta
 
-Definir uma única `dataAtual` por request e reutilizá-la para selecionar o preço vigente e classificar as linhas.
+Definir uma única data operacional da Empresa por request e reutilizá-la para selecionar o preço vigente e classificar as linhas.
 
-No MVP, usar a **data local da aplicação** como referência de calendário.
+O PageModel deve injetar `IDataOperacionalEmpresa` e usar `IDataOperacionalEmpresa.Hoje` como referência de calendário da Empresa Ativa.
 
-Não introduzir configuração de timezone por Empresa neste UC.
-
-Essa limitação deve ser registrada como melhoria não bloqueante para eventual hospedagem em timezone diferente do negócio.
-
-Nos testes, usar datas relativas à data corrente da execução quando o cenário depender de passado/presente/futuro, evitando datas fixas que possam envelhecer.
+Nos testes, controlar `IDataOperacionalEmpresa` para tornar os cenários de passado/presente/futuro determinísticos e independentes do timezone da máquina de CI.
 
 ## Seleção do preço vigente — RN006
 
 Para um Insumo:
 
-1. considerar somente registros com `DataReferencia <= dataAtual`;
+1. considerar somente registros com `DataReferencia <= dataOperacionalEmpresa`;
 2. ordenar por `DataReferencia DESC`;
 3. em empate, ordenar por `Id DESC`;
 4. o primeiro registro é o preço vigente.
@@ -49,7 +45,7 @@ Forma conceitual:
 ~~~text
 precoVigente =
     PrecosInsumos
-      .Where(p => p.InsumoId == id && p.DataReferencia <= dataAtual)
+      .Where(p => p.InsumoId == id && p.DataReferencia <= dataOperacionalEmpresa)
       .OrderByDescending(p => p.DataReferencia)
       .ThenByDescending(p => p.Id)
       .FirstOrDefault()
@@ -73,7 +69,7 @@ O registro cujo `Id` é o mesmo do preço vigente selecionado pela RN006.
 ### Futuro
 
 ~~~text
-DataReferencia > dataAtual
+DataReferencia > dataOperacionalEmpresa
 ~~~
 
 ### Anterior
@@ -88,7 +84,7 @@ Isso inclui um preço mais antigo e também um registro de mesma DataReferencia 
 Exemplo:
 
 ~~~text
-Data atual: 11/09/2026
+Data operacional da Empresa: 11/09/2026
 
 Id 12 | 20/09/2026 | Futuro
 Id 11 | 11/09/2026 | Vigente
@@ -293,7 +289,7 @@ Não mostrar preço futuro como atual.
 
 ## Consulta e reutilização da regra
 
-A lógica `DataReferencia <= dataAtual + OrderByDescending(DataReferencia) + ThenByDescending(Id)` é regra normativa e será reutilizada futuramente pelo motor de custo.
+A lógica `DataReferencia <= dataOperacionalEmpresa + OrderByDescending(DataReferencia) + ThenByDescending(Id)` é regra normativa e será reutilizada futuramente pelo motor de custo.
 
 Evitar duplicar variantes divergentes entre Histórico e Detalhes.
 
@@ -570,7 +566,6 @@ Qualquer necessidade percebida de schema novo deve interromper a implementação
 - estoque;
 - unidade de compra/conversões;
 - currency/multi-currency;
-- timezone configurável por Empresa;
 - Produto;
 - Ficha Técnica;
 - motor de custo UC018;
@@ -597,6 +592,5 @@ Além da DoD global:
 - F001/catálogo/ordem/modelo de preço ficam coerentes;
 - UC007 passa a ser o próximo caso;
 - gate do UC014 permanece;
-- melhoria de timezone fica registrada, sem implementação;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

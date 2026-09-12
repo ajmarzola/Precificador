@@ -77,5 +77,6 @@ public sealed class ConsultaInsumosTests
     {
         public int? EmpresaId => empresaId;
         public int EmpresaIdOuSentinela => empresaId ?? -1;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

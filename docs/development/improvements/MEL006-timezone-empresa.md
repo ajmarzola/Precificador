@@ -1,6 +1,6 @@
 # MEL006 — Tornar a data operacional dependente do timezone da Empresa
 
-- **Status:** Pronto para implementação
+- **Status:** Concluída
 - **Tipo:** melhoria técnica / fundação temporal multiempresa
 - **Origem:** especificação do UC006
 - **Dependências:** FT002 implementada
@@ -469,6 +469,12 @@ Usar duas Empresas com timezones distintos.
 - UC007/UC008;
 - MEL005;
 - refatoração geral de autenticação.
+
+## Resultado da implementação
+
+MEL006 foi implementada com `Empresa.TimeZoneId` persistido e validado, timezone padrão `America/Sao_Paulo` para empresas existentes, `EmpresaContext` carregando o timezone da Empresa Ativa e `IDataOperacionalEmpresa` calculando a data operacional via `TimeProvider`.
+
+O UC006 não foi implementado nesta melhoria; sua implementação futura deve injetar `IDataOperacionalEmpresa` e reutilizar a mesma data operacional por request.
 
 ## Definition of Done específica
 

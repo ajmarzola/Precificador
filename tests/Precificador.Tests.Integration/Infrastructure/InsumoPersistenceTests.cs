@@ -164,5 +164,6 @@ public sealed class InsumoPersistenceTests
     {
         public int? EmpresaId => 1;
         public int EmpresaIdOuSentinela => 1;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

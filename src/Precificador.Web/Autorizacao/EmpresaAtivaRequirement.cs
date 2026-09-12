@@ -15,7 +15,7 @@ public sealed class EmpresaAtivaHandler(PrecificadorDbContext dbContext, Empresa
     {
         var usuarioId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var empresaId = empresaContext.EmpresaId;
-        if (usuarioId is not null && empresaId.HasValue && await dbContext.UsuariosEmpresas.AnyAsync(v =>
+        if (usuarioId is not null && empresaId.HasValue && !string.IsNullOrWhiteSpace(empresaContext.TimeZoneId) && await dbContext.UsuariosEmpresas.AnyAsync(v =>
                 v.UsuarioId == usuarioId && v.EmpresaId == empresaId.Value && v.Ativo &&
                 dbContext.Empresas.Any(empresa => empresa.Id == empresaId.Value && empresa.Ativo)))
         {

@@ -8,6 +8,8 @@ namespace Precificador.Tests.Integration.Infrastructure;
 
 public sealed class MultiempresaMigrationTests
 {
+    private const string MigrationAddPrecosInsumos = "20260911133743_AddPrecosInsumos";
+
     [Fact]
     public async Task Upgrade_do_banco_uc001_preserva_insumo_e_o_associa_a_empresa_tecnica()
     {
@@ -27,6 +29,52 @@ public sealed class MultiempresaMigrationTests
         Assert.Equal(1, insumo.EmpresaId);
         Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
         Assert.Equal("Empresa inicial", (await contexto.Empresas.SingleAsync(empresa => empresa.Id == 1)).Nome);
+    }
+
+    [Fact]
+    public async Task CA02_Migration_adiciona_timezone_e_preserva_empresa_existente()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var contexto = CriarContexto(connection, 1);
+        await contexto.Database.MigrateAsync(MigrationAddPrecosInsumos);
+        await contexto.Database.ExecuteSqlRawAsync("INSERT INTO Empresas (Nome, NomeNormalizado, Ativo) VALUES ('Empresa antiga', 'EMPRESA ANTIGA', 1)");
+
+        await contexto.Database.MigrateAsync();
+
+        var timezones = await contexto.Database
+            .SqlQueryRaw<string>("SELECT TimeZoneId AS Value FROM Empresas ORDER BY Id")
+            .ToListAsync();
+        Assert.All(timezones, timeZoneId => Assert.Equal(Empresa.TimeZoneIdPadrao, timeZoneId));
+    }
+
+    [Fact]
+    public async Task CA03_Banco_novo_cria_empresa_tecnica_com_timezone_padrao()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var contexto = CriarContexto(connection, 1);
+
+        await contexto.Database.MigrateAsync();
+
+        var empresa = await contexto.Empresas.SingleAsync(empresa => empresa.Id == 1);
+        Assert.Equal(Empresa.TimeZoneIdPadrao, empresa.TimeZoneId);
+    }
+
+    [Fact]
+    public async Task CA01_Timezone_persiste_e_e_recuperado()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var contexto = CriarContexto(connection, 1);
+        await contexto.Database.MigrateAsync();
+        contexto.Empresas.Add(Empresa.Criar("Empresa UTC", "UTC"));
+        await contexto.SaveChangesAsync();
+        contexto.ChangeTracker.Clear();
+
+        var empresa = await contexto.Empresas.SingleAsync(empresa => empresa.Nome == "Empresa UTC");
+
+        Assert.Equal("UTC", empresa.TimeZoneId);
     }
 
     [Fact]
@@ -55,5 +103,6 @@ public sealed class MultiempresaMigrationTests
     {
         public int? EmpresaId => empresaId;
         public int EmpresaIdOuSentinela => empresaId;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
