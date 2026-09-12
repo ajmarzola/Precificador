@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Tests.Integration.Web;
@@ -14,6 +15,16 @@ namespace Precificador.Tests.Integration.Web;
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
+    private readonly DateOnly? dataOperacionalFixa;
+
+    public CustomWebApplicationFactory()
+    {
+    }
+
+    internal CustomWebApplicationFactory(DateOnly dataOperacionalFixa)
+    {
+        this.dataOperacionalFixa = dataOperacionalFixa;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,6 +33,12 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
             services.RemoveAll<DbContextOptions<PrecificadorDbContext>>();
+            if (dataOperacionalFixa.HasValue)
+            {
+                services.RemoveAll<IDataOperacionalEmpresa>();
+                services.AddScoped<IDataOperacionalEmpresa>(_ => new DataOperacionalEmpresaFixa(dataOperacionalFixa.Value));
+            }
+
             connection.Open();
             services.AddDbContext<PrecificadorDbContext>(options => options.UseSqlite(connection));
         });
@@ -42,5 +59,10 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             connection.Dispose();
         }
+    }
+
+    private sealed class DataOperacionalEmpresaFixa(DateOnly hoje) : IDataOperacionalEmpresa
+    {
+        public DateOnly Hoje => hoje;
     }
 }

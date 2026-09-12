@@ -106,7 +106,7 @@ Datas futuras podem ser registradas, mas não são vigentes antes da DataReferen
 
 Para seleção do preço atual:
 
-1. considerar somente `DataReferencia <= dataAtual`;
+1. considerar somente `DataReferencia <= dataOperacionalEmpresa`;
 2. ordenar por DataReferencia decrescente;
 3. em empate, ordenar por Id decrescente;
 4. selecionar o primeiro registro.

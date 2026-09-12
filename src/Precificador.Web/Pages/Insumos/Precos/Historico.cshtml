@@ -1,22 +1,18 @@
 @page "{id:int}"
-@model Precificador.Web.Pages.Insumos.DetalhesModel
+@model Precificador.Web.Pages.Insumos.Precos.HistoricoModel
 @using Precificador.Web.Apresentacao
 @{
-    ViewData["Title"] = "Consultar insumo";
+    ViewData["Title"] = "Histórico de preços do insumo";
     var insumo = Model.Insumo!;
 }
-<h1>Consultar insumo</h1>
-@if (Model.MensagemSucesso is not null)
-{
-    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
-}
+
+<h1>Histórico de preços do insumo</h1>
+
 <dl class="row">
     <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@insumo.Nome</dd>
     <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
-    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@InsumoRotulos.Categoria(insumo.Categoria)</dd>
     <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
     <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(insumo.Ativo ? "Ativo" : "Inativo")</dd>
-    <dt class="col-sm-3">Observação</dt><dd class="col-sm-9" style="white-space: pre-wrap">@(insumo.Observacao ?? "—")</dd>
 </dl>
 
 <section class="mb-4">
@@ -37,19 +33,36 @@
     }
 </section>
 
-<a asp-page="/Insumos/Editar" asp-route-id="@RouteData.Values["id"]" class="btn btn-primary">Editar</a>
-<a asp-page="/Insumos/Precos/Novo" asp-route-id="@RouteData.Values["id"]" class="btn btn-outline-primary">Registrar preço</a>
-<a asp-page="/Insumos/Precos/Historico" asp-route-id="@RouteData.Values["id"]" class="btn btn-outline-secondary">Histórico de preços</a>
-@if (insumo.Ativo)
+@if (Model.Historico.Count == 0)
 {
-    <form method="post" asp-page-handler="Desativar" class="d-inline">
-        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Deseja desativar este insumo?');">Desativar</button>
-    </form>
+    <p>Nenhum preço registrado para este insumo.</p>
 }
 else
 {
-    <form method="post" asp-page-handler="Reativar" class="d-inline">
-        <button type="submit" class="btn btn-outline-success">Reativar</button>
-    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Quantidade</th>
+                <th>Preço total</th>
+                <th>Custo unitário</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var preco in Model.Historico)
+        {
+            <tr>
+                <td>@PrecoInsumoFormatacao.Data(preco.DataReferencia)</td>
+                <td>@preco.Status</td>
+                <td>@PrecoInsumoFormatacao.Quantidade(preco.QuantidadeCompra) @InsumoRotulos.Unidade(insumo.UnidadeBase)</td>
+                <td>@PrecoInsumoFormatacao.PrecoTotal(preco.PrecoCompra)</td>
+                <td>@PrecoInsumoFormatacao.CustoUnitario(preco.CustoUnitario)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
 }
-<a asp-page="/Insumos/Index">Voltar para insumos</a>
+
+<a asp-page="/Insumos/Precos/Novo" asp-route-id="@RouteData.Values["id"]" class="btn btn-primary">Registrar novo preço</a>
+<a asp-page="/Insumos/Detalhes" asp-route-id="@RouteData.Values["id"]" class="btn btn-secondary">Voltar ao insumo</a>

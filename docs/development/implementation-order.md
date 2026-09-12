@@ -26,7 +26,7 @@ Estado atual:
 4. **UC003 — Editar Insumo** — implementado;
 5. **UC004 — Desativar e reativar Insumo** — implementado;
 6. **UC005 — Registrar preço de Insumo** — implementado;
-7. **UC006 — Consultar histórico de preços do insumo** — revalidado após MEL006 e pronto para implementação.
+7. **UC006 — Consultar histórico de preços do insumo** — implementado.
 
 Especificação UC006: [`../use-cases/UC006-consultar-historico-precos-insumo.md`](../use-cases/UC006-consultar-historico-precos-insumo.md).
 
@@ -34,7 +34,7 @@ Instrução Codex UC006: [`../codex/UC006-consultar-historico-precos-insumo.md`]
 
 Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
 
-A MEL006 foi concluída e o UC006 deve consumir `IDataOperacionalEmpresa` para definir vigência/futuro com a data operacional da Empresa, sem depender do timezone do servidor.
+A MEL006 foi concluída e o UC006 consome `IDataOperacionalEmpresa` para definir vigência/futuro com a data operacional da Empresa, sem depender do timezone do servidor.
 
 A revalidação anterior ao UC005 foi concluída pela RN040, e o UC005 implementou a restrição: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis.
 
@@ -46,7 +46,7 @@ UC007 a UC012. Todo Produto será tenant-owned.
 
 Estado documental:
 
-1. **UC007 — Cadastrar Produto** — revalidado e pronto para implementação, mas permanece na fila após conclusão/merge do UC006;
+1. **UC007 — Cadastrar Produto** — revalidado e pronto para implementação, próximo caso após merge do UC006;
 2. **UC008 — Listar e consultar Produtos** — revalidado e pronto documentalmente; implementar somente após UC007;
 3. UC009 — Editar Produto;
 4. UC010 — Desativar Produto;
@@ -100,4 +100,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC006 — Consultar histórico de preços do insumo**. Após seu merge, a etapa de Insumos fica funcionalmente fechada e o **UC007 — Cadastrar produto** passa a ser o próximo caso a detalhar/revalidar. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Revisar e mergear o **UC006 — Consultar histórico de preços do insumo**. Após seu merge, a etapa de Insumos fica funcionalmente fechada e o **UC007 — Cadastrar produto** passa a ser o próximo caso de implementação. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.

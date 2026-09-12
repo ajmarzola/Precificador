@@ -1,6 +1,6 @@
 # UC006 — Consultar histórico de preços do insumo
 
-- **Status:** Revalidado após MEL006 — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC005, MEL006, FT002, RN004, RN005, RN006, RN007 e RN040
 - **Próximo caso:** UC007 — Cadastrar produto
@@ -11,6 +11,14 @@
 Permitir consultar todo o histórico de preços de um Insumo da **Empresa Ativa**, identificar de forma inequívoca qual registro é o preço vigente atual e distinguir registros anteriores de preços com data futura.
 
 O UC006 também deve apresentar um resumo do preço vigente na página de detalhes do Insumo.
+
+## Resultado da implementação
+
+O UC006 foi implementado com a página somente leitura `/Insumos/Precos/Historico/{id:int}`, resumo do Insumo, resumo do preço vigente, tabela completa ordenada por `DataReferencia DESC, Id DESC` e classificação visual **Vigente**, **Anterior** e **Futuro**.
+
+Detalhes do Insumo passou a exibir link para o histórico e resumo do preço vigente. Ambos os GETs capturam `IDataOperacionalEmpresa.Hoje` uma única vez por request e reutilizam esse `DateOnly` para a seleção pela RN006 e, no histórico, para a classificação de futuro/anterior.
+
+Não houve alteração de schema, migration ou `ModelSnapshot`.
 
 ## Princípios
 

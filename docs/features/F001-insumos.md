@@ -120,7 +120,7 @@ Datas futuras são permitidas e qualquer primeiro preço, inclusive futuro, ativ
 
 Insumos inativos também podem receber registros de preço sem serem reativados.
 
-O UC006 está especificado para consultar o histórico completo, identificar o preço vigente pela RN006 e distinguir registros anteriores de preços futuros.
+O UC006 implementou a consulta do histórico completo, identificando o preço vigente pela RN006 e distinguindo registros anteriores de preços futuros.
 
 Além da página de histórico, Detalhes do Insumo passa a exibir um resumo do preço vigente ou **Sem preço vigente**, sem tratar ausência como custo zero.
 
@@ -138,7 +138,7 @@ Além da página de histórico, Detalhes do Insumo passa a exibir um resumo do p
 - [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
 - [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
 - [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — implementado;
-- [UC006 — Consultar histórico de preços do insumo](../use-cases/UC006-consultar-historico-precos-insumo.md) — revalidado e pronto para implementação.
+- [UC006 — Consultar histórico de preços do insumo](../use-cases/UC006-consultar-historico-precos-insumo.md) — implementado.
 
 ## Fora do escopo
 
