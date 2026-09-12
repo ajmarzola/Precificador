@@ -16,7 +16,8 @@ Leia integralmente antes de alterar código:
 8. `docs/development/testing-strategy.md`;
 9. `docs/development/definition-of-done.md`;
 10. `docs/development/melhorias.md`;
-11. código atual de `PrecoInsumo`, `IDataOperacionalEmpresa`, Detalhes, Novo Preço, DbContext e testes pós-MEL006.
+11. `docs/development/improvements/MEL006-timezone-empresa.md`;
+12. código atual de `PrecoInsumo`, `IDataOperacionalEmpresa`, `DataOperacionalEmpresa`, Detalhes, Novo Preço, DbContext e testes pós-MEL006.
 
 ## Branch
 
@@ -62,7 +63,13 @@ Não implementar UC007+ ou UC018.
 
 Injete `IDataOperacionalEmpresa` no fluxo que consulta o histórico e o resumo do preço vigente.
 
-Obtenha uma única `dataOperacionalEmpresa` por request usando `IDataOperacionalEmpresa.Hoje`.
+Em cada GET de Histórico e Detalhes, obtenha `IDataOperacionalEmpresa.Hoje` **uma única vez** e armazene em uma variável local `DateOnly`, por exemplo:
+
+~~~csharp
+var dataOperacionalEmpresa = dataOperacional.Hoje;
+~~~
+
+Passe esse valor para a lógica/query reutilizada. Não leia `Hoje` novamente dentro da consulta, classificação ou renderização.
 
 Reutilize o mesmo valor para:
 
@@ -73,7 +80,9 @@ Não usar `DateTime.Now`, `DateTime.Today`, `DateTimeOffset.Now` ou `DateTimeOff
 
 Não criar CRUD/configuração de timezone neste UC.
 
-Testes dependentes de calendário devem controlar `IDataOperacionalEmpresa` para usar datas determinísticas, independentes do timezone da máquina de CI.
+Testes dependentes de calendário devem substituir/controlar `IDataOperacionalEmpresa` no ambiente de teste com uma implementação fixa/determinística. O mecanismo exato pode ser uma adaptação mínima da infraestrutura Web existente; não adicionar pacote externo apenas para isso.
+
+Use uma data fixa conhecida nos cenários do UC006. Não use `DateTime.Today`, `DateTime.Now` ou datas relativas ao relógio do runner. A MEL006 já cobre a conversão real de timezone; os testes do UC006 devem validar o consumo correto da data operacional.
 
 ## RN006
 
@@ -224,13 +233,16 @@ Siga literalmente a matriz do UC006.
 
 Cobrir W1–W12 da especificação.
 
+Para cenários de vigência/status, use um `IDataOperacionalEmpresa` fake/controlado no host ou PageModel de teste, mantendo a data fixa durante cada request. Não dependa da data real da máquina.
+
 Especialmente:
 
 - não fazer asserts globais frouxos para status;
 - provar qual linha/data recebeu Vigente/Futuro/Anterior;
 - provar preço futuro não promovido;
 - provar precisão 5.39/1000;
-- provar Detalhes e Histórico usam a mesma RN006.
+- provar Detalhes e Histórico usam a mesma RN006;
+- confirmar em revisão de código que cada GET lê `IDataOperacionalEmpresa.Hoje` uma única vez e reutiliza o `DateOnly` capturado.
 
 ## Proibições
 
