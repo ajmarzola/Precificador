@@ -87,7 +87,7 @@ A revalidação para histórico de preços foi concluída pela RN040:
 
 A restrição foi aplicada ao fluxo de edição no UC005: qualquer histórico, inclusive apenas preço futuro, congela Nome, Marca e Unidade base no servidor e na apresentação.
 
-A revalidação de estabilidade diante de futuras referências em Ficha Técnica permanece reservada ao UC014.
+A decisão de estabilidade diante de referências em Ficha Técnica foi fechada para o UC014 pela RN048: enquanto existir ItemFichaTecnica atual, Nome, Marca e Unidade base também ficam protegidos, mesmo sem histórico de preço. Se a última referência for removida e não houver preços, a edição poderá ser liberada novamente; o UC016 deve revalidar esse desbloqueio.
 
 ### Situação
 

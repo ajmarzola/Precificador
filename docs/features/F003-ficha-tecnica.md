@@ -47,16 +47,40 @@ A mesma Ficha é atualizada quando Rendimento/Tempo ativo mudam. UC013 não cria
 
 ## Composição — UC014 a UC017
 
-Próximos incrementos:
+### UC014 — Adicionar Insumo
 
-- UC014 — adicionar Insumo à Ficha com quantidade e observação contextual opcional;
+Especificada, porém bloqueada até a implementação e revalidação da UC013.
+
+Modelo previsto:
+
+~~~text
+ItemFichaTecnica
+- Id
+- EmpresaId
+- FichaTecnicaId
+- InsumoId
+- Quantidade
+- Observacao
+~~~
+
+Regras fechadas:
+
+- somente Insumo ativo pode ser adicionado;
+- Insumo sem preço vigente pode ser adicionado;
+- Quantidade é decimal >0 na Unidade base do Insumo;
+- Observação contextual é opcional;
+- um mesmo Insumo aparece no máximo uma vez por Ficha;
+- Produto inativo pode manter e receber composição;
+- adicionar Item não calcula custo;
+- a primeira referência em Ficha protege Nome, Marca e Unidade base do Insumo conforme RN048.
+
+Insumos desativados após já terem sido adicionados permanecem referenciados e legíveis; RN008 impede apenas novas inclusões.
+
+### Próximos incrementos
+
 - UC015 — alterar quantidade/observação do item;
-- UC016 — remover item;
-- UC017 — consultar Ficha e composição.
-
-O gate de estabilidade cadastral do Insumo deve ser revalidado no UC014.
-
-Insumos desativados já referenciados futuramente devem permanecer legíveis para preservar a composição existente, mas RN008 impede adicioná-los a novas Fichas.
+- UC016 — remover item e revalidar desbloqueio da RN048;
+- UC017 — consultar Ficha e composição completa.
 
 ## Equipamentos e recursos
 
@@ -114,12 +138,14 @@ FichaTecnica é tenant-owned:
 - RN018;
 - RN034;
 - RN035–RN039;
-- RN047.
+- RN047;
+- RN048;
+- RN049.
 
 ## Casos de uso
 
 - [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — pronto para implementação;
-- UC014 — Adicionar Insumo à Ficha Técnica;
+- [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — especificado; bloqueado até UC013 implementada e revalidada;
 - UC015 — Alterar item da Ficha Técnica;
 - UC016 — Remover item da Ficha Técnica;
 - UC017 — Consultar Ficha Técnica e composição.

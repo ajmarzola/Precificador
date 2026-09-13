@@ -81,7 +81,7 @@ O UC010 implementou o ciclo reversível de desativação/reativação. Produto i
 
 A revalidação genérica da UC013 foi concluída: este incremento fica restrito a Rendimento e TempoAtivoMinutos. UC014 a UC017 continuam sujeitos às revalidações específicas antes da implementação.
 
-UC014 também deve revalidar as restrições de edição dos dados de Insumo após existirem referências em fichas técnicas.
+A decisão funcional do UC014 sobre estabilidade do Insumo foi fechada pela RN048, mas a implementação permanece bloqueada até a UC013 existir na master e a especificação ser revalidada contra o modelo real de FichaTecnica.
 
 Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
 
@@ -90,7 +90,7 @@ Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../cod
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — pronto para implementação;
-2. UC014 — Adicionar Insumo à Ficha Técnica;
+2. **UC014 — Adicionar Insumo à Ficha Técnica** — especificado; bloqueado até revalidação pós-UC013;
 3. UC015 — Alterar item da Ficha Técnica;
 4. UC016 — Remover item da Ficha Técnica;
 5. UC017 — Consultar Ficha Técnica e composição.
@@ -148,4 +148,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`, usando a especificação e instrução Codex aprovadas. A UC011 permanece bloqueada até a conclusão da UC023.
+Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`. Após o merge, executar a revalidação obrigatória da UC014 e só então criar sua instrução Codex. A UC011 permanece bloqueada até a conclusão da UC023.
