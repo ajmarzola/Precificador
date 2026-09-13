@@ -35,7 +35,7 @@ UC005 foi implementado com histórico append-only de preços, custo unitário ca
 
 **Gate de preço concluído:** a RN040 mantém Nome, Marca e Unidade base imutáveis após o primeiro registro de preço, inclusive futuro.
 
-**Gate de Ficha Técnica permanece:** antes do UC014, revalidar se referências de ficha também devem congelar campos cadastrais mesmo quando o Insumo ainda não possuir preço.
+**Gate de Ficha Técnica concluído:** RN048 protege Nome, Marca e Unidade base enquanto o Insumo estiver referenciado por ItemFichaTecnica, mesmo sem histórico de preço.
 
 ## Produtos
 
@@ -57,7 +57,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | UC | Nome | Dependências |
 |---|---|---|
 | [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 — **implementado** |
-| [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 — **próximo caso; revalidar contra UC013 implementada** |
+| [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 — **pronto para implementação; próximo caso** |
 | [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 — **especificado; bloqueado até UC014 implementado e revalidado** |
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |

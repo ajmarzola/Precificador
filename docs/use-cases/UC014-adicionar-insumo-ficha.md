@@ -1,11 +1,11 @@
 # UC014 — Adicionar Insumo à Ficha Técnica
 
-- **Status:** Especificado — bloqueado até UC013 implementado e revalidado
+- **Status:** Pronto para implementação
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC013 implementado; UC001A–UC006 implementados; FT002 implementada
 - **Próximo caso relacionado:** UC015 — Alterar item da Ficha Técnica
 - **Alteração de schema:** sim — introduz ItemFichaTecnica
-- **Gate obrigatório:** após implementação da UC013, revalidar esta especificação contra a entidade, persistência e página reais de FichaTecnica antes de criar a instrução Codex da UC014
+- **Revalidação pós-UC013:** concluída em 2026-09-13 contra a implementação mergeada pela PR #54
 
 ## Objetivo
 
@@ -170,11 +170,35 @@ Aplicar RN010.
 Quantidade > 0
 ~~~
 
-Usar decimal com referência de precisão:
+No domínio/persistência, usar decimal com referência de precisão:
 
 ~~~text
 decimal(18,6)
 ~~~
+
+Na fronteira Web, **não bindar diretamente para decimal/decimal?**. A UC013 demonstrou que o model binding pode interpretar vírgula como separador de milhar em ambiente com cultura diferente.
+
+Usar entrada textual e parsing explícito, seguindo o padrão já implementado em `FichaTecnicaFormulario`:
+
+~~~text
+Input.Quantidade: string?
+~~~
+
+Criar helper equivalente, por exemplo:
+
+~~~text
+ItemFichaTecnicaFormulario.TentarObterQuantidade(...)
+~~~
+
+Regras do parser:
+
+- trim da entrada;
+- ausente/vazia => `A quantidade é obrigatória.`;
+- se contém vírgula, parsear com `pt-BR`;
+- caso contrário, parsear com cultura invariant;
+- valor não numérico => `A quantidade deve ser um número válido.`;
+- valor <= 0 => `A quantidade deve ser maior que zero.`;
+- o resultado decimal validado é o único valor enviado ao domínio.
 
 A quantidade é interpretada na Unidade base do Insumo.
 
@@ -208,11 +232,13 @@ A UC014 depende de FichaTecnica já criada pela UC013.
 
 Não criar Ficha implicitamente ao adicionar Item.
 
-Rota prevista:
+Rota confirmada para o novo fluxo:
 
 ~~~text
 /Produtos/FichaTecnica/{produtoId:int}/Itens/Novo
 ~~~
+
+A página existente da UC013 permanece em `/Produtos/FichaTecnica/{id:int}` e usa `id` como ProdutoId. A UC014 deve preservar essa convenção na navegação e resolver a Ficha persistida pelo Produto no servidor.
 
 A ação Adicionar insumo só aparece quando existir Ficha persistida.
 
@@ -294,10 +320,12 @@ O fluxo Web comum não usa IgnoreQueryFilters.
 O formulário recebe somente:
 
 ~~~text
-InsumoId
-Quantidade
-Observacao
+InsumoId: int?
+Quantidade: string?
+Observacao: string?
 ~~~
+
+`Quantidade` é textual na fronteira e convertida explicitamente para decimal antes de criar o Item.
 
 Não confiar/bindar:
 
@@ -410,7 +438,7 @@ Não depender da UI para impedir duplicidade ou Insumo inativo.
 
 ### Quantidade
 
-Input decimal obrigatório.
+Input textual obrigatório com `inputmode="decimal"`, evitando dependência do model binding decimal.
 
 Ajuda:
 
@@ -422,6 +450,7 @@ Mensagens:
 
 ~~~text
 A quantidade é obrigatória.
+A quantidade deve ser um número válido.
 A quantidade deve ser maior que zero.
 ~~~
 
@@ -463,10 +492,23 @@ Ao retornar Page por erro, repopular o select.
 
 ## Navegação
 
+A implementação real da UC013 confirmou que `FichaTecnicaModel.OnGetAsync` já consulta a Ficha por `ProdutoId` para preencher Rendimento/Tempo ativo.
+
+A UC014 deve reutilizar essa consulta para expor um estado somente leitura, por exemplo:
+
+~~~text
+PossuiFicha
+~~~
+
+ou identificador equivalente não bindável.
+
 Na página da Ficha:
 
 - manter edição de Rendimento/Tempo ativo;
-- quando a Ficha estiver persistida, mostrar Adicionar insumo.
+- mostrar **Adicionar insumo** somente quando já existir Ficha persistida;
+- o link aponta para `/Produtos/FichaTecnica/{produtoId}/Itens/Novo`.
+
+GET da Ficha sem registro continua sem criar Ficha e não mostra a ação.
 
 UC014 não implementa a consulta completa da composição; isso fica para UC017.
 
@@ -610,28 +652,41 @@ Não implementar UC015/016/017, custos, perdas, equipamentos, conversões ou ver
 - W15: Categoria/Observação global continuam editáveis;
 - W16: alterar Observação global não altera Observação contextual;
 - W17: GET inclusão não cria Item;
-- W18: POST sem antiforgery não cria Item.
+- W18: POST sem antiforgery não cria Item;
+- W19: parsing de Quantidade com vírgula é independente da cultura corrente e persiste, por exemplo, `1,25` como `1.25m`, nunca `125m`.
 
-## Gate obrigatório pós-UC013
+## Revalidação pós-UC013 — concluída
 
-Esta UC está especificada, mas **não liberada para implementação**.
+A revalidação obrigatória foi executada contra a implementação real mergeada pela PR #54.
 
-Após implementação/revisão/merge da UC013:
+Confirmações:
 
-1. revalidar entidade FichaTecnica real;
-2. confirmar nomes/propriedades/tabela/configuração/GQF;
-3. confirmar rota real da Ficha;
-4. confirmar como a página diferencia Ficha inexistente/existente;
-5. confirmar navegação real;
-6. confirmar guard Ficha->Produto;
-7. revisar testes reais para reuso;
-8. confirmar que ItemFichaTecnica ainda é o menor incremento coerente;
-9. ajustar esta especificação se necessário;
-10. somente então criar a instrução Codex da UC014;
-11. liberar branch sugerida:
+1. `FichaTecnica` real possui `Id`, `EmpresaId`, `ProdutoId`, `Rendimento` e `TempoAtivoMinutos`;
+2. tabela real é `FichasTecnicas`;
+3. existe índice único `(EmpresaId, ProdutoId)`;
+4. FKs para Empresa e Produto usam `DeleteBehavior.Restrict`;
+5. existe Global Query Filter por Empresa;
+6. `PrecificadorDbContext` possui guard adicional que valida Ficha -> Produto com a mesma Empresa;
+7. rota real da Ficha é `/Produtos/FichaTecnica/{id:int}`, com `id = ProdutoId`;
+8. GET da Ficha consulta o registro existente sem criá-lo;
+9. Produto ativo e inativo usam a mesma página;
+10. Detalhes já navega para Ficha de Produto ativo/inativo;
+11. testes da UC013 fornecem infraestrutura Web reutilizável para autenticação, tenant, antiforgery e criação de Produto/Ficha;
+12. `ItemFichaTecnica` continua sendo o menor incremento coerente para a composição;
+13. não houve necessidade de mudar a entidade FichaTecnica para suportar a UC014;
+14. a correção de cultura da UC013 exige que Quantidade use parsing explícito, evitando model binding decimal dependente de ambiente;
+15. RN048/RN049 permanecem válidas sem alteração conceitual.
+
+A UC014 está liberada para implementação na branch:
 
 ~~~text
 feat/uc014-adicionar-insumo-ficha
+~~~
+
+Instrução Codex normativa:
+
+~~~text
+docs/codex/UC014-adicionar-insumo-ficha.md
 ~~~
 
 ## Impacto nos UCs seguintes
@@ -650,7 +705,6 @@ Usar Quantidade × CustoUnitarioAtualDoInsumo. UC014 não calcula custo.
 
 ## Fora do escopo
 
-- implementação antes da revalidação pós-UC013;
 - UC015–UC018;
 - troca de Insumo do Item;
 - remoção;
@@ -666,15 +720,29 @@ Usar Quantidade × CustoUnitarioAtualDoInsumo. UC014 não calcula custo.
 - API REST;
 - refatorações oportunistas.
 
-## Definition of Done da especificação
+## Definition of Done específica
 
-Para liberar implementação posteriormente:
+Além da DoD global:
 
-- UC013 implementada/revisada/mergeada;
-- gate pós-UC013 concluído;
-- RN048 confirmada contra edição real de Insumo;
-- RN049 confirmada;
-- rota real da Ficha confirmada;
-- matriz U1-U5, P1-P7 e W1-W18 revalidada;
-- instrução Codex criada somente após o gate;
-- F003/F001/regras/catálogo/ordem coerentes.
+- UC013 real permanece sem regressão;
+- ItemFichaTecnica tenant-owned implementado;
+- uma linha por Insumo/Ficha protegida no banco;
+- Quantidade decimal > 0 no domínio e parsing Web explícito pt-BR/invariant;
+- Observacao contextual opcional/max1000 normalizada no domínio;
+- Item não persiste Unidade própria;
+- FKs Empresa/Ficha/Insumo em Restrict;
+- GQF para Item;
+- guards Item->Ficha e Item->Insumo tenant-aware;
+- migration evolutiva AddItensFichaTecnica ou equivalente;
+- /Produtos/FichaTecnica/{produtoId}/Itens/Novo funcional;
+- página da Ficha mostra Adicionar insumo somente quando PossuiFicha;
+- apenas Insumos ativos do tenant são oferecidos/incluídos;
+- Insumo sem preço pode ser incluído;
+- Produto inativo pode receber Item sem reativação;
+- RN048 aplicada no GET e POST de /Insumos/Editar;
+- RN040 preservada;
+- nenhum cálculo de custo antecipado;
+- nenhuma edição/remoção/consulta completa da composição antecipada;
+- matriz U1-U5, P1-P7 e W1-W19 atendida;
+- build Release sem warnings novos relevantes;
+- suíte completa verde.
