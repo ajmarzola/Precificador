@@ -158,7 +158,7 @@ Carregar Produto da Empresa Ativa usando Global Query Filter.
 
 Preferir AsNoTracking + projeção para o InputModel.
 
-Popular Nome, Categoria e MargemAlvoPercentual = MargemAlvo * 100.
+Popular Nome, Categoria e MargemAlvoPercentual = MargemAlvo * 100. Testes devem validar o valor percentual semanticamente, sem depender de ponto/vírgula textual específico do tag helper.
 
 Inexistente/cross-tenant => 404.
 
@@ -177,7 +177,7 @@ Fluxo:
 7. mapear erros de domínio para campos corretos;
 8. verificar duplicidade excluindo o próprio id;
 9. salvar;
-10. TempData Produto atualizado com sucesso.;
+10. definir TempData com a mensagem exata Produto atualizado com sucesso.;
 11. redirect para /Produtos/Detalhes/{id}.
 
 Duplicidade:
