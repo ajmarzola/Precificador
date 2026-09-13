@@ -62,7 +62,7 @@ custo_unitário_produto = custo_lote / rendimento
 
 ## Formação do preço
 
-A margem é tratada como margem sobre o preço de venda, não como simples multiplicador sobre custo.
+A margem é tratada como margem sobre o preço, não como simples multiplicador sobre custo.
 
 ```text
 preço_teórico = custo_unitário / (1 - margem_alvo)
@@ -153,9 +153,9 @@ Cada novo registro deve conter, no mínimo:
 - EmpresaId;
 - ProdutoId;
 - DataReferencia determinada pelo sistema pela data operacional da Empresa;
-- CustoReferencia calculado pelo sistema;
-- MargemReferencia usada no cálculo;
-- PrecoSugerido calculado pelo sistema;
+- CustoReferencia = custo unitário vigente calculado pelo sistema;
+- MargemReferencia = MargemAlvo do Produto usada naquele cálculo;
+- PrecoSugerido calculado pelo UC023 a partir dessas referências e do arredondamento comercial;
 - PrecoPrateleira informado pelo usuário.
 
 O usuário informa somente o Preço de prateleira. Os demais valores são derivados do estado da precificação no momento do registro e ficam congelados como snapshot histórico.
