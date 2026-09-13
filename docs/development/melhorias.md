@@ -86,19 +86,14 @@ Status possíveis:
 
 ### MEL008 — Reduzir duplicação da infraestrutura de testes Web tenant-aware
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** review do projeto após UC009/UC010
-- **Problema:** testes Web repetem infraestrutura para criar Empresa/usuário, autenticar cliente, manter cookies, obter token antiforgery e preparar contexto tenant-aware. A repetição ainda é administrável, mas tende a crescer conforme Produtos ganha novos fluxos.
-- **Objetivo:** avaliar uma pequena infraestrutura comum de testes Web para operações transversais de autenticação, Empresa Ativa e antiforgery, sem criar framework interno ou esconder a intenção dos cenários.
-- **Diretrizes para futura especificação:**
-  - aguardar UC011/UC012 para confirmar quais trechos realmente se repetem;
-  - extrair apenas infraestrutura transversal comprovadamente duplicada;
-  - manter criação de entidades e preparação de regras de domínio específicas perto do teste correspondente;
-  - preferir composição/helpers pequenos a uma hierarquia de classes base;
-  - não enfraquecer antiforgery, Global Query Filter ou autenticação para facilitar testes;
-  - preservar nomes de testes orientados a critérios de aceitação e diagnósticos claros.
-- **Critério de sucesso esperado:** reduzir boilerplate de autenticação/tenant/antiforgery sem tornar os testes opacos nem acoplar UCs diferentes a uma abstração CRUD genérica.
-- **Prioridade:** baixa; observar a repetição em UC011/UC012 antes de decidir pela implementação.
+- **Problema:** 12 suítes Web já repetem criação de cliente autenticado, 15 repetem extração de antiforgery e 11 repetem ContextoEmpresaTeste.
+- **Objetivo:** extrair infraestrutura transversal mínima de usuário/vínculo, login real, cookies, antiforgery, Empresa auxiliar e contexto tenant-aware, preservando helpers de domínio específicos em cada suíte.
+- **Especificação:** [MEL008 — Infraestrutura Web tenant-aware de testes](improvements/MEL008-testes-web-tenant-aware.md)
+- **Instrução Codex:** [MEL008 — implementação](../codex/MEL008-testes-web-tenant-aware.md)
+- **Decisão:** composição por helpers pequenos; sem classe base, TestAuthHandler, bypass de antiforgery/GQF ou builders genéricos.
+- **Prioridade:** baixa; pronta para execução quando houver janela técnica e independente da fila funcional.
 
 
 
