@@ -40,18 +40,18 @@ A revalidação anterior ao UC005 foi concluída pela RN040, e o UC005 implement
 
 O gate específico de referências de Ficha Técnica permanece para o UC014.
 
-## Etapa 2 — Produtos
+## Etapa 2 — Produtos cadastrais
 
-UC007 a UC012. Todo Produto será tenant-owned.
+Todo Produto é tenant-owned.
 
 Estado documental:
 
 1. **UC007 — Cadastrar Produto** — implementado;
 2. **UC008 — Listar e consultar Produtos** — implementado;
 3. **UC009 — Editar Produto** — implementado;
-4. **UC010 — Desativar e reativar Produto** — implementado;
-5. UC011 — Alterar preço de venda preservando histórico — próximo caso de Produtos;
-6. UC012 — Consultar histórico de preço de venda.
+4. **UC010 — Desativar e reativar Produto** — implementado.
+
+UC011 e UC012 continuam pertencendo ao domínio Produtos, porém foram deslocados para depois da UC023. O registro comercial definido para a UC011 deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema; por isso não deve ser implementado antes de existir o cálculo completo.
 
 Especificação UC007: [`../use-cases/UC007-cadastrar-produto.md`](../use-cases/UC007-cadastrar-produto.md).
 
@@ -83,15 +83,45 @@ UC013 a UC017 devem ser revalidados antes da implementação para adotar o model
 
 UC014 também deve revalidar as restrições de edição dos dados de Insumo após existirem referências em fichas técnicas.
 
-## Etapa 4 — Motor de precificação
+Ordem prevista:
 
-UC018 a UC025. Revalidar especialmente perdas e energia/equipamentos antes de implementar seus UCs.
+1. UC013 — Definir rendimento e tempos/recursos do lote;
+2. UC014 — Adicionar Insumo à Ficha Técnica;
+3. UC015 — Alterar item da Ficha Técnica;
+4. UC016 — Remover item da Ficha Técnica;
+5. UC017 — Consultar Ficha Técnica e composição.
 
-## Etapa 5 — Configurações
+## Etapa 4 — Configurações de precificação
 
-UC026 e UC027 passam a operar por Empresa e podem ser antecipados quando necessários aos cálculos.
+Antecipar UC026 e UC027 antes do motor completo, pois mão de obra, energia/equipamentos e o arredondamento do Preço sugerido dependem de configurações da Empresa.
 
-## Etapa 6 — Dashboard
+1. UC026 — Consultar configurações de precificação da Empresa;
+2. UC027 — Alterar configurações de precificação da Empresa.
+
+## Etapa 5 — Motor de custo e preço sugerido
+
+Executar UC018 a UC023 antes da decisão comercial de preço.
+
+1. UC018 — Calcular custo atual dos itens do lote;
+2. UC019 — Calcular perdas aplicáveis — revalidar antes de implementar;
+3. UC020 — Calcular custo de mão de obra;
+4. UC021 — Calcular custo de energia/equipamentos — revalidar antes de implementar;
+5. UC022 — Calcular custo total e custo unitário;
+6. UC023 — Calcular preço teórico e sugerido.
+
+## Etapa 6 — Decisão comercial e histórico de preço
+
+1. UC011 — Registrar Preço de prateleira preservando snapshot de precificação;
+2. UC012 — Consultar histórico de precificação do Produto.
+
+A UC011 receberá do usuário somente o Preço de prateleira. Data de referência, Custo de referência, Margem de referência e Preço sugerido são determinados pelo sistema. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e permite novo registro para Produto inativo sem reativá-lo.
+
+## Etapa 7 — Margem e detalhamento
+
+1. UC024 — Calcular margem atual e situação;
+2. UC025 — Consultar detalhamento da precificação.
+
+## Etapa 8 — Dashboard
 
 UC028 a UC030 operam exclusivamente sobre a Empresa Ativa.
 
@@ -114,4 +144,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC011 — Alterar preço de venda preservando histórico** após especificação/instrução próprias. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Especificar, revalidar e implementar o **UC013 — Definir rendimento e tempos/recursos do lote**. A UC011 fica explicitamente bloqueada até a conclusão da UC023, quando Custo de referência, Margem de referência e Preço sugerido poderão ser congelados no histórico comercial sem entrada manual desses valores.
