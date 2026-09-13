@@ -75,19 +75,14 @@ Status possíveis:
 
 ### MEL007 — Centralizar o estado do backlog em uma fonte de verdade clara
 
-- **Status:** Pendente
+- **Status:** Pronto para implementação
 - **Origem:** review do projeto após conclusão da UC010
-- **Problema:** o estado de cada UC hoje é repetido em vários documentos, principalmente caso de uso individual, F002, catálogo e ordem de implementação. A disciplina atual mantém esses arquivos coerentes, mas o custo de atualização cresce a cada entrega e aumenta o risco de divergência entre “especificado”, “liberado”, “implementado” e “próximo”.
-- **Objetivo:** definir uma única fonte normativa para **estado e ordenação do backlog**, fazendo os demais documentos referenciarem essa fonte ou reduzirem a repetição de status quando ela não agrega contexto.
-- **Diretrizes para futura especificação:**
-  - preservar documentação individual de UC e feature;
-  - não remover contexto funcional útil apenas para eliminar duplicação;
-  - escolher explicitamente qual documento/estrutura será a fonte normativa de status;
-  - evitar automação complexa antes de confirmar que ela reduz manutenção real;
-  - considerar validação automatizada simples apenas se houver valor claro;
-  - manter fácil leitura humana no GitHub.
-- **Critério de sucesso esperado:** uma mudança de estado de UC deve exigir atualização em um número mínimo e previsível de locais, sem permitir que catálogo, ordem e feature apresentem estados contraditórios.
-- **Prioridade:** média-baixa; reavaliar na próxima janela de revisão técnica, sem bloquear UC011/UC012.
+- **Problema:** o estado e a ordem dos itens de trabalho são repetidos em documentos individuais, catálogo, ordem de implementação, features e lista de melhorias.
+- **Objetivo:** criar uma única fonte normativa em `docs/development/backlog.md` para estado, gate e ordem operacional.
+- **Especificação:** [MEL007 — Centralizar estado e ordem do backlog](improvements/MEL007-centralizar-estado-backlog.md)
+- **Instrução Codex:** [MEL007 — implementação](../codex/MEL007-centralizar-estado-backlog.md)
+- **Decisão:** usar Markdown simples, cinco estados fechados, gate separado de estado e nenhuma automação/gerador nesta primeira versão.
+- **Prioridade:** média-baixa; pronta para execução quando houver janela técnica, sem bloquear MEL010/UC016.
 
 ### MEL008 — Reduzir duplicação da infraestrutura de testes Web tenant-aware
 
