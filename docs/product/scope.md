@@ -23,8 +23,9 @@ O MVP contempla:
 - custo de energia/recursos a partir de uso de equipamentos quando aplicável;
 - cálculo do custo total por lote e por unidade;
 - margem-alvo por produto;
-- preço teórico e preço sugerido;
-- preço de venda atual e histórico;
+- preço teórico e Preço sugerido;
+- Preço de prateleira atual e histórico de snapshots de precificação;
+- Desconto de referência derivado para decisões comerciais;
 - margem atual;
 - identificação de produtos abaixo da margem-alvo;
 - precificação incompleta;
