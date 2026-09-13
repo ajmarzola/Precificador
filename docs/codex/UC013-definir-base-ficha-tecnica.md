@@ -142,6 +142,15 @@ Página única:
 
 O id é ProdutoId.
 
+InputModel:
+
+~~~text
+decimal? Rendimento
+int? TempoAtivoMinutos
+~~~
+
+Valores nullable são obrigatórios na fronteira para distinguir ausência de zero explícito. Usar as mensagens exatas definidas na UC013.
+
 GET:
 
 - carrega Produto pelo GQF;
