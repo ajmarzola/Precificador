@@ -174,7 +174,7 @@ A edição:
 
 - não reativa o Insumo;
 - não torna o Insumo elegível para novas Fichas;
-- mantém RN048 ativa porque a referência continua existindo.
+- mantém a identidade consolidada; após a MEL010, a proteção é permanente e não depende da referência continuar existindo.
 
 A página de edição deve mostrar a situação atual do Insumo.
 
@@ -431,8 +431,8 @@ Produto válido com itemId pertencente a outra Ficha/Produto retorna 404.
 ### CA15 — Request não controla ownership/vínculos
 Campos extras manipulados não mudam Empresa/Ficha/Insumo/Item.
 
-### CA16 — RN048 permanece ativa
-Editar Item não desbloqueia Nome/Marca/Unidade do Insumo.
+### CA16 — Identidade consolidada permanece protegida
+Editar Item não altera o estado consolidado nem desbloqueia Nome/Marca/Unidade do Insumo.
 
 ### CA17 — Observação contextual continua independente
 Alterar Item não modifica Observacao global do Insumo.
@@ -491,7 +491,7 @@ Não implementar remoção, troca de Insumo, consulta completa, custos, perdas, 
 - W10: Item de outra Ficha/Produto => 404;
 - W11: GET não muta;
 - W12: antiforgery ausente não altera Item;
-- W13: edição mantém RN048 ativa na edição do Insumo;
+- W13: edição mantém a identidade consolidada protegida na edição do Insumo;
 - W14: página da Ficha lista somente Itens da própria Ficha com links Editar;
 - W15: Item com Insumo inativo permanece visível/editável;
 - W16: POST inválido da base da Ficha preserva PossuiFicha, Adicionar insumo e lista/links;
@@ -535,12 +535,9 @@ docs/codex/UC015-alterar-item-ficha.md
 
 UC016 removerá Item.
 
-A remoção poderá desativar RN048 quando:
+A decisão pré-UC016 eliminou qualquer desbloqueio cadastral: depois da MEL010, o Insumo mantém IdentidadeConsolidada = true mesmo quando o Item removido era sua última referência atual e não existe histórico de preço.
 
-- o Item removido for a última referência atual do Insumo;
-- e não existir histórico de preço.
-
-UC015 não executa desbloqueio porque a referência permanece.
+UC016 não deve contar referências, consultar preços para decidir desbloqueio ou alterar IdentidadeConsolidada.
 
 ## Fora do escopo
 

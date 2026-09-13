@@ -35,7 +35,7 @@ UC005 foi implementado com histórico append-only de preços, custo unitário ca
 
 **Gate de preço concluído:** a RN040 mantém Nome, Marca e Unidade base imutáveis após o primeiro registro de preço, inclusive futuro.
 
-**Gate de Ficha Técnica concluído:** RN048 protege Nome, Marca e Unidade base enquanto o Insumo estiver referenciado por ItemFichaTecnica, mesmo sem histórico de preço.
+**Gate de Ficha Técnica refinado:** RN048 + RN051 tornam Nome, Marca e Unidade base permanentemente imutáveis após o primeiro uso em Ficha. A MEL010 persiste esse estado antes do UC016.
 
 ## Produtos
 
@@ -50,7 +50,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023 |
 | UC012 | Consultar histórico de precificação do produto | UC011 |
 
-**Próximo caso:** UC016. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
+**Próxima ação:** implementar MEL010 antes de especificar UC016. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
 
 ## Ficha técnica
 
@@ -59,7 +59,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 — **implementado** |
 | [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 — **implementado** |
 | [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 — **implementado** |
-| UC016 | Remover item da ficha técnica | UC014, UC015 — próximo caso para especificação/revalidação |
+| UC016 | Remover item da ficha técnica | UC014, UC015, MEL010 — **bloqueado até MEL010** |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
 
 ## Configurações

@@ -91,7 +91,7 @@ A UC015 também adiciona uma lista operacional mínima de Itens na página da Fi
 
 ### Próximos incrementos
 
-- UC016 — remover item e revalidar desbloqueio da RN048;
+- UC016 — remover item; remoção não desbloqueia identidade do Insumo;
 - UC017 — consultar Ficha e composição completa.
 
 ## Equipamentos e recursos
@@ -153,7 +153,8 @@ FichaTecnica é tenant-owned:
 - RN047;
 - RN048;
 - RN049;
-- RN050.
+- RN050;
+- RN051.
 
 ## Casos de uso
 
