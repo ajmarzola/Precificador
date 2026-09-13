@@ -29,66 +29,32 @@ A UC014 introduz a composição sem calcular custos, sem permitir edição/remo�
 8. Adicionar Item não altera Produto, Ficha nem situação do Insumo.
 9. A primeira referência produtiva ativa a proteção cadastral da RN048.
 
-## Gate de estabilidade cadastral do Insumo
+## Consolidação da identidade do Insumo
 
-### Decisão
+A decisão original da UC014 foi refinada antes do UC016.
 
-Enquanto existir pelo menos um ItemFichaTecnica atual referenciando o Insumo:
+Adicionar o primeiro ItemFichaTecnica é um gatilho permanente de consolidação de identidade conforme RN048/RN051.
 
-- Nome é imutável;
-- Marca é imutável;
-- Unidade base é imutável;
+Depois do primeiro uso em Ficha:
+
+- Nome permanece imutável;
+- Marca permanece imutável;
+- Unidade base permanece imutável;
 - Categoria continua editável;
 - Observação global continua editável;
 - Ativo/Inativo continua regido pela RN008.
 
-Isso vale mesmo quando o Insumo nunca teve preço registrado.
+Essa proteção não depende mais da existência atual do Item.
 
-### Motivo
+Remover posteriormente a última referência em Ficha não reabre Nome/Marca/Unidade.
 
-O Item registra Quantidade na Unidade base e representa a escolha daquele Insumo específico. Permitir mudar Nome, Marca ou Unidade enquanto ele está referenciado poderia trocar silenciosamente o significado das Fichas.
-
-Exemplos proibidos enquanto houver referência:
+A persistência do estado permanente será introduzida pela MEL010 em:
 
 ~~~text
-Farinha / Renata / g
--> Farinha / Caputo / g
-
-Papel Offset / sem marca / g
--> Papel Fotográfico / sem marca / g
-
-Vinil / Marca A / m
--> Vinil / Marca A / un
+Insumo.IdentidadeConsolidada
 ~~~
 
-### Relação com RN040
-
-A proteção final da identidade cadastral será:
-
-~~~text
-proteger Nome/Marca/Unidade quando
-    existe qualquer PrecoInsumo
-    OU
-    existe qualquer ItemFichaTecnica atual
-~~~
-
-Histórico de preço bloqueia permanentemente conforme RN040.
-
-Referência de Ficha é estado atual. Portanto, após UC016, se a última referência for removida e não houver histórico de preço, Nome/Marca/Unidade podem voltar a ser editáveis. UC016 deve revalidar esse desbloqueio.
-
-### Edição do Insumo
-
-A UC014 deverá adaptar /Insumos/Editar/{id}.
-
-Se houver histórico de preço, preservar a mensagem atual da RN040.
-
-Se não houver histórico, mas houver referência em Ficha, exibir:
-
-~~~text
-Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.
-~~~
-
-A proteção deve existir no servidor. POST manipulado não pode alterar os campos protegidos.
+A UC014 implementada continua correta como origem do primeiro uso; a MEL010 ajustará o fluxo para consolidar o Insumo no mesmo SaveChanges da criação do Item.
 
 ## Modelo de domínio
 
@@ -528,8 +494,9 @@ POST sem token válido não cria Item.
 - RN035/RN036 — tenant;
 - RN040 — estabilidade por histórico de preço;
 - RN047 — Ficha única por Produto;
-- RN048 — estabilidade cadastral por referência em Ficha;
-- RN049 — unicidade de Insumo por Ficha.
+- RN048 — primeiro uso em Ficha consolida identidade;
+- RN049 — unicidade de Insumo por Ficha;
+- RN051 — identidade consolidada do Insumo.
 
 ## Critérios de aceitação
 
@@ -696,7 +663,7 @@ docs/codex/UC014-adicionar-insumo-ficha.md
 Editar somente Quantidade e Observação. Insumo/Ficha/Empresa permanecem imutáveis.
 
 ### UC016
-Remover Item. Deve revalidar o desbloqueio da RN048 quando desaparecer a última referência e não houver histórico de preço.
+Remover Item sem alterar o estado consolidado do Insumo. Não existe desbloqueio de Nome/Marca/Unidade.
 
 ### UC017
 Consultar composição completa, inclusive Insumos desativados depois da inclusão.
