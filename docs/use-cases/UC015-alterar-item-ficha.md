@@ -1,11 +1,12 @@
 # UC015 — Alterar item da Ficha Técnica
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC014 implementado
 - **Próximo caso relacionado:** UC016 — Remover item da Ficha Técnica
 - **Alteração de schema:** não
 - **Revalidação pós-UC014:** concluída em 2026-09-13 contra a implementação mergeada pela PR #56
+- **Implementação:** concluída em 2026-09-13 na branch `feat/uc015-editar-item-ficha`
 
 ## Objetivo
 
@@ -518,7 +519,7 @@ Confirmações:
 13. RN048 está realmente aplicada em GET/POST de Insumo e permanece ativa durante edição de Item;
 14. a observação visual de `PossuiFicha` da review da PR #56 pode ser corrigida dentro desta tarefa por ser diretamente relacionada à navegação introduzida pela UC015.
 
-A UC015 está liberada para implementação na branch:
+A UC015 foi implementada na branch:
 
 ~~~text
 feat/uc015-editar-item-ficha

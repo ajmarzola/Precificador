@@ -78,7 +78,7 @@ Insumos desativados após já terem sido adicionados permanecem referenciados e 
 
 ### UC015 — Alterar Item
 
-Revalidada contra a implementação real da UC014 e pronta para implementação.
+Implementada após revalidação contra a implementação real da UC014.
 
 A edição altera somente:
 
@@ -159,7 +159,7 @@ FichaTecnica é tenant-owned:
 
 - [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — implementado;
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — implementado;
-- [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md) — pronto para implementação;
+- [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md) — implementado;
 - UC016 — Remover item da Ficha Técnica;
 - UC017 — Consultar Ficha Técnica e composição.
 

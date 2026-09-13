@@ -45,6 +45,16 @@ public sealed class ItemFichaTecnica : IEntidadeEmpresa
         string? observacao = null) =>
         new(empresaId, fichaTecnicaId, insumoId, quantidade, observacao);
 
+    public void AtualizarDados(decimal quantidade, string? observacao)
+    {
+        var observacaoNormalizada = NormalizarObservacao(observacao);
+        ValidarQuantidade(quantidade);
+        ValidarObservacao(observacaoNormalizada);
+
+        Quantidade = quantidade;
+        Observacao = observacaoNormalizada;
+    }
+
     public void DefinirEmpresa(int empresaId)
     {
         if (empresaId <= 0)

@@ -169,6 +169,87 @@ public sealed class ItemFichaTecnicaPersistenceTests
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
+    [Fact]
+    public async Task P8_UC015_Round_trip_atualiza_quantidade_e_observacao_no_mesmo_item()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, "original");
+        context.ItensFichaTecnica.Add(item);
+        await context.SaveChangesAsync();
+        var itemId = item.Id;
+
+        context.ChangeTracker.Clear();
+        var persistido = await context.ItensFichaTecnica.SingleAsync(item => item.Id == itemId);
+        persistido.AtualizarDados(1.25m, "  ajustado  ");
+        await context.SaveChangesAsync();
+
+        context.ChangeTracker.Clear();
+        var atualizado = await context.ItensFichaTecnica.AsNoTracking().SingleAsync(item => item.Id == itemId);
+        Assert.Equal(1.25m, atualizado.Quantidade);
+        Assert.Equal("ajustado", atualizado.Observacao);
+    }
+
+    [Fact]
+    public async Task P9_UC015_Atualizacao_preserva_empresa_ficha_e_insumo()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, null);
+        context.ItensFichaTecnica.Add(item);
+        await context.SaveChangesAsync();
+        var itemId = item.Id;
+
+        item.AtualizarDados(2m, "alterado");
+        await context.SaveChangesAsync();
+
+        var atualizado = await context.ItensFichaTecnica.AsNoTracking().SingleAsync(item => item.Id == itemId);
+        Assert.Equal(1, atualizado.EmpresaId);
+        Assert.Equal(fichaId, atualizado.FichaTecnicaId);
+        Assert.Equal(insumoId, atualizado.InsumoId);
+    }
+
+    [Fact]
+    public async Task P10_UC015_RN049_permanece_intacta_apos_atualizar_item()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, null);
+        context.ItensFichaTecnica.Add(item);
+        await context.SaveChangesAsync();
+
+        item.AtualizarDados(2m, null);
+        context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 3m));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task P11_UC015_Schema_de_item_permanece_sem_campos_novos()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+
+        var colunas = await context.Database
+            .SqlQueryRaw<string>("SELECT name AS Value FROM pragma_table_info('ItensFichaTecnica') ORDER BY cid")
+            .ToListAsync();
+
+        Assert.Equal(
+            ["Id", "EmpresaId", "FichaTecnicaId", "InsumoId", "Quantidade", "Observacao"],
+            colunas);
+    }
+
     private static async Task<(int ProdutoId, int FichaId, int InsumoId)> CriarFichaEInsumoAsync(PrecificadorDbContext context, int empresaId)
     {
         var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", 0.30m);

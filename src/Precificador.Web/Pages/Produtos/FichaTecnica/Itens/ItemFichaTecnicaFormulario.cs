@@ -10,10 +10,16 @@ public static class ItemFichaTecnicaFormulario
     public static bool TentarObterQuantidade(
         ModelStateDictionary modelState,
         NovoModel.ItemFichaTecnicaInputModel input,
+        out decimal quantidade) =>
+        TentarObterQuantidade(modelState, input.Quantidade, out quantidade);
+
+    public static bool TentarObterQuantidade(
+        ModelStateDictionary modelState,
+        string? quantidadeInformada,
         out decimal quantidade)
     {
         quantidade = 0;
-        var quantidadeInformada = input.Quantidade?.Trim();
+        quantidadeInformada = quantidadeInformada?.Trim();
 
         if (string.IsNullOrEmpty(quantidadeInformada))
         {
@@ -36,4 +42,7 @@ public static class ItemFichaTecnicaFormulario
 
         return true;
     }
+
+    public static string FormatarQuantidade(decimal quantidade) =>
+        quantidade.ToString("0.######", CulturaBrasileira);
 }

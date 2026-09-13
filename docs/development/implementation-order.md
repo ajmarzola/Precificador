@@ -83,6 +83,8 @@ A revalidação genérica da UC013 foi concluída: este incremento fica restrito
 
 A UC014 foi implementada após revalidação contra a implementação real da UC013. O modelo de ItemFichaTecnica permanece coerente; Quantidade usa parsing Web explícito pt-BR/invariant seguindo o aprendizado da UC013.
 
+A UC015 foi implementada após revalidação contra a implementação real da UC014. A edição de Item altera somente Quantidade e Observação contextual, preserva vínculos e adiciona uma lista operacional mínima de Itens na página da Ficha.
+
 Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
 
 Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../codex/UC013-definir-base-ficha-tecnica.md).
@@ -99,8 +101,8 @@ Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
 2. **UC014 — Adicionar Insumo à Ficha Técnica** — implementado;
-3. **UC015 — Alterar item da Ficha Técnica** — pronto para implementação;
-4. UC016 — Remover item da Ficha Técnica;
+3. **UC015 — Alterar item da Ficha Técnica** — implementado;
+4. UC016 — Remover item da Ficha Técnica — próximo caso para especificação/revalidação;
 5. UC017 — Consultar Ficha Técnica e composição.
 
 ## Etapa 4 — Configurações de precificação
@@ -156,4 +158,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar a **UC015 — Alterar item da Ficha Técnica** em `feat/uc015-editar-item-ficha`, usando a especificação revalidada e `docs/codex/UC015-alterar-item-ficha.md`. Após o merge, especificar/revalidar a UC016. A UC011 permanece bloqueada até a conclusão da UC023.
+Após o merge da **UC015 — Alterar item da Ficha Técnica**, especificar/revalidar a UC016. A UC011 permanece bloqueada até a conclusão da UC023.
