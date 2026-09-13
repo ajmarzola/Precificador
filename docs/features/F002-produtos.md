@@ -132,14 +132,14 @@ O UC010 está especificado para implementar o ciclo reversível de situação:
 - mantendo inativos visíveis e consultáveis;
 - mantendo, após a UC009, edição cadastral de Produto inativo sem reativação implícita.
 
-A implementação do UC010 é o próximo caso de Produtos e deve ser revalidada contra a master real pós-UC009 antes de iniciar.
+A revalidação obrigatória do UC010 contra a master real pós-UC009 foi concluída. O fluxo real de edição preserva `Ativo`, mantém Editar disponível e permite cobrir Produto inativo sem bypass técnico. UC010 está liberado e é o próximo caso de Produtos.
 
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
 - [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — implementado;
-- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — especificado e próximo caso de Produtos;
+- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — revalidado, liberado e próximo caso de Produtos;
 - UC011 — Alterar preço de venda preservando histórico;
 - UC012 — Consultar histórico de preço de venda.
 
