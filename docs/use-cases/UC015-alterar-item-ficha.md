@@ -1,11 +1,11 @@
 # UC015 — Alterar item da Ficha Técnica
 
-- **Status:** Especificado — bloqueado até UC014 implementado e revalidado
+- **Status:** Pronto para implementação
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC014 implementado
 - **Próximo caso relacionado:** UC016 — Remover item da Ficha Técnica
 - **Alteração de schema:** não
-- **Gate obrigatório:** após implementação/revisão/merge da UC014, revalidar esta especificação contra o modelo e as páginas reais de ItemFichaTecnica antes de criar a instrução Codex
+- **Revalidação pós-UC014:** concluída em 2026-09-13 contra a implementação mergeada pela PR #56
 
 ## Objetivo
 
@@ -15,6 +15,33 @@ Permitir alterar os dados mutáveis de um Item já existente na Ficha Técnica:
 2. Observação contextual.
 
 A UC015 preserva integralmente a identidade e os vínculos do Item.
+
+## Modelo real confirmado
+
+A implementação da UC014 confirmou:
+
+~~~text
+ItemFichaTecnica
+- Id
+- EmpresaId
+- FichaTecnicaId
+- InsumoId
+- Quantidade
+- Observacao
+~~~
+
+Também confirmou:
+
+- ItemFichaTecnica implementa IEntidadeEmpresa;
+- existe GQF por Empresa;
+- existe índice único `(EmpresaId, FichaTecnicaId, InsumoId)`;
+- FKs Empresa/Ficha/Insumo usam `RESTRICT`;
+- o DbContext valida Item -> Ficha e Item -> Insumo na mesma Empresa;
+- a inclusão usa `/Produtos/FichaTecnica/{produtoId}/Itens/Novo`;
+- Quantidade já usa parsing explícito pt-BR/invariant;
+- RN048 está aplicada em `/Insumos/Editar`.
+
+Nenhuma mudança estrutural é necessária para editar Item.
 
 ## Escopo fechado
 
@@ -30,23 +57,37 @@ Campos imutáveis:
 - FichaTecnicaId;
 - InsumoId.
 
-Trocar o Insumo não é edição do Item no MVP. Quando necessário, o fluxo correto será remover o Item no UC016 e adicionar o novo Insumo pela UC014.
+Trocar o Insumo não é edição do Item no MVP.
 
-## Motivo da imutabilidade do InsumoId
+Quando necessário, o fluxo correto será:
 
-ItemFichaTecnica representa a referência explícita de um Insumo na composição.
+~~~text
+UC016 remove o Item atual
++
+UC014 adiciona o novo Insumo
+~~~
 
-Permitir alterar InsumoId em uma edição:
+## Atualização de domínio
 
-- mudaria a identidade funcional do Item;
-- poderia contornar RN049;
-- tornaria a proteção RN048 mais difícil de interpretar;
-- misturaria alteração de quantidade com substituição de material;
-- exigiria tratar duplicidade com outro Item já existente.
+Adicionar comportamento explícito:
 
-Portanto, a atualização do Item mantém o mesmo Insumo.
+~~~csharp
+item.AtualizarDados(quantidade, observacao)
+~~~
 
-## Regras de Quantidade
+ou nome equivalente claro.
+
+A atualização deve ser atômica:
+
+1. normalizar Observacao em variável local;
+2. validar Quantidade;
+3. validar Observacao normalizada;
+4. somente então atribuir Quantidade e Observacao;
+5. preservar Id, EmpresaId, FichaTecnicaId e InsumoId.
+
+Uma tentativa inválida não pode deixar a entidade parcialmente alterada em memória.
+
+## Quantidade
 
 Aplicar RN010.
 
@@ -54,14 +95,59 @@ Aplicar RN010.
 Quantidade > 0
 ~~~
 
-Quantidade continua decimal e expressa na Unidade base do Insumo referenciado.
+Quantidade continua decimal no domínio/persistência e permanece expressa na Unidade base do Insumo.
 
-A UC015 não permite selecionar unidade e não converte unidades.
+A UC015 não permite selecionar/trocar Unidade e não faz conversão.
 
-Validações Web:
+### Fronteira Web
 
-- ausente => A quantidade é obrigatória.
-- zero/negativa => A quantidade deve ser maior que zero.
+Não usar binding direto de `decimal?`.
+
+Reutilizar o padrão real da UC014:
+
+~~~text
+Input.Quantidade: string?
+~~~
+
+Refatorar `ItemFichaTecnicaFormulario` para que o parser seja reutilizável por Novo e Editar, evitando duplicação.
+
+Forma sugerida:
+
+~~~csharp
+TentarObterQuantidade(
+    ModelStateDictionary modelState,
+    string? quantidadeInformada,
+    out decimal quantidade)
+~~~
+
+ou overload equivalente.
+
+O fluxo `Novo` existente deve continuar usando o mesmo helper e permanecer verde.
+
+Parsing:
+
+- trim;
+- ausente/vazia => `A quantidade é obrigatória.`;
+- contendo vírgula => pt-BR;
+- sem vírgula => invariant;
+- inválida => `A quantidade deve ser um número válido.`;
+- <= 0 => `A quantidade deve ser maior que zero.`.
+
+Adicionar também formatação reutilizável, por exemplo:
+
+~~~csharp
+FormatarQuantidade(decimal quantidade)
+~~~
+
+usando pt-BR e até 6 casas decimais significativas, para preencher o formulário de edição sem depender da cultura do servidor.
+
+Exemplo obrigatório:
+
+~~~text
+1,25 -> 1.25m no domínio
+~~~
+
+e nunca `125m`.
 
 ## Observação contextual
 
@@ -79,91 +165,61 @@ Editar Observacao do Item não altera Observacao global do Insumo.
 
 Editar Observacao global do Insumo não altera Observacao contextual do Item.
 
-## Atualização de domínio
-
-Adicionar comportamento explícito ao Item, por exemplo:
-
-~~~csharp
-item.AtualizarDados(quantidade, observacao)
-~~~
-
-ou nome equivalente.
-
-A atualização deve ser atômica:
-
-1. normalizar Observacao em variável local;
-2. validar Quantidade e Observacao;
-3. somente depois atribuir;
-4. preservar Id, EmpresaId, FichaTecnicaId e InsumoId.
-
-Erro em qualquer campo não pode deixar estado parcial em memória.
-
 ## Insumo ativo ou inativo
 
-Um Item existente continua editável mesmo que o Insumo referenciado tenha sido desativado depois de sua inclusão.
+Um Item existente continua editável mesmo se o Insumo referenciado tiver sido desativado depois da inclusão.
 
-Motivo:
+A edição:
 
-- RN008 preserva referências existentes;
-- UC014 proíbe apenas adicionar novos Insumos inativos;
-- corrigir Quantidade/Observacao da composição existente não torna o Insumo novamente elegível para novas Fichas.
+- não reativa o Insumo;
+- não torna o Insumo elegível para novas Fichas;
+- mantém RN048 ativa porque a referência continua existindo.
 
-A edição não reativa o Insumo.
-
-A página deve exibir a situação atual do Insumo.
+A página de edição deve mostrar a situação atual do Insumo.
 
 ## Produto ativo ou inativo
 
-Itens da Ficha de Produto inativo continuam editáveis, seguindo a política de manutenção da Ficha definida em UC013/UC014.
+Item de Ficha pertencente a Produto inativo continua editável.
 
-Editar Item não reativa Produto.
+A edição não reativa o Produto.
 
-## RN048 durante edição
+## Multiempresa e coerência de rota
 
-Editar Quantidade ou Observacao mantém a referência ao mesmo Insumo.
-
-Portanto:
-
-- RN048 continua ativa antes e depois da edição;
-- Nome/Marca/Unidade base continuam protegidos;
-- nenhuma lógica de desbloqueio é executada na UC015.
-
-Desbloqueio só pode ocorrer após remoção da última referência, assunto da UC016.
-
-## Multiempresa e segurança
-
-Todas as leituras/escritas comuns usam Global Query Filters.
-
-A rota contém ProdutoId e ItemId, mas ambos precisam ser coerentes com:
+Rota:
 
 ~~~text
-Produto
-  -> FichaTecnica
-      -> ItemFichaTecnica
+/Produtos/FichaTecnica/{produtoId:int}/Itens/Editar/{itemId:int}
 ~~~
 
-A edição só é válida quando o Item pertence à Ficha do Produto informado na rota.
+O acesso só é válido quando existe a cadeia tenant-aware:
 
-Casos que retornam HTTP 404:
+~~~text
+Produto da Empresa Ativa
+  -> FichaTecnica desse Produto
+      -> ItemFichaTecnica dessa Ficha
+          -> Insumo referenciado
+~~~
+
+Retornar HTTP 404 para:
 
 - Produto inexistente;
-- Produto cross-tenant;
+- Produto de outro tenant;
 - Ficha inexistente;
 - Item inexistente;
 - Item de outro tenant;
 - Item pertencente a outra Ficha/Produto.
 
-Não revelar que um Item existe em outra Empresa ou em outra Ficha.
+Não revelar existência de Item de outro tenant ou de outra Ficha.
 
-Não usar IgnoreQueryFilters no fluxo Web.
+Não usar `IgnoreQueryFilters` no fluxo Web comum.
 
 ## Request e binding
 
 O formulário recebe somente:
 
 ~~~text
-Quantidade
-Observacao
+Quantidade: string?
+Observacao: string?
 ~~~
 
 Não bindar/confiar em:
@@ -176,7 +232,7 @@ Não bindar/confiar em:
 
 ProdutoId e ItemId vêm da rota.
 
-Mesmo que campos extras manipulados sejam enviados, referências persistidas permanecem inalteradas.
+Mesmo que campos extras sejam enviados, Id e vínculos persistidos permanecem inalterados.
 
 ## Persistência
 
@@ -186,16 +242,17 @@ Não criar migration.
 
 Não alterar:
 
-- configuração de chaves/FKs;
-- índice único da RN049;
+- configuração de ItemFichaTecnica;
+- chaves/FKs;
+- índice RN049;
 - ModelSnapshot;
 - migrations históricas.
 
-Se a implementação exigir migration, interromper e reavaliar o escopo.
+Se a implementação exigir migration, interromper e reavaliar.
 
-## Web
+## Web — página Editar
 
-Criar página:
+Criar:
 
 ~~~text
 /Produtos/FichaTecnica/{produtoId:int}/Itens/Editar/{itemId:int}
@@ -203,12 +260,7 @@ Criar página:
 
 ### GET
 
-Carregar pelo tenant:
-
-1. Produto;
-2. Ficha do Produto;
-3. Item pertencente àquela Ficha;
-4. Insumo referenciado.
+Carregar Produto, Ficha, Item e Insumo pela cadeia tenant-aware.
 
 Exibir resumo somente leitura:
 
@@ -216,57 +268,102 @@ Exibir resumo somente leitura:
 - Insumo;
 - Marca;
 - Unidade base;
-- situação do Insumo.
+- Situação do Insumo.
 
 Campos editáveis:
 
 - Quantidade;
 - Observação contextual.
 
-Não permitir alterar Insumo.
+Não oferecer select/troca de Insumo.
+
+Quantidade deve ser preenchida pelo helper de formatação pt-BR.
 
 ### POST
 
 Fluxo:
 
-1. rebuscar Produto pelo GQF;
-2. rebuscar Ficha do Produto;
-3. rebuscar Item da Ficha;
-4. se qualquer vínculo for inválido => 404;
-5. validar InputModel;
-6. chamar comportamento de domínio de atualização;
+1. rebuscar Produto;
+2. rebuscar Ficha pelo Produto;
+3. rebuscar Item pertencente àquela Ficha;
+4. se cadeia inválida => 404;
+5. parsear/validar Quantidade pelo helper compartilhado;
+6. chamar `AtualizarDados`;
 7. salvar;
-8. PRG para a página da Ficha do Produto;
+8. PRG para `/Produtos/FichaTecnica/{produtoId}`;
 9. exibir:
 
 ~~~text
 Item da ficha técnica atualizado com sucesso.
 ~~~
 
-### InputModel
+## Navegação mínima necessária
 
-Usar:
+A UC014 não lista Itens na página da Ficha. Sem uma superfície de navegação, a UC015 teria uma rota tecnicamente existente, porém inacessível ao usuário.
 
-~~~text
-decimal? Quantidade
-string? Observacao
-~~~
+Por isso, a UC015 adiciona à página da Ficha uma **lista operacional mínima**, sem antecipar a consulta completa da UC017.
 
-Quantidade nullable na fronteira para diferenciar ausência de zero.
-
-## Navegação
-
-A UC015 não deve antecipar a consulta completa da UC017.
-
-Pode adicionar ação Editar somente onde a UC014 já tornar o Item acessível na interface real após revalidação.
-
-A especificação final pós-UC014 deve confirmar o ponto de navegação correto.
-
-Cancelar retorna para:
+Quando existir Ficha, exibir seção:
 
 ~~~text
-/Produtos/FichaTecnica/{produtoId}
+Itens da ficha
 ~~~
+
+Colunas mínimas:
+
+- Insumo;
+- Quantidade;
+- Unidade;
+- Situação do Insumo;
+- Ação Editar.
+
+O rótulo do Insumo pode reutilizar a convenção:
+
+~~~text
+Nome — Marca
+Nome              // sem marca
+~~~
+
+A lista:
+
+- mostra apenas Itens da Ficha atual;
+- mantém visível Item cujo Insumo foi desativado depois da inclusão;
+- identifica Insumo inativo na coluna Situação;
+- não mostra custo;
+- não mostra preço;
+- não mostra observação contextual;
+- não calcula totais;
+- não implementa filtros/pesquisa;
+- não substitui UC017.
+
+Cada linha aponta para:
+
+~~~text
+/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}
+~~~
+
+Se não houver Itens, é permitido mostrar:
+
+~~~text
+Nenhum insumo adicionado.
+~~~
+
+O botão **Adicionar insumo** continua existindo quando a Ficha está persistida.
+
+## Consistência de estado da página da Ficha
+
+A revisão da PR #56 identificou uma inconsistência não bloqueante: em POST inválido de Rendimento/Tempo ativo para Ficha já persistida, `PossuiFicha` não é recarregado antes de `return Page()`, fazendo o botão Adicionar insumo desaparecer apenas naquela renderização.
+
+Como a UC015 passa a depender da navegação de Itens na mesma página, corrigir esse estado dentro desta tarefa.
+
+Antes de retornar `Page()` em POST inválido da base da Ficha:
+
+- detectar/recarregar a Ficha persistida;
+- manter `PossuiFicha = true` quando aplicável;
+- carregar a lista mínima de Itens;
+- manter Adicionar insumo e Editar visíveis.
+
+Isso não altera regra de domínio nem schema.
 
 ## Antiforgery
 
@@ -274,9 +371,9 @@ POST usa antiforgery padrão.
 
 POST sem token válido não altera Item.
 
-GET é somente leitura.
+GET não altera Item/Ficha/Produto/Insumo.
 
-## Regras de negócio aplicáveis
+## Regras aplicáveis
 
 - RN010 — Quantidade na Ficha;
 - RN034 — Observação contextual;
@@ -292,88 +389,100 @@ GET é somente leitura.
 Usuário anônimo não acessa. Usuário sem Empresa Ativa não possui acesso operacional.
 
 ### CA02 — GET carrega Item correto
-Exibe Produto/Insumo/Unidade/Situação e os valores atuais de Quantidade/Observacao.
+Exibe Produto, Insumo, Marca, Unidade, Situação, Quantidade e Observacao atuais.
 
 ### CA03 — Atualização válida
-Quantidade e Observacao válidas são atualizadas no mesmo Item.
+Quantidade/Observacao válidas atualizam o mesmo Item.
 
-### CA04 — Id e vínculos são preservados
+### CA04 — Vínculos preservados
 Id, EmpresaId, FichaTecnicaId e InsumoId permanecem inalterados.
 
 ### CA05 — Quantidade válida
-Decimal >0 é aceita; ausente, zero ou negativa é rejeitada.
+Entrada textual decimal >0 é aceita por parsing explícito; ausente, não numérica, zero ou negativa é rejeitada.
 
-### CA06 — Observação válida
-Null/whitespace vira null; trim externo; conteúdo interno preservado; >1000 rejeitado.
+### CA06 — Parsing independente de cultura
+`1,25` persiste como `1.25m` mesmo com cultura corrente invariant.
 
-### CA07 — Atualização é atômica
+### CA07 — Observação válida
+Null/whitespace => null; trim externo; conteúdo interno preservado; >1000 rejeitado.
+
+### CA08 — Atualização atômica
 Erro em Quantidade ou Observacao não deixa alteração parcial.
 
-### CA08 — Insumo não é editável
-UI não oferece troca e POST manipulado com InsumoId não altera referência.
+### CA09 — Insumo não é editável
+UI não oferece troca; POST manipulado com InsumoId não altera referência.
 
-### CA09 — Item de Insumo inativo é editável
-Pode alterar Quantidade/Observacao sem reativar Insumo.
+### CA10 — Insumo inativo continua editável
+Quantidade/Observacao podem mudar sem reativar Insumo.
 
-### CA10 — Produto inativo é editável
-Item pode ser alterado sem reativar Produto.
+### CA11 — Produto inativo continua editável
+Item pode mudar sem reativar Produto.
 
-### CA11 — Produto inexistente/cross-tenant
+### CA12 — Produto inexistente/cross-tenant
 GET/POST retornam 404.
 
-### CA12 — Item inexistente/cross-tenant
+### CA13 — Item inexistente/cross-tenant
 GET/POST retornam 404 sem vazamento.
 
-### CA13 — Item de outra Ficha
-Produto válido com itemId pertencente a outro Produto/Ficha retorna 404.
+### CA14 — Item de outra Ficha
+Produto válido com itemId pertencente a outra Ficha/Produto retorna 404.
 
-### CA14 — Request não controla ownership
-Campos extras de Empresa/Ficha/Insumo/Item não alteram os vínculos persistidos.
+### CA15 — Request não controla ownership/vínculos
+Campos extras manipulados não mudam Empresa/Ficha/Insumo/Item.
 
-### CA15 — RN048 permanece ativa
+### CA16 — RN048 permanece ativa
 Editar Item não desbloqueia Nome/Marca/Unidade do Insumo.
 
-### CA16 — Observação contextual continua independente
-Alteração do Item não modifica Observacao global do Insumo.
+### CA17 — Observação contextual continua independente
+Alterar Item não modifica Observacao global do Insumo.
 
-### CA17 — GET não muta
-GET não altera Item, Ficha, Produto ou Insumo.
+### CA18 — Navegação mínima
+Ficha persistida exibe seus Itens com ação Editar; não exibe Itens de outra Ficha/tenant.
 
-### CA18 — Antiforgery
+### CA19 — Insumo inativo permanece visível
+Item existente com Insumo inativo aparece na lista e pode ser aberto para edição.
+
+### CA20 — POST inválido da base preserva navegação
+Em Ficha já existente, erro de Rendimento/Tempo não esconde Adicionar insumo nem a lista/links de edição.
+
+### CA21 — GET não muta
+GET da edição e GET da Ficha não alteram dados.
+
+### CA22 — Antiforgery
 POST sem token não altera Item.
 
-### CA19 — PRG e mensagem
-POST válido redireciona à Ficha e mostra: Item da ficha técnica atualizado com sucesso.
+### CA23 — PRG e mensagem
+POST válido redireciona à Ficha e mostra `Item da ficha técnica atualizado com sucesso.`.
 
-### CA20 — Sem schema
+### CA24 — Sem schema
 Nenhuma migration ou ModelSnapshot é alterado.
 
-### CA21 — Sem escopo antecipado
-Não implementar remoção, troca de Insumo, consulta completa, custo, perdas, equipamentos ou versionamento.
+### CA25 — Sem escopo antecipado
+Não implementar remoção, troca de Insumo, consulta completa, custos, perdas, equipamentos ou versionamento.
 
-## Matriz de testes fechada
+## Matriz de testes revalidada
 
 ### Unitários — ItemFichaTecnica
 
-- U1: atualização válida altera quantidade/observação e preserva ids;
+- U1: AtualizarDados válido altera Quantidade/Observacao e preserva Id/Empresa/Ficha/Insumo;
 - U2: quantidade zero/negativa é rejeitada;
-- U3: observação normaliza e valida limite;
+- U3: Observacao normaliza e valida limite;
 - U4: atualização inválida é atômica.
 
 ### Persistência
 
 - P1: round-trip atualiza Quantidade/Observacao no mesmo Item;
 - P2: atualização preserva EmpresaId/FichaTecnicaId/InsumoId;
-- P3: índice único/RN049 permanece válido sem alteração;
+- P3: índice único/RN049 permanece intacto;
 - P4: nenhuma migration/schema nova.
 
 ### Web
 
-- W1: exige autenticação e Empresa Ativa;
-- W2: GET carrega dados e não oferece Insumo editável;
-- W3: POST válido atualiza e faz PRG;
-- W4: inválidos não persistem;
-- W5: POST manipulando InsumoId/EmpresaId/FichaId não altera vínculos;
+- W1: edição exige autenticação e Empresa Ativa;
+- W2: GET carrega Item e não oferece Insumo editável;
+- W3: POST válido com `1,25` atualiza e faz PRG;
+- W4: quantidade ausente/texto/zero/negativa e Observacao >1000 não persistem;
+- W5: POST manipulando InsumoId/EmpresaId/FichaId/ItemId não altera vínculos;
 - W6: Insumo inativo continua editável sem reativação;
 - W7: Produto inativo continua editável sem reativação;
 - W8: Produto inexistente/cross-tenant => 404;
@@ -381,61 +490,88 @@ Não implementar remoção, troca de Insumo, consulta completa, custo, perdas, e
 - W10: Item de outra Ficha/Produto => 404;
 - W11: GET não muta;
 - W12: antiforgery ausente não altera Item;
-- W13: edição mantém RN048 ativa na edição do Insumo.
+- W13: edição mantém RN048 ativa na edição do Insumo;
+- W14: página da Ficha lista somente Itens da própria Ficha com links Editar;
+- W15: Item com Insumo inativo permanece visível/editável;
+- W16: POST inválido da base da Ficha preserva PossuiFicha, Adicionar insumo e lista/links;
+- W17: parser compartilhado interpreta `1,25` como `1.25m` sob cultura invariant;
+- W18: fluxo Novo da UC014 continua aceitando Quantidade após refatoração do helper.
 
-## Gate obrigatório pós-UC014
+## Revalidação pós-UC014 — concluída
 
-Esta UC está especificada, mas **não liberada para implementação**.
+A revalidação foi executada contra a implementação real mergeada pela PR #56.
 
-Após implementação/revisão/merge da UC014:
+Confirmações:
 
-1. revalidar ItemFichaTecnica real;
-2. confirmar nomes/propriedades e método de criação;
-3. confirmar rota e navegação reais da UC014;
-4. confirmar como a Ficha apresenta/acessa Itens;
-5. confirmar guards cross-tenant Item/Ficha/Insumo;
-6. confirmar adaptação real de /Insumos/Editar pela RN048;
-7. confirmar que Quantidade/Observacao continuam sendo os únicos campos mutáveis;
-8. revalidar matriz U1-U4, P1-P4 e W1-W13;
-9. ajustar a especificação se necessário;
-10. somente então criar a instrução Codex;
-11. liberar branch sugerida:
+1. `ItemFichaTecnica` real possui exatamente os campos previstos;
+2. Quantidade e Observacao continuam sendo os únicos dados que devem ser mutáveis;
+3. Id/EmpresaId/FichaTecnicaId/InsumoId permanecem identidade/vínculos;
+4. não há método de atualização ainda, portanto `AtualizarDados` é o menor comportamento de domínio necessário;
+5. não há necessidade de alteração de schema;
+6. GQF e guards de Item já existem e não precisam ser redesenhados;
+7. Insumo inativo permanece consultável, permitindo edição de Item existente;
+8. Produto inativo já é suportado no fluxo da Ficha;
+9. Quantidade deve reutilizar o parsing explícito implementado pela UC014;
+10. o helper atual está acoplado ao `NovoModel` e deve ser tornado reutilizável, sem duplicar regra;
+11. a página da Ficha ainda não lista Itens, exigindo uma lista operacional mínima para tornar a edição navegável;
+12. a consulta completa continua reservada ao UC017;
+13. RN048 está realmente aplicada em GET/POST de Insumo e permanece ativa durante edição de Item;
+14. a observação visual de `PossuiFicha` da review da PR #56 pode ser corrigida dentro desta tarefa por ser diretamente relacionada à navegação introduzida pela UC015.
+
+A UC015 está liberada para implementação na branch:
 
 ~~~text
 feat/uc015-editar-item-ficha
+~~~
+
+Instrução Codex normativa:
+
+~~~text
+docs/codex/UC015-alterar-item-ficha.md
 ~~~
 
 ## Impacto no UC016
 
 UC016 removerá Item.
 
-A remoção pode mudar a RN048 quando o Item removido for a última referência atual do Insumo e não existir histórico de preço.
+A remoção poderá desativar RN048 quando:
 
-UC015 não executa essa lógica porque a referência permanece.
+- o Item removido for a última referência atual do Insumo;
+- e não existir histórico de preço.
+
+UC015 não executa desbloqueio porque a referência permanece.
 
 ## Fora do escopo
 
-- implementação antes do gate pós-UC014;
-- troca de Insumo;
+- UC016/UC017 completos;
 - remoção de Item;
-- UC016/UC017;
+- troca de Insumo;
+- exclusão física de Ficha;
 - histórico/versionamento da composição;
-- custo do Item;
-- preço vigente;
+- custos/preços;
 - perdas;
 - equipamentos;
-- conversões;
+- conversão de unidades;
+- filtros/pesquisa da composição;
 - API REST;
 - refatorações oportunistas.
 
-## Definition of Done da especificação
+## Definition of Done específica
 
-Para liberar implementação posteriormente:
+Além da DoD global:
 
-- UC014 implementada/revisada/mergeada;
-- gate pós-UC014 concluído;
-- RN050 confirmada contra modelo real;
-- rota/navegação real confirmadas;
-- matriz de testes revalidada;
-- instrução Codex criada somente após gate;
-- F003/catálogo/ordem/regras coerentes.
+- `ItemFichaTecnica.AtualizarDados` ou equivalente implementado atomicamente;
+- somente Quantidade/Observacao são mutáveis;
+- helper de Quantidade compartilhado entre Novo/Editar;
+- parsing/formatação pt-BR determinísticos;
+- nenhuma migration;
+- rota Editar funcional;
+- cadeia Produto->Ficha->Item protegida por tenant;
+- Insumo inativo e Produto inativo suportados sem reativação;
+- lista operacional mínima na Ficha implementada;
+- RN048 preservada;
+- estado de `PossuiFicha`/Itens preservado após POST inválido da base;
+- matriz U1-U4, P1-P4 e W1-W18 atendida;
+- UC014 sem regressão;
+- build Release sem warnings novos relevantes;
+- suíte completa verde.
