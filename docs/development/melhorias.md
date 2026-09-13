@@ -106,6 +106,22 @@ Status possíveis:
 - **Prioridade:** baixa; observar a repetição em UC011/UC012 antes de decidir pela implementação.
 
 
+
+### MEL009 — Parametrizar reserva comercial do Desconto de referência
+
+- **Status:** Pendente
+- **Origem:** definição do modelo comercial do UC011
+- **Problema:** o MVP usa reserva comercial fixa de 10 pontos percentuais para calcular o Desconto de referência. Empresas diferentes podem desejar políticas comerciais distintas.
+- **Objetivo:** permitir que cada Empresa configure a reserva comercial usada no cálculo do Desconto de referência, substituindo o valor fixo de 10 p.p. sem alterar o histórico factual de Custo, Margem, Preço sugerido e Preço de prateleira.
+- **Diretrizes para futura especificação:**
+  - configuração pertence à Empresa;
+  - avaliar inclusão na tela de configurações de precificação, em vez de criar tela isolada sem necessidade;
+  - quando a reserva deixar de ser fixa, congelar no registro histórico a reserva/política usada naquele cálculo (por exemplo `ReservaComercialReferencia`), para que mudanças futuras de configuração não reinterpretem decisões antigas;
+  - continuar sem persistir `DescontoReferencia`, pois ele permanece derivável a partir de Preço sugerido, Preço de prateleira e reserva de referência;
+  - não antecipar a parametrização no UC011: usar 10 p.p. fixos no MVP inicial.
+- **Prioridade:** baixa; revisar após UC011/UC012 e a implementação das configurações de precificação.
+
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade.

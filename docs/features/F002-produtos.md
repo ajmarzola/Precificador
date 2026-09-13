@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por Empresa, preservando separação entre Produto, Ficha Técnica e histórico de preço de venda.
+Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por Empresa, preservando separação entre Produto, Ficha Técnica, cálculo de precificação e histórico da decisão comercial de preço.
 
 ## Capacidades
 
@@ -11,8 +11,9 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - editar dados cadastrais;
 - desativar e reativar produto;
 - definir margem-alvo;
-- definir preço de venda preservando histórico;
-- consultar histórico de preço de venda.
+- calcular Preço sugerido a partir do custo e da margem de referência;
+- registrar Preço de prateleira preservando snapshot da precificação;
+- consultar histórico de precificação do Produto.
 
 ## Cadastro inicial — UC007
 
@@ -46,15 +47,28 @@ No domínio é armazenada como fração decimal e validada por RN019/RN045.
 
 Produto nasce ativo conforme RN044. Desativação e reativação são gerenciadas pelo UC010.
 
-## Preço de venda
+## Preço sugerido, Preço de prateleira e histórico
 
-Preço de venda **não pertence ao UC007**.
+Preço comercial **não pertence ao UC007**.
 
-O Produto pode existir sem preço praticado, conforme RN046.
+O Produto pode existir sem Preço de prateleira, conforme RN046.
 
-UC011 introduzirá alteração de preço de venda com preservação de histórico; UC012 consultará esse histórico.
+O Preço sugerido é calculado pelo sistema a partir do custo unitário, Margem de referência e regra de arredondamento comercial. Ele representa a referência economicamente saudável para a decisão comercial.
 
-Não persistir um simples `PrecoVendaAtual` no cadastro inicial para depois migrá-lo para histórico.
+O Preço de prateleira é a decisão comercial informada pelo usuário e pode ser igual, maior ou menor que o Preço sugerido. Quando ficar abaixo do sugerido, a apresentação deve evidenciar essa condição sem bloquear a decisão.
+
+A UC011 foi deslocada para depois da UC023. Ao registrar um novo Preço de prateleira, o histórico deve congelar no mesmo registro:
+- Data de referência determinada pelo sistema;
+- Custo de referência;
+- Margem de referência;
+- Preço sugerido;
+- Preço de prateleira informado pelo usuário.
+
+O usuário informa somente o Preço de prateleira. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e pode receber registros para Produto inativo sem reativá-lo.
+
+UC012 consultará esse histórico.
+
+Não persistir um simples `PrecoVendaAtual` ou `PrecoPrateleiraAtual` diretamente em Produto; o valor atual será derivado do histórico.
 
 ## Ficha Técnica e produção
 
@@ -103,7 +117,7 @@ Implementado com as páginas `/Produtos` e `/Produtos/Detalhes/{id}`, mantendo c
 
 A pesquisa não usa Categoria neste incremento, evitando criar normalização/schema apenas para filtro.
 
-Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da consulta até seus respectivos UCs.
+Preço sugerido, Preço de prateleira, custo, margem atual e Ficha Técnica permanecem ausentes da consulta até seus respectivos UCs.
 
 ## Edição cadastral — UC009
 
@@ -119,7 +133,7 @@ A edição reutiliza RN041–RN045, mantém a unicidade por Empresa + Nome norma
 
 A atualização de domínio é atômica: se qualquer campo for inválido, o Produto não fica parcialmente alterado em memória.
 
-UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não introduz desativação, preço de venda, Ficha Técnica ou custo.
+UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não introduz desativação, precificação comercial, Ficha Técnica ou custo.
 
 ## Situação — UC010
 
@@ -140,8 +154,10 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
 - [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — implementado;
 - [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — implementado;
-- UC011 — Alterar preço de venda preservando histórico — próximo caso de Produtos;
-- UC012 — Consultar histórico de preço de venda.
+- UC011 — Registrar preço de prateleira preservando snapshot de precificação — após UC023;
+- UC012 — Consultar histórico de precificação do Produto — após UC011.
+
+O próximo caso na fila global passa a ser UC013.
 
 ## Fora do escopo
 

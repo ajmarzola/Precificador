@@ -62,21 +62,44 @@ custo_unitário_produto = custo_lote / rendimento
 
 ## Formação do preço
 
-A margem é tratada como margem sobre o preço de venda, não como simples multiplicador sobre custo.
+A margem é tratada como margem sobre o preço, não como simples multiplicador sobre custo.
 
 ```text
 preço_teórico = custo_unitário / (1 - margem_alvo)
 ```
 
-O preço sugerido é o preço teórico arredondado para cima para o incremento comercial configurado da Empresa.
+O **Preço sugerido** é o preço teórico arredondado para cima para o incremento comercial configurado da Empresa. Ele representa a referência economicamente saudável calculada pelo sistema.
+
+O **Preço de prateleira** é a decisão comercial efetivamente informada pelo usuário. Pode ser igual, superior ou inferior ao Preço sugerido. Valor inferior é permitido, mas deve ser evidenciado na apresentação como decisão abaixo da referência saudável.
+
+### Desconto de referência
+
+Enquanto não existir parametrização própria, a reserva comercial é fixa em **10 pontos percentuais**.
+
+O Desconto de referência só é aplicável quando o Preço de prateleira estiver pelo menos **11% acima** do Preço sugerido.
+
+Conceitualmente:
+
+```text
+percentual_acima_sugerido = (preço_prateleira / preço_sugerido) - 1
+
+se percentual_acima_sugerido < 11%
+    desconto_referencia = não aplicável
+senão
+    desconto_referencia = percentual_acima_sugerido - 10 p.p.
+```
+
+Se o Preço de prateleira for inferior ao Preço sugerido, não existe percentual de desconto de referência; a condição é apresentada como preço abaixo do sugerido.
+
+O Desconto de referência é derivado e não deve ser persistido como dado redundante.
 
 ## Margem atual
 
 ```text
-margem_atual = (preço_venda - custo_unitário) / preço_venda
+margem_atual = (preço_prateleira_atual - custo_unitário) / preço_prateleira_atual
 ```
 
-A margem atual sempre usa o custo calculado com preços e configurações vigentes da mesma Empresa.
+A margem atual usa o Preço de prateleira vigente e o custo calculado com preços e configurações vigentes da mesma Empresa.
 
 ## Ausência de dados
 
@@ -123,7 +146,25 @@ No MVP, os registros de preço referenciam o Insumo por `InsumoId` e **não prec
 
 ### Produtos
 
-O preço de venda praticado possui histórico próprio. O custo atual continua calculado sob demanda. Quando snapshots históricos de custo forem necessários, deverão ser modelados explicitamente.
+O histórico comercial do Produto é append-only e registra snapshots da decisão de precificação.
+
+Cada novo registro deve conter, no mínimo:
+
+- EmpresaId;
+- ProdutoId;
+- DataReferencia determinada pelo sistema pela data operacional da Empresa;
+- CustoReferencia = custo unitário vigente calculado pelo sistema;
+- MargemReferencia = MargemAlvo do Produto usada naquele cálculo;
+- PrecoSugerido calculado pelo UC023 a partir dessas referências e do arredondamento comercial;
+- PrecoPrateleira informado pelo usuário.
+
+O usuário informa somente o Preço de prateleira. Os demais valores são derivados do estado da precificação no momento do registro e ficam congelados como snapshot histórico.
+
+Não são permitidas datas futuras. Múltiplos registros na mesma DataReferencia são permitidos para correções sem edição/exclusão do histórico. O registro vigente é o de maior DataReferencia e, em empate, maior Id.
+
+Produto inativo pode receber novo registro comercial; isso não o reativa.
+
+O custo atual continua calculado sob demanda para a visão corrente. O CustoReferencia persistido no histórico existe para preservar a decisão tomada naquele momento e não substitui o cálculo atual.
 
 ## Golden cases
 
