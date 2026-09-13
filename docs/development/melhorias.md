@@ -72,6 +72,40 @@ Status possíveis:
 - **Decisão:** usar `America/Sao_Paulo` como padrão de compatibilidade para Empresas existentes e `TimeProvider` para testes determinísticos; não criar CRUD de timezone nesta melhoria.
 - **Prioridade:** recomendada antes da implementação do UC006 para evitar introduzir dependência temporária de `DateTime.Now`.
 
+
+### MEL007 — Centralizar o estado do backlog em uma fonte de verdade clara
+
+- **Status:** Pendente
+- **Origem:** review do projeto após conclusão da UC010
+- **Problema:** o estado de cada UC hoje é repetido em vários documentos, principalmente caso de uso individual, F002, catálogo e ordem de implementação. A disciplina atual mantém esses arquivos coerentes, mas o custo de atualização cresce a cada entrega e aumenta o risco de divergência entre “especificado”, “liberado”, “implementado” e “próximo”.
+- **Objetivo:** definir uma única fonte normativa para **estado e ordenação do backlog**, fazendo os demais documentos referenciarem essa fonte ou reduzirem a repetição de status quando ela não agrega contexto.
+- **Diretrizes para futura especificação:**
+  - preservar documentação individual de UC e feature;
+  - não remover contexto funcional útil apenas para eliminar duplicação;
+  - escolher explicitamente qual documento/estrutura será a fonte normativa de status;
+  - evitar automação complexa antes de confirmar que ela reduz manutenção real;
+  - considerar validação automatizada simples apenas se houver valor claro;
+  - manter fácil leitura humana no GitHub.
+- **Critério de sucesso esperado:** uma mudança de estado de UC deve exigir atualização em um número mínimo e previsível de locais, sem permitir que catálogo, ordem e feature apresentem estados contraditórios.
+- **Prioridade:** média-baixa; reavaliar na próxima janela de revisão técnica, sem bloquear UC011/UC012.
+
+### MEL008 — Reduzir duplicação da infraestrutura de testes Web tenant-aware
+
+- **Status:** Pendente
+- **Origem:** review do projeto após UC009/UC010
+- **Problema:** testes Web repetem infraestrutura para criar Empresa/usuário, autenticar cliente, manter cookies, obter token antiforgery e preparar contexto tenant-aware. A repetição ainda é administrável, mas tende a crescer conforme Produtos ganha novos fluxos.
+- **Objetivo:** avaliar uma pequena infraestrutura comum de testes Web para operações transversais de autenticação, Empresa Ativa e antiforgery, sem criar framework interno ou esconder a intenção dos cenários.
+- **Diretrizes para futura especificação:**
+  - aguardar UC011/UC012 para confirmar quais trechos realmente se repetem;
+  - extrair apenas infraestrutura transversal comprovadamente duplicada;
+  - manter criação de entidades e preparação de regras de domínio específicas perto do teste correspondente;
+  - preferir composição/helpers pequenos a uma hierarquia de classes base;
+  - não enfraquecer antiforgery, Global Query Filter ou autenticação para facilitar testes;
+  - preservar nomes de testes orientados a critérios de aceitação e diagnósticos claros.
+- **Critério de sucesso esperado:** reduzir boilerplate de autenticação/tenant/antiforgery sem tornar os testes opacos nem acoplar UCs diferentes a uma abstração CRUD genérica.
+- **Prioridade:** baixa; observar a repetição em UC011/UC012 antes de decidir pela implementação.
+
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade.
