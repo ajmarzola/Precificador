@@ -4,7 +4,7 @@
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência material:** UC007 implementado
 - **Sequenciamento:** implementar após UC008 implementado, revisado e mergeado
-- **Próximo caso relacionado:** UC010 — Desativar produto
+- **Próximo caso relacionado:** UC010 — Desativar e reativar produto
 - **Sem alteração de schema:** este UC altera comportamento/domínio e UI, não estrutura persistida
 
 ## Objetivo
@@ -107,7 +107,7 @@ O formulário não deve permitir alterar:
 
 EmpresaId continua vindo exclusivamente do contexto de Empresa e não do request.
 
-Ativo continua fora deste UC. UC010 introduzirá desativação.
+Ativo continua fora deste UC. UC010 introduzirá desativação e reativação.
 
 ## Domínio
 
