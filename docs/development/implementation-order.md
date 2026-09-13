@@ -81,7 +81,7 @@ O UC010 implementou o ciclo reversível de desativação/reativação. Produto i
 
 A revalidação genérica da UC013 foi concluída: este incremento fica restrito a Rendimento e TempoAtivoMinutos. UC014 a UC017 continuam sujeitos às revalidações específicas antes da implementação.
 
-A revalidação obrigatória da UC014 contra a implementação real da UC013 foi concluída. O modelo previsto de ItemFichaTecnica permanece coerente; Quantidade deve usar parsing Web explícito pt-BR/invariant seguindo o aprendizado da UC013.
+A UC014 foi implementada após revalidação contra a implementação real da UC013. O modelo de ItemFichaTecnica permanece coerente; Quantidade usa parsing Web explícito pt-BR/invariant seguindo o aprendizado da UC013.
 
 Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
 
@@ -94,7 +94,7 @@ Instrução Codex UC014: [`../codex/UC014-adicionar-insumo-ficha.md`](../codex/U
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
-2. **UC014 — Adicionar Insumo à Ficha Técnica** — pronto para implementação;
+2. **UC014 — Adicionar Insumo à Ficha Técnica** — implementado;
 3. **UC015 — Alterar item da Ficha Técnica** — especificado; bloqueado até revalidação pós-UC014;
 4. UC016 — Remover item da Ficha Técnica;
 5. UC017 — Consultar Ficha Técnica e composição.
@@ -152,4 +152,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC014 — Adicionar Insumo à Ficha Técnica** em `feat/uc014-adicionar-insumo-ficha`, usando a especificação revalidada e `docs/codex/UC014-adicionar-insumo-ficha.md`. Após o merge, revalidar/liberar a UC015. A UC011 permanece bloqueada até a conclusão da UC023.
+Revalidar/liberar a **UC015 — Alterar item da Ficha Técnica** após a implementação da UC014. A UC011 permanece bloqueada até a conclusão da UC023.

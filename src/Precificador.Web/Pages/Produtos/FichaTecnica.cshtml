@@ -11,6 +11,10 @@
 {
     <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
 }
+@if (Model.MensagemAviso is not null)
+{
+    <div class="alert alert-warning" role="alert">@Model.MensagemAviso</div>
+}
 
 <dl class="row">
     <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
@@ -31,6 +35,10 @@
         <span asp-validation-for="Input.TempoAtivoMinutos" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Salvar</button>
+    @if (Model.PossuiFicha)
+    {
+        <a asp-page="/Produtos/FichaTecnica/Itens/Novo" asp-route-produtoId="@produto.Id" class="btn btn-outline-primary">Adicionar insumo</a>
+    }
     <a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para o produto</a>
 </form>
 

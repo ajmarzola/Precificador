@@ -2,8 +2,8 @@ using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Precificador.Core.FichasTecnicas;
 using Precificador.Infrastructure.Persistence;
+using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
 
@@ -15,6 +15,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
     public ProdutoResumo? Produto { get; private set; }
 
     public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
+
+    public string? MensagemAviso => TempData["MensagemAviso"] as string;
+
+    public bool PossuiFicha { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -28,6 +32,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
 
         if (ficha is not null)
         {
+            PossuiFicha = true;
             Input = new FichaTecnicaInputModel
             {
                 Rendimento = FichaTecnicaFormulario.FormatarRendimento(ficha.Rendimento),
@@ -56,7 +61,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         var ficha = await context.FichasTecnicas.SingleOrDefaultAsync(item => item.ProdutoId == id);
         if (ficha is null)
         {
-            ficha = FichaTecnica.Criar(Produto!.EmpresaId, Produto.Id, rendimento, Input.TempoAtivoMinutos!.Value);
+            ficha = FichaTecnicaDominio.Criar(Produto!.EmpresaId, Produto.Id, rendimento, Input.TempoAtivoMinutos!.Value);
             context.FichasTecnicas.Add(ficha);
         }
         else

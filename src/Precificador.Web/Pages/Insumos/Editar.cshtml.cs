@@ -12,7 +12,13 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     [BindProperty]
     public InsumoInputModel Input { get; set; } = new();
 
-    public bool PossuiHistorico { get; private set; }
+    public bool PossuiHistoricoPreco { get; private set; }
+
+    public bool ReferenciadoEmFicha { get; private set; }
+
+    public bool IdentidadeProtegida => PossuiHistoricoPreco || ReferenciadoEmFicha;
+
+    public bool PossuiHistorico => PossuiHistoricoPreco;
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -34,7 +40,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         }
 
         Input = insumo;
-        PossuiHistorico = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == id);
+        await CarregarProtecaoIdentidadeAsync(id);
         return Page();
     }
 
@@ -46,8 +52,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        PossuiHistorico = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == id);
-        if (PossuiHistorico)
+        await CarregarProtecaoIdentidadeAsync(id);
+        if (IdentidadeProtegida)
         {
             Input.Nome = insumo.Nome;
             Input.Marca = insumo.Marca;
@@ -82,5 +88,11 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         await context.SaveChangesAsync();
         TempData["MensagemSucesso"] = "Insumo atualizado com sucesso.";
         return RedirectToPage("/Insumos/Detalhes", new { id });
+    }
+
+    private async Task CarregarProtecaoIdentidadeAsync(int insumoId)
+    {
+        PossuiHistoricoPreco = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == insumoId);
+        ReferenciadoEmFicha = await context.ItensFichaTecnica.AnyAsync(item => item.InsumoId == insumoId);
     }
 }
