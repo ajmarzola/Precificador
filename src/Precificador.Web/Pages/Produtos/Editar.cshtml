@@ -1,0 +1,32 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.EditarModel
+@{
+    ViewData["Title"] = "Editar produto";
+}
+
+<h1>Editar produto</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Nome" class="form-label"></label>
+        <input asp-for="Input.Nome" class="form-control" />
+        <span asp-validation-for="Input.Nome" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Categoria" class="form-label"></label>
+        <input asp-for="Input.Categoria" class="form-control" />
+        <span asp-validation-for="Input.Categoria" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.MargemAlvoPercentual" class="form-label"></label>
+        <input asp-for="Input.MargemAlvoPercentual" class="form-control" />
+        <span asp-validation-for="Input.MargemAlvoPercentual" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a asp-page="/Produtos/Detalhes" asp-route-id="@RouteData.Values["id"]" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -11,5 +11,5 @@ public sealed class ProdutoInputModel
     public string? Categoria { get; set; }
 
     [Display(Name = "Margem-alvo (%)")]
-    public decimal? MargemAlvoPercentual { get; set; }
+    public string? MargemAlvoPercentual { get; set; }
 }

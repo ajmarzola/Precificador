@@ -45,6 +45,22 @@ public sealed class Produto : IEntidadeEmpresa
     public static Produto Criar(int empresaId, string nome, decimal margemAlvo, string? categoria = null) =>
         new(empresaId, nome, margemAlvo, categoria);
 
+    public void AtualizarDados(string nome, decimal margemAlvo, string? categoria = null)
+    {
+        var nomeNormalizado = NormalizarNome(nome);
+        var nomeNormalizadoComparacao = nomeNormalizado.ToUpperInvariant();
+        var categoriaNormalizada = NormalizarCategoria(categoria);
+
+        ValidarNome(nomeNormalizado);
+        ValidarCategoria(categoriaNormalizada);
+        ValidarMargemAlvo(margemAlvo);
+
+        Nome = nomeNormalizado;
+        NomeNormalizado = nomeNormalizadoComparacao;
+        Categoria = categoriaNormalizada;
+        MargemAlvo = margemAlvo;
+    }
+
     public void DefinirEmpresa(int empresaId)
     {
         if (empresaId <= 0)

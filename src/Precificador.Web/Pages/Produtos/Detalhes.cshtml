@@ -7,6 +7,11 @@
 }
 <h1>Consultar produto</h1>
 
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+
 <dl class="row">
     <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
     <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@(produto.Categoria ?? "—")</dd>
@@ -14,4 +19,5 @@
     <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
 </dl>
 
+<a asp-page="/Produtos/Editar" asp-route-id="@produto.Id" class="btn btn-primary">Editar</a>
 <a asp-page="/Produtos/Index">Voltar para produtos</a>

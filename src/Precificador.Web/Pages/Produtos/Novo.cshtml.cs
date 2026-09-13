@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
@@ -12,8 +11,6 @@ namespace Precificador.Web.Pages.Produtos;
 [Authorize]
 public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext empresaContext, ILogger<NovoModel> logger) : PageModel
 {
-    private const string MensagemDuplicidade = "Já existe um produto cadastrado com esse nome.";
-
     [BindProperty]
     public ProdutoInputModel Input { get; set; } = new();
 
@@ -25,8 +22,8 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 
     public async Task<IActionResult> OnPostAsync()
     {
-        ValidarCamposObrigatorios();
-        if (!ModelState.IsValid)
+        var margemInformada = ProdutoFormulario.TentarObterMargemAlvo(ModelState, Input, out var margemAlvo);
+        if (!margemInformada || !ModelState.IsValid)
         {
             return Page();
         }
@@ -37,18 +34,18 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
             produto = Produto.Criar(
                 empresaContext.EmpresaId!.Value,
                 Input.Nome!,
-                Input.MargemAlvoPercentual!.Value / 100m,
+                margemAlvo,
                 Input.Categoria);
         }
         catch (ArgumentException exception)
         {
-            AdicionarErroDominio(ModelState, exception);
+            ProdutoFormulario.AdicionarErroDominio(ModelState, exception);
             return Page();
         }
 
         if (await context.Produtos.AnyAsync(item => item.NomeNormalizado == produto.NomeNormalizado))
         {
-            ModelState.AddModelError("Input.Nome", MensagemDuplicidade);
+            ModelState.AddModelError("Input.Nome", ProdutoFormulario.MensagemDuplicidade);
             return Page();
         }
 
@@ -66,22 +63,4 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
         TempData["MensagemSucesso"] = "Produto cadastrado com sucesso.";
         return RedirectToPage();
     }
-
-    private void ValidarCamposObrigatorios()
-    {
-        if (!Input.MargemAlvoPercentual.HasValue)
-        {
-            ModelState.AddModelError("Input.MargemAlvoPercentual", "A margem-alvo é obrigatória.");
-        }
-    }
-
-    private static void AdicionarErroDominio(ModelStateDictionary modelState, ArgumentException exception) =>
-        modelState.AddModelError(CampoPara(exception.ParamName), exception.Message);
-
-    private static string CampoPara(string? nomeParametro) => nomeParametro switch
-    {
-        "categoria" => "Input.Categoria",
-        "margemAlvo" => "Input.MargemAlvoPercentual",
-        _ => "Input.Nome"
-    };
 }

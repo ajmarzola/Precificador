@@ -107,7 +107,7 @@ Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da con
 
 ## Edição cadastral — UC009
 
-O UC009 está especificado para editar o Produto existente preservando o mesmo Id e a Empresa proprietária.
+Implementado com a página `/Produtos/Editar/{id}`, preservando o mesmo Id, a Empresa proprietária e a Situação do Produto.
 
 Campos editáveis:
 
@@ -117,7 +117,7 @@ Campos editáveis:
 
 A edição reutiliza RN041–RN045, mantém a unicidade por Empresa + Nome normalizado e não altera Situação.
 
-A atualização de domínio deve ser atômica: se qualquer campo for inválido, o Produto não pode ficar parcialmente alterado em memória.
+A atualização de domínio é atômica: se qualquer campo for inválido, o Produto não fica parcialmente alterado em memória.
 
 UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não introduz desativação, preço de venda, Ficha Técnica ou custo.
 
@@ -132,14 +132,14 @@ O UC010 está especificado para implementar o ciclo reversível de situação:
 - mantendo inativos visíveis e consultáveis;
 - mantendo, após a UC009, edição cadastral de Produto inativo sem reativação implícita.
 
-A implementação do UC010 permanece bloqueada até a UC009 ser implementada, revisada e mergeada e esta especificação ser revalidada contra a master real pós-UC009.
+A implementação do UC010 é o próximo caso de Produtos e deve ser revalidada contra a master real pós-UC009 antes de iniciar.
 
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
-- [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — especificado e próximo caso de Produtos;
-- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — especificado; aguarda UC009 implementado/revalidado;
+- [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — implementado;
+- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — especificado e próximo caso de Produtos;
 - UC011 — Alterar preço de venda preservando histórico;
 - UC012 — Consultar histórico de preço de venda.
 

@@ -138,6 +138,77 @@ public sealed class ProdutoPersistenceTests
         Assert.Equal(787, sqliteException.SqliteExtendedErrorCode);
     }
 
+    [Fact]
+    public async Task CA04_Atualizacao_valida_persiste_campos_e_preserva_id_empresa_status()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+
+        var produto = Produto.Criar(1, "Agenda", 0.30m, "Planners");
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+        var id = produto.Id;
+
+        produto.AtualizarDados("  Calendário   2027  ", 0.255m, "  Datas ");
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var atualizado = await context.Produtos.SingleAsync();
+        Assert.Equal(id, atualizado.Id);
+        Assert.Equal(1, atualizado.EmpresaId);
+        Assert.Equal("Calendário 2027", atualizado.Nome);
+        Assert.Equal("CALENDÁRIO 2027", atualizado.NomeNormalizado);
+        Assert.Equal("Datas", atualizado.Categoria);
+        Assert.Equal(0.255m, atualizado.MargemAlvo);
+        Assert.True(atualizado.Ativo);
+    }
+
+    [Fact]
+    public async Task CA10_Indice_unico_rejeita_renomeacao_para_nome_de_outro_produto_da_mesma_empresa()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+
+        var produto = Produto.Criar(1, "Agenda", 0.30m);
+        context.Produtos.AddRange(produto, Produto.Criar(1, "Calendário", 0.25m));
+        await context.SaveChangesAsync();
+
+        produto.AtualizarDados("  calendário  ", 0.30m);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task CA11_Mesmo_nome_normalizado_permanece_permitido_em_empresas_diferentes()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using (var context = CriarContexto(connection, 1))
+        {
+            await context.Database.MigrateAsync();
+            context.Empresas.Add(Empresa.Criar("Empresa dois"));
+            context.Produtos.Add(Produto.Criar(1, "Agenda", 0.30m));
+            await context.SaveChangesAsync();
+        }
+
+        await using (var context = CriarContexto(connection, 2))
+        {
+            context.Produtos.Add(Produto.Criar(2, "Calendário", 0.25m));
+            await context.SaveChangesAsync();
+        }
+
+        await using var contextoEmpresaDois = CriarContexto(connection, 2);
+        var produtoEmpresaDois = await contextoEmpresaDois.Produtos.SingleAsync();
+        produtoEmpresaDois.AtualizarDados(" agenda ", 0.20m);
+
+        await contextoEmpresaDois.SaveChangesAsync();
+        Assert.Equal("AGENDA", produtoEmpresaDois.NomeNormalizado);
+    }
+
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) => new(
         new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options,
         new ContextoEmpresa(empresaId));
