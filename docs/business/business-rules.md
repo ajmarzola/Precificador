@@ -393,9 +393,9 @@ Registrar uma nova decisão comercial cria um novo registro append-only e não a
 O usuário informa somente `PrecoPrateleira`. O sistema determina e congela no registro:
 
 - DataReferencia pela data operacional da Empresa;
-- CustoReferencia;
-- MargemReferencia;
-- PrecoSugerido;
+- CustoReferencia = CustoUnitarioProduto vigente calculado pelo sistema;
+- MargemReferencia = MargemAlvo do Produto usada naquele cálculo;
+- PrecoSugerido = preço calculado pelo UC023 a partir dessas referências e do arredondamento comercial;
 - PrecoPrateleira informado.
 
 Não são permitidas datas futuras. Múltiplos registros na mesma DataReferencia são permitidos para correção; o vigente é o de maior DataReferencia e, em empate, maior Id.
