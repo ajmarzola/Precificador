@@ -91,11 +91,15 @@ Especificação UC014 revalidada: [`../use-cases/UC014-adicionar-insumo-ficha.md
 
 Instrução Codex UC014: [`../codex/UC014-adicionar-insumo-ficha.md`](../codex/UC014-adicionar-insumo-ficha.md).
 
+Especificação UC015 revalidada: [`../use-cases/UC015-alterar-item-ficha.md`](../use-cases/UC015-alterar-item-ficha.md).
+
+Instrução Codex UC015: [`../codex/UC015-alterar-item-ficha.md`](../codex/UC015-alterar-item-ficha.md).
+
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
 2. **UC014 — Adicionar Insumo à Ficha Técnica** — implementado;
-3. **UC015 — Alterar item da Ficha Técnica** — especificado; bloqueado até revalidação pós-UC014;
+3. **UC015 — Alterar item da Ficha Técnica** — pronto para implementação;
 4. UC016 — Remover item da Ficha Técnica;
 5. UC017 — Consultar Ficha Técnica e composição.
 
@@ -152,4 +156,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Revalidar/liberar a **UC015 — Alterar item da Ficha Técnica** após a implementação da UC014. A UC011 permanece bloqueada até a conclusão da UC023.
+Implementar e revisar a **UC015 — Alterar item da Ficha Técnica** em `feat/uc015-editar-item-ficha`, usando a especificação revalidada e `docs/codex/UC015-alterar-item-ficha.md`. Após o merge, especificar/revalidar a UC016. A UC011 permanece bloqueada até a conclusão da UC023.
