@@ -165,6 +165,14 @@ A observação:
 
 Um item de ficha técnica pode possuir observação contextual própria para registrar a justificativa de uso daquele Insumo na ficha, como a razão para escolher uma marca específica.
 
+A observação contextual:
+
+- é opcional;
+- possui no máximo 1000 caracteres;
+- remove apenas whitespace externo;
+- preserva conteúdo interno e quebras de linha;
+- se vazia ou composta apenas por whitespace, é armazenada como null.
+
 Essa observação é independente da Observação global do Insumo e deve permanecer associada ao item da ficha. Alterações posteriores na Observação do Insumo não devem sobrescrever a justificativa registrada.
 
 A implementação desta regra pertence aos UCs de Ficha Técnica, não ao UC001A ou UC002.
@@ -189,6 +197,48 @@ Se for necessária uma mudança real de Nome, Marca ou Unidade base depois do in
 Essa regra protege a interpretação dos registros históricos e permite que o histórico de preços referencie o `InsumoId` sem precisar duplicar snapshots de Nome, Marca e Unidade base em cada registro de preço no MVP.
 
 A motivação, alternativas avaliadas e consequências desta decisão estão documentadas em [Estabilidade cadastral do Insumo com histórico de preços](insumo-historical-stability.md).
+
+### RN048 — Estabilidade cadastral do Insumo referenciado em Ficha Técnica
+
+Enquanto existir pelo menos um ItemFichaTecnica atual referenciando um Insumo:
+
+- Nome é imutável;
+- Marca é imutável;
+- Unidade base é imutável;
+- Categoria permanece editável;
+- Observação global permanece editável;
+- situação Ativo/Inativo continua regida pela RN008.
+
+A regra protege o significado da composição: Quantidade é expressa na Unidade base e a referência identifica um Insumo econômico específico. Alterar Nome, Marca ou Unidade enquanto há referência mudaria silenciosamente Fichas existentes.
+
+A proteção efetiva da identidade cadastral é a união de RN040 e RN048:
+
+~~~text
+IdentidadeProtegida =
+    possui qualquer histórico de preço
+    OU
+    possui qualquer referência atual em Ficha Técnica
+~~~
+
+A RN040 é permanente porque histórico de preço é append-only.
+
+A RN048 depende de referências atuais. Se a última referência em Ficha for removida e o Insumo não possuir histórico de preço, Nome, Marca e Unidade base podem voltar a ser editáveis. Esse desbloqueio deve ser revalidado no UC016.
+
+### RN049 — Um Insumo por Ficha Técnica
+
+O mesmo Insumo pode aparecer no máximo uma vez na mesma Ficha Técnica no MVP.
+
+A identidade funcional do Item é:
+
+~~~text
+EmpresaId + FichaTecnicaId + InsumoId
+~~~
+
+Se o Insumo já estiver na Ficha, uma nova inclusão deve ser rejeitada. Alterações de Quantidade ou Observação contextual pertencem ao UC015.
+
+O mesmo Insumo pode participar de Fichas diferentes da mesma Empresa.
+
+
 
 ## Multiempresa e acesso
 
