@@ -58,7 +58,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 |---|---|---|
 | [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 — **pronto para implementação; próximo caso** |
 | [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 — **especificado; bloqueado até UC013 implementado e revalidado** |
-| UC015 | Alterar quantidade/observação de item da ficha técnica | UC014 |
+| [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 — **especificado; bloqueado até UC014 implementado e revalidado** |
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
 

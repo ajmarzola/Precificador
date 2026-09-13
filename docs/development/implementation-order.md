@@ -91,7 +91,7 @@ Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — pronto para implementação;
 2. **UC014 — Adicionar Insumo à Ficha Técnica** — especificado; bloqueado até revalidação pós-UC013;
-3. UC015 — Alterar item da Ficha Técnica;
+3. **UC015 — Alterar item da Ficha Técnica** — especificado; bloqueado até revalidação pós-UC014;
 4. UC016 — Remover item da Ficha Técnica;
 5. UC017 — Consultar Ficha Técnica e composição.
 
@@ -148,4 +148,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`. Após o merge, executar a revalidação obrigatória da UC014 e só então criar sua instrução Codex. A UC011 permanece bloqueada até a conclusão da UC023.
+Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`. Após o merge, revalidar/liberar a UC014. A UC015 já está especificada, mas só poderá ser liberada após a implementação real da UC014. A UC011 permanece bloqueada até a conclusão da UC023.
