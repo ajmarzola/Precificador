@@ -112,7 +112,7 @@ Ordem prevista:
 
 ## Etapa 4 — Configurações de precificação
 
-Antecipar UC026 e UC027 antes do motor completo, pois mão de obra, energia/equipamentos e o arredondamento do Preço sugerido dependem de configurações da Empresa.
+Antecipar UC026 e UC027 antes do motor completo, pois mão de obra, energia/equipamentos e o arredondamento do Preço sugerido dependem de configurações da Empresa. Conforme MEL009, essas configurações já devem nascer com a Reserva comercial para desconto; não criar uma implementação separada posterior.
 
 1. UC026 — Consultar configurações de precificação da Empresa;
 2. UC027 — Alterar configurações de precificação da Empresa.
@@ -133,7 +133,7 @@ Executar UC018 a UC023 antes da decisão comercial de preço.
 1. UC011 — Registrar Preço de prateleira preservando snapshot de precificação;
 2. UC012 — Consultar histórico de precificação do Produto.
 
-A UC011 receberá do usuário somente o Preço de prateleira. Data de referência, Custo de referência, Margem de referência e Preço sugerido são determinados pelo sistema. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e permite novo registro para Produto inativo sem reativá-lo.
+A UC011 receberá do usuário somente o Preço de prateleira. Data de referência, Custo de referência, Margem de referência, Preço sugerido e Reserva comercial de referência são determinados pelo sistema. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e permite novo registro para Produto inativo sem reativá-lo. Conforme MEL009, o Desconto de referência é derivado usando a reserva congelada no próprio registro.
 
 ## Etapa 7 — Margem e detalhamento
 
