@@ -1,0 +1,17 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.DetalhesModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Consultar produto";
+    var produto = Model.Produto!;
+}
+<h1>Consultar produto</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@(produto.Categoria ?? "—")</dd>
+    <dt class="col-sm-3">Margem-alvo</dt><dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
+</dl>
+
+<a asp-page="/Produtos/Index">Voltar para produtos</a>

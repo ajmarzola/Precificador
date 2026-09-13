@@ -1,6 +1,6 @@
 # UC008 — Listar e consultar produtos
 
-- **Status:** Revalidado após UC007 — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência material:** UC007 implementado
 - **Sequenciamento:** UC007 já implementado, revisado e mergeado; gate concluído
@@ -553,8 +553,8 @@ Além da DoD global:
 - nenhuma migration;
 - nenhuma mutação;
 - nenhum UC009+;
-- UC008 passa para Implementado;
-- F002/catálogo/ordem ficam coerentes;
+- UC008 implementado;
+- F002/catálogo/ordem coerentes;
 - UC009 passa a próximo caso de Produtos;
 - gate pós-UC007 concluído: especificação revalidada contra a implementação real;
 - build Release sem warnings novos relevantes;
