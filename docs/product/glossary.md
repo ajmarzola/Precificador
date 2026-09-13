@@ -48,7 +48,7 @@ Registro de preço vigente mais recente segundo as regras de negócio. Não é u
 
 Item comercializado cuja precificação é calculada pelo sistema.
 
-No cadastro inicial, Produto possui identidade por Empresa + Nome, Categoria opcional, Margem-alvo e situação. Preço de venda possui histórico próprio e não é um campo obrigatório do cadastro inicial. Produção/composição pertence à Ficha Técnica.
+No cadastro inicial, Produto possui identidade por Empresa + Nome, Categoria opcional, Margem-alvo e situação. Preço de prateleira e snapshots de precificação possuem histórico próprio e não são campos obrigatórios do cadastro inicial. Produção/composição pertence à Ficha Técnica.
 
 ## Categoria do produto
 
@@ -56,7 +56,7 @@ Texto livre opcional usado para organização do catálogo de Produtos dentro de
 
 ## Ficha técnica
 
-Definição da produção de um lote: insumos e respectivas quantidades, rendimento, tempos, observações contextuais e parâmetros específicos do produto.
+Definição produtiva atual de um lote/execução de Produto. A base introduzida pela UC013 contém Rendimento e Tempo ativo; composição por Insumos e demais recursos são acrescentados em UCs posteriores. No MVP existe no máximo uma Ficha Técnica atual por Produto.
 
 ## Lote
 
@@ -64,7 +64,11 @@ Quantidade produzida por uma execução da ficha técnica.
 
 ## Rendimento
 
-Quantidade de unidades de venda obtidas por lote.
+Quantidade decimal de unidades de venda obtidas por lote. Deve ser maior que zero.
+
+## Tempo ativo
+
+Tempo de trabalho humano ativo necessário para executar o lote, informado em minutos inteiros. Pode ser zero quando explicitamente não houver trabalho ativo.
 
 ## Custo do lote
 
@@ -80,7 +84,7 @@ Percentual de margem desejado para um produto. Na persistência/domínio é repr
 
 ## Margem atual
 
-Margem obtida usando o preço de venda atual e o custo unitário atual.
+Margem obtida usando o Preço de prateleira vigente e o custo unitário atual.
 
 ## Preço teórico
 
