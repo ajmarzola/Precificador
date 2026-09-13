@@ -87,6 +87,10 @@ Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../u
 
 Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../codex/UC013-definir-base-ficha-tecnica.md).
 
+Especificação UC014 revalidada: [`../use-cases/UC014-adicionar-insumo-ficha.md`](../use-cases/UC014-adicionar-insumo-ficha.md).
+
+Instrução Codex UC014: [`../codex/UC014-adicionar-insumo-ficha.md`](../codex/UC014-adicionar-insumo-ficha.md).
+
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
