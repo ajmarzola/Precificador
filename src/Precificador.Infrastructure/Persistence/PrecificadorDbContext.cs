@@ -17,6 +17,7 @@ public sealed class PrecificadorDbContext(
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<FichaTecnica> FichasTecnicas => Set<FichaTecnica>();
+    public DbSet<ItemFichaTecnica> ItensFichaTecnica => Set<ItemFichaTecnica>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
     public DbSet<Produto> Produtos => Set<Produto>();
@@ -28,6 +29,8 @@ public sealed class PrecificadorDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
         modelBuilder.Entity<FichaTecnica>().HasQueryFilter(ficha =>
             ficha.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<ItemFichaTecnica>().HasQueryFilter(item =>
+            item.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<Insumo>().HasQueryFilter(insumo =>
             insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<PrecoInsumo>().HasQueryFilter(preco =>
@@ -39,6 +42,7 @@ public sealed class PrecificadorDbContext(
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         AplicarIsolamentoEmpresa();
+        ValidarReferenciasDosItensFichaTecnica();
         ValidarReferenciaProdutoDasFichas();
         ValidarReferenciaInsumoDosPrecos();
         return base.SaveChanges(acceptAllChangesOnSuccess);
@@ -47,6 +51,7 @@ public sealed class PrecificadorDbContext(
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         AplicarIsolamentoEmpresa();
+        await ValidarReferenciasDosItensFichaTecnicaAsync(cancellationToken);
         await ValidarReferenciaProdutoDasFichasAsync(cancellationToken);
         await ValidarReferenciaInsumoDosPrecosAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -100,6 +105,27 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private void ValidarReferenciasDosItensFichaTecnica()
+    {
+        foreach (var item in ItensFichaTecnicaAlterados())
+        {
+            var fichaValida = FichasTecnicas.IgnoreQueryFilters()
+                .Any(ficha => ficha.Id == item.FichaTecnicaId && ficha.EmpresaId == item.EmpresaId);
+            var insumoValido = Insumos.IgnoreQueryFilters()
+                .Any(insumo => insumo.Id == item.InsumoId && insumo.EmpresaId == item.EmpresaId);
+
+            if (!fichaValida)
+            {
+                throw new InvalidOperationException("A ficha técnica referenciada pelo item não pertence à mesma empresa.");
+            }
+
+            if (!insumoValido)
+            {
+                throw new InvalidOperationException("O insumo referenciado pelo item da ficha técnica não pertence à mesma empresa.");
+            }
+        }
+    }
+
     private async Task ValidarReferenciaInsumoDosPrecosAsync(CancellationToken cancellationToken)
     {
         foreach (var preco in PrecosAlterados())
@@ -132,6 +158,31 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private async Task ValidarReferenciasDosItensFichaTecnicaAsync(CancellationToken cancellationToken)
+    {
+        foreach (var item in ItensFichaTecnicaAlterados())
+        {
+            var fichaValida = await FichasTecnicas.IgnoreQueryFilters()
+                .AnyAsync(
+                    ficha => ficha.Id == item.FichaTecnicaId && ficha.EmpresaId == item.EmpresaId,
+                    cancellationToken);
+            var insumoValido = await Insumos.IgnoreQueryFilters()
+                .AnyAsync(
+                    insumo => insumo.Id == item.InsumoId && insumo.EmpresaId == item.EmpresaId,
+                    cancellationToken);
+
+            if (!fichaValida)
+            {
+                throw new InvalidOperationException("A ficha técnica referenciada pelo item não pertence à mesma empresa.");
+            }
+
+            if (!insumoValido)
+            {
+                throw new InvalidOperationException("O insumo referenciado pelo item da ficha técnica não pertence à mesma empresa.");
+            }
+        }
+    }
+
     private IEnumerable<PrecoInsumo> PrecosAlterados() =>
         ChangeTracker.Entries<PrecoInsumo>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
@@ -139,6 +190,11 @@ public sealed class PrecificadorDbContext(
 
     private IEnumerable<FichaTecnica> FichasAlteradas() =>
         ChangeTracker.Entries<FichaTecnica>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity);
+
+    private IEnumerable<ItemFichaTecnica> ItensFichaTecnicaAlterados() =>
+        ChangeTracker.Entries<ItemFichaTecnica>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
             .Select(entry => entry.Entity);
 }

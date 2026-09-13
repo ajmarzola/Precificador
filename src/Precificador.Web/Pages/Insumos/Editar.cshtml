@@ -9,13 +9,17 @@
 
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    @if (Model.PossuiHistorico)
+    @if (Model.PossuiHistoricoPreco)
     {
         <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.</div>
     }
+    else if (Model.ReferenciadoEmFicha)
+    {
+        <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.</div>
+    }
     <div class="mb-3">
         <label asp-for="Input.Nome" class="form-label"></label>
-        @if (Model.PossuiHistorico)
+        @if (Model.IdentidadeProtegida)
         {
             <input asp-for="Input.Nome" class="form-control" readonly />
         }
@@ -27,7 +31,7 @@
     </div>
     <div class="mb-3">
         <label asp-for="Input.Marca" class="form-label"></label>
-        @if (Model.PossuiHistorico)
+        @if (Model.IdentidadeProtegida)
         {
             <input asp-for="Input.Marca" class="form-control" readonly />
         }
@@ -50,14 +54,14 @@
     </div>
     <div class="mb-3">
         <label asp-for="Input.UnidadeBase" class="form-label">Unidade base</label>
-        <select asp-for="Input.UnidadeBase" class="form-select" disabled="@Model.PossuiHistorico">
+        <select asp-for="Input.UnidadeBase" class="form-select" disabled="@Model.IdentidadeProtegida">
             <option value="">Selecione uma unidade</option>
             @foreach (var unidade in InsumoRotulos.Unidades)
             {
                 <option value="@unidade">@InsumoRotulos.Unidade(unidade)</option>
             }
         </select>
-        @if (Model.PossuiHistorico)
+        @if (Model.IdentidadeProtegida)
         {
             <input type="hidden" asp-for="Input.UnidadeBase" />
         }

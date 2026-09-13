@@ -1,11 +1,12 @@
 # UC014 — Adicionar Insumo à Ficha Técnica
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC013 implementado; UC001A–UC006 implementados; FT002 implementada
-- **Próximo caso relacionado:** UC015 — Alterar item da Ficha Técnica
+- **Próximo caso relacionado:** UC015 — Alterar item da Ficha Técnica (revalidação pós-UC014)
 - **Alteração de schema:** sim — introduz ItemFichaTecnica
 - **Revalidação pós-UC013:** concluída em 2026-09-13 contra a implementação mergeada pela PR #54
+- **Implementação:** concluída em 2026-09-13 na branch `feat/uc014-adicionar-insumo-ficha`
 
 ## Objetivo
 
@@ -677,7 +678,7 @@ Confirmações:
 14. a correção de cultura da UC013 exige que Quantidade use parsing explícito, evitando model binding decimal dependente de ambiente;
 15. RN048/RN049 permanecem válidas sem alteração conceitual.
 
-A UC014 está liberada para implementação na branch:
+A UC014 foi implementada na branch:
 
 ~~~text
 feat/uc014-adicionar-insumo-ficha

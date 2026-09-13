@@ -1,0 +1,44 @@
+@page "/Produtos/FichaTecnica/{produtoId:int}/Itens/Novo"
+@model Precificador.Web.Pages.Produtos.FichaTecnica.Itens.NovoModel
+@{
+    ViewData["Title"] = "Adicionar insumo";
+    var produto = Model.Produto!;
+    var ficha = Model.Ficha!;
+}
+
+<h1>Adicionar insumo</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Produto</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
+    <dt class="col-sm-3">Rendimento</dt><dd class="col-sm-9">@ficha.Rendimento</dd>
+    <dt class="col-sm-3">Tempo ativo</dt><dd class="col-sm-9">@ficha.TempoAtivoMinutos minutos</dd>
+</dl>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.InsumoId" class="form-label">Insumo</label>
+        <select asp-for="Input.InsumoId" asp-items="Model.InsumosDisponiveis" class="form-select">
+            <option value="">Selecione um insumo</option>
+        </select>
+        <span asp-validation-for="Input.InsumoId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Quantidade" class="form-label">Quantidade</label>
+        <input asp-for="Input.Quantidade" class="form-control" inputmode="decimal" />
+        <div class="form-text">Informe a quantidade utilizada no lote na unidade base do insumo.</div>
+        <span asp-validation-for="Input.Quantidade" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Observacao" class="form-label">Observação contextual</label>
+        <textarea asp-for="Input.Observacao" class="form-control"></textarea>
+        <span asp-validation-for="Input.Observacao" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Adicionar</button>
+    <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para a ficha</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
