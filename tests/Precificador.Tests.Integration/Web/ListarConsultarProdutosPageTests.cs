@@ -241,7 +241,6 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         Assert.Contains("Voltar para produtos", detalhes);
         Assert.Contains("href=\"/Produtos\"", detalhes);
         Assert.DoesNotContain("Editar", lista);
-        Assert.DoesNotContain("Editar", detalhes);
     }
 
     private async Task<int> CriarProdutoAsync(int empresaId, string nome, string? categoria, decimal margemAlvo)

@@ -1,6 +1,6 @@
 # UC009 — Editar produto
 
-- **Status:** Especificado — pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência material:** UC007 implementado
 - **Sequenciamento:** implementar após UC008 implementado, revisado e mergeado

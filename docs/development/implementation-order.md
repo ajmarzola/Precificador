@@ -48,8 +48,8 @@ Estado documental:
 
 1. **UC007 — Cadastrar Produto** — implementado;
 2. **UC008 — Listar e consultar Produtos** — implementado;
-3. **UC009 — Editar Produto** — especificado e próximo caso de Produtos;
-4. **UC010 — Desativar e reativar Produto** — especificado; aguarda implementação/revalidação da UC009;
+3. **UC009 — Editar Produto** — implementado;
+4. **UC010 — Desativar e reativar Produto** — especificado e próximo caso de Produtos;
 5. UC011 — Alterar preço de venda preservando histórico;
 6. UC012 — Consultar histórico de preço de venda.
 
@@ -71,9 +71,9 @@ A instrução Codex do UC010 só deve ser criada/liberada após a revalidação 
 
 O UC007 respeitou a fila serial do projeto, foi revisado e mergeado. A revisão obrigatória pós-UC007 do UC008 foi concluída contra o modelo real de Produto, e o UC008 foi implementado sem alteração de schema.
 
-O UC009 foi especificado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
+O UC009 foi implementado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
 
-O UC010 já está especificado como ciclo reversível de desativação/reativação, mas permanece bloqueado até o UC009 ser implementado e sua integração com edição de Produto inativo ser revalidada.
+O UC010 já está especificado como ciclo reversível de desativação/reativação e passa a ser o próximo caso de Produtos. Sua integração com edição de Produto inativo deve ser revalidada contra a master real pós-UC009 antes da implementação.
 
 ## Etapa 3 — Ficha técnica
 
@@ -112,4 +112,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC009 — Editar Produto**. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Implementar e revisar o **UC010 — Desativar e reativar Produto** após revalidação contra a master pós-UC009. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.

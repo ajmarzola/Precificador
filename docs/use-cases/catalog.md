@@ -45,8 +45,8 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou preço de v
 |---|---|---|
 | [UC007](UC007-cadastrar-produto.md) | Cadastrar produto | FT002 — **implementado** |
 | [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 — **implementado** |
-| [UC009](UC009-editar-produto.md) | Editar produto | UC007 — **especificado; próximo caso de Produtos** |
-| [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007 — **especificado; aguarda UC009 implementado/revalidado** |
+| [UC009](UC009-editar-produto.md) | Editar produto | UC007 — **implementado** |
+| [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007 — **especificado; próximo caso de Produtos; revalidar pós-UC009** |
 | UC011 | Alterar preço de venda preservando histórico | UC007 |
 | UC012 | Consultar histórico de preço de venda | UC011 |
 
