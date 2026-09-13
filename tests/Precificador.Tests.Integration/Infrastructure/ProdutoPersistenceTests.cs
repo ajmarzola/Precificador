@@ -209,6 +209,50 @@ public sealed class ProdutoPersistenceTests
         Assert.Equal("AGENDA", produtoEmpresaDois.NomeNormalizado);
     }
 
+    [Fact]
+    public async Task CA03_CA04_Alteracoes_de_status_persistem_no_sqlite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+
+        var produto = Produto.Criar(1, "Agenda", 0.30m);
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+
+        produto.Desativar();
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var inativo = await context.Produtos.SingleAsync();
+        Assert.False(inativo.Ativo);
+
+        inativo.Reativar();
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        Assert.True((await context.Produtos.SingleAsync()).Ativo);
+    }
+
+    [Fact]
+    public async Task CA11_Produto_inativo_continua_participando_do_indice_unico()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+
+        var produto = Produto.Criar(1, "Agenda", 0.30m);
+        produto.Desativar();
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+
+        context.Produtos.Add(Produto.Criar(1, " agenda ", 0.25m));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
     private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) => new(
         new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options,
         new ContextoEmpresa(empresaId));

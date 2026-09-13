@@ -1,6 +1,6 @@
 # UC010 — Desativar e reativar produto
 
-- **Status:** Revalidado pós-UC009 — liberado para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências materiais:** UC007, UC008 e UC009 implementados
 - **Sequenciamento:** implementar a partir da master pós-UC009, já revalidada
@@ -648,7 +648,7 @@ Confirmado:
 8. nenhuma divergência material exige mudança funcional ou de schema;
 9. a instrução executável do Codex foi criada em `docs/codex/UC010-desativar-reativar-produto.md`.
 
-**Liberação:** criar a implementação em `feat/uc010-situacao-produto`, partindo da master que contenha esta revalidação.
+**Resultado:** implementação criada em `feat/uc010-situacao-produto`, partindo da master que contém esta revalidação.
 
 ## Definition of Done específica
 

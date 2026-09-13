@@ -20,4 +20,16 @@
 </dl>
 
 <a asp-page="/Produtos/Editar" asp-route-id="@produto.Id" class="btn btn-primary">Editar</a>
+@if (produto.Ativo)
+{
+    <form method="post" asp-page-handler="Desativar" asp-route-id="@produto.Id" class="d-inline">
+        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Deseja desativar este produto?');">Desativar</button>
+    </form>
+}
+else
+{
+    <form method="post" asp-page-handler="Reativar" asp-route-id="@produto.Id" class="d-inline">
+        <button type="submit" class="btn btn-outline-success">Reativar</button>
+    </form>
+}
 <a asp-page="/Produtos/Index">Voltar para produtos</a>
