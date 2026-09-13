@@ -262,9 +262,20 @@ O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recurso
 
 Se qualquer dado obrigatório para o cálculo estiver ausente ou inválido — incluindo preço vigente de um insumo — o produto deve ser marcado como precificação incompleta. Não deve ser exibido custo total ou margem como se fossem confiáveis.
 
-### RN018 — Desativação de produto
+### RN018 — Desativação e reativação de produto
 
 Produtos são desativados, não excluídos fisicamente pelo fluxo normal.
+
+A situação é reversível:
+
+- `Desativar` torna o Produto inativo;
+- `Reativar` devolve o Produto ao estado ativo;
+- as operações de situação não alteram Id, Empresa, Nome, Categoria ou Margem-alvo;
+- Produto inativo permanece consultável e visível em listagens;
+- Produto inativo continua participando da unicidade `EmpresaId + NomeNormalizado`;
+- após o UC009, Produto inativo permanece editável nos campos cadastrais permitidos e uma edição não o reativa implicitamente.
+
+Regras futuras sobre uso de Produto inativo em preço de venda, Ficha Técnica, cálculos ou seletores operacionais devem ser definidas pelos respectivos UCs quando esses fluxos existirem.
 
 ### RN041 — Nome do produto
 
