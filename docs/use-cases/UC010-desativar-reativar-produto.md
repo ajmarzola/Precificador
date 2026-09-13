@@ -1,9 +1,9 @@
 # UC010 — Desativar e reativar produto
 
-- **Status:** Especificado — aguarda implementação e revalidação da UC009 antes de ser liberado para implementação
+- **Status:** Revalidado pós-UC009 — liberado para implementação
 - **Funcionalidade:** F002 — Gestão de Produtos
-- **Dependência material:** UC007 implementado
-- **Sequenciamento:** implementar somente após UC009 ser implementado, revisado e mergeado
+- **Dependências materiais:** UC007, UC008 e UC009 implementados
+- **Sequenciamento:** implementar a partir da master pós-UC009, já revalidada
 - **Próximo caso relacionado:** UC011 — Alterar preço de venda preservando histórico
 - **Sem alteração de schema:** o campo Ativo já existe em Produto
 
@@ -59,19 +59,22 @@ Portanto:
 - a edição não reativa o Produto implicitamente;
 - Ativo permanece false após uma edição válida de Produto inativo.
 
-### Gate pós-UC009
+### Revalidação pós-UC009 — concluída
 
-Como a UC009 ainda não está implementada na master no momento desta especificação, **antes de implementar UC010 é obrigatório revalidar este item contra a implementação real da UC009**.
+A UC009 foi implementada, revisada e mergeada antes desta liberação. A revalidação contra a master real confirmou:
 
-A revalidação deve confirmar:
+- rota real de edição: `/Produtos/Editar/{id:int}`;
+- Detalhes mantém o link **Editar** sem condicionar a ação ao valor de `Ativo`;
+- GET de edição consulta `context.Produtos` com Global Query Filter e sem filtro por situação;
+- POST de edição consulta `context.Produtos` com Global Query Filter e sem filtro por situação;
+- `Produto.AtualizarDados(...)` altera somente Nome, NomeNormalizado, Categoria e MargemAlvo, preservando `Ativo`;
+- o POST válido da UC009 usa `TempData["MensagemSucesso"]` e PRG para `/Produtos/Detalhes/{id}`;
+- os testes Web reais da UC009 já possuem infraestrutura para GET/POST, antiforgery, tenant e validação de persistência;
+- após UC010 adicionar `Produto.Desativar()`, W6 pode preparar um Produto inativo pelo próprio domínio e persistência normal, sem SQL direto, reflection, setter artificial ou outro bypass técnico.
 
-- rota real de edição;
-- navegação real de Detalhes;
-- uso de TempData/PRG;
-- testes Web existentes;
-- que editar Produto inativo pode ser coberto sem bypass técnico.
+Não foi encontrada divergência material que exija alterar o comportamento especificado da UC010.
 
-Se a UC009 real divergir materialmente da especificação, atualizar esta documentação antes de implementar UC010.
+**CA10/W6 está confirmado e executável. UC010 está liberada para implementação.**
 
 ## UX
 
@@ -552,13 +555,19 @@ O teste deve provar a linha correta na listagem, não apenas procurar "Inativo" 
 CA10_Produto_inativo_permanece_editavel_sem_reativacao_implicita
 ~~~
 
-Executar somente após revalidação contra UC009 implementado.
+Executar usando o fluxo real da UC009 já revalidado.
 
-Confirmar:
+Preparação normativa do cenário:
 
-- link Editar em Detalhes;
-- GET Editar permitido;
-- POST válido de edição mantém Ativo=false.
+1. criar Produto normalmente;
+2. desativá-lo por `Produto.Desativar()`, introduzido pela própria UC010;
+3. persistir pelo DbContext;
+4. confirmar link Editar em Detalhes;
+5. confirmar GET Editar permitido;
+6. executar POST válido de edição;
+7. confirmar que `Ativo` permanece `false`.
+
+Não usar SQL direto, reflection, setter artificial ou alteração manual de tracking para fabricar o estado inativo.
 
 #### W7
 
@@ -623,18 +632,23 @@ Se surgir necessidade de schema, interromper e reavaliar.
 - API REST;
 - refatorações oportunistas sem relação com o UC.
 
-## Gate obrigatório antes da implementação
+## Gate obrigatório antes da implementação — concluído
 
-A especificação pode ser mergeada antes da implementação do UC009, mas **UC010 não está liberado para implementação ainda**.
+O gate foi concluído contra a master real pós-UC009.
 
-Antes de criar a branch de código do UC010:
+Confirmado:
 
-1. UC009 deve estar implementado, revisado e mergeado;
-2. revisar esta especificação contra a master real pós-UC009;
-3. confirmar CA10/W6;
-4. confirmar rotas/TempData/navegação real;
-5. atualizar esta documentação se houver diferença material;
-6. somente então criar a instrução executável do Codex e liberar implementação.
+1. UC009 implementada, revisada e mergeada;
+2. rota real de edição compatível com a especificação;
+3. navegação real de Detalhes mantém Editar;
+4. GET/POST de edição não bloqueiam Produto inativo;
+5. edição preserva `Ativo`;
+6. TempData/PRG existente pode ser reutilizado;
+7. CA10/W6 pode ser testado sem bypass técnico;
+8. nenhuma divergência material exige mudança funcional ou de schema;
+9. a instrução executável do Codex foi criada em `docs/codex/UC010-desativar-reativar-produto.md`.
+
+**Liberação:** criar a implementação em `feat/uc010-situacao-produto`, partindo da master que contenha esta revalidação.
 
 ## Definition of Done específica
 
@@ -651,7 +665,7 @@ Além da DoD global:
 - cross-tenant/inexistente => 404;
 - PRG + mensagens exatas;
 - inativos permanecem listados e consultáveis;
-- após revalidação pós-UC009, inativos permanecem editáveis sem reativação implícita;
+- inativos permanecem editáveis sem reativação implícita, conforme CA10/W6 revalidado;
 - unicidade continua incluindo inativos;
 - nenhuma migration/snapshot;
 - nenhuma exclusão física;
