@@ -62,25 +62,27 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
 
+## Configurações
+
+UC026/UC027 foram antecipados na ordem de implementação porque UC020, UC021 e UC023 dependem de configurações da Empresa.
+
+| UC | Nome | Dependências |
+|---|---|---|
+| UC026 | Consultar configurações de precificação da Empresa | FT002 |
+| UC027 | Alterar configurações de precificação da Empresa | UC026 |
+
 ## Precificação
 
 | UC | Nome | Dependências |
 |---|---|---|
 | UC018 | Calcular custo atual dos itens do lote | UC005, UC014 |
 | UC019 | Calcular perdas aplicáveis | UC018; revalidar antes de implementar |
-| UC020 | Calcular custo de mão de obra | UC013, Configurações |
-| UC021 | Calcular custo de energia/equipamentos | UC013, Configurações; revalidar antes de implementar |
+| UC020 | Calcular custo de mão de obra | UC013, UC027 |
+| UC021 | Calcular custo de energia/equipamentos | UC013, UC027; revalidar antes de implementar |
 | UC022 | Calcular custo total e custo unitário | UC018–UC021 |
-| UC023 | Calcular preço teórico e sugerido | UC022, Configurações |
+| UC023 | Calcular preço teórico e sugerido | UC022, UC027 |
 | UC024 | Calcular margem atual e situação | UC011, UC022 |
 | UC025 | Consultar detalhamento da precificação | UC023, UC024 |
-
-## Configurações
-
-| UC | Nome | Dependências |
-|---|---|---|
-| UC026 | Consultar configurações de precificação da Empresa | FT002 |
-| UC027 | Alterar configurações de precificação da Empresa | UC026 |
 
 ## Dashboard
 
