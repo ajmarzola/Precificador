@@ -1,6 +1,6 @@
 # UC013 — Definir rendimento e tempo ativo da Ficha Técnica
 
-- **Status:** Pronto para implementação
+- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC007 a UC010 implementados; FT002 implementada
 - **Próximo caso:** UC014 — Adicionar Insumo à Ficha Técnica

@@ -81,7 +81,7 @@ O UC010 implementou o ciclo reversível de desativação/reativação. Produto i
 
 A revalidação genérica da UC013 foi concluída: este incremento fica restrito a Rendimento e TempoAtivoMinutos. UC014 a UC017 continuam sujeitos às revalidações específicas antes da implementação.
 
-A decisão funcional do UC014 sobre estabilidade do Insumo foi fechada pela RN048, mas a implementação permanece bloqueada até a UC013 existir na master e a especificação ser revalidada contra o modelo real de FichaTecnica.
+A decisão funcional do UC014 sobre estabilidade do Insumo foi fechada pela RN048. Com a UC013 implementada, a especificação da UC014 deve ser revalidada contra o modelo real de FichaTecnica antes da implementação.
 
 Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
 
@@ -89,8 +89,8 @@ Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../cod
 
 Ordem prevista:
 
-1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — pronto para implementação;
-2. **UC014 — Adicionar Insumo à Ficha Técnica** — especificado; bloqueado até revalidação pós-UC013;
+1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
+2. **UC014 — Adicionar Insumo à Ficha Técnica** — próximo caso; revalidar contra UC013 implementada;
 3. **UC015 — Alterar item da Ficha Técnica** — especificado; bloqueado até revalidação pós-UC014;
 4. UC016 — Remover item da Ficha Técnica;
 5. UC017 — Consultar Ficha Técnica e composição.
@@ -148,4 +148,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`. Após o merge, revalidar/liberar a UC014. A UC015 já está especificada, mas só poderá ser liberada após a implementação real da UC014. A UC011 permanece bloqueada até a conclusão da UC023.
+Revalidar e implementar o **UC014 — Adicionar Insumo à Ficha Técnica** após a UC013 chegar à `master`. A UC015 já está especificada, mas só poderá ser liberada após a implementação real da UC014. A UC011 permanece bloqueada até a conclusão da UC023.

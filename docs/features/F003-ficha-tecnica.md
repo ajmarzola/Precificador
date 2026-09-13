@@ -49,7 +49,7 @@ A mesma Ficha é atualizada quando Rendimento/Tempo ativo mudam. UC013 não cria
 
 ### UC014 — Adicionar Insumo
 
-Especificada, porém bloqueada até a implementação e revalidação da UC013.
+Especificada como próximo caso, a ser revalidada contra a implementação real da UC013 antes da implementação.
 
 Modelo previsto:
 
@@ -155,8 +155,8 @@ FichaTecnica é tenant-owned:
 
 ## Casos de uso
 
-- [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — pronto para implementação;
-- [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — especificado; bloqueado até UC013 implementada e revalidada;
+- [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — implementado;
+- [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — próximo caso; revalidar contra UC013 implementada;
 - [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md) — especificado; bloqueado até UC014 implementada e revalidada;
 - UC016 — Remover item da Ficha Técnica;
 - UC017 — Consultar Ficha Técnica e composição.

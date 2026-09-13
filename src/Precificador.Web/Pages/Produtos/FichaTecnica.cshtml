@@ -1,0 +1,39 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.FichaTecnicaModel
+@{
+    ViewData["Title"] = "Ficha técnica";
+    var produto = Model.Produto!;
+}
+
+<h1>Ficha técnica</h1>
+
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@(produto.Categoria ?? "—")</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
+</dl>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Rendimento" class="form-label">Rendimento do lote (unidades de venda)</label>
+        <input asp-for="Input.Rendimento" class="form-control" />
+        <span asp-validation-for="Input.Rendimento" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.TempoAtivoMinutos" class="form-label">Tempo ativo de trabalho (minutos)</label>
+        <input asp-for="Input.TempoAtivoMinutos" class="form-control" />
+        <span asp-validation-for="Input.TempoAtivoMinutos" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para o produto</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
