@@ -49,7 +49,7 @@ Estado documental:
 1. **UC007 — Cadastrar Produto** — implementado;
 2. **UC008 — Listar e consultar Produtos** — implementado;
 3. **UC009 — Editar Produto** — implementado;
-4. **UC010 — Desativar e reativar Produto** — especificado e próximo caso de Produtos;
+4. **UC010 — Desativar e reativar Produto** — revalidado pós-UC009, liberado e próximo caso de Produtos;
 5. UC011 — Alterar preço de venda preservando histórico;
 6. UC012 — Consultar histórico de preço de venda.
 
@@ -67,13 +67,15 @@ Instrução Codex UC009: [`../codex/UC009-editar-produto.md`](../codex/UC009-edi
 
 Especificação UC010: [`../use-cases/UC010-desativar-reativar-produto.md`](../use-cases/UC010-desativar-reativar-produto.md).
 
-A instrução Codex do UC010 só deve ser criada/liberada após a revalidação obrigatória contra a master real pós-UC009.
+Instrução Codex UC010: [`../codex/UC010-desativar-reativar-produto.md`](../codex/UC010-desativar-reativar-produto.md).
+
+A revalidação obrigatória do UC010 contra a master real pós-UC009 foi concluída; CA10/W6 está confirmado e a implementação está liberada.
 
 O UC007 respeitou a fila serial do projeto, foi revisado e mergeado. A revisão obrigatória pós-UC007 do UC008 foi concluída contra o modelo real de Produto, e o UC008 foi implementado sem alteração de schema.
 
 O UC009 foi implementado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
 
-O UC010 já está especificado como ciclo reversível de desativação/reativação e passa a ser o próximo caso de Produtos. Sua integração com edição de Produto inativo deve ser revalidada contra a master real pós-UC009 antes da implementação.
+O UC010 está especificado como ciclo reversível de desativação/reativação e é o próximo caso de Produtos. A integração com a edição real da UC009 foi revalidada: Produto inativo continua editável, a edição preserva `Ativo` e W6 pode ser executado sem bypass técnico.
 
 ## Etapa 3 — Ficha técnica
 
@@ -112,4 +114,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC010 — Desativar e reativar Produto** após revalidação contra a master pós-UC009. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Implementar e revisar o **UC010 — Desativar e reativar Produto** em `feat/uc010-situacao-produto`, usando a instrução Codex já liberada. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
