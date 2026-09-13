@@ -238,6 +238,27 @@ Se o Insumo já estiver na Ficha, uma nova inclusão deve ser rejeitada. Altera�
 
 O mesmo Insumo pode participar de Fichas diferentes da mesma Empresa.
 
+### RN050 — Atualização do Item preserva seus vínculos
+
+A edição de um ItemFichaTecnica altera somente:
+
+- Quantidade;
+- Observação contextual.
+
+Permanecem imutáveis:
+
+- EmpresaId;
+- FichaTecnicaId;
+- InsumoId.
+
+Trocar o Insumo não é considerado edição do Item no MVP. A substituição deve ocorrer por remoção do Item existente e inclusão de outro Insumo pelos fluxos correspondentes.
+
+A atualização deve validar todos os novos valores antes de alterar o estado da entidade, preservando atomicidade.
+
+Item existente continua editável mesmo quando o Insumo referenciado ou o Produto da Ficha estiver inativo. A edição não reativa nenhuma dessas entidades.
+
+
+
 
 
 ## Multiempresa e acesso
