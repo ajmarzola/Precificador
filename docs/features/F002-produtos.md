@@ -9,7 +9,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - cadastrar produto;
 - listar e pesquisar produtos;
 - editar dados cadastrais;
-- desativar produto;
+- desativar e reativar produto;
 - definir margem-alvo;
 - definir preço de venda preservando histórico;
 - consultar histórico de preço de venda.
@@ -121,12 +121,25 @@ A atualização de domínio deve ser atômica: se qualquer campo for inválido, 
 
 UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não introduz desativação, preço de venda, Ficha Técnica ou custo.
 
+## Situação — UC010
+
+O UC010 está especificado para implementar o ciclo reversível de situação:
+
+- Ativo -> Inativo por Desativar;
+- Inativo -> Ativo por Reativar;
+- sem exclusão física;
+- sem liberar o Nome ocupado na Empresa;
+- mantendo inativos visíveis e consultáveis;
+- mantendo, após a UC009, edição cadastral de Produto inativo sem reativação implícita.
+
+A implementação do UC010 permanece bloqueada até a UC009 ser implementada, revisada e mergeada e esta especificação ser revalidada contra a master real pós-UC009.
+
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
 - [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — especificado e próximo caso de Produtos;
-- UC010 — Desativar produto;
+- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — especificado; aguarda UC009 implementado/revalidado;
 - UC011 — Alterar preço de venda preservando histórico;
 - UC012 — Consultar histórico de preço de venda.
 
