@@ -1,4 +1,4 @@
-# Estabilidade cadastral do Insumo com histórico de preços
+# Estabilidade cadastral e identidade consolidada do Insumo
 
 - **Status:** Aprovada
 - **Data:** 2026-09-11
@@ -168,24 +168,25 @@ No MVP não é necessário snapshotar Nome, Marca e Unidade base em cada preço 
 
 No momento desta decisão ainda não existe entidade de preço em produção no sistema, portanto não há histórico legado a migrar ou reconciliar.
 
-### Para o UC014 / Ficha Técnica
+### Para Ficha Técnica e remoção de Item
 
-A reavaliação foi concluída após a implementação real da UC013.
+A decisão foi refinada antes do UC016.
 
-A RN048 complementa esta decisão: enquanto existir pelo menos um ItemFichaTecnica atual referenciando o Insumo, Nome, Marca e Unidade base ficam imutáveis mesmo quando ainda não houver histórico de preço.
+O primeiro uso do Insumo em uma Ficha Técnica consolida permanentemente sua identidade, da mesma forma que o primeiro registro de preço.
 
-A proteção efetiva passa a ser:
+A proteção efetiva deixa de ser derivada de referências atuais e passa a usar estado persistido:
 
 ~~~text
-IdentidadeProtegida =
-    possui qualquer histórico de preço
-    OU
-    possui qualquer referência atual em Ficha Técnica
+IdentidadeConsolidada = true
 ~~~
+
+A transição é monotônica.
+
+Remover posteriormente o último ItemFichaTecnica não torna Nome, Marca ou Unidade base editáveis novamente.
 
 Categoria e Observação global continuam editáveis.
 
-Diferentemente da RN040, a proteção por referência em Ficha pode desaparecer no futuro se o último Item for removido. O UC016 deve revalidar esse desbloqueio quando implementar remoção.
+A implementação técnica dessa persistência pertence à MEL010, obrigatória antes do UC016.
 
 ## Princípio resultante
 
