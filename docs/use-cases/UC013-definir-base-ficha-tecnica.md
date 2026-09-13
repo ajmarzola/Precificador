@@ -355,6 +355,24 @@ Exibir o mesmo formulário preenchido com os valores atuais.
 
 Não carregar/mostrar itens, perdas, custos ou equipamentos.
 
+### InputModel
+
+Usar valores nullable na fronteira Web para distinguir campo ausente de zero explicitamente informado:
+
+~~~text
+Rendimento: decimal?
+TempoAtivoMinutos: int?
+~~~
+
+Validação server-side:
+
+- Rendimento ausente => `O rendimento é obrigatório.`;
+- Rendimento <= 0 => `O rendimento deve ser maior que zero.`;
+- Tempo ativo ausente => `O tempo ativo é obrigatório.`;
+- Tempo ativo < 0 => `O tempo ativo não pode ser negativo.`.
+
+Não depender apenas de atributos HTML/client-side. O domínio deve continuar protegendo as invariantes após a conversão dos valores válidos.
+
 ### POST
 
 Fluxo:
