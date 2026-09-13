@@ -97,13 +97,18 @@ Especificação UC015 revalidada: [`../use-cases/UC015-alterar-item-ficha.md`](.
 
 Instrução Codex UC015: [`../codex/UC015-alterar-item-ficha.md`](../codex/UC015-alterar-item-ficha.md).
 
+Especificação MEL010: [`improvements/MEL010-identidade-consolidada-insumo.md`](improvements/MEL010-identidade-consolidada-insumo.md).
+
+Instrução Codex MEL010: [`../codex/MEL010-identidade-consolidada-insumo.md`](../codex/MEL010-identidade-consolidada-insumo.md).
+
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
 2. **UC014 — Adicionar Insumo à Ficha Técnica** — implementado;
 3. **UC015 — Alterar item da Ficha Técnica** — implementado;
-4. UC016 — Remover item da Ficha Técnica — próximo caso para especificação/revalidação;
-5. UC017 — Consultar Ficha Técnica e composição.
+4. **MEL010 — Identidade consolidada do Insumo** — implementar antes do UC016;
+5. UC016 — Remover item da Ficha Técnica — especificar somente após MEL010;
+6. UC017 — Consultar Ficha Técnica e composição.
 
 ## Etapa 4 — Configurações de precificação
 
@@ -158,4 +163,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Após o merge da **UC015 — Alterar item da Ficha Técnica**, especificar/revalidar a UC016. A UC011 permanece bloqueada até a conclusão da UC023.
+Implementar e validar a **MEL010 — Identidade consolidada do Insumo** antes de especificar a UC016. A remoção de Item não poderá desbloquear Nome, Marca ou Unidade base. A UC011 permanece bloqueada até a conclusão da UC023.
