@@ -50,7 +50,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023 |
 | UC012 | Consultar histórico de precificação do produto | UC011 |
 
-**Próxima ação:** revalidar UC015 após UC014. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
+**Próximo caso:** UC015. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
 
 ## Ficha técnica
 
@@ -58,7 +58,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 |---|---|---|
 | [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 — **implementado** |
 | [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 — **implementado** |
-| [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 — **especificado; bloqueado até revalidação pós-UC014** |
+| [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 — **pronto para implementação; próximo caso** |
 | UC016 | Remover item da ficha técnica | UC014 |
 | UC017 | Consultar ficha técnica e composição | UC013, UC014 |
 
