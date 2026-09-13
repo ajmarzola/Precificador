@@ -2,7 +2,10 @@ using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Insumos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Apresentacao;
+using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
 using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
@@ -20,6 +23,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
 
     public bool PossuiFicha { get; private set; }
 
+    public IReadOnlyList<ItemFichaResumo> Itens { get; private set; } = [];
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         if (!await CarregarProdutoAsync(id))
@@ -27,12 +32,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        var ficha = await context.FichasTecnicas.AsNoTracking()
-            .SingleOrDefaultAsync(item => item.ProdutoId == id);
-
+        var ficha = await CarregarEstadoFichaAsync(id);
         if (ficha is not null)
         {
-            PossuiFicha = true;
             Input = new FichaTecnicaInputModel
             {
                 Rendimento = FichaTecnicaFormulario.FormatarRendimento(ficha.Rendimento),
@@ -53,6 +55,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
 
         var rendimentoInformado = FichaTecnicaFormulario.TentarObterRendimento(ModelState, Input, out var rendimento);
         ValidarTempoAtivo();
+        await CarregarEstadoFichaAsync(id);
         if (!rendimentoInformado || !ModelState.IsValid)
         {
             return Page();
@@ -92,6 +95,38 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         return Produto is not null;
     }
 
+    private async Task<FichaResumo?> CarregarEstadoFichaAsync(int produtoId)
+    {
+        var ficha = await context.FichasTecnicas.AsNoTracking()
+            .Where(item => item.ProdutoId == produtoId)
+            .Select(item => new FichaResumo(item.Id, item.Rendimento, item.TempoAtivoMinutos))
+            .SingleOrDefaultAsync();
+
+        if (ficha is null)
+        {
+            PossuiFicha = false;
+            Itens = [];
+            return null;
+        }
+
+        PossuiFicha = true;
+        Itens = await (
+            from item in context.ItensFichaTecnica.AsNoTracking()
+            join insumo in context.Insumos.AsNoTracking()
+                on item.InsumoId equals insumo.Id
+            where item.FichaTecnicaId == ficha.Id
+            orderby insumo.NomeNormalizado, insumo.MarcaNormalizada
+            select new ItemFichaResumo(
+                item.Id,
+                RotuloInsumo(insumo.Nome, insumo.Marca),
+                ItemFichaTecnicaFormulario.FormatarQuantidade(item.Quantidade),
+                insumo.UnidadeBase,
+                insumo.Ativo))
+            .ToListAsync();
+
+        return ficha;
+    }
+
     private void ValidarTempoAtivo()
     {
         if (Input.TempoAtivoMinutos is null)
@@ -104,6 +139,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         }
     }
 
+    private static string RotuloInsumo(string nome, string? marca) =>
+        string.IsNullOrWhiteSpace(marca) ? nome : $"{nome} — {marca}";
+
     public sealed class FichaTecnicaInputModel
     {
         public string? Rendimento { get; set; }
@@ -112,4 +150,18 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
     }
 
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo);
+
+    public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
+
+    public sealed record ItemFichaResumo(
+        int Id,
+        string Insumo,
+        string Quantidade,
+        UnidadeMedida Unidade,
+        bool InsumoAtivo)
+    {
+        public string UnidadeFormatada => InsumoRotulos.Unidade(Unidade);
+
+        public string Situacao => InsumoAtivo ? "Ativo" : "Inativo";
+    }
 }

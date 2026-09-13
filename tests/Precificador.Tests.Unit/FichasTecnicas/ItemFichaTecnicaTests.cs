@@ -56,4 +56,58 @@ public sealed class ItemFichaTecnicaTests
         Assert.DoesNotContain("UnidadeBase", propriedades);
         Assert.DoesNotContain("UnidadeMedida", propriedades);
     }
+
+    [Fact]
+    public void U6_AtualizarDados_valido_altera_quantidade_observacao_e_preserva_vinculos()
+    {
+        var item = ItemFichaTecnica.Criar(7, 11, 13, 1m, "original");
+
+        item.AtualizarDados(2.5m, "  massa principal  ");
+
+        Assert.Equal(7, item.EmpresaId);
+        Assert.Equal(11, item.FichaTecnicaId);
+        Assert.Equal(13, item.InsumoId);
+        Assert.Equal(2.5m, item.Quantidade);
+        Assert.Equal("massa principal", item.Observacao);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-0.01")]
+    public void U7_AtualizarDados_rejeita_quantidade_invalida(string quantidade)
+    {
+        var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            item.AtualizarDados(decimal.Parse(quantidade, System.Globalization.CultureInfo.InvariantCulture), "alterada"));
+
+        Assert.Equal(1m, item.Quantidade);
+        Assert.Equal("original", item.Observacao);
+    }
+
+    [Fact]
+    public void U8_AtualizarDados_normaliza_observacao_e_valida_limite()
+    {
+        var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
+
+        item.AtualizarDados(1m, "   ");
+        Assert.Null(item.Observacao);
+
+        item.AtualizarDados(1m, "  linha 1\r\nlinha 2  ");
+        Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
+
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(1m, new string('a', 1001)));
+        Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
+    }
+
+    [Fact]
+    public void U9_AtualizarDados_invalido_e_atomico()
+    {
+        var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
+
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(2m, new string('a', 1001)));
+
+        Assert.Equal(1m, item.Quantidade);
+        Assert.Equal("original", item.Observacao);
+    }
 }

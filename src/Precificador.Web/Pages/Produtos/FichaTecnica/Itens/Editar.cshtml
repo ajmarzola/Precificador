@@ -1,0 +1,38 @@
+@page "/Produtos/FichaTecnica/{produtoId:int}/Itens/Editar/{itemId:int}"
+@model Precificador.Web.Pages.Produtos.FichaTecnica.Itens.EditarModel
+@{
+    ViewData["Title"] = "Editar item da ficha";
+    var produto = Model.Produto!;
+    var insumo = Model.Insumo!;
+}
+
+<h1>Editar item da ficha</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Produto</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Situação do produto</dt><dd class="col-sm-9">@produto.Situacao</dd>
+    <dt class="col-sm-3">Insumo</dt><dd class="col-sm-9">@insumo.Nome</dd>
+    <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
+    <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@insumo.UnidadeFormatada</dd>
+    <dt class="col-sm-3">Situação do insumo</dt><dd class="col-sm-9">@insumo.Situacao</dd>
+</dl>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Quantidade" class="form-label">Quantidade</label>
+        <input asp-for="Input.Quantidade" class="form-control" inputmode="decimal" />
+        <span asp-validation-for="Input.Quantidade" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Observacao" class="form-label">Observação contextual</label>
+        <textarea asp-for="Input.Observacao" class="form-control"></textarea>
+        <span asp-validation-for="Input.Observacao" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para a ficha</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

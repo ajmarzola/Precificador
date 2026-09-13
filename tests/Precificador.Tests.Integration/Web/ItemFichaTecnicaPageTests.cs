@@ -343,6 +343,406 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Empty(await ListarItensAsync(produtoId: produtoId));
     }
 
+    [Fact]
+    public async Task UC015_W1_Edicao_exige_autenticacao_e_empresa_ativa()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto edicao protegida"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo edicao protegida"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var anonimo = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        var response = await anonimo.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Contains("/Conta/Login", response.Headers.Location!.ToString());
+
+        using var autenticadoSemEmpresaAtiva = await CriarClienteAutenticadoSemEmpresaAtivaAsync();
+        var acessoSemEmpresa = await autenticadoSemEmpresaAtiva.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}");
+        Assert.Equal(HttpStatusCode.Redirect, acessoSemEmpresa.StatusCode);
+        Assert.Contains("/Conta/Login", acessoSemEmpresa.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task UC015_W2_Get_carrega_item_e_nao_oferece_insumo_editavel()
+    {
+        var produtoNome = Nome("Produto get edicao");
+        var insumoNome = Nome("Insumo get edicao");
+        var produtoId = await CriarProdutoAsync(1, produtoNome, ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, insumoNome, "Marca atual", UnidadeMedida.Metro, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "observacao atual");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
+
+        Assert.Contains(produtoNome, pagina);
+        Assert.Contains(insumoNome, pagina);
+        Assert.Contains("Marca atual", pagina);
+        Assert.Contains("m", pagina);
+        Assert.Contains("Ativo", pagina);
+        Assert.Equal("1,25", ValorDoInput(pagina, "Input.Quantidade"));
+        Assert.Contains("observacao atual", pagina);
+        Assert.DoesNotContain("Input.InsumoId", pagina);
+        Assert.DoesNotContain("EmpresaId", pagina);
+        Assert.DoesNotContain("FichaTecnicaId", pagina);
+        Assert.DoesNotContain("<select", pagina, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UC015_W3_W23_Post_valido_com_virgula_atualiza_mesmo_item_e_faz_PRG()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto edita item"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo edita item"), "Marca", UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "1,25", "  ajustado\r\ncom quebra  ");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal($"/Produtos/FichaTecnica/{produtoId}", response.Headers.Location!.ToString());
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal(1, item.EmpresaId);
+        Assert.Equal(fichaId, item.FichaTecnicaId);
+        Assert.Equal(insumoId, item.InsumoId);
+        Assert.Equal(1.25m, item.Quantidade);
+        Assert.Equal("ajustado\r\ncom quebra", item.Observacao);
+
+        var paginaAposRedirect = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
+        Assert.Contains("Item da ficha técnica atualizado com sucesso.", paginaAposRedirect);
+        Assert.Contains("1,25", paginaAposRedirect);
+    }
+
+    [Theory]
+    [InlineData(null, null, "A quantidade é obrigatória.")]
+    [InlineData("texto", null, "A quantidade deve ser um número válido.")]
+    [InlineData("0", null, "A quantidade deve ser maior que zero.")]
+    [InlineData("-1", null, "A quantidade deve ser maior que zero.")]
+    [InlineData("1", "LONGA", "A observação deve possuir no máximo 1000 caracteres.")]
+    public async Task UC015_W4_Post_invalido_nao_persiste_alteracoes(string? quantidade, string? observacao, string mensagem)
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto edicao invalida"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo edicao invalida"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 2m, "original");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var obs = observacao == "LONGA" ? new string('a', 1001) : observacao;
+        var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, quantidade, obs);
+        var conteudo = await LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(mensagem, conteudo);
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal(2m, item.Quantidade);
+        Assert.Equal("original", item.Observacao);
+        Assert.Equal(fichaId, item.FichaTecnicaId);
+        Assert.Equal(insumoId, item.InsumoId);
+    }
+
+    [Fact]
+    public async Task UC015_W5_Request_manipulado_nao_altera_vinculos()
+    {
+        var empresaDois = await CriarEmpresaAsync();
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto item manipulado externo"), ativo: true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo item manipulado externo"), null, UnidadeMedida.Metro, ativo: true);
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto item manipulado"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo item manipulado"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "3", "alterado", new Dictionary<string, string>
+        {
+            ["Id"] = "999",
+            ["ItemId"] = "999",
+            ["EmpresaId"] = empresaDois.ToString(CultureInfo.InvariantCulture),
+            ["FichaTecnicaId"] = fichaOutroTenant.ToString(CultureInfo.InvariantCulture),
+            ["InsumoId"] = insumoOutroTenant.ToString(CultureInfo.InvariantCulture),
+            ["Input.Id"] = "999",
+            ["Input.EmpresaId"] = empresaDois.ToString(CultureInfo.InvariantCulture),
+            ["Input.FichaTecnicaId"] = fichaOutroTenant.ToString(CultureInfo.InvariantCulture),
+            ["Input.InsumoId"] = insumoOutroTenant.ToString(CultureInfo.InvariantCulture)
+        });
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal(1, item.EmpresaId);
+        Assert.Equal(fichaId, item.FichaTecnicaId);
+        Assert.Equal(insumoId, item.InsumoId);
+        Assert.Equal(3m, item.Quantidade);
+        Assert.Equal("alterado", item.Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W6_W15_Insumo_inativo_permanece_visivel_e_editavel_sem_reativacao()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto insumo inativo editavel"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo inativo editavel"), "Marca", UnidadeMedida.Unidade, ativo: false);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var ficha = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+        var get = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
+        var post = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "inativo mantido");
+
+        Assert.Contains("Itens da ficha", ficha);
+        Assert.Contains("Inativo", ficha);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", ficha);
+        Assert.Contains("Situação do insumo", get);
+        Assert.Contains("Inativo", get);
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal(2m, (await ObterItemAsync(itemId, 1)).Quantidade);
+        Assert.False((await ObterInsumoAsync(insumoId, 1)).Ativo);
+    }
+
+    [Fact]
+    public async Task UC015_W7_Produto_inativo_permanece_editavel_sem_reativacao()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto inativo item editavel"), ativo: false);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo produto inativo editavel"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(2m, (await ObterItemAsync(itemId, 1)).Quantidade);
+        Assert.False((await ObterProdutoAsync(produtoId, 1)).Ativo);
+    }
+
+    [Fact]
+    public async Task UC015_W8_Produto_inexistente_ou_cross_tenant_retorna_404()
+    {
+        var empresaDois = await CriarEmpresaAsync();
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto outro tenant edicao item"), ativo: true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo outro tenant edicao item"), null, UnidadeMedida.Grama, ativo: true);
+        var itemOutroTenant = await CriarItemAsync(empresaDois, fichaOutroTenant, insumoOutroTenant, 1m, "externo");
+        var produtoToken = await CriarProdutoAsync(1, Nome("Produto token edicao item"), ativo: true);
+        var fichaToken = await CriarFichaAsync(1, produtoToken);
+        var insumoToken = await CriarInsumoAsync(1, Nome("Insumo token edicao item"), null, UnidadeMedida.Grama, ativo: true);
+        var itemToken = await CriarItemAsync(1, fichaToken, insumoToken, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var getInexistente = await client.GetAsync($"/Produtos/FichaTecnica/999999/Itens/Editar/{itemToken}");
+        var postInexistente = await EnviarEdicaoItemAsync(client, 999999, itemToken, "2", null, tokenProdutoId: produtoToken, tokenItemId: itemToken);
+        var getOutroTenant = await client.GetAsync($"/Produtos/FichaTecnica/{produtoOutroTenant}/Itens/Editar/{itemOutroTenant}");
+        var postOutroTenant = await EnviarEdicaoItemAsync(client, produtoOutroTenant, itemOutroTenant, "2", null, tokenProdutoId: produtoToken, tokenItemId: itemToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, getInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getOutroTenant.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postOutroTenant.StatusCode);
+        Assert.Equal("externo", (await ObterItemAsync(itemOutroTenant, empresaDois)).Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W9_Item_inexistente_ou_cross_tenant_retorna_404()
+    {
+        var empresaDois = await CriarEmpresaAsync();
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto item inexistente"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo item inexistente"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto item cross tenant"), ativo: true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo item cross tenant"), null, UnidadeMedida.Grama, ativo: true);
+        var itemOutroTenant = await CriarItemAsync(empresaDois, fichaOutroTenant, insumoOutroTenant, 1m, "externo");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var getInexistente = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/999999");
+        var postInexistente = await EnviarEdicaoItemAsync(client, produtoId, 999999, "2", null, tokenItemId: itemId);
+        var getCrossTenant = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemOutroTenant}");
+        var postCrossTenant = await EnviarEdicaoItemAsync(client, produtoId, itemOutroTenant, "2", null, tokenItemId: itemId);
+
+        Assert.Equal(HttpStatusCode.NotFound, getInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getCrossTenant.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postCrossTenant.StatusCode);
+        Assert.Equal("original", (await ObterItemAsync(itemId, 1)).Observacao);
+        Assert.Equal("externo", (await ObterItemAsync(itemOutroTenant, empresaDois)).Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W10_Item_de_outra_ficha_retorna_404()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto ficha correta"), ativo: true);
+        await CriarFichaAsync(1, produtoId);
+        var outroProdutoId = await CriarProdutoAsync(1, Nome("Produto outra ficha"), ativo: true);
+        var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo outra ficha"), null, UnidadeMedida.Grama, ativo: true);
+        var itemOutraFicha = await CriarItemAsync(1, outraFichaId, insumoId, 1m, "outra ficha");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var get = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemOutraFicha}");
+        var post = await EnviarEdicaoItemAsync(client, produtoId, itemOutraFicha, "2", null, tokenProdutoId: outroProdutoId);
+
+        Assert.Equal(HttpStatusCode.NotFound, get.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, post.StatusCode);
+        Assert.Equal("outra ficha", (await ObterItemAsync(itemOutraFicha, 1)).Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W11_Get_edicao_nao_muta_item()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto get edicao nao muta"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo get edicao nao muta"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}");
+
+        response.EnsureSuccessStatusCode();
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal(1m, item.Quantidade);
+        Assert.Equal("original", item.Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W12_Post_sem_antiforgery_nao_altera_item()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto antiforgery edicao item"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo antiforgery edicao item"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.Quantidade"] = "2",
+            ["Input.Observacao"] = "alterada"
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal(1m, item.Quantidade);
+        Assert.Equal("original", item.Observacao);
+    }
+
+    [Fact]
+    public async Task UC015_W13_Editar_item_mantem_RN048_ativa_no_insumo()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto RN048 edicao item"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo RN048 edicao item"), "Marca", UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var post = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "referencia mantida");
+        var paginaInsumo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.", paginaInsumo);
+        Assert.Contains("readonly", ObterTag(paginaInsumo, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("readonly", ObterTag(paginaInsumo, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("disabled", ObterTag(paginaInsumo, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UC015_W14_Ficha_lista_somente_itens_da_propria_ficha_com_link_editar()
+    {
+        var empresaDois = await CriarEmpresaAsync();
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto lista itens"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoNome = Nome("Insumo lista proprio");
+        var insumoId = await CriarInsumoAsync(1, insumoNome, "Marca propria", UnidadeMedida.Metro, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "nao deve aparecer");
+        var outroProdutoId = await CriarProdutoAsync(1, Nome("Produto lista outro"), ativo: true);
+        var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
+        var outroInsumoNome = Nome("Insumo lista outra ficha");
+        var outroInsumoId = await CriarInsumoAsync(1, outroInsumoNome, null, UnidadeMedida.Unidade, ativo: true);
+        await CriarItemAsync(1, outraFichaId, outroInsumoId, 2m, null);
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto lista tenant"), ativo: true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var insumoOutroTenantNome = Nome("Insumo lista tenant");
+        var insumoOutroTenant = await CriarInsumoAsync(empresaDois, insumoOutroTenantNome, null, UnidadeMedida.Grama, ativo: true);
+        await CriarItemAsync(empresaDois, fichaOutroTenant, insumoOutroTenant, 3m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+
+        Assert.Contains("Itens da ficha", pagina);
+        Assert.Contains($"{insumoNome} — Marca propria", pagina);
+        Assert.Contains("1,25", pagina);
+        Assert.Contains("m", pagina);
+        Assert.Contains("Ativo", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", pagina);
+        Assert.DoesNotContain(outroInsumoNome, pagina);
+        Assert.DoesNotContain(insumoOutroTenantNome, pagina);
+        Assert.DoesNotContain("nao deve aparecer", pagina);
+        Assert.DoesNotContain("Custo", pagina);
+        Assert.DoesNotContain("Preço", pagina);
+        Assert.DoesNotContain("Total", pagina);
+    }
+
+    [Fact]
+    public async Task UC015_W16_Post_invalido_da_base_preserva_navegacao_de_itens()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto base invalida itens"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2m, 30);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo base invalida itens"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var pagina = await LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("O rendimento deve ser maior que zero.", pagina);
+        Assert.Contains("Adicionar insumo", pagina);
+        Assert.Contains("Itens da ficha", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", pagina);
+        var ficha = await ObterFichaAsync(fichaId, 1);
+        Assert.Equal(2m, ficha.Rendimento);
+        Assert.Equal(30, ficha.TempoAtivoMinutos);
+    }
+
+    [Fact]
+    public void UC015_W17_Parser_compartilhado_e_formatador_sao_deterministicos_sob_cultura_invariant()
+    {
+        var culturaOriginal = CultureInfo.CurrentCulture;
+        var uiOriginal = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+        var modelState = new ModelStateDictionary();
+
+        try
+        {
+            var valido = ItemFichaTecnicaFormulario.TentarObterQuantidade(modelState, "1,25", out var quantidade);
+
+            Assert.True(valido);
+            Assert.True(modelState.IsValid);
+            Assert.Equal(1.25m, quantidade);
+            Assert.Equal("1,25", ItemFichaTecnicaFormulario.FormatarQuantidade(1.25m));
+            Assert.Equal("1,234567", ItemFichaTecnicaFormulario.FormatarQuantidade(1.234567m));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culturaOriginal;
+            CultureInfo.CurrentUICulture = uiOriginal;
+        }
+    }
+
+    [Fact]
+    public async Task UC015_W18_Fluxo_Novo_continua_aceitando_quantidade_apos_refatoracao()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto novo pos refatoracao"), ativo: true);
+        await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo novo pos refatoracao"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFormularioAsync(client, produtoId, insumoId, "2,5", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(2.5m, Assert.Single(await ListarItensAsync(produtoId: produtoId)).Quantidade);
+    }
+
     private static async Task<HttpResponseMessage> EnviarFormularioAsync(
         HttpClient client,
         int produtoId,
@@ -376,6 +776,68 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         }
 
         return await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo", new FormUrlEncodedContent(dados));
+    }
+
+    private static async Task<HttpResponseMessage> EnviarEdicaoItemAsync(
+        HttpClient client,
+        int produtoId,
+        int itemId,
+        string? quantidade,
+        string? observacao,
+        Dictionary<string, string>? camposExtras = null,
+        int? tokenProdutoId = null,
+        int? tokenItemId = null)
+    {
+        var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{tokenProdutoId ?? produtoId}/Itens/Editar/{tokenItemId ?? itemId}");
+        var pagina = await respostaPagina.Content.ReadAsStringAsync();
+        Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
+        var dados = new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = Token(pagina),
+            ["Input.Observacao"] = observacao ?? string.Empty
+        };
+
+        if (quantidade is not null)
+        {
+            dados["Input.Quantidade"] = quantidade;
+        }
+
+        if (camposExtras is not null)
+        {
+            foreach (var campo in camposExtras)
+            {
+                dados[campo.Key] = campo.Value;
+            }
+        }
+
+        return await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", new FormUrlEncodedContent(dados));
+    }
+
+    private static async Task<HttpResponseMessage> EnviarFichaBaseAsync(
+        HttpClient client,
+        int produtoId,
+        string? rendimento,
+        string? tempoAtivo)
+    {
+        var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}");
+        var pagina = await respostaPagina.Content.ReadAsStringAsync();
+        Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
+        var dados = new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = Token(pagina)
+        };
+
+        if (rendimento is not null)
+        {
+            dados["Input.Rendimento"] = rendimento;
+        }
+
+        if (tempoAtivo is not null)
+        {
+            dados["Input.TempoAtivoMinutos"] = tempoAtivo;
+        }
+
+        return await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}", new FormUrlEncodedContent(dados));
     }
 
     private async Task<HttpResponseMessage> EnviarEdicaoInsumoAsync(
@@ -495,6 +957,14 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         return await context.ItensFichaTecnica.AsNoTracking().SingleAsync(item => item.Id == itemId);
     }
 
+    private async Task<Precificador.Core.FichasTecnicas.FichaTecnica> ObterFichaAsync(int fichaId, int empresaId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        return await context.FichasTecnicas.AsNoTracking().SingleAsync(ficha => ficha.Id == fichaId);
+    }
+
     private async Task<Produto> ObterProdutoAsync(int id, int empresaId)
     {
         using var scope = factory.Services.CreateScope();
@@ -592,6 +1062,13 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
 
     private static string ObterTag(string html, string tag, string nomeCampo) =>
         Regex.Match(html, $"<{tag}[^>]*name=\"{Regex.Escape(nomeCampo)}\"[^>]*>", RegexOptions.IgnoreCase).Value;
+
+    private static string ValorDoInput(string conteudo, string nome)
+    {
+        var input = Regex.Match(conteudo, $"<input[^>]*name=\"{Regex.Escape(nome)}\"[^>]*>").Value;
+        Assert.False(string.IsNullOrEmpty(input), conteudo);
+        return Regex.Match(input, "value=\"([^\"]*)\"").Groups[1].Value;
+    }
 
     private static string Token(string pagina) =>
         WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
