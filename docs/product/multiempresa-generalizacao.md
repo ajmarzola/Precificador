@@ -18,9 +18,7 @@ Conceitos comuns permanecem: rendimento, insumos/quantidades, observação conte
 
 Perdas devem ser modeladas como conceito de material/processo quando aplicável, sem obrigar produtos que não possuem essa característica.
 
-`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais. A direção aprovada é modelar futuramente uso de equipamento de forma genérica — forno, impressora, laminadora ou outro recurso — com potência/tempo quando isso for relevante ao custo.
-
-O desenho exato será fechado antes dos UCs de Ficha Técnica e energia.
+`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais. A UC013 fecha a base comum da Ficha Técnica em **Rendimento + TempoAtivoMinutos**. Uso de equipamento permanece separado e será modelado de forma genérica — forno, impressora, laminadora ou outro recurso — no UC021, com potência/tempo quando isso for relevante ao custo.
 
 ## Insumos
 

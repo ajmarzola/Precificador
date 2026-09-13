@@ -84,7 +84,9 @@ Ficam fora do UC007:
 - custo do lote;
 - custo unitário.
 
-Esses conceitos pertencem à Ficha Técnica e aos UCs de precificação.
+Esses conceitos pertencem à [F003 — Ficha Técnica](F003-ficha-tecnica.md) e aos UCs de precificação.
+
+A UC013 inaugura a Ficha Técnica com uma única base atual por Produto, contendo Rendimento e TempoAtivoMinutos. Itens, perdas e equipamentos permanecem em incrementos posteriores.
 
 O percentual de perda deixa de ser dado cadastral obrigatório do Produto. Perdas serão revalidadas como conceito de material/processo antes dos UCs correspondentes.
 

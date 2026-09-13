@@ -216,7 +216,13 @@ Configurações de precificação pertencem a uma Empresa e suas alterações n�
 
 ### RN009 — Rendimento
 
-Toda ficha técnica precificável deve possuir rendimento maior que zero, expresso em unidades de venda por lote/execução.
+Toda Ficha Técnica deve possuir Rendimento maior que zero, expresso em unidades de venda por lote/execução.
+
+Rendimento é decimal para permitir processos cujo lote produza quantidade fracionária de unidades de venda.
+
+Regra:
+
+`Rendimento > 0`.
 
 ### RN010 — Quantidade na ficha
 
@@ -236,7 +242,11 @@ O modelo exato e a forma de incidência serão fechados antes do UC019, consider
 
 ### RN013 — Mão de obra
 
-O tempo ativo é informado para o lote/execução.
+O tempo ativo é informado para o lote/execução em minutos inteiros.
+
+`TempoAtivoMinutos` é obrigatório na Ficha Técnica e deve ser maior ou igual a zero. Zero é válido quando explicitamente informado para um processo sem trabalho humano ativo; ausência não deve ser convertida silenciosamente em zero.
+
+O cálculo futuro é:
 
 `CustoMaoDeObraLote = (TempoAtivoMinutos / 60) × ValorHoraTrabalhoDaEmpresa`.
 
@@ -357,6 +367,26 @@ Ausência de Preço de prateleira:
 - impede o cálculo de margem atual até que os demais dados necessários existam.
 
 O cadastro inicial não persiste `PrecoVendaAtual` nem `PrecoPrateleiraAtual` diretamente em Produto.
+
+
+### RN047 — Ficha Técnica única por Produto e Empresa
+
+Cada Produto pode possuir no máximo uma Ficha Técnica atual no MVP.
+
+A identidade funcional da associação é:
+
+`EmpresaId + ProdutoId`.
+
+A Ficha Técnica:
+
+- pertence à mesma Empresa do Produto;
+- não pode ser reatribuída para outro Produto ou outra Empresa;
+- pode ser criada ou alterada para Produto ativo ou inativo;
+- não altera a situação do Produto;
+- representa estado produtivo atual editável, sem versionamento próprio no MVP.
+
+Produto pode existir sem Ficha Técnica. A ausência de Ficha ou de outros dados necessários mantém a precificação incompleta conforme RN017.
+
 
 ## Margem e preço
 

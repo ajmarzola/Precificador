@@ -79,13 +79,17 @@ O UC010 implementou o ciclo reversível de desativação/reativação. Produto i
 
 ## Etapa 3 — Ficha técnica
 
-UC013 a UC017 devem ser revalidados antes da implementação para adotar o modelo produtivo genérico registrado em `../product/multiempresa-generalizacao.md`.
+A revalidação genérica da UC013 foi concluída: este incremento fica restrito a Rendimento e TempoAtivoMinutos. UC014 a UC017 continuam sujeitos às revalidações específicas antes da implementação.
 
 UC014 também deve revalidar as restrições de edição dos dados de Insumo após existirem referências em fichas técnicas.
 
+Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
+
+Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../codex/UC013-definir-base-ficha-tecnica.md).
+
 Ordem prevista:
 
-1. UC013 — Definir rendimento e tempos/recursos do lote;
+1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — pronto para implementação;
 2. UC014 — Adicionar Insumo à Ficha Técnica;
 3. UC015 — Alterar item da Ficha Técnica;
 4. UC016 — Remover item da Ficha Técnica;
@@ -144,4 +148,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Especificar, revalidar e implementar o **UC013 — Definir rendimento e tempos/recursos do lote**. A UC011 fica explicitamente bloqueada até a conclusão da UC023, quando Custo de referência, Margem de referência e Preço sugerido poderão ser congelados no histórico comercial sem entrada manual desses valores.
+Implementar e revisar o **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** em `feat/uc013-base-ficha-tecnica`, usando a especificação e instrução Codex aprovadas. A UC011 permanece bloqueada até a conclusão da UC023.

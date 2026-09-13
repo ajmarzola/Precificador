@@ -56,7 +56,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 
 | UC | Nome | Dependências |
 |---|---|---|
-| UC013 | Definir rendimento e tempos/recursos do lote | UC007; **revalidar modelo genérico antes de implementar** |
+| [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 — **pronto para implementação; próximo caso** |
 | UC014 | Adicionar insumo à ficha técnica com quantidade e observação contextual opcional | UC001A, UC007; revalidar restrições de edição do Insumo antes de implementar |
 | UC015 | Alterar quantidade/observação de item da ficha técnica | UC014 |
 | UC016 | Remover item da ficha técnica | UC014 |
