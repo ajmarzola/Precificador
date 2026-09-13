@@ -39,7 +39,7 @@ UC005 foi implementado com histórico append-only de preços, custo unitário ca
 
 ## Produtos
 
-O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou preço de venda. O cadastro inicial contém Nome, Categoria opcional, Margem-alvo e situação ativa; Produto pode existir sem preço praticado até o UC011.
+O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificação comercial. O cadastro inicial contém Nome, Categoria opcional, Margem-alvo e situação ativa. Produto pode existir sem preço de prateleira; UC011/UC012 passam a depender do cálculo completo até o preço sugerido.
 
 | UC | Nome | Dependências |
 |---|---|---|
@@ -47,8 +47,10 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou preço de v
 | [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 — **implementado** |
 | [UC009](UC009-editar-produto.md) | Editar produto | UC007 — **implementado** |
 | [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007, UC009 — **implementado** |
-| UC011 | Alterar preço de venda preservando histórico | UC007 — próximo caso de Produtos |
-| UC012 | Consultar histórico de preço de venda | UC011 |
+| UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023 |
+| UC012 | Consultar histórico de precificação do produto | UC011 |
+
+**Próximo caso:** UC013. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
 
 ## Ficha técnica
 
@@ -69,7 +71,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou preço de v
 | UC020 | Calcular custo de mão de obra | UC013, Configurações |
 | UC021 | Calcular custo de energia/equipamentos | UC013, Configurações; revalidar antes de implementar |
 | UC022 | Calcular custo total e custo unitário | UC018–UC021 |
-| UC023 | Calcular preço teórico e sugerido | UC022 |
+| UC023 | Calcular preço teórico e sugerido | UC022, Configurações |
 | UC024 | Calcular margem atual e situação | UC011, UC022 |
 | UC025 | Consultar detalhamento da precificação | UC023, UC024 |
 
