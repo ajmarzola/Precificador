@@ -92,7 +92,7 @@ Todo Produto é tenant-owned:
 
 ## Consulta — UC008
 
-O UC008 está especificado para:
+Implementado com as páginas `/Produtos` e `/Produtos/Detalhes/{id}`, mantendo consultas tenant-aware somente leitura.
 
 - listar Produtos da Empresa Ativa;
 - pesquisar por Nome;
@@ -108,8 +108,8 @@ Preço de venda, custo, margem atual e Ficha Técnica permanecem ausentes da con
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
-- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — próximo caso de Produtos, revalidado contra a implementação real do UC007 e pronto para implementação;
-- UC009 — Editar produto;
+- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
+- UC009 — Editar produto — próximo caso de Produtos;
 - UC010 — Desativar produto;
 - UC011 — Alterar preço de venda preservando histórico;
 - UC012 — Consultar histórico de preço de venda.
