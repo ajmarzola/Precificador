@@ -87,7 +87,7 @@ A revalidação para histórico de preços foi concluída pela RN040:
 
 A restrição foi aplicada ao fluxo de edição no UC005: qualquer histórico, inclusive apenas preço futuro, congela Nome, Marca e Unidade base no servidor e na apresentação.
 
-A decisão de estabilidade diante de referências em Ficha Técnica foi fechada e revalidada para o UC014 pela RN048: enquanto existir ItemFichaTecnica atual, Nome, Marca e Unidade base também ficam protegidos, mesmo sem histórico de preço. A UC014 implementou essa proteção no fluxo real de `/Insumos/Editar`. Se a última referência for removida e não houver preços, a edição poderá ser liberada novamente; o UC016 deve revalidar esse desbloqueio.
+A decisão foi simplificada antes do UC016: o primeiro preço (RN040) ou o primeiro uso em Ficha (RN048) consolida permanentemente Nome, Marca e Unidade base conforme RN051. Remover referências futuras não desbloqueia a identidade. A MEL010 persiste esse estado em `Insumo.IdentidadeConsolidada` antes do UC016.
 
 ### Situação
 
@@ -127,7 +127,8 @@ Além da página de histórico, Detalhes do Insumo passa a exibir um resumo do p
 ## Regras relacionadas
 
 - RN001 a RN008;
-- RN028 a RN040, conforme aplicáveis.
+- RN028 a RN040, conforme aplicáveis;
+- RN048 e RN051.
 
 ## Casos de uso
 
