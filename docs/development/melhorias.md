@@ -116,8 +116,8 @@ Status possíveis:
 - **Diretrizes para futura especificação:**
   - configuração pertence à Empresa;
   - avaliar inclusão na tela de configurações de precificação, em vez de criar tela isolada sem necessidade;
-  - definir comportamento para registros históricos: o snapshot comercial deve continuar interpretável mesmo que a configuração mude posteriormente;
-  - evitar persistir percentual derivado quando ele puder ser reproduzido a partir dos dados históricos e da política aplicável;
+  - quando a reserva deixar de ser fixa, congelar no registro histórico a reserva/política usada naquele cálculo (por exemplo `ReservaComercialReferencia`), para que mudanças futuras de configuração não reinterpretem decisões antigas;
+  - continuar sem persistir `DescontoReferencia`, pois ele permanece derivável a partir de Preço sugerido, Preço de prateleira e reserva de referência;
   - não antecipar a parametrização no UC011: usar 10 p.p. fixos no MVP inicial.
 - **Prioridade:** baixa; revisar após UC011/UC012 e a implementação das configurações de precificação.
 
