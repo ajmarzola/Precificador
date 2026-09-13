@@ -390,7 +390,7 @@ Não expõe EmpresaId, NomeNormalizado, Ativo, preço, custo ou Ficha Técnica.
 
 ### CA03 — Conversão de margem no GET
 
-Produto com MargemAlvo = 0,255 carrega 25,5% no formulário, sem alterar a persistência.
+Produto com MargemAlvo = 0,255 popula MargemAlvoPercentual com o valor decimal equivalente a 25,5%, sem alterar a persistência. O teste não deve depender da pontuação decimal textual exata gerada pelo HTML/tag helper.
 
 ### CA04 — Edição válida
 
@@ -556,7 +556,7 @@ Cobrir anônimo e usuário autenticado sem Empresa Ativa.
 CA02_CA03_Get_edicao_carrega_campos_permitidos_e_margem_percentual
 ~~~
 
-Usar Produto com margem 0,255 e confirmar ausência dos campos proibidos.
+Usar Produto com margem 0,255, provar semanticamente MargemAlvoPercentual = 25,5% e confirmar ausência dos campos proibidos, sem amarrar o teste à pontuação decimal textual do HTML.
 
 #### W3
 
