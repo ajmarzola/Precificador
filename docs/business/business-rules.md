@@ -177,11 +177,13 @@ Essa observação é independente da Observação global do Insumo e deve perman
 
 A implementação desta regra pertence aos UCs de Ficha Técnica, não ao UC001A ou UC002.
 
-### RN040 — Estabilidade cadastral do Insumo com histórico de preços
+### RN040 — Primeiro preço consolida permanentemente a identidade do Insumo
 
-Enquanto um Insumo não possuir qualquer registro de preço, Nome, Marca e Unidade base podem ser alterados conforme as regras cadastrais existentes.
+Enquanto um Insumo ainda não possuir identidade consolidada, Nome, Marca e Unidade base podem ser alterados conforme as regras cadastrais existentes.
 
-A partir da existência do primeiro registro de preço vinculado ao Insumo, independentemente de esse preço estar vigente, vencido ou possuir data de referência futura:
+A persistência do primeiro registro de preço — vigente, anterior ou futuro — deve consolidar permanentemente a identidade do Insumo conforme RN051.
+
+A partir dessa consolidação:
 
 - **Nome torna-se imutável**;
 - **Marca torna-se imutável**;
@@ -190,17 +192,17 @@ A partir da existência do primeiro registro de preço vinculado ao Insumo, inde
 - Observação permanece editável;
 - Situação Ativo/Inativo continua regida pela RN008.
 
-A imutabilidade é integral: não são permitidas alterações apenas de capitalização, espaçamento ou outra forma de apresentação de Nome/Marca depois que houver histórico de preço. A regra prioriza uma fronteira simples e inequívoca entre cadastro ainda corrigível e identidade histórica já consolidada.
+A consolidação não é revertida se o preço deixar de ser vigente ou se novos fatos surgirem posteriormente. O histórico de preço é apenas um dos gatilhos que tornam a identidade definitiva.
 
-Se for necessária uma mudança real de Nome, Marca ou Unidade base depois do início do histórico, deve ser criado um **novo Insumo**. O registro anterior pode ser desativado conforme RN008, preservando seu histórico.
+Se for necessária uma mudança real de Nome, Marca ou Unidade base depois da consolidação, deve ser criado um **novo Insumo**. O registro anterior pode ser desativado conforme RN008.
 
-Essa regra protege a interpretação dos registros históricos e permite que o histórico de preços referencie o `InsumoId` sem precisar duplicar snapshots de Nome, Marca e Unidade base em cada registro de preço no MVP.
+A motivação, alternativas avaliadas e consequências desta decisão estão documentadas em [Estabilidade cadastral do Insumo](insumo-historical-stability.md).
 
-A motivação, alternativas avaliadas e consequências desta decisão estão documentadas em [Estabilidade cadastral do Insumo com histórico de preços](insumo-historical-stability.md).
+### RN048 — Primeiro uso em Ficha consolida permanentemente a identidade do Insumo
 
-### RN048 — Estabilidade cadastral do Insumo referenciado em Ficha Técnica
+A persistência do primeiro ItemFichaTecnica que referencia um Insumo deve consolidar permanentemente sua identidade conforme RN051.
 
-Enquanto existir pelo menos um ItemFichaTecnica atual referenciando um Insumo:
+A partir desse primeiro uso:
 
 - Nome é imutável;
 - Marca é imutável;
@@ -209,20 +211,53 @@ Enquanto existir pelo menos um ItemFichaTecnica atual referenciando um Insumo:
 - Observação global permanece editável;
 - situação Ativo/Inativo continua regida pela RN008.
 
-A regra protege o significado da composição: Quantidade é expressa na Unidade base e a referência identifica um Insumo econômico específico. Alterar Nome, Marca ou Unidade enquanto há referência mudaria silenciosamente Fichas existentes.
+A regra protege o significado da composição: Quantidade é expressa na Unidade base e a referência identifica um Insumo econômico específico.
 
-A proteção efetiva da identidade cadastral é a união de RN040 e RN048:
+A consolidação é histórica e monotônica. Remover posteriormente um ItemFichaTecnica — inclusive a última referência atual do Insumo — **não reabre Nome, Marca ou Unidade base**.
+
+UC016 não deve contar referências, consultar preços para decidir desbloqueio nem alterar o estado de consolidação.
+
+### RN051 — Identidade consolidada do Insumo
+
+O Insumo possui estado persistido e monotônico de consolidação de identidade:
 
 ~~~text
-IdentidadeProtegida =
-    possui qualquer histórico de preço
-    OU
-    possui qualquer referência atual em Ficha Técnica
+IdentidadeConsolidada : bool
 ~~~
 
-A RN040 é permanente porque histórico de preço é append-only.
+Novo Insumo nasce com:
 
-A RN048 depende de referências atuais. Se a última referência em Ficha for removida e o Insumo não possuir histórico de preço, Nome, Marca e Unidade base podem voltar a ser editáveis. Esse desbloqueio deve ser revalidado no UC016.
+~~~text
+IdentidadeConsolidada = false
+~~~
+
+A primeira ocorrência de qualquer um dos eventos abaixo muda o estado para true:
+
+- registro de PrecoInsumo, conforme RN040;
+- inclusão de ItemFichaTecnica, conforme RN048.
+
+A transição permitida é somente:
+
+~~~text
+false -> true
+~~~
+
+Não existe transição true -> false.
+
+Quando IdentidadeConsolidada = true:
+
+- Nome é permanentemente imutável;
+- Marca é permanentemente imutável;
+- Unidade base é permanentemente imutável;
+- Categoria permanece editável;
+- Observação permanece editável;
+- Ativo/Inativo permanece regido pela RN008.
+
+A proteção não é derivada da existência atual de preços ou Itens. Remover referências futuras não altera o estado consolidado.
+
+A consolidação deve ser persistida no mesmo SaveChanges/transação que grava o primeiro fato econômico/produtivo correspondente.
+
+Registros existentes devem ser migrados com IdentidadeConsolidada = true quando já houver qualquer PrecoInsumo ou ItemFichaTecnica associado.
 
 ### RN049 — Um Insumo por Ficha Técnica
 
