@@ -74,24 +74,29 @@ O **Preço de prateleira** é a decisão comercial efetivamente informada pelo u
 
 ### Desconto de referência
 
-Enquanto não existir parametrização própria, a reserva comercial é fixa em **10 pontos percentuais**.
+Cada Empresa possui uma **Reserva comercial para desconto**, armazenada como fração decimal. O valor padrão é **10 pontos percentuais (0,10)**.
 
-O Desconto de referência só é aplicável quando o Preço de prateleira estiver pelo menos **11% acima** do Preço sugerido.
-
-Conceitualmente:
+O limiar de aplicação é derivado e não configurado separadamente:
 
 ```text
 percentual_acima_sugerido = (preço_prateleira / preço_sugerido) - 1
-
-se percentual_acima_sugerido < 11%
-    desconto_referencia = não aplicável
-senão
-    desconto_referencia = percentual_acima_sugerido - 10 p.p.
+limiar_aplicacao = reserva_comercial_referencia + 0,01
 ```
 
-Se o Preço de prateleira for inferior ao Preço sugerido, não existe percentual de desconto de referência; a condição é apresentada como preço abaixo do sugerido.
+O acréscimo fixo de `0,01` representa 1 ponto percentual e preserva a regra original: com reserva de 10 p.p., o Desconto de referência começa a ser aplicável em 11% acima do Preço sugerido.
 
-O Desconto de referência é derivado e não deve ser persistido como dado redundante.
+```text
+se preço_prateleira < preço_sugerido
+    desconto_referencia = não aplicável
+senão se percentual_acima_sugerido < limiar_aplicacao
+    desconto_referencia = não aplicável
+senão
+    desconto_referencia = percentual_acima_sugerido - reserva_comercial_referencia
+```
+
+O Desconto de referência é derivado e não deve ser persistido.
+
+Para histórico, cada registro comercial congela `ReservaComercialReferencia` usada no momento da decisão. Alterações futuras da configuração da Empresa não reinterpretam registros antigos.
 
 ## Margem atual
 
@@ -156,7 +161,8 @@ Cada novo registro deve conter, no mínimo:
 - CustoReferencia = custo unitário vigente calculado pelo sistema;
 - MargemReferencia = MargemAlvo do Produto usada naquele cálculo;
 - PrecoSugerido calculado pelo UC023 a partir dessas referências e do arredondamento comercial;
-- PrecoPrateleira informado pelo usuário.
+- PrecoPrateleira informado pelo usuário;
+- ReservaComercialReferencia = reserva comercial vigente da Empresa usada para derivar o Desconto de referência.
 
 O usuário informa somente o Preço de prateleira. Os demais valores são derivados do estado da precificação no momento do registro e ficam congelados como snapshot histórico.
 
