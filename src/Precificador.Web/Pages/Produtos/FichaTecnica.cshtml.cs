@@ -30,7 +30,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         {
             Input = new FichaTecnicaInputModel
             {
-                Rendimento = ficha.Rendimento,
+                Rendimento = FichaTecnicaFormulario.FormatarRendimento(ficha.Rendimento),
                 TempoAtivoMinutos = ficha.TempoAtivoMinutos
             };
         }
@@ -46,8 +46,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        ValidarInput();
-        if (!ModelState.IsValid)
+        var rendimentoInformado = FichaTecnicaFormulario.TentarObterRendimento(ModelState, Input, out var rendimento);
+        ValidarTempoAtivo();
+        if (!rendimentoInformado || !ModelState.IsValid)
         {
             return Page();
         }
@@ -55,12 +56,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         var ficha = await context.FichasTecnicas.SingleOrDefaultAsync(item => item.ProdutoId == id);
         if (ficha is null)
         {
-            ficha = FichaTecnica.Criar(Produto!.EmpresaId, Produto.Id, Input.Rendimento!.Value, Input.TempoAtivoMinutos!.Value);
+            ficha = FichaTecnica.Criar(Produto!.EmpresaId, Produto.Id, rendimento, Input.TempoAtivoMinutos!.Value);
             context.FichasTecnicas.Add(ficha);
         }
         else
         {
-            ficha.AtualizarBase(Input.Rendimento!.Value, Input.TempoAtivoMinutos!.Value);
+            ficha.AtualizarBase(rendimento, Input.TempoAtivoMinutos!.Value);
         }
 
         await context.SaveChangesAsync();
@@ -86,17 +87,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         return Produto is not null;
     }
 
-    private void ValidarInput()
+    private void ValidarTempoAtivo()
     {
-        if (Input.Rendimento is null)
-        {
-            ModelState.AddModelError("Input.Rendimento", "O rendimento é obrigatório.");
-        }
-        else if (Input.Rendimento <= 0)
-        {
-            ModelState.AddModelError("Input.Rendimento", "O rendimento deve ser maior que zero.");
-        }
-
         if (Input.TempoAtivoMinutos is null)
         {
             ModelState.AddModelError("Input.TempoAtivoMinutos", "O tempo ativo é obrigatório.");
@@ -109,7 +101,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
 
     public sealed class FichaTecnicaInputModel
     {
-        public decimal? Rendimento { get; set; }
+        public string? Rendimento { get; set; }
 
         public int? TempoAtivoMinutos { get; set; }
     }

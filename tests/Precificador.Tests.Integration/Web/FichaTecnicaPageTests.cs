@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ using Precificador.Core.FichasTecnicas;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Pages.Produtos;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -74,6 +76,31 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
 
         var paginaAposRedirect = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Ficha técnica salva com sucesso.", paginaAposRedirect);
+    }
+
+    [Fact]
+    public void CA04_Parsing_de_rendimento_com_virgula_independe_da_cultura_atual()
+    {
+        var culturaOriginal = CultureInfo.CurrentCulture;
+        var uiOriginal = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+        var modelState = new ModelStateDictionary();
+        var input = new FichaTecnicaModel.FichaTecnicaInputModel { Rendimento = "2,5" };
+
+        try
+        {
+            var valido = FichaTecnicaFormulario.TentarObterRendimento(modelState, input, out var rendimento);
+
+            Assert.True(valido);
+            Assert.True(modelState.IsValid);
+            Assert.Equal(2.5m, rendimento);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culturaOriginal;
+            CultureInfo.CurrentUICulture = uiOriginal;
+        }
     }
 
     [Fact]
