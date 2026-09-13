@@ -303,7 +303,7 @@ Empresas diferentes podem cadastrar Produtos com o mesmo Nome.
 
 Categoria não participa da identidade.
 
-A situação Ativo/Inativo também não participa da identidade; quando o UC010 existir, Produto inativo continuará ocupando o Nome dentro da Empresa.
+A situação Ativo/Inativo também não participa da identidade; Produto inativo continua ocupando o Nome dentro da Empresa.
 
 A integridade deve ser protegida por validação funcional e índice único no banco.
 

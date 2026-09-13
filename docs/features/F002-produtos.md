@@ -44,7 +44,7 @@ No domínio é armazenada como fração decimal e validada por RN019/RN045.
 
 ### Situação
 
-Produto nasce ativo conforme RN044. Desativação pertence ao UC010.
+Produto nasce ativo conforme RN044. Desativação e reativação são gerenciadas pelo UC010.
 
 ## Preço de venda
 
@@ -123,7 +123,7 @@ UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não i
 
 ## Situação — UC010
 
-O UC010 está especificado para implementar o ciclo reversível de situação:
+Implementado com ações em `/Produtos/Detalhes/{id}` para o ciclo reversível de situação:
 
 - Ativo -> Inativo por Desativar;
 - Inativo -> Ativo por Reativar;
@@ -132,15 +132,15 @@ O UC010 está especificado para implementar o ciclo reversível de situação:
 - mantendo inativos visíveis e consultáveis;
 - mantendo, após a UC009, edição cadastral de Produto inativo sem reativação implícita.
 
-A revalidação obrigatória do UC010 contra a master real pós-UC009 foi concluída. O fluxo real de edição preserva `Ativo`, mantém Editar disponível e permite cobrir Produto inativo sem bypass técnico. UC010 está liberado e é o próximo caso de Produtos.
+O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto inativo e não reativa implicitamente após edição cadastral.
 
 ## Casos de uso
 
 - [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
 - [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — implementado;
-- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — revalidado, liberado e próximo caso de Produtos;
-- UC011 — Alterar preço de venda preservando histórico;
+- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — implementado;
+- UC011 — Alterar preço de venda preservando histórico — próximo caso de Produtos;
 - UC012 — Consultar histórico de preço de venda.
 
 ## Fora do escopo

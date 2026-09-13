@@ -163,4 +163,49 @@ public sealed class ProdutoTests
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }
+
+    [Fact]
+    public void CA03_Desativar_altera_apenas_status_e_preserva_demais_dados()
+    {
+        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+
+        produto.Desativar();
+
+        Assert.Equal(7, produto.EmpresaId);
+        Assert.Equal("Agenda", produto.Nome);
+        Assert.Equal("AGENDA", produto.NomeNormalizado);
+        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(0.30m, produto.MargemAlvo);
+        Assert.False(produto.Ativo);
+    }
+
+    [Fact]
+    public void CA04_Reativar_altera_apenas_status_e_preserva_demais_dados()
+    {
+        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+        produto.Desativar();
+
+        produto.Reativar();
+
+        Assert.Equal(7, produto.EmpresaId);
+        Assert.Equal("Agenda", produto.Nome);
+        Assert.Equal("AGENDA", produto.NomeNormalizado);
+        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(0.30m, produto.MargemAlvo);
+        Assert.True(produto.Ativo);
+    }
+
+    [Fact]
+    public void CA05_Desativar_e_reativar_sao_idempotentes()
+    {
+        var produto = Produto.Criar(1, "Agenda", 0.30m);
+
+        produto.Desativar();
+        produto.Desativar();
+        Assert.False(produto.Ativo);
+
+        produto.Reativar();
+        produto.Reativar();
+        Assert.True(produto.Ativo);
+    }
 }

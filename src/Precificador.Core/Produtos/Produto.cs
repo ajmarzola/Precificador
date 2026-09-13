@@ -45,6 +45,10 @@ public sealed class Produto : IEntidadeEmpresa
     public static Produto Criar(int empresaId, string nome, decimal margemAlvo, string? categoria = null) =>
         new(empresaId, nome, margemAlvo, categoria);
 
+    public void Desativar() => Ativo = false;
+
+    public void Reativar() => Ativo = true;
+
     public void AtualizarDados(string nome, decimal margemAlvo, string? categoria = null)
     {
         var nomeNormalizado = NormalizarNome(nome);

@@ -49,8 +49,8 @@ Estado documental:
 1. **UC007 — Cadastrar Produto** — implementado;
 2. **UC008 — Listar e consultar Produtos** — implementado;
 3. **UC009 — Editar Produto** — implementado;
-4. **UC010 — Desativar e reativar Produto** — revalidado pós-UC009, liberado e próximo caso de Produtos;
-5. UC011 — Alterar preço de venda preservando histórico;
+4. **UC010 — Desativar e reativar Produto** — implementado;
+5. UC011 — Alterar preço de venda preservando histórico — próximo caso de Produtos;
 6. UC012 — Consultar histórico de preço de venda.
 
 Especificação UC007: [`../use-cases/UC007-cadastrar-produto.md`](../use-cases/UC007-cadastrar-produto.md).
@@ -75,7 +75,7 @@ O UC007 respeitou a fila serial do projeto, foi revisado e mergeado. A revisão 
 
 O UC009 foi implementado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
 
-O UC010 está especificado como ciclo reversível de desativação/reativação e é o próximo caso de Produtos. A integração com a edição real da UC009 foi revalidada: Produto inativo continua editável, a edição preserva `Ativo` e W6 pode ser executado sem bypass técnico.
+O UC010 implementou o ciclo reversível de desativação/reativação. Produto inativo continua editável, a edição preserva `Ativo` e a cobertura Web usa `Produto.Desativar()` sem bypass técnico.
 
 ## Etapa 3 — Ficha técnica
 
@@ -114,4 +114,4 @@ Se um UC não puder ser implementado, testado e revisado como um incremento pequ
 
 ## Próximo passo
 
-Implementar e revisar o **UC010 — Desativar e reativar Produto** em `feat/uc010-situacao-produto`, usando a instrução Codex já liberada. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
+Implementar e revisar o **UC011 — Alterar preço de venda preservando histórico** após especificação/instrução próprias. O gate separado do UC014 permanece para futuras referências de Ficha Técnica.
