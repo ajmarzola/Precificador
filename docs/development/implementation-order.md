@@ -83,6 +83,10 @@ A revalidação genérica da UC013 foi concluída: este incremento fica restrito
 
 UC014 também deve revalidar as restrições de edição dos dados de Insumo após existirem referências em fichas técnicas.
 
+Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
+
+Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../codex/UC013-definir-base-ficha-tecnica.md).
+
 Ordem prevista:
 
 1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — pronto para implementação;
