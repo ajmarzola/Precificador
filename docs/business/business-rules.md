@@ -275,7 +275,7 @@ A situação é reversível:
 - Produto inativo continua participando da unicidade `EmpresaId + NomeNormalizado`;
 - após o UC009, Produto inativo permanece editável nos campos cadastrais permitidos e uma edição não o reativa implicitamente.
 
-Regras futuras sobre uso de Produto inativo em preço de venda, Ficha Técnica, cálculos ou seletores operacionais devem ser definidas pelos respectivos UCs quando esses fluxos existirem.
+Regras futuras sobre uso de Produto inativo em precificação comercial, Ficha Técnica, cálculos ou seletores operacionais devem ser definidas pelos respectivos UCs quando esses fluxos existirem. O UC011 define que Produto inativo pode receber novo registro de Preço de prateleira sem ser reativado.
 
 ### RN041 — Nome do produto
 
@@ -344,19 +344,19 @@ A interface pode receber percentual e convertê-lo para fração antes de criar/
 
 Uma futura margem padrão da Empresa pode pré-preencher novos Produtos, mas não altera silenciosamente Produtos já existentes.
 
-### RN046 — Produto pode existir sem preço de venda
+### RN046 — Produto pode existir sem preço de prateleira
 
-É válido cadastrar Produto sem preço de venda.
+É válido cadastrar Produto sem Preço de prateleira.
 
-O preço praticado possui histórico próprio e será introduzido pelo UC011.
+A decisão comercial possui histórico próprio e será registrada pelo UC011 somente depois que o sistema puder calcular Custo de referência, Margem de referência e Preço sugerido.
 
-Ausência de preço de venda:
+Ausência de Preço de prateleira:
 
 - não impede o cadastro do Produto;
 - não equivale a preço zero;
 - impede o cálculo de margem atual até que os demais dados necessários existam.
 
-O cadastro inicial não persiste `PrecoVendaAtual` diretamente em Produto.
+O cadastro inicial não persiste `PrecoVendaAtual` nem `PrecoPrateleiraAtual` diretamente em Produto.
 
 ## Margem e preço
 
@@ -376,17 +376,39 @@ Exemplo com incremento de R$ 0,50: R$ 25,08 resulta em R$ 25,50.
 
 ### RN022 — Margem atual
 
-Para preço de venda maior que zero:
+Para Preço de prateleira vigente maior que zero:
 
-`MargemAtual = (PrecoVendaAtual - CustoUnitarioProduto) / PrecoVendaAtual`.
+`MargemAtual = (PrecoPrateleiraAtual - CustoUnitarioProduto) / PrecoPrateleiraAtual`.
+
+Preço sugerido é referência econômica; margem atual usa o preço comercial efetivamente definido para prateleira.
 
 ### RN023 — Produto abaixo da margem
 
 Um produto com precificação completa está abaixo da margem quando `MargemAtual < MargemAlvo`.
 
-### RN024 — Preço de venda e histórico
+### RN024 — Preço de prateleira e histórico de precificação
 
-Alterar o preço de venda deve preservar o valor anteriormente praticado em histórico com data da alteração.
+Registrar uma nova decisão comercial cria um novo registro append-only e não altera nem exclui registros anteriores.
+
+O usuário informa somente `PrecoPrateleira`. O sistema determina e congela no registro:
+
+- DataReferencia pela data operacional da Empresa;
+- CustoReferencia;
+- MargemReferencia;
+- PrecoSugerido;
+- PrecoPrateleira informado.
+
+Não são permitidas datas futuras. Múltiplos registros na mesma DataReferencia são permitidos para correção; o vigente é o de maior DataReferencia e, em empate, maior Id.
+
+Produto inativo pode receber novo registro e permanece inativo.
+
+O Preço de prateleira pode ser inferior ao Preço sugerido. Essa decisão não é bloqueada, mas deve ser evidenciada na apresentação.
+
+O DescontoReferencia é derivado, não persistido. Com reserva comercial fixa de 10 pontos percentuais no MVP:
+
+- se o Preço de prateleira estiver menos de 11% acima do Preço sugerido, DescontoReferencia não é aplicável;
+- a partir de 11% acima, `DescontoReferencia = PercentualAcimaDoSugerido - 10 p.p.`;
+- se o Preço de prateleira for inferior ao Preço sugerido, não existe percentual de desconto de referência.
 
 ## Configurações
 
