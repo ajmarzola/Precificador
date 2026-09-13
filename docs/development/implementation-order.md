@@ -48,7 +48,7 @@ Estado documental:
 
 1. **UC007 — Cadastrar Produto** — implementado;
 2. **UC008 — Listar e consultar Produtos** — implementado;
-3. UC009 — Editar Produto — próximo caso de Produtos;
+3. **UC009 — Editar Produto** — especificado e próximo caso de Produtos;
 4. UC010 — Desativar Produto;
 5. UC011 — Alterar preço de venda preservando histórico;
 6. UC012 — Consultar histórico de preço de venda.
@@ -61,7 +61,13 @@ Especificação UC008: [`../use-cases/UC008-listar-consultar-produtos.md`](../us
 
 Instrução Codex UC008: [`../codex/UC008-listar-consultar-produtos.md`](../codex/UC008-listar-consultar-produtos.md).
 
+Especificação UC009: [`../use-cases/UC009-editar-produto.md`](../use-cases/UC009-editar-produto.md).
+
+Instrução Codex UC009: [`../codex/UC009-editar-produto.md`](../codex/UC009-editar-produto.md).
+
 O UC007 respeitou a fila serial do projeto, foi revisado e mergeado. A revisão obrigatória pós-UC007 do UC008 foi concluída contra o modelo real de Produto, e o UC008 foi implementado sem alteração de schema.
+
+O UC009 foi especificado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
 
 ## Etapa 3 — Ficha técnica
 
