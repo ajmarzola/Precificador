@@ -4,7 +4,7 @@
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências materiais:** UC007, UC008 e UC009 implementados
 - **Sequenciamento:** implementar a partir da master pós-UC009, já revalidada
-- **Próximo caso relacionado:** UC011 — Alterar preço de venda preservando histórico
+- **Sequenciamento posterior:** UC011 foi reordenado para depois da UC023; o próximo caso global é UC013
 - **Sem alteração de schema:** o campo Ativo já existe em Produto
 
 ## Objetivo
@@ -673,6 +673,6 @@ Além da DoD global:
 - matriz U1-U3, P1-P2 e W1-W10 atendida;
 - documentação pós-implementação marca UC010 como Implementado;
 - F002, RN018, catálogo e ordem ficam coerentes;
-- UC011 passa a próximo caso de Produtos;
+- o sequenciamento global posterior deve ser consultado em `docs/development/implementation-order.md`;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.
