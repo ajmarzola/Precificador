@@ -3,7 +3,7 @@
 - **Status:** Aprovada
 - **Data:** 2026-09-11
 - **Regra normativa:** RN040 — Estabilidade cadastral do Insumo com histórico de preços
-- **Casos afetados:** UC003, UC005 e futuramente UC014
+- **Casos afetados:** UC003, UC005 e UC014
 
 ## Contexto
 
@@ -170,9 +170,22 @@ No momento desta decisão ainda não existe entidade de preço em produção no 
 
 ### Para o UC014 / Ficha Técnica
 
-Esta decisão fecha apenas o gate relacionado a **histórico de preços**.
+A reavaliação foi concluída após a implementação real da UC013.
 
-Antes do UC014, deve ser reavaliado o caso de um Insumo que ainda não possui preços, mas já esteja referenciado por uma Ficha Técnica. Como a quantidade do item também depende da Unidade base, referências de ficha podem exigir uma regra adicional de estabilidade mesmo sem histórico de preço.
+A RN048 complementa esta decisão: enquanto existir pelo menos um ItemFichaTecnica atual referenciando o Insumo, Nome, Marca e Unidade base ficam imutáveis mesmo quando ainda não houver histórico de preço.
+
+A proteção efetiva passa a ser:
+
+~~~text
+IdentidadeProtegida =
+    possui qualquer histórico de preço
+    OU
+    possui qualquer referência atual em Ficha Técnica
+~~~
+
+Categoria e Observação global continuam editáveis.
+
+Diferentemente da RN040, a proteção por referência em Ficha pode desaparecer no futuro se o último Item for removido. O UC016 deve revalidar esse desbloqueio quando implementar remoção.
 
 ## Princípio resultante
 
