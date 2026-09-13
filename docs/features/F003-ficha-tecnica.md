@@ -76,9 +76,19 @@ Regras fechadas:
 
 Insumos desativados após já terem sido adicionados permanecem referenciados e legíveis; RN008 impede apenas novas inclusões.
 
+### UC015 — Alterar Item
+
+Especificada, porém bloqueada até a implementação e revalidação da UC014.
+
+A edição altera somente:
+
+- Quantidade;
+- Observação contextual.
+
+EmpresaId, FichaTecnicaId e InsumoId permanecem imutáveis. Item de Insumo inativo e Item de Produto inativo continuam editáveis sem reativação.
+
 ### Próximos incrementos
 
-- UC015 — alterar quantidade/observação do item;
 - UC016 — remover item e revalidar desbloqueio da RN048;
 - UC017 — consultar Ficha e composição completa.
 
@@ -140,13 +150,14 @@ FichaTecnica é tenant-owned:
 - RN035–RN039;
 - RN047;
 - RN048;
-- RN049.
+- RN049;
+- RN050.
 
 ## Casos de uso
 
 - [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — pronto para implementação;
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — especificado; bloqueado até UC013 implementada e revalidada;
-- UC015 — Alterar item da Ficha Técnica;
+- [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md) — especificado; bloqueado até UC014 implementada e revalidada;
 - UC016 — Remover item da Ficha Técnica;
 - UC017 — Consultar Ficha Técnica e composição.
 
