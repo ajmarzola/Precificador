@@ -20,6 +20,7 @@
 </dl>
 
 <a asp-page="/Produtos/Editar" asp-route-id="@produto.Id" class="btn btn-primary">Editar</a>
+<a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-outline-primary">Ficha técnica</a>
 @if (produto.Ativo)
 {
     <form method="post" asp-page-handler="Desativar" asp-route-id="@produto.Id" class="d-inline">
