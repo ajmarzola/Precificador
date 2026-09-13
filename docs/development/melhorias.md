@@ -1,6 +1,6 @@
 # Melhorias
 
-Esta lista registra melhorias técnicas ou de produto identificadas durante implementação e revisão que **não bloqueiam** a entrega das histórias principais.
+Esta lista registra melhorias técnicas ou de produto identificadas durante implementação e revisão. Em regra não bloqueiam histórias principais, salvo quando uma revalidação de domínio promover explicitamente uma melhoria a pré-requisito técnico de um UC posterior.
 
 As melhorias podem ser executadas depois do fluxo principal ou antecipadas quando houver conveniência técnica clara, desde que não ampliem indevidamente o escopo da história em andamento.
 
@@ -120,6 +120,17 @@ Status possíveis:
   - continuar sem persistir `DescontoReferencia`, pois ele permanece derivável a partir de Preço sugerido, Preço de prateleira e reserva de referência;
   - não antecipar a parametrização no UC011: usar 10 p.p. fixos no MVP inicial.
 - **Prioridade:** baixa; revisar após UC011/UC012 e a implementação das configurações de precificação.
+
+
+### MEL010 — Persistir identidade consolidada do Insumo
+
+- **Status:** Pronto para implementação
+- **Origem:** decisão pré-UC016
+- **Objetivo:** persistir `Insumo.IdentidadeConsolidada` como estado monotônico, tornando Nome, Marca e Unidade base permanentemente imutáveis após o primeiro preço ou primeiro uso em Ficha.
+- **Especificação:** [MEL010 — Identidade consolidada do Insumo](improvements/MEL010-identidade-consolidada-insumo.md)
+- **Instrução Codex:** [MEL010 — implementação](../codex/MEL010-identidade-consolidada-insumo.md)
+- **Decisão:** primeiro uso econômico/produtivo consolida permanentemente a identidade; remover referências futuras não desbloqueia o cadastro.
+- **Prioridade:** bloqueante antes da especificação/implementação do UC016.
 
 
 ## Regra de uso
