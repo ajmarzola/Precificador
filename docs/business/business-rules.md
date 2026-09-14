@@ -336,9 +336,21 @@ A quantidade de cada item da ficha técnica deve ser maior que zero e estar expr
 
 ### RN011 — Custo dos itens do lote
 
-Para cada item: `CustoItem = QuantidadeUtilizada × CustoUnitarioAtualDoInsumo`.
+Para cada item:
 
-O custo base dos itens é a soma dos custos dos itens da ficha.
+`CustoItem = QuantidadeUtilizada × CustoUnitarioAtualDoInsumo`.
+
+O `CustoUnitarioAtualDoInsumo` vem do preço vigente selecionado conforme RN006 e é calculado pela RN004.
+
+Quando a Ficha possui pelo menos um Item e todos os Itens possuem preço vigente:
+
+`CustoBaseItens = soma dos CustoItem da Ficha`.
+
+Se qualquer Item não possuir preço vigente, os custos conhecidos dos demais Itens podem ser exibidos individualmente, mas `CustoBaseItens` fica indisponível. Não é permitido somar apenas os Itens conhecidos e apresentar o valor como total confiável.
+
+Ficha sem Itens não equivale a custo base zero; o componente permanece indisponível/incompleto conforme RN017.
+
+Aplicar RN026: não realizar arredondamento intermediário do custo unitário, custo do Item ou soma dos Itens.
 
 ### RN012 — Perdas de material/processo
 
@@ -377,6 +389,10 @@ O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recurso
 ### RN017 — Precificação incompleta
 
 Se qualquer dado obrigatório para o cálculo estiver ausente ou inválido — incluindo preço vigente de um insumo — o produto deve ser marcado como precificação incompleta. Não deve ser exibido custo total ou margem como se fossem confiáveis.
+
+A ausência de preço vigente nunca é substituída por custo zero. Se apenas parte da composição possuir custo conhecido, resultados individuais conhecidos podem ser apresentados para explicabilidade, mas totais dependentes do conjunto completo permanecem indisponíveis.
+
+Ficha Técnica existente sem Itens também não equivale a custo zero nem torna a precificação completa.
 
 ### RN018 — Desativação e reativação de produto
 
