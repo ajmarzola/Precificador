@@ -716,7 +716,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
 
         Assert.Contains("Itens da ficha", pagina);
-        Assert.Contains($"{insumoNome} — Marca propria", pagina);
+        Assert.Contains("<th scope=\"col\">Insumo</th>", pagina);
+        Assert.Contains("<th scope=\"col\">Marca</th>", pagina);
+        Assert.Contains(insumoNome, pagina);
+        Assert.Contains("Marca propria", pagina);
         Assert.Contains("1,25", pagina);
         Assert.Contains("m", pagina);
         Assert.Contains("Ativo", pagina);
@@ -761,7 +764,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains("contextual linha 2", pagina);
         Assert.Contains("white-space: pre-wrap", pagina);
         Assert.DoesNotContain("global nao contextual", pagina);
-        Assert.Contains("<td>—</td>", pagina);
+        Assert.Matches(
+            $"(?s)<td>{Regex.Escape(nomeAlfa)}</td>\\s*<td>A marca</td>\\s*<td>.*?</td>\\s*<td>.*?</td>\\s*<td[^>]*>—</td>",
+            pagina);
         Assert.Contains("Inativo", pagina);
         Assert.Contains("1,25", pagina);
         Assert.Contains("m", pagina);
@@ -775,6 +780,54 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.DoesNotContain("Preço", pagina);
         Assert.DoesNotContain("Total", pagina);
         Assert.DoesNotContain("Margem", pagina);
+    }
+
+    [Fact]
+    public async Task UC017_W14_Get_da_ficha_nao_muta_produto_ficha_item_ou_insumo()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto GET imutavel UC017"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2.5m, 45);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo GET imutavel UC017"), "Marca original", UnidadeMedida.Metro, true, observacao: "Global original");
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "Contextual original");
+        var produtoAntes = await ObterProdutoAsync(produtoId, 1);
+        var fichaAntes = await ObterFichaAsync(fichaId, 1);
+        var itemAntes = await ObterItemAsync(itemId, 1);
+        var insumoAntes = await ObterInsumoAsync(insumoId, 1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}");
+
+        response.EnsureSuccessStatusCode();
+        var produtoDepois = await ObterProdutoAsync(produtoId, 1);
+        var fichaDepois = await ObterFichaAsync(fichaId, 1);
+        var itemDepois = await ObterItemAsync(itemId, 1);
+        var insumoDepois = await ObterInsumoAsync(insumoId, 1);
+        Assert.Equal(produtoAntes.Id, produtoDepois.Id);
+        Assert.Equal(produtoAntes.EmpresaId, produtoDepois.EmpresaId);
+        Assert.Equal(produtoAntes.Nome, produtoDepois.Nome);
+        Assert.Equal(produtoAntes.Categoria, produtoDepois.Categoria);
+        Assert.Equal(produtoAntes.MargemAlvo, produtoDepois.MargemAlvo);
+        Assert.Equal(produtoAntes.Ativo, produtoDepois.Ativo);
+        Assert.Equal(fichaAntes.Id, fichaDepois.Id);
+        Assert.Equal(fichaAntes.EmpresaId, fichaDepois.EmpresaId);
+        Assert.Equal(fichaAntes.ProdutoId, fichaDepois.ProdutoId);
+        Assert.Equal(fichaAntes.Rendimento, fichaDepois.Rendimento);
+        Assert.Equal(fichaAntes.TempoAtivoMinutos, fichaDepois.TempoAtivoMinutos);
+        Assert.Equal(itemAntes.Id, itemDepois.Id);
+        Assert.Equal(itemAntes.EmpresaId, itemDepois.EmpresaId);
+        Assert.Equal(itemAntes.FichaTecnicaId, itemDepois.FichaTecnicaId);
+        Assert.Equal(itemAntes.InsumoId, itemDepois.InsumoId);
+        Assert.Equal(itemAntes.Quantidade, itemDepois.Quantidade);
+        Assert.Equal(itemAntes.Observacao, itemDepois.Observacao);
+        Assert.Equal(insumoAntes.Id, insumoDepois.Id);
+        Assert.Equal(insumoAntes.EmpresaId, insumoDepois.EmpresaId);
+        Assert.Equal(insumoAntes.Nome, insumoDepois.Nome);
+        Assert.Equal(insumoAntes.Marca, insumoDepois.Marca);
+        Assert.Equal(insumoAntes.Categoria, insumoDepois.Categoria);
+        Assert.Equal(insumoAntes.UnidadeBase, insumoDepois.UnidadeBase);
+        Assert.Equal(insumoAntes.Observacao, insumoDepois.Observacao);
+        Assert.Equal(insumoAntes.Ativo, insumoDepois.Ativo);
+        Assert.Equal(insumoAntes.IdentidadeConsolidada, insumoDepois.IdentidadeConsolidada);
     }
 
     [Fact]

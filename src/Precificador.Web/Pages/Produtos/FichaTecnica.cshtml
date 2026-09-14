@@ -67,7 +67,7 @@
                 @foreach (var item in Model.Itens)
                 {
                     <tr>
-                        <td aria-label="@($"{item.Nome} — {item.Marca}")">@item.Nome</td>
+                        <td>@item.Nome</td>
                         <td>@(string.IsNullOrWhiteSpace(item.Marca) ? "—" : item.Marca)</td>
                         <td>@item.Quantidade</td>
                         <td>@item.UnidadeFormatada</td>

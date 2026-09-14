@@ -52,6 +52,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.Contains("Ativo", conteudo);
         Assert.Contains("Rendimento do lote (unidades de venda)", conteudo);
         Assert.Contains("Tempo ativo de trabalho (minutos)", conteudo);
+        Assert.DoesNotContain("Adicionar insumo", conteudo);
         Assert.DoesNotContain("EmpresaId", conteudo);
         Assert.DoesNotContain("ProdutoId", conteudo);
         Assert.DoesNotContain("TempoForno", conteudo);
