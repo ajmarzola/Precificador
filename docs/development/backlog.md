@@ -42,7 +42,7 @@ A ordem das linhas define a fila normativa.
 | MEL009 — Reserva comercial do Desconto de referência | MEL | Especificado | Implementação distribuída em UC026, UC027, UC011 e UC012 | [MEL009-reserva-comercial-desconto.md](improvements/MEL009-reserva-comercial-desconto.md) |
 | UC026 — Consultar configurações de precificação da Empresa | UC | Planejado | FT002; incorporar MEL009 | Documento a criar |
 | UC027 — Alterar configurações de precificação da Empresa | UC | Planejado | UC026; incorporar MEL009 | Documento a criar |
-| UC018 — Calcular custo atual dos itens do lote | UC | Planejado | UC005, UC014 | Documento a criar |
+| UC018 — Calcular custo atual dos itens do lote | UC | Especificado | UC027; revalidar antes de implementar | [UC018-calcular-custo-itens-lote.md](../use-cases/UC018-calcular-custo-itens-lote.md) |
 | UC019 — Calcular perdas aplicáveis | UC | Planejado | UC018; revalidar antes de implementar | Documento a criar |
 | UC020 — Calcular custo de mão de obra | UC | Planejado | UC013, UC027 | Documento a criar |
 | UC021 — Calcular custo de energia/equipamentos | UC | Planejado | UC013, UC027; revalidar antes de implementar | Documento a criar |
