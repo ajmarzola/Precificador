@@ -118,9 +118,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
             orderby insumo.NomeNormalizado, insumo.MarcaNormalizada
             select new ItemFichaResumo(
                 item.Id,
-                RotuloInsumo(insumo.Nome, insumo.Marca),
+                item.InsumoId,
+                insumo.Nome,
+                insumo.Marca,
                 ItemFichaTecnicaFormulario.FormatarQuantidade(item.Quantidade),
                 insumo.UnidadeBase,
+                item.Observacao,
                 insumo.Ativo))
             .ToListAsync();
 
@@ -139,9 +142,6 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         }
     }
 
-    private static string RotuloInsumo(string nome, string? marca) =>
-        string.IsNullOrWhiteSpace(marca) ? nome : $"{nome} — {marca}";
-
     public sealed class FichaTecnicaInputModel
     {
         public string? Rendimento { get; set; }
@@ -155,9 +155,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
 
     public sealed record ItemFichaResumo(
         int Id,
-        string Insumo,
+        int InsumoId,
+        string Nome,
+        string? Marca,
         string Quantidade,
         UnidadeMedida Unidade,
+        string? Observacao,
         bool InsumoAtivo)
     {
         public string UnidadeFormatada => InsumoRotulos.Unidade(Unidade);

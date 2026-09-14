@@ -52,6 +52,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.Contains("Ativo", conteudo);
         Assert.Contains("Rendimento do lote (unidades de venda)", conteudo);
         Assert.Contains("Tempo ativo de trabalho (minutos)", conteudo);
+        Assert.DoesNotContain("Adicionar insumo", conteudo);
         Assert.DoesNotContain("EmpresaId", conteudo);
         Assert.DoesNotContain("ProdutoId", conteudo);
         Assert.DoesNotContain("TempoForno", conteudo);
@@ -229,6 +230,10 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var ficha = Assert.Single(await ListarFichasAsync(produtoId: id));
         Assert.Equal(0, ficha.TempoAtivoMinutos);
+        Assert.False((await ObterProdutoAsync(id, 1)).Ativo);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
+        Assert.Contains("Inativo", pagina);
         Assert.False((await ObterProdutoAsync(id, 1)).Ativo);
     }
 
