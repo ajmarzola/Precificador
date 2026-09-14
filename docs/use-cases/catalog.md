@@ -62,7 +62,7 @@ UC011/UC012 pertencem ao domínio Produtos, mas o registro comercial deve congel
 | [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 |
 | [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 |
 | [UC016](UC016-remover-item-ficha.md) | Remover item da ficha técnica | UC014, UC015, MEL010 |
-| UC017 | Consultar ficha técnica e composição | UC013, UC014 |
+| [UC017](UC017-consultar-ficha-composicao.md) | Consultar ficha técnica e composição | UC013, UC014, UC015, UC016 |
 
 ## Configurações
 

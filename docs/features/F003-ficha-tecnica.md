@@ -92,7 +92,7 @@ A UC015 também adiciona uma lista operacional mínima de Itens na página da Fi
 ### Incrementos relacionados
 
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md) — remoção física do Item atual não desbloqueia a identidade do Insumo, não remove a Ficha e permite composição vazia;
-- UC017 — consultar Ficha e composição completa.
+- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md) — completa a leitura da rota existente com Nome, Marca, Quantidade, Unidade, Observação contextual, Situação e ações, sem antecipar custos/preços.
 
 ## Equipamentos e recursos
 
@@ -162,7 +162,7 @@ FichaTecnica é tenant-owned:
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md);
 - [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md);
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md);
-- UC017 — Consultar Ficha Técnica e composição.
+- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md).
 
 ## Fora do escopo do estágio atual
 
