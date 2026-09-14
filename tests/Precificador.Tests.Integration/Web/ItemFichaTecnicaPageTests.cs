@@ -909,7 +909,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     {
         var empresaDois = await web.CriarEmpresaAsync();
         var produtoId = await CriarProdutoAsync(1, Nome("Produto ownership remocao"), ativo: true);
-        await CriarFichaAsync(1, produtoId);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var itemProprio = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo proprio ownership remocao"), null, UnidadeMedida.Grama, true), 1m, null);
+        var produtoSemFicha = await CriarProdutoAsync(1, Nome("Produto sem ficha remocao"), ativo: true);
         var outroProdutoId = await CriarProdutoAsync(1, Nome("Produto outra ficha remocao"), ativo: true);
         var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
         var itemOutraFicha = await CriarItemAsync(1, outraFichaId, await CriarInsumoAsync(1, Nome("Insumo outra ficha remocao"), null, UnidadeMedida.Grama, true), 1m, null);
@@ -919,12 +921,23 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var inexistente = await client.GetAsync($"/Produtos/FichaTecnica/999999/Itens/Remover/999999");
+        var semFicha = await client.GetAsync($"/Produtos/FichaTecnica/{produtoSemFicha}/Itens/Remover/999999");
+        var itemInexistente = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/999999");
         var outraFicha = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemOutraFicha}");
         var outroTenant = await client.GetAsync($"/Produtos/FichaTecnica/{produtoOutroTenant}/Itens/Remover/{itemOutroTenant}");
+        var postInexistente = await EnviarRemocaoAsync(client, produtoId, 999999, tokenProdutoId: produtoId, tokenItemId: itemProprio);
+        var postOutraFicha = await EnviarRemocaoAsync(client, produtoId, itemOutraFicha, tokenProdutoId: produtoId, tokenItemId: itemProprio);
+        var postOutroTenant = await EnviarRemocaoAsync(client, produtoOutroTenant, itemOutroTenant, tokenProdutoId: produtoId, tokenItemId: itemProprio);
 
         Assert.Equal(HttpStatusCode.NotFound, inexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, semFicha.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, itemInexistente.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, outraFicha.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, outroTenant.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postOutraFicha.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postOutroTenant.StatusCode);
+        Assert.Equal(itemProprio, (await ObterItemAsync(itemProprio, 1)).Id);
         Assert.Equal(itemOutraFicha, (await ObterItemAsync(itemOutraFicha, 1)).Id);
         Assert.Equal(itemOutroTenant, (await ObterItemAsync(itemOutroTenant, empresaDois)).Id);
     }
@@ -974,9 +987,11 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         HttpClient client,
         int produtoId,
         int itemId,
-        Dictionary<string, string>? camposExtras = null)
+        Dictionary<string, string>? camposExtras = null,
+        int? tokenProdutoId = null,
+        int? tokenItemId = null)
     {
-        var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}");
+        var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{tokenProdutoId ?? produtoId}/Itens/Remover/{tokenItemId ?? itemId}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
