@@ -77,7 +77,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 
 | UC | Nome | Dependências funcionais |
 |---|---|---|
-| UC018 | Calcular custo atual dos itens do lote | UC005, UC014 |
+| [UC018](UC018-calcular-custo-itens-lote.md) | Calcular custo atual dos itens do lote | UC005, UC006, UC014, UC017 |
 | UC019 | Calcular perdas aplicáveis | UC018 |
 | UC020 | Calcular custo de mão de obra | UC013, UC027 |
 | UC021 | Calcular custo de energia/equipamentos | UC013, UC027 |
