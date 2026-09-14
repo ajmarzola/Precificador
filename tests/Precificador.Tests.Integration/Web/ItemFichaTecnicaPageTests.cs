@@ -700,7 +700,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoNome = Nome("Insumo lista proprio");
         var insumoId = await CriarInsumoAsync(1, insumoNome, "Marca propria", UnidadeMedida.Metro, ativo: true);
-        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "nao deve aparecer");
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, null);
         var outroProdutoId = await CriarProdutoAsync(1, Nome("Produto lista outro"), ativo: true);
         var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
         var outroInsumoNome = Nome("Insumo lista outra ficha");
@@ -723,10 +723,79 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", pagina);
         Assert.DoesNotContain(outroInsumoNome, pagina);
         Assert.DoesNotContain(insumoOutroTenantNome, pagina);
-        Assert.DoesNotContain("nao deve aparecer", pagina);
+        Assert.Contains("—", pagina);
         Assert.DoesNotContain("Custo", pagina);
         Assert.DoesNotContain("Preço", pagina);
         Assert.DoesNotContain("Total", pagina);
+    }
+
+    [Fact]
+    public async Task UC017_W5_W6_W7_W8_W9_W11_W13_W16_Consulta_exibe_composicao_completa_ordenada_e_isolada()
+    {
+        var empresaDois = await web.CriarEmpresaAsync();
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto UC017"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var nomeAlfa = Nome("Alfa UC017");
+        var nomeZeta = Nome("Zeta UC017");
+        var insumoAlfaZ = await CriarInsumoAsync(1, nomeAlfa, "Z marca", UnidadeMedida.Grama, ativo: true, observacao: "global nao contextual");
+        var insumoAlfaA = await CriarInsumoAsync(1, nomeAlfa, "A marca", UnidadeMedida.Metro, ativo: true);
+        var insumoZeta = await CriarInsumoAsync(1, nomeZeta, null, UnidadeMedida.Unidade, ativo: false);
+        var itemAlfaZ = await CriarItemAsync(1, fichaId, insumoAlfaZ, 1.25m, "contextual linha 1\r\ncontextual linha 2");
+        await CriarItemAsync(1, fichaId, insumoAlfaA, 2m, null);
+        var itemZeta = await CriarItemAsync(1, fichaId, insumoZeta, 3m, null);
+        var outroProduto = await CriarProdutoAsync(1, Nome("Produto outra ficha UC017"), ativo: true);
+        var outraFicha = await CriarFichaAsync(1, outroProduto);
+        var nomeOutraFicha = Nome("Insumo outra ficha UC017");
+        await CriarItemAsync(1, outraFicha, await CriarInsumoAsync(1, nomeOutraFicha, null, UnidadeMedida.Grama, true), 1m, null);
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto outro tenant UC017"), ativo: true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var nomeOutroTenant = Nome("Insumo outro tenant UC017");
+        await CriarItemAsync(empresaDois, fichaOutroTenant, await CriarInsumoAsync(empresaDois, nomeOutroTenant, null, UnidadeMedida.Grama, true), 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+
+        Assert.Contains("<th scope=\"col\">Marca</th>", pagina);
+        Assert.Contains("Observação contextual", pagina);
+        Assert.Contains("contextual linha 1", pagina);
+        Assert.Contains("contextual linha 2", pagina);
+        Assert.Contains("white-space: pre-wrap", pagina);
+        Assert.DoesNotContain("global nao contextual", pagina);
+        Assert.Contains("<td>—</td>", pagina);
+        Assert.Contains("Inativo", pagina);
+        Assert.Contains("1,25", pagina);
+        Assert.Contains("m", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemAlfaZ}", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemZeta}", pagina);
+        Assert.True(pagina.IndexOf("A marca", StringComparison.Ordinal) < pagina.IndexOf("Z marca", StringComparison.Ordinal));
+        Assert.True(pagina.IndexOf("Z marca", StringComparison.Ordinal) < pagina.IndexOf(nomeZeta, StringComparison.Ordinal));
+        Assert.DoesNotContain(nomeOutraFicha, pagina);
+        Assert.DoesNotContain(nomeOutroTenant, pagina);
+        Assert.DoesNotContain("Custo", pagina);
+        Assert.DoesNotContain("Preço", pagina);
+        Assert.DoesNotContain("Total", pagina);
+        Assert.DoesNotContain("Margem", pagina);
+    }
+
+    [Fact]
+    public async Task UC017_W15_Post_invalido_da_base_preserva_composicao_completa()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto base invalida UC017"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2m, 30);
+        var itemId = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo base UC017"), "Marca preservada", UnidadeMedida.Grama, true), 1m, "Observação preservada");
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Marca preservada", pagina);
+        Assert.Contains("Observação preservada", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}", pagina);
+        var ficha = await ObterFichaAsync(fichaId, 1);
+        Assert.Equal(2m, ficha.Rendimento);
+        Assert.Equal(30, ficha.TempoAtivoMinutos);
     }
 
     [Fact]

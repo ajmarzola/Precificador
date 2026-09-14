@@ -230,6 +230,10 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         var ficha = Assert.Single(await ListarFichasAsync(produtoId: id));
         Assert.Equal(0, ficha.TempoAtivoMinutos);
         Assert.False((await ObterProdutoAsync(id, 1)).Ativo);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
+        Assert.Contains("Inativo", pagina);
+        Assert.False((await ObterProdutoAsync(id, 1)).Ativo);
     }
 
     [Fact]

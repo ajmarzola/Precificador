@@ -38,7 +38,7 @@ A ordem das linhas define a fila normativa.
 | UC015 — Alterar item da Ficha Técnica | UC | Concluído | UC014 | [UC015-alterar-item-ficha.md](../use-cases/UC015-alterar-item-ficha.md) |
 | MEL010 — Identidade consolidada do Insumo | MEL | Concluído | UC005, UC014, UC015 | [MEL010-identidade-consolidada-insumo.md](improvements/MEL010-identidade-consolidada-insumo.md) |
 | UC016 — Remover item da Ficha Técnica | UC | Concluído | — | [UC016-remover-item-ficha.md](../use-cases/UC016-remover-item-ficha.md) |
-| UC017 — Consultar Ficha Técnica e composição | UC | Pronto | — | [UC017-consultar-ficha-composicao.md](../use-cases/UC017-consultar-ficha-composicao.md) |
+| UC017 — Consultar Ficha Técnica e composição | UC | Concluído | — | [UC017-consultar-ficha-composicao.md](../use-cases/UC017-consultar-ficha-composicao.md) |
 | MEL009 — Reserva comercial do Desconto de referência | MEL | Especificado | Implementação distribuída em UC026, UC027, UC011 e UC012 | [MEL009-reserva-comercial-desconto.md](improvements/MEL009-reserva-comercial-desconto.md) |
 | UC026 — Consultar configurações de precificação da Empresa | UC | Planejado | FT002; incorporar MEL009 | Documento a criar |
 | UC027 — Alterar configurações de precificação da Empresa | UC | Planejado | UC026; incorporar MEL009 | Documento a criar |
