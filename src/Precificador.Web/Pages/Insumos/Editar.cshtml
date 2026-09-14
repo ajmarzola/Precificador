@@ -9,13 +9,9 @@
 
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    @if (Model.PossuiHistoricoPreco)
+    @if (Model.IdentidadeProtegida)
     {
-        <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.</div>
-    }
-    else if (Model.ReferenciadoEmFicha)
-    {
-        <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.</div>
+        <div class="alert alert-info">Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.</div>
     }
     <div class="mb-3">
         <label asp-for="Input.Nome" class="form-label"></label>

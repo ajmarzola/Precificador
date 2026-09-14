@@ -12,25 +12,23 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     [BindProperty]
     public InsumoInputModel Input { get; set; } = new();
 
-    public bool PossuiHistoricoPreco { get; private set; }
-
-    public bool ReferenciadoEmFicha { get; private set; }
-
-    public bool IdentidadeProtegida => PossuiHistoricoPreco || ReferenciadoEmFicha;
-
-    public bool PossuiHistorico => PossuiHistoricoPreco;
+    public bool IdentidadeProtegida { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var insumo = await context.Insumos.AsNoTracking()
             .Where(item => item.Id == id)
-            .Select(item => new InsumoInputModel
+            .Select(item => new
             {
-                Nome = item.Nome,
-                Marca = item.Marca,
-                Categoria = item.Categoria,
-                UnidadeBase = item.UnidadeBase,
-                Observacao = item.Observacao
+                Input = new InsumoInputModel
+                {
+                    Nome = item.Nome,
+                    Marca = item.Marca,
+                    Categoria = item.Categoria,
+                    UnidadeBase = item.UnidadeBase,
+                    Observacao = item.Observacao
+                },
+                item.IdentidadeConsolidada
             })
             .SingleOrDefaultAsync();
 
@@ -39,8 +37,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        Input = insumo;
-        await CarregarProtecaoIdentidadeAsync(id);
+        Input = insumo.Input;
+        IdentidadeProtegida = insumo.IdentidadeConsolidada;
         return Page();
     }
 
@@ -52,13 +50,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        await CarregarProtecaoIdentidadeAsync(id);
-        if (IdentidadeProtegida)
-        {
-            Input.Nome = insumo.Nome;
-            Input.Marca = insumo.Marca;
-            Input.UnidadeBase = insumo.UnidadeBase;
-        }
+        IdentidadeProtegida = insumo.IdentidadeConsolidada;
 
         InsumoFormulario.ValidarCamposObrigatorios(ModelState, Input);
         if (!ModelState.IsValid)
@@ -75,6 +67,11 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             InsumoFormulario.AdicionarErroDominio(ModelState, exception);
             return Page();
         }
+        catch (InvalidOperationException exception) when (exception.Message == Precificador.Core.Insumos.Insumo.MensagemIdentidadeConsolidada)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            return Page();
+        }
 
         if (await context.Insumos.AnyAsync(item =>
                 item.Id != id &&
@@ -88,11 +85,5 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         await context.SaveChangesAsync();
         TempData["MensagemSucesso"] = "Insumo atualizado com sucesso.";
         return RedirectToPage("/Insumos/Detalhes", new { id });
-    }
-
-    private async Task CarregarProtecaoIdentidadeAsync(int insumoId)
-    {
-        PossuiHistoricoPreco = await context.PrecosInsumos.AnyAsync(preco => preco.InsumoId == insumoId);
-        ReferenciadoEmFicha = await context.ItensFichaTecnica.AnyAsync(item => item.InsumoId == insumoId);
     }
 }

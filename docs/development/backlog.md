@@ -36,7 +36,7 @@ A ordem das linhas define a fila normativa.
 | UC013 — Definir rendimento e tempo ativo da Ficha Técnica | UC | Concluído | UC007 a UC010, FT002 | [UC013-definir-base-ficha-tecnica.md](../use-cases/UC013-definir-base-ficha-tecnica.md) |
 | UC014 — Adicionar Insumo à Ficha Técnica | UC | Concluído | UC013, UC001A a UC006, FT002 | [UC014-adicionar-insumo-ficha.md](../use-cases/UC014-adicionar-insumo-ficha.md) |
 | UC015 — Alterar item da Ficha Técnica | UC | Concluído | UC014 | [UC015-alterar-item-ficha.md](../use-cases/UC015-alterar-item-ficha.md) |
-| MEL010 — Identidade consolidada do Insumo | MEL | Pronto | UC005, UC014, UC015 | [MEL010-identidade-consolidada-insumo.md](improvements/MEL010-identidade-consolidada-insumo.md) |
+| MEL010 — Identidade consolidada do Insumo | MEL | Concluído | UC005, UC014, UC015 | [MEL010-identidade-consolidada-insumo.md](improvements/MEL010-identidade-consolidada-insumo.md) |
 | UC016 — Remover item da Ficha Técnica | UC | Planejado | MEL010 | Documento a criar |
 | UC017 — Consultar Ficha Técnica e composição | UC | Planejado | UC013, UC014 | Documento a criar |
 | MEL009 — Reserva comercial do Desconto de referência | MEL | Especificado | Implementação distribuída em UC026, UC027, UC011 e UC012 | [MEL009-reserva-comercial-desconto.md](improvements/MEL009-reserva-comercial-desconto.md) |

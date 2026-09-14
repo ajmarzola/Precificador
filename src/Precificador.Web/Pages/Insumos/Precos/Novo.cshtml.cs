@@ -48,6 +48,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         try
         {
             context.PrecosInsumos.Add(PrecoInsumo.Criar(insumo.EmpresaId, insumo.Id, Input.QuantidadeCompra, Input.PrecoCompra, Input.DataReferencia!.Value));
+            insumo.ConsolidarIdentidade();
         }
         catch (ArgumentOutOfRangeException exception)
         {

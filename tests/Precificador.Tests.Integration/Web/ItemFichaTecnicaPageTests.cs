@@ -106,9 +106,30 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(insumoId, item.InsumoId);
         Assert.Equal(1.25m, item.Quantidade);
         Assert.Equal("camada 1\r\ncamada 2", item.Observacao);
+        Assert.True((await ObterInsumoAsync(insumoId, 1)).IdentidadeConsolidada);
 
         var paginaAposRedirect = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
         Assert.Contains("Insumo adicionado à ficha técnica com sucesso.", paginaAposRedirect);
+    }
+
+    [Fact]
+    public async Task W8_Post_valido_adiciona_insumo_ja_consolidado_a_ficha()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto insumo consolidado"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo consolidado"), "Marca", UnidadeMedida.Grama, ativo: true);
+        await CriarPrecoAsync(1, insumoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        Assert.True((await ObterInsumoAsync(insumoId, 1)).IdentidadeConsolidada);
+
+        var response = await EnviarFormularioAsync(client, produtoId, insumoId, "2", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var item = Assert.Single(await ListarItensAsync(produtoId: produtoId));
+        Assert.Equal(fichaId, item.FichaTecnicaId);
+        Assert.Equal(insumoId, item.InsumoId);
+        Assert.Equal(2m, item.Quantidade);
     }
 
     [Fact]
@@ -271,7 +292,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
-        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.", pagina);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.", pagina);
         Assert.Contains("readonly", ObterTag(pagina, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("readonly", ObterTag(pagina, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("disabled", ObterTag(pagina, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
@@ -286,14 +307,41 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
             "Metro",
             "Global alterada");
 
-        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, post.StatusCode);
         var insumo = await ObterInsumoAsync(insumoId, 1);
         Assert.Equal(nomeOriginal, insumo.Nome);
         Assert.Equal("Marca original", insumo.Marca);
         Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
-        Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
-        Assert.Equal("Global alterada", insumo.Observacao);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal("Global original", insumo.Observacao);
         Assert.Equal("Contextual original", (await ObterItemAsync(itemId, 1)).Observacao);
+    }
+
+    [Fact]
+    public async Task W5_Post_com_identidade_consolidada_inalterada_atualiza_categoria_e_observacao()
+    {
+        var nome = Nome("Insumo editável consolidado");
+        var insumoId = await CriarInsumoAsync(1, nome, "Marca original", UnidadeMedida.Grama, ativo: true, observacao: "Original");
+        await CriarPrecoAsync(1, insumoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarEdicaoInsumoAsync(
+            client,
+            insumoId,
+            nome,
+            "Marca original",
+            "Embalagem",
+            "Grama",
+            "Observação atualizada");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal($"/Insumos/Detalhes/{insumoId}", response.Headers.Location!.OriginalString);
+        var insumo = await ObterInsumoAsync(insumoId, 1);
+        Assert.Equal(nome, insumo.Nome);
+        Assert.Equal("Marca original", insumo.Marca);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+        Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
+        Assert.Equal("Observação atualizada", insumo.Observacao);
     }
 
     [Fact]
@@ -308,8 +356,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
 
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
 
-        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.", pagina);
-        Assert.DoesNotContain("está sendo usado em ficha técnica.", pagina);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.", pagina);
     }
 
     [Fact]
@@ -639,7 +686,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var paginaInsumo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
 
         Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
-        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.", paginaInsumo);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.", paginaInsumo);
         Assert.Contains("readonly", ObterTag(paginaInsumo, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("readonly", ObterTag(paginaInsumo, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("disabled", ObterTag(paginaInsumo, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
@@ -919,6 +966,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         var item = ItemFichaTecnica.Criar(empresaId, fichaId, insumoId, quantidade, observacao);
         context.ItensFichaTecnica.Add(item);
+        (await context.Insumos.SingleAsync(insumo => insumo.Id == insumoId)).ConsolidarIdentidade();
         await context.SaveChangesAsync();
         return item.Id;
     }
@@ -929,6 +977,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         context.PrecosInsumos.Add(PrecoInsumo.Criar(empresaId, insumoId, 1m, 10m, new DateOnly(2026, 9, 13)));
+        (await context.Insumos.SingleAsync(insumo => insumo.Id == insumoId)).ConsolidarIdentidade();
         await context.SaveChangesAsync();
     }
 

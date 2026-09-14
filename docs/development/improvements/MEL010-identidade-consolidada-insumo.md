@@ -7,6 +7,7 @@
 - **Impacta diretamente:** RN040, RN048 e edição de Insumo
 - **Alteração de schema:** sim
 - **Não implementa:** remoção de Item, UC016, histórico de composição ou exclusão de Insumo
+- **Implementação:** concluída em 2026-09-14 na branch `feat/mel010-identidade-consolidada-insumo`
 
 ## Objetivo
 
