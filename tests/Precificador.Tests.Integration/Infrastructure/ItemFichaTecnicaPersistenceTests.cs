@@ -250,6 +250,90 @@ public sealed class ItemFichaTecnicaPersistenceTests
             colunas);
     }
 
+    [Fact]
+    public async Task UC016_P1_Remover_item_proprio_persiste_exclusao()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
+        context.ItensFichaTecnica.Add(item);
+        await context.SaveChangesAsync();
+
+        context.ItensFichaTecnica.Remove(item);
+        await context.SaveChangesAsync();
+
+        Assert.Empty(await context.ItensFichaTecnica.ToListAsync());
+    }
+
+    [Fact]
+    public async Task UC016_P2_Remover_item_preserva_produto_ficha_e_insumo()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (produtoId, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
+        context.ItensFichaTecnica.Add(item);
+        await context.SaveChangesAsync();
+
+        context.ItensFichaTecnica.Remove(item);
+        await context.SaveChangesAsync();
+
+        Assert.Equal(produtoId, (await context.Produtos.SingleAsync()).Id);
+        Assert.Equal(fichaId, (await context.FichasTecnicas.SingleAsync()).Id);
+        Assert.Equal(insumoId, (await context.Insumos.SingleAsync()).Id);
+    }
+
+    [Fact]
+    public async Task UC016_P3_Guard_rejeita_delete_de_item_de_outra_empresa()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using (var contextoInicial = CriarContexto(connection, 1))
+        {
+            await contextoInicial.Database.MigrateAsync();
+            contextoInicial.Empresas.Add(Empresa.Criar("Empresa dois"));
+            await contextoInicial.SaveChangesAsync();
+        }
+
+        ItemFichaTecnica itemEmpresaDois;
+        await using (var contextoEmpresaDois = CriarContexto(connection, 2))
+        {
+            var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(contextoEmpresaDois, 2);
+            itemEmpresaDois = ItemFichaTecnica.Criar(2, fichaId, insumoId, 1m);
+            contextoEmpresaDois.ItensFichaTecnica.Add(itemEmpresaDois);
+            await contextoEmpresaDois.SaveChangesAsync();
+        }
+
+        await using var contextoEmpresaUm = CriarContexto(connection, 1);
+        contextoEmpresaUm.ItensFichaTecnica.Remove(itemEmpresaDois);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task UC016_P4_Remover_item_preserva_identidade_consolidada()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
+        context.ItensFichaTecnica.Add(item);
+        (await context.Insumos.SingleAsync(insumo => insumo.Id == insumoId)).ConsolidarIdentidade();
+        await context.SaveChangesAsync();
+
+        context.ItensFichaTecnica.Remove(item);
+        await context.SaveChangesAsync();
+
+        Assert.True((await context.Insumos.SingleAsync(insumo => insumo.Id == insumoId)).IdentidadeConsolidada);
+    }
+
     private static async Task<(int ProdutoId, int FichaId, int InsumoId)> CriarFichaEInsumoAsync(PrecificadorDbContext context, int empresaId)
     {
         var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", 0.30m);

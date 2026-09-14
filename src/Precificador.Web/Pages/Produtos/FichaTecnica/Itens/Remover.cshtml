@@ -1,0 +1,29 @@
+@page "/Produtos/FichaTecnica/{produtoId:int}/Itens/Remover/{itemId:int}"
+@model Precificador.Web.Pages.Produtos.FichaTecnica.Itens.RemoverModel
+@{
+    ViewData["Title"] = "Remover item da ficha";
+    var produto = Model.Produto!;
+    var item = Model.Item!;
+    var insumo = Model.Insumo!;
+}
+
+<h1>Remover item da ficha</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Produto</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Situação do produto</dt><dd class="col-sm-9">@produto.Situacao</dd>
+    <dt class="col-sm-3">Insumo</dt><dd class="col-sm-9">@insumo.Nome</dd>
+    <dt class="col-sm-3">Marca</dt><dd class="col-sm-9">@(insumo.Marca ?? "—")</dd>
+    <dt class="col-sm-3">Unidade base</dt><dd class="col-sm-9">@insumo.UnidadeFormatada</dd>
+    <dt class="col-sm-3">Situação do insumo</dt><dd class="col-sm-9">@insumo.Situacao</dd>
+    <dt class="col-sm-3">Quantidade</dt><dd class="col-sm-9">@item.QuantidadeFormatada</dd>
+    <dt class="col-sm-3">Observação contextual</dt><dd class="col-sm-9">@(item.Observacao ?? "—")</dd>
+</dl>
+
+<p>Tem certeza que deseja remover este item da ficha técnica?</p>
+<p>A ação altera a composição atual da ficha técnica.</p>
+
+<form method="post">
+    <button type="submit" class="btn btn-danger">Remover</button>
+    <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-secondary">Cancelar</a>
+</form>
