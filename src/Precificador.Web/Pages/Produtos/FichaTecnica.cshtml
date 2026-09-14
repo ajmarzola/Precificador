@@ -58,7 +58,7 @@
                     <th scope="col">Quantidade</th>
                     <th scope="col">Unidade</th>
                     <th scope="col">Situação</th>
-                    <th scope="col">Editar</th>
+                    <th scope="col">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,6 +73,9 @@
                             <a asp-page="/Produtos/FichaTecnica/Itens/Editar"
                                asp-route-produtoId="@produto.Id"
                                asp-route-itemId="@item.Id">Editar</a>
+                            <a asp-page="/Produtos/FichaTecnica/Itens/Remover"
+                               asp-route-produtoId="@produto.Id"
+                               asp-route-itemId="@item.Id">Remover</a>
                         </td>
                     </tr>
                 }

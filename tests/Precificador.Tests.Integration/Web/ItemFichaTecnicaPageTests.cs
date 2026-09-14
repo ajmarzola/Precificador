@@ -791,6 +791,224 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(2.5m, Assert.Single(await ListarItensAsync(produtoId: produtoId)).Quantidade);
     }
 
+    [Fact]
+    public async Task UC016_W1_Remocao_exige_autenticacao_e_empresa_ativa()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto remocao protegida"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo remocao protegida"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var anonimo = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        var response = await anonimo.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Contains("/Conta/Login", response.Headers.Location!.ToString());
+        using var semEmpresa = await CriarClienteAutenticadoSemEmpresaAtivaAsync();
+        var acessoSemEmpresa = await semEmpresa.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}");
+        Assert.Equal(HttpStatusCode.Redirect, acessoSemEmpresa.StatusCode);
+        Assert.Contains("/Conta/Login", acessoSemEmpresa.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task UC016_W2_Get_exibe_cadeia_e_nao_remove_item()
+    {
+        var produtoNome = Nome("Produto confirmacao remocao");
+        var insumoNome = Nome("Insumo confirmacao remocao");
+        var produtoId = await CriarProdutoAsync(1, produtoNome, ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, insumoNome, "Marca", UnidadeMedida.Metro, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "contexto");
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}"));
+
+        Assert.Contains(produtoNome, pagina);
+        Assert.Contains(insumoNome, pagina);
+        Assert.Contains("Marca", pagina);
+        Assert.Contains("m", pagina);
+        Assert.Contains("1,25", pagina);
+        Assert.Contains("contexto", pagina);
+        Assert.Contains("Tem certeza que deseja remover este item da ficha técnica?", pagina);
+        Assert.Equal(itemId, (await ObterItemAsync(itemId, 1)).Id);
+    }
+
+    [Fact]
+    public async Task UC016_W3_Ficha_exibe_link_remover_correto()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto link remocao"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo link remocao"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+
+        Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}", pagina);
+    }
+
+    [Fact]
+    public async Task UC016_W4_W5_Post_remove_item_selecionado_com_prg_e_preserva_outro()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto remove um"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoUm = await CriarInsumoAsync(1, Nome("Insumo remove um"), null, UnidadeMedida.Grama, ativo: true);
+        var insumoDois = await CriarInsumoAsync(1, Nome("Insumo preservado"), null, UnidadeMedida.Grama, ativo: true);
+        var itemRemovido = await CriarItemAsync(1, fichaId, insumoUm, 1m, null);
+        var itemPreservado = await CriarItemAsync(1, fichaId, insumoDois, 2m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var post = await EnviarRemocaoAsync(client, produtoId, itemRemovido);
+        var ficha = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal($"/Produtos/FichaTecnica/{produtoId}", post.Headers.Location!.ToString());
+        Assert.Equal(itemPreservado, Assert.Single(await ListarItensAsync(produtoId)).Id);
+        Assert.Contains("Item removido da ficha técnica com sucesso.", ficha);
+    }
+
+    [Fact]
+    public async Task UC016_W6_Remover_ultimo_item_mantem_ficha_vazia()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto ultimo item"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId, 3m, 45);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo ultimo item"), null, UnidadeMedida.Grama, ativo: true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        await EnviarRemocaoAsync(client, produtoId, itemId);
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+        var ficha = await ObterFichaAsync(fichaId, 1);
+
+        Assert.Empty(await ListarItensAsync(produtoId));
+        Assert.Equal(3m, ficha.Rendimento);
+        Assert.Equal(45, ficha.TempoAtivoMinutos);
+        Assert.Contains("Nenhum insumo adicionado.", pagina);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task UC016_W7_W8_Produto_ou_insumo_inativo_permite_remocao_sem_reativacao(bool produtoAtivo, bool insumoAtivo)
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto inativo remocao"), produtoAtivo);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo inativo remocao"), null, UnidadeMedida.Grama, insumoAtivo);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var post = await EnviarRemocaoAsync(client, produtoId, itemId);
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal(produtoAtivo, (await ObterProdutoAsync(produtoId, 1)).Ativo);
+        Assert.Equal(insumoAtivo, (await ObterInsumoAsync(insumoId, 1)).Ativo);
+    }
+
+    [Fact]
+    public async Task UC016_W9_W10_W11_Ids_invalidos_ou_de_outra_ficha_ou_tenant_retorna_404_sem_mutacao()
+    {
+        var empresaDois = await web.CriarEmpresaAsync();
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto ownership remocao"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var itemProprio = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo proprio ownership remocao"), null, UnidadeMedida.Grama, true), 1m, null);
+        var produtoSemFicha = await CriarProdutoAsync(1, Nome("Produto sem ficha remocao"), ativo: true);
+        var outroProdutoId = await CriarProdutoAsync(1, Nome("Produto outra ficha remocao"), ativo: true);
+        var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
+        var itemOutraFicha = await CriarItemAsync(1, outraFichaId, await CriarInsumoAsync(1, Nome("Insumo outra ficha remocao"), null, UnidadeMedida.Grama, true), 1m, null);
+        var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto outro tenant remocao"), true);
+        var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
+        var itemOutroTenant = await CriarItemAsync(empresaDois, fichaOutroTenant, await CriarInsumoAsync(empresaDois, Nome("Insumo outro tenant remocao"), null, UnidadeMedida.Grama, true), 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var inexistente = await client.GetAsync($"/Produtos/FichaTecnica/999999/Itens/Remover/999999");
+        var semFicha = await client.GetAsync($"/Produtos/FichaTecnica/{produtoSemFicha}/Itens/Remover/999999");
+        var itemInexistente = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/999999");
+        var outraFicha = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemOutraFicha}");
+        var outroTenant = await client.GetAsync($"/Produtos/FichaTecnica/{produtoOutroTenant}/Itens/Remover/{itemOutroTenant}");
+        var postInexistente = await EnviarRemocaoAsync(client, produtoId, 999999, tokenProdutoId: produtoId, tokenItemId: itemProprio);
+        var postOutraFicha = await EnviarRemocaoAsync(client, produtoId, itemOutraFicha, tokenProdutoId: produtoId, tokenItemId: itemProprio);
+        var postOutroTenant = await EnviarRemocaoAsync(client, produtoOutroTenant, itemOutroTenant, tokenProdutoId: produtoId, tokenItemId: itemProprio);
+
+        Assert.Equal(HttpStatusCode.NotFound, inexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, semFicha.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, itemInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, outraFicha.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, outroTenant.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postOutraFicha.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, postOutroTenant.StatusCode);
+        Assert.Equal(itemProprio, (await ObterItemAsync(itemProprio, 1)).Id);
+        Assert.Equal(itemOutraFicha, (await ObterItemAsync(itemOutraFicha, 1)).Id);
+        Assert.Equal(itemOutroTenant, (await ObterItemAsync(itemOutroTenant, empresaDois)).Id);
+    }
+
+    [Fact]
+    public async Task UC016_W12_W13_Request_manipulado_ou_sem_antiforgery_nao_remove_outro_item()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto request remocao"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var itemId = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo request alvo"), null, UnidadeMedida.Grama, true), 1m, null);
+        var outroItemId = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo request outro"), null, UnidadeMedida.Grama, true), 2m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var manipulado = await EnviarRemocaoAsync(client, produtoId, itemId, new Dictionary<string, string>
+        {
+            ["EmpresaId"] = "999", ["FichaTecnicaId"] = "999", ["InsumoId"] = "999", ["ItemId"] = outroItemId.ToString(CultureInfo.InvariantCulture),
+            ["Input.EmpresaId"] = "999", ["Input.FichaTecnicaId"] = "999", ["Input.InsumoId"] = "999", ["Input.ItemId"] = outroItemId.ToString(CultureInfo.InvariantCulture)
+        });
+        var semToken = await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{outroItemId}", new FormUrlEncodedContent([]));
+
+        Assert.Equal(HttpStatusCode.Redirect, manipulado.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, semToken.StatusCode);
+        Assert.Equal(outroItemId, Assert.Single(await ListarItensAsync(produtoId)).Id);
+    }
+
+    [Fact]
+    public async Task UC016_W14_W15_Remocao_preserva_identidade_consolidada_e_bloqueio_da_ultima_referencia_sem_preco()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto identidade apos remocao"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo identidade apos remocao"), "Marca", UnidadeMedida.Grama, true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        await EnviarRemocaoAsync(client, produtoId, itemId);
+        var insumo = await ObterInsumoAsync(insumoId, 1);
+        var paginaEdicao = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
+
+        Assert.True(insumo.IdentidadeConsolidada);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.", paginaEdicao);
+        Assert.Contains("readonly", ObterTag(paginaEdicao, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("readonly", ObterTag(paginaEdicao, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("disabled", ObterTag(paginaEdicao, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<HttpResponseMessage> EnviarRemocaoAsync(
+        HttpClient client,
+        int produtoId,
+        int itemId,
+        Dictionary<string, string>? camposExtras = null,
+        int? tokenProdutoId = null,
+        int? tokenItemId = null)
+    {
+        var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{tokenProdutoId ?? produtoId}/Itens/Remover/{tokenItemId ?? itemId}");
+        var pagina = await respostaPagina.Content.ReadAsStringAsync();
+        Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
+        var dados = new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina)
+        };
+        if (camposExtras is not null)
+        {
+            foreach (var campo in camposExtras)
+            {
+                dados[campo.Key] = campo.Value;
+            }
+        }
+
+        return await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}", new FormUrlEncodedContent(dados));
+    }
+
     private static async Task<HttpResponseMessage> EnviarFormularioAsync(
         HttpClient client,
         int produtoId,
