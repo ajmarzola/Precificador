@@ -99,17 +99,13 @@ Status possíveis:
 
 ### MEL009 — Parametrizar reserva comercial do Desconto de referência
 
-- **Status:** Pendente
+- **Status:** Especificada — implementação distribuída nos UCs 026/027/011/012
 - **Origem:** definição do modelo comercial do UC011
-- **Problema:** o MVP usa reserva comercial fixa de 10 pontos percentuais para calcular o Desconto de referência. Empresas diferentes podem desejar políticas comerciais distintas.
-- **Objetivo:** permitir que cada Empresa configure a reserva comercial usada no cálculo do Desconto de referência, substituindo o valor fixo de 10 p.p. sem alterar o histórico factual de Custo, Margem, Preço sugerido e Preço de prateleira.
-- **Diretrizes para futura especificação:**
-  - configuração pertence à Empresa;
-  - avaliar inclusão na tela de configurações de precificação, em vez de criar tela isolada sem necessidade;
-  - quando a reserva deixar de ser fixa, congelar no registro histórico a reserva/política usada naquele cálculo (por exemplo `ReservaComercialReferencia`), para que mudanças futuras de configuração não reinterpretem decisões antigas;
-  - continuar sem persistir `DescontoReferencia`, pois ele permanece derivável a partir de Preço sugerido, Preço de prateleira e reserva de referência;
-  - não antecipar a parametrização no UC011: usar 10 p.p. fixos no MVP inicial.
-- **Prioridade:** baixa; revisar após UC011/UC012 e a implementação das configurações de precificação.
+- **Objetivo:** permitir reserva comercial configurável por Empresa sem reinterpretar histórico.
+- **Especificação:** [MEL009 — Reserva comercial do Desconto de referência](improvements/MEL009-reserva-comercial-desconto.md)
+- **Decisão:** `ReservaComercialDesconto` nasce nas configurações da Empresa com padrão de 10 p.p.; o limiar é derivado como reserva + 1 p.p.; `RegistroPrecoProduto` congela `ReservaComercialReferencia`; `DescontoReferencia` permanece derivado.
+- **Implementação:** não haverá PR autônoma da MEL009. UC026/027 implementam a configuração; UC011 implementa o snapshot; UC012 consome o snapshot histórico.
+- **Prioridade:** baixa; incorporar obrigatoriamente quando esses UCs forem especificados/implementados.
 
 
 ### MEL010 — Persistir identidade consolidada do Insumo

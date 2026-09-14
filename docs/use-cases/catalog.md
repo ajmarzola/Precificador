@@ -47,8 +47,8 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 — **implementado** |
 | [UC009](UC009-editar-produto.md) | Editar produto | UC007 — **implementado** |
 | [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007, UC009 — **implementado** |
-| UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023 |
-| UC012 | Consultar histórico de precificação do produto | UC011 |
+| UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023; incorporar snapshot `ReservaComercialReferencia` conforme MEL009 |
+| UC012 | Consultar histórico de precificação do produto | UC011; derivar desconto histórico pela reserva congelada conforme MEL009 |
 
 **Próxima ação:** implementar MEL010 antes de especificar UC016. UC011/UC012 permanecem no domínio Produtos, mas foram deslocados para depois da UC023 porque o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
 
@@ -64,7 +64,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 
 ## Configurações
 
-UC026/UC027 foram antecipados na ordem de implementação porque UC020, UC021 e UC023 dependem de configurações da Empresa.
+UC026/UC027 foram antecipados na ordem de implementação porque UC020, UC021 e UC023 dependem de configurações da Empresa. Conforme MEL009, o mesmo conjunto de configurações deve incluir desde o início a Reserva comercial para desconto, com padrão de 10 p.p.
 
 | UC | Nome | Dependências |
 |---|---|---|

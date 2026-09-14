@@ -540,11 +540,19 @@ Produto inativo pode receber novo registro e permanece inativo.
 
 O Preço de prateleira pode ser inferior ao Preço sugerido. Essa decisão não é bloqueada, mas deve ser evidenciada na apresentação.
 
-O DescontoReferencia é derivado, não persistido. Com reserva comercial fixa de 10 pontos percentuais no MVP:
+O DescontoReferencia é derivado, não persistido. Cada registro comercial congela `ReservaComercialReferencia` conforme RN054.
 
-- se o Preço de prateleira estiver menos de 11% acima do Preço sugerido, DescontoReferencia não é aplicável;
-- a partir de 11% acima, `DescontoReferencia = PercentualAcimaDoSugerido - 10 p.p.`;
-- se o Preço de prateleira for inferior ao Preço sugerido, não existe percentual de desconto de referência.
+Definir:
+
+```text
+PercentualAcimaDoSugerido = (PrecoPrateleira / PrecoSugerido) - 1
+LimiarAplicacao = ReservaComercialReferencia + 0,01
+```
+
+- se o Preço de prateleira for inferior ao Preço sugerido, DescontoReferencia não é aplicável;
+- se `PercentualAcimaDoSugerido < LimiarAplicacao`, DescontoReferencia não é aplicável;
+- caso contrário, `DescontoReferencia = PercentualAcimaDoSugerido - ReservaComercialReferencia`;
+- não realizar arredondamento intermediário conforme RN026.
 
 ## Configurações
 
@@ -555,11 +563,46 @@ Cada Empresa possui configurações para, no mínimo:
 - valor/hora de trabalho;
 - tarifa de energia por kWh;
 - margem padrão para novos produtos;
-- incremento comercial de arredondamento.
+- incremento comercial de arredondamento;
+- reserva comercial para desconto, conforme RN052.
 
 A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
 
 Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa.
+
+### RN052 — Reserva comercial de desconto por Empresa
+
+Cada Empresa possui `ReservaComercialDesconto`, armazenada como fração decimal.
+
+Validação:
+
+```text
+0 <= ReservaComercialDesconto < 1
+```
+
+O valor padrão é `0,10`, equivalente a 10 pontos percentuais.
+
+Alterar a reserva afeta apenas novas decisões comerciais. Não altera Preço sugerido nem reinterpreta registros históricos.
+
+### RN053 — Limiar do Desconto de referência
+
+O limiar de aplicação do Desconto de referência é derivado da reserva congelada no registro:
+
+```text
+LimiarAplicacao = ReservaComercialReferencia + 0,01
+```
+
+O `0,01` representa 1 ponto percentual mínimo acima da reserva.
+
+O limiar não é uma configuração separada.
+
+### RN054 — Snapshot da reserva comercial
+
+Cada RegistroPrecoProduto deve persistir `ReservaComercialReferencia` com o valor vigente de `ReservaComercialDesconto` da Empresa no momento do registro.
+
+O usuário não informa esse campo.
+
+Alterações posteriores da configuração da Empresa não alteram o snapshot nem o Desconto de referência derivado de registros antigos.
 
 ## Precisão
 

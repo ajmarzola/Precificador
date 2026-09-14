@@ -62,11 +62,12 @@ A UC011 foi deslocada para depois da UC023. Ao registrar um novo Preço de prate
 - Custo de referência;
 - Margem de referência;
 - Preço sugerido;
-- Preço de prateleira informado pelo usuário.
+- Preço de prateleira informado pelo usuário;
+- Reserva comercial de referência usada para derivar o Desconto de referência.
 
 O usuário informa somente o Preço de prateleira. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e pode receber registros para Produto inativo sem reativá-lo.
 
-UC012 consultará esse histórico.
+UC012 consultará esse histórico. O Desconto de referência continua derivado e deve usar a Reserva comercial congelada em cada registro, nunca a configuração atual da Empresa.
 
 Não persistir um simples `PrecoVendaAtual` ou `PrecoPrateleiraAtual` diretamente em Produto; o valor atual será derivado do histórico.
 
