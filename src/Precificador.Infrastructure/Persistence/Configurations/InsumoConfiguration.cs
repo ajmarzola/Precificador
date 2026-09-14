@@ -18,6 +18,7 @@ public sealed class InsumoConfiguration : IEntityTypeConfiguration<Insumo>
         builder.Property(insumo => insumo.Categoria).IsRequired();
         builder.Property(insumo => insumo.UnidadeBase).IsRequired();
         builder.Property(insumo => insumo.Ativo).IsRequired();
+        builder.Property(insumo => insumo.IdentidadeConsolidada).IsRequired();
         builder.Property(insumo => insumo.EmpresaId).IsRequired();
         builder.HasIndex(insumo => new { insumo.EmpresaId, insumo.NomeNormalizado, insumo.MarcaNormalizada }).IsUnique();
         builder.HasOne<Precificador.Core.Empresas.Empresa>()

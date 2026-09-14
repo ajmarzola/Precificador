@@ -4,6 +4,7 @@ namespace Precificador.Core.Insumos;
 
 public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 {
+    public const string MensagemIdentidadeConsolidada = "Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.";
     private const int TamanhoMaximoNome = 120;
     private const int TamanhoMaximoMarca = 80;
     private const int TamanhoMaximoObservacao = 1000;
@@ -54,6 +55,8 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
 
     public bool Ativo { get; private set; }
 
+    public bool IdentidadeConsolidada { get; private set; }
+
     public static Insumo Criar(int empresaId, string nome, CategoriaInsumo categoria, UnidadeMedida unidadeBase, string? marca = null, string? observacao = null) =>
         new(empresaId, nome, categoria, unidadeBase, marca, observacao);
 
@@ -69,6 +72,12 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
         ValidarCategoria(categoria);
         ValidarUnidadeBase(unidadeBase);
 
+        if (IdentidadeConsolidada &&
+            (novoNome != Nome || novaMarca != Marca || unidadeBase != UnidadeBase))
+        {
+            throw new InvalidOperationException(MensagemIdentidadeConsolidada);
+        }
+
         Nome = novoNome;
         NomeNormalizado = novoNome.ToUpperInvariant();
         Marca = novaMarca;
@@ -81,6 +90,8 @@ public sealed class Insumo : Precificador.Core.Empresas.IEntidadeEmpresa
     public void Desativar() => Ativo = false;
 
     public void Reativar() => Ativo = true;
+
+    public void ConsolidarIdentidade() => IdentidadeConsolidada = true;
 
     public void DefinirEmpresa(int empresaId)
     {

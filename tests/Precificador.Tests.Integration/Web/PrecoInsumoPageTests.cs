@@ -62,6 +62,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         Assert.Equal(1000m, preco.QuantidadeCompra);
         Assert.Equal(12m, preco.PrecoCompra);
         Assert.Equal(new DateOnly(2026, 9, 11), preco.DataReferencia);
+        Assert.True((await ObterInsumoAsync(id, 1)).IdentidadeConsolidada);
     }
 
     [Theory]
@@ -147,7 +148,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
 
         var conteudo = WebUtility.HtmlDecode(await client.GetStringAsync($"/Insumos/Editar/{id}"));
 
-        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.", conteudo);
+        Assert.Contains("Nome, marca e unidade base não podem ser alterados porque a identidade deste insumo já foi consolidada.", conteudo);
         Assert.Contains("readonly", ObterTag(conteudo, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("readonly", ObterTag(conteudo, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("disabled", ObterTag(conteudo, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
@@ -173,13 +174,13 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
             "Metro",
             "Observação permitida");
 
-        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var insumo = await ObterInsumoAsync(id, 1);
         Assert.Equal(nomeOriginal, insumo.Nome);
         Assert.Equal("Renata", insumo.Marca);
         Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
-        Assert.Equal(CategoriaInsumo.Consumivel, insumo.Categoria);
-        Assert.Equal("Observação permitida", insumo.Observacao);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal("Original", insumo.Observacao);
     }
 
     [Fact]
@@ -191,7 +192,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
 
         var conteudo = WebUtility.HtmlDecode(await client.GetStringAsync($"/Insumos/Editar/{id}"));
 
-        Assert.Contains("já possui histórico de preços", conteudo);
+        Assert.Contains("identidade deste insumo já foi consolidada", conteudo);
         Assert.Contains("readonly", ObterTag(conteudo, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("disabled", ObterTag(conteudo, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
     }
@@ -203,7 +204,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         using var client = await web.CriarClienteAutenticadoAsync();
 
         var conteudo = WebUtility.HtmlDecode(await client.GetStringAsync($"/Insumos/Editar/{id}"));
-        Assert.DoesNotContain("já possui histórico de preços", conteudo);
+        Assert.DoesNotContain("identidade deste insumo já foi consolidada", conteudo);
         Assert.DoesNotContain("readonly", ObterTag(conteudo, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("disabled", ObterTag(conteudo, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
 
@@ -304,6 +305,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         context.PrecosInsumos.Add(PrecoInsumo.Criar(empresaId, insumoId, 1m, 10m, data));
+        (await context.Insumos.SingleAsync(insumo => insumo.Id == insumoId)).ConsolidarIdentidade();
         await context.SaveChangesAsync();
     }
 

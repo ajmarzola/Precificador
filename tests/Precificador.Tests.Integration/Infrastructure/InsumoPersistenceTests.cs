@@ -23,6 +23,49 @@ public sealed class InsumoPersistenceTests
     }
 
     [Fact]
+    public async Task MEL010_Migration_faz_backfill_por_preco_ou_item_e_preserva_insumo_sem_uso()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync("20260913222943_AddItensFichaTecnica");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO Insumos (EmpresaId, Nome, NomeNormalizado, MarcaNormalizada, Categoria, UnidadeBase, Ativo) VALUES (1, 'Com preço', 'COM PREÇO', '', 1, 1, 1), (1, 'Com item', 'COM ITEM', '', 1, 1, 1), (1, 'Sem uso', 'SEM USO', '', 1, 1, 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO PrecosInsumos (EmpresaId, InsumoId, QuantidadeCompra, PrecoCompra, DataReferencia) VALUES (1, 1, '1', '1', '2026-01-01')");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto', 'PRODUTO', '0.3', 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '1', 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, 2, '1')");
+
+        await context.Database.MigrateAsync();
+        context.ChangeTracker.Clear();
+        var insumos = await context.Insumos.OrderBy(insumo => insumo.Id).ToListAsync();
+
+        Assert.True(insumos[0].IdentidadeConsolidada);
+        Assert.True(insumos[1].IdentidadeConsolidada);
+        Assert.False(insumos[2].IdentidadeConsolidada);
+    }
+
+    [Fact]
+    public async Task MEL010_Identidade_consolidada_persiste_e_nao_regride_apos_remocao_tecnica_do_item()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection);
+        await context.Database.MigrateAsync();
+        var insumo = Insumo.Criar(1, "Papel", CategoriaInsumo.MateriaPrima, UnidadeMedida.Metro);
+        context.Insumos.Add(insumo);
+        await context.SaveChangesAsync();
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto técnico', 'PRODUTO TÉCNICO', '0.3', 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '1', 1)");
+        await context.Database.ExecuteSqlAsync($"INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, {insumo.Id}, '1')");
+        insumo.ConsolidarIdentidade();
+        await context.SaveChangesAsync();
+        await context.Database.ExecuteSqlAsync($"DELETE FROM ItensFichaTecnica WHERE InsumoId = {insumo.Id}");
+        context.ChangeTracker.Clear();
+
+        Assert.True((await context.Insumos.SingleAsync()).IdentidadeConsolidada);
+    }
+
+    [Fact]
     public async Task Insumo_valido_persiste_e_recupera_todos_os_valores()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -39,6 +82,7 @@ public sealed class InsumoPersistenceTests
         Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
         Assert.Equal(UnidadeMedida.Unidade, insumo.UnidadeBase);
         Assert.True(insumo.Ativo);
+        Assert.False(insumo.IdentidadeConsolidada);
     }
 
     [Fact]

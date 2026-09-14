@@ -10,6 +10,48 @@ public sealed class InsumoTests
         var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
 
         Assert.True(insumo.Ativo);
+        Assert.False(insumo.IdentidadeConsolidada);
+    }
+
+    [Fact]
+    public void Consolidar_identidade_e_monotonica_e_idempotente()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
+
+        insumo.ConsolidarIdentidade();
+        insumo.ConsolidarIdentidade();
+
+        Assert.True(insumo.IdentidadeConsolidada);
+    }
+
+    [Theory]
+    [InlineData("Açúcar", "Renata", UnidadeMedida.Grama)]
+    [InlineData("Farinha", "Outra", UnidadeMedida.Grama)]
+    [InlineData("Farinha", "Renata", UnidadeMedida.Unidade)]
+    public void Atualizar_dados_rejeita_mudanca_de_identidade_consolidada(string nome, string marca, UnidadeMedida unidade)
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+        insumo.ConsolidarIdentidade();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            insumo.AtualizarDados(nome, CategoriaInsumo.Embalagem, unidade, marca, "Atualizada"));
+
+        Assert.Equal(Insumo.MensagemIdentidadeConsolidada, exception.Message);
+        Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
+        Assert.Equal("Original", insumo.Observacao);
+    }
+
+    [Fact]
+    public void Atualizar_dados_permite_categoria_e_observacao_quando_identidade_consolidada_permanece_igual()
+    {
+        var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
+        insumo.ConsolidarIdentidade();
+
+        insumo.AtualizarDados(" Farinha ", CategoriaInsumo.Embalagem, UnidadeMedida.Grama, " Renata ", " Atualizada ");
+
+        Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
+        Assert.Equal("Atualizada", insumo.Observacao);
+        Assert.True(insumo.IdentidadeConsolidada);
     }
 
     [Fact]

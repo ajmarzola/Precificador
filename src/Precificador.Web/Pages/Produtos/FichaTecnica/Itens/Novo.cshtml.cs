@@ -59,7 +59,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         }
 
         var insumo = Input.InsumoId.HasValue
-            ? await context.Insumos.AsNoTracking().SingleOrDefaultAsync(item => item.Id == Input.InsumoId.Value && item.Ativo)
+            ? await context.Insumos.SingleOrDefaultAsync(item => item.Id == Input.InsumoId.Value && item.Ativo)
             : null;
 
         if (Input.InsumoId.HasValue && insumo is null)
@@ -90,6 +90,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
                 insumo!.Id,
                 quantidade,
                 Input.Observacao));
+            insumo!.ConsolidarIdentidade();
         }
         catch (ArgumentException exception)
         {
