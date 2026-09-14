@@ -66,4 +66,4 @@ A ordem das linhas define a fila normativa.
 | MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI | Concluído | baixa | UC001B, UC002 | [MEL004-rotulos-insumos-ui.md](improvements/MEL004-rotulos-insumos-ui.md) |
 | MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar | Concluído | baixa | UC003, UC005 | [MEL005-centralizar-formulario-insumo.md](improvements/MEL005-centralizar-formulario-insumo.md) |
 | MEL007 — Centralizar estado e ordem do backlog | Concluído | média-baixa | — | [MEL007-centralizar-estado-backlog.md](improvements/MEL007-centralizar-estado-backlog.md) |
-| MEL008 — Infraestrutura Web tenant-aware de testes | Pronto | baixa | — | [MEL008-testes-web-tenant-aware.md](improvements/MEL008-testes-web-tenant-aware.md) |
+| MEL008 — Infraestrutura Web tenant-aware de testes | Concluído | baixa | — | [MEL008-testes-web-tenant-aware.md](improvements/MEL008-testes-web-tenant-aware.md) |
