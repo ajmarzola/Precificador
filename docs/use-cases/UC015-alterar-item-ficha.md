@@ -1,9 +1,7 @@
 # UC015 — Alterar item da Ficha Técnica
 
-- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC014 implementado
-- **Próximo caso relacionado:** UC016 — Remover item da Ficha Técnica
 - **Alteração de schema:** não
 - **Revalidação pós-UC014:** concluída em 2026-09-13 contra a implementação mergeada pela PR #56
 - **Implementação:** concluída em 2026-09-13 na branch `feat/uc015-editar-item-ficha`

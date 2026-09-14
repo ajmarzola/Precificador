@@ -1,10 +1,8 @@
 # UC004 — Desativar e reativar insumo
 
-- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC003 e FT002 implementados
 - **Não depende de:** MEL005, UC005 ou funcionalidades posteriores
-- **Próximo caso relacionado:** UC005 — Registrar preço de insumo
 
 ## Objetivo
 
@@ -441,9 +439,7 @@ Além da DoD global:
 - unicidade permanece incluindo inativos;
 - nenhuma migration/snapshot;
 - matriz de testes está coberta com testes focados;
-- UC004 passa para **Implementado**;
-- F001, catálogo, regras e ordem de implementação ficam coerentes;
-- UC005 passa a ser o próximo caso a detalhar/revalidar;
+- F001, catálogo, backlog, regras e ordem de implementação ficam coerentes;
 - antes de UC005, preservar o gate já documentado sobre edição de Nome/Marca/Unidade após histórico;
 - qualquer nova ideia útil fora do escopo vai para `docs/development/melhorias.md`;
 - build Release sem warnings novos relevantes e suíte completa verde.

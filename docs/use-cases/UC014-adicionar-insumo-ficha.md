@@ -1,9 +1,7 @@
 # UC014 — Adicionar Insumo à Ficha Técnica
 
-- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC013 implementado; UC001A–UC006 implementados; FT002 implementada
-- **Próximo caso relacionado:** UC015 — Alterar item da Ficha Técnica (revalidação pós-UC014)
 - **Alteração de schema:** sim — introduz ItemFichaTecnica
 - **Revalidação pós-UC013:** concluída em 2026-09-13 contra a implementação mergeada pela PR #54
 - **Implementação:** concluída em 2026-09-13 na branch `feat/uc014-adicionar-insumo-ficha`

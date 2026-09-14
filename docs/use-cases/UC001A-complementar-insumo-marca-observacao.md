@@ -1,10 +1,8 @@
 # UC001A — Complementar cadastro de insumo com marca e observação
 
-- **Status:** Implementado
 - **Tipo:** evolução funcional do cadastro de Insumo
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001, FT002 e UC001B implementados
-- **Próximo caso relacionado:** UC002 — Listar e consultar insumos
 
 ## Motivo da alteração
 

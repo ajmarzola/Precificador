@@ -1,9 +1,7 @@
 # UC013 — Definir rendimento e tempo ativo da Ficha Técnica
 
-- **Status:** Implementado
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC007 a UC010 implementados; FT002 implementada
-- **Próximo caso:** UC014 — Adicionar Insumo à Ficha Técnica
 - **Alteração de schema:** sim — introduz FichaTecnica
 - **Sequenciamento:** primeiro caso da Etapa 3, após a reordenação aprovada na PR #50
 
@@ -794,8 +792,7 @@ Além da DoD global:
 - Detalhes possui ação Ficha técnica;
 - PRG + mensagem exata;
 - nenhum item/perda/equipamento/cálculo antecipado;
-- F003, RN009/RN013/RN047, catálogo e ordem coerentes;
-- UC014 passa a próximo caso;
+- F003, RN009/RN013/RN047, catálogo, backlog e ordem coerentes;
 - matriz U1-U6, P1-P6 e W1-W12 atendida;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

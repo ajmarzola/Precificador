@@ -21,12 +21,10 @@ Antes de alterar:
 2. confirmar branch refactor/mel008-testes-web-tenant-aware;
 3. ler AGENTS.md;
 4. ler a especificação MEL008;
-5. ler testing-strategy e Definition of Done;
-6. inspecionar CustomWebApplicationFactory e as suítes Web atuais;
-7. confirmar qual governança documental está vigente após MEL007.
-
-Se docs/development/backlog.md existir, confirmar MEL008 como Pronto ali.
-Caso MEL007 ainda não tenha sido implementada, seguir o estado vigente em melhorias.md.
+5. ler docs/development/backlog.md;
+6. confirmar MEL008 como Pronto e sem gate pendente no backlog;
+7. ler testing-strategy e Definition of Done;
+8. inspecionar CustomWebApplicationFactory e as suítes Web atuais.
 
 ## Escopo
 
@@ -178,7 +176,7 @@ Atualizar docs/development/testing-strategy.md com a convenção:
 - domínio específico permanece local;
 - testes de autenticação não escondem o fluxo sob teste.
 
-Atualizar somente a fonte de estado vigente após MEL007.
+Atualizar somente docs/development/backlog.md se a entrega alterar estado, gate ou ordem.
 
 ## Fora do escopo
 

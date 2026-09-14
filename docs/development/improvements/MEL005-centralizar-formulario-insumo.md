@@ -1,6 +1,5 @@
 # MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / refatoração Web
 - **Origem:** revisão do UC003
 - **Dependências:** UC003 e UC005 implementados
@@ -474,8 +473,7 @@ MEL005 está concluída quando:
 - nenhuma migration/ModelSnapshot;
 - nenhuma mudança no Core;
 - build Release sem warnings novos relevantes;
-- `docs/development/melhorias.md` passa MEL005 para Concluída após implementação;
-- este documento passa para Status: Concluída após implementação;
+- `docs/development/backlog.md` fica coerente quando houver mudança de estado, gate ou ordem;
 - diff permanece restrito à MEL005.
 
 ## Mensagem de commit sugerida

@@ -1,6 +1,5 @@
 # MEL003 — Assert direto de limpeza da Empresa Ativa no logout
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de autenticação e sessão
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada
@@ -179,8 +178,7 @@ A MEL003 está concluída quando:
 - nenhum código de produção/schema foi alterado;
 - toda a suíte permanece verde;
 - build Release não introduz warnings relevantes;
-- `docs/development/melhorias.md` marca MEL003 como `Concluída`;
-- este documento passa para **Status: Concluída**;
+- `docs/development/backlog.md` fica coerente quando houver mudança de estado, gate ou ordem;
 - o diff final permanece restrito à MEL003.
 
 ## Resultado esperado do Codex

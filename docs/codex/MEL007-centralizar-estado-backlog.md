@@ -18,6 +18,7 @@ Não fazer merge da própria implementação.
 - AGENTS.md;
 - docs/development/improvements/MEL007-centralizar-estado-backlog.md;
 - docs/development/melhorias.md;
+- docs/development/backlog.md, se já existir na branch;
 - docs/development/implementation-order.md;
 - docs/use-cases/catalog.md;
 - docs/development/workflow-codex.md;
@@ -134,6 +135,7 @@ Após a migração documental:
 - MEL007 deve aparecer como Concluído somente em backlog.md;
 - o arquivo individual MEL007 não deve possuir campo Status;
 - melhorias.md deve continuar descrevendo a melhoria sem duplicar seu estado.
+- instruções abertas posteriores devem consultar backlog.md como fonte de estado e gate.
 
 ## Retorno obrigatório
 

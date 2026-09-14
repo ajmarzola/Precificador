@@ -1,9 +1,7 @@
 # UC001 — Cadastrar Insumo
 
-- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** FT001 — Fundação Técnica implementada
-- **Próximo caso relacionado:** UC002 — Listar e consultar insumos
 
 ## Objetivo
 
@@ -385,7 +383,6 @@ Os testes não podem tocar no `precificador.db` real do usuário.
 
 Ao implementar:
 
-- alterar este documento para `Status: Implementado`;
 - manter F001 e as RNs coerentes caso alguma mudança aprovada seja necessária;
 - não criar ADR se a implementação apenas seguir a arquitetura já aprovada.
 

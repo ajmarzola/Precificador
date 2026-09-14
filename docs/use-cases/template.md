@@ -1,8 +1,9 @@
 # UCXXX — Nome do Caso de Uso
 
-- **Status:** Proposto | Pronto para implementação | Implementado
 - **Funcionalidade:** FXXX
 - **Dependências:** ...
+
+O estado, gate e ordem operacional do item devem ser mantidos somente em `docs/development/backlog.md`.
 
 ## Objetivo
 

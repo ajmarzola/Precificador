@@ -1,9 +1,7 @@
 # UC005 — Registrar preço de insumo
 
-- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001A, UC002, UC003, UC004, FT002 e RN040
-- **Próximo caso relacionado:** UC006 — Consultar histórico de preços do insumo
 
 ## Objetivo
 
@@ -508,9 +506,7 @@ Além da DoD global:
 - preço futuro também congela campos;
 - Insumo sem histórico mantém edição completa;
 - nenhuma consulta completa do UC006;
-- documentação pós-implementação marca UC005 como Implementado;
-- F001/catálogo/ordem/modelo de preço coerentes;
-- UC006 passa a próximo caso;
+- F001/catálogo/backlog/ordem/modelo de preço coerentes;
 - gate do UC014 permanece aberto;
 - ideias fora do escopo vão para docs/development/melhorias.md;
 - build Release sem warnings novos;

@@ -1,6 +1,5 @@
 # MEL004 — Centralizar rótulos de CategoriaInsumo e UnidadeMedida na UI
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / apresentação
 - **Origem:** revisão do UC002
 - **Dependências:** UC001B e UC002 implementados
@@ -247,8 +246,7 @@ A MEL004 está concluída quando:
 - nenhum código de domínio/schema é alterado;
 - toda a suíte permanece verde;
 - build Release não introduz warnings relevantes;
-- `docs/development/melhorias.md` marca MEL004 como `Concluída`;
-- este documento passa para **Status: Concluída**;
+- `docs/development/backlog.md` fica coerente quando houver mudança de estado, gate ou ordem;
 - o diff permanece restrito à MEL004.
 
 ## Resultado esperado do Codex

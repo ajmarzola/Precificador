@@ -1,10 +1,8 @@
 # UC010 — Desativar e reativar produto
 
-- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências materiais:** UC007, UC008 e UC009 implementados
 - **Sequenciamento:** implementar a partir da master pós-UC009, já revalidada
-- **Sequenciamento posterior:** UC011 foi reordenado para depois da UC023; o próximo caso global é UC013
 - **Sem alteração de schema:** o campo Ativo já existe em Produto
 
 ## Objetivo
@@ -671,8 +669,7 @@ Além da DoD global:
 - nenhuma exclusão física;
 - nenhuma regra antecipada de UC011+;
 - matriz U1-U3, P1-P2 e W1-W10 atendida;
-- documentação pós-implementação marca UC010 como Implementado;
-- F002, RN018, catálogo e ordem ficam coerentes;
-- o sequenciamento global posterior deve ser consultado em `docs/development/implementation-order.md`;
+- F002, RN018, catálogo, backlog e ordem ficam coerentes;
+- o sequenciamento global posterior deve ser consultado em `docs/development/backlog.md`;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

@@ -1,10 +1,8 @@
 # UC009 — Editar produto
 
-- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência material:** UC007 implementado
 - **Sequenciamento:** implementar após UC008 implementado, revisado e mergeado
-- **Próximo caso relacionado:** UC010 — Desativar e reativar produto
 - **Sem alteração de schema:** este UC altera comportamento/domínio e UI, não estrutura persistida
 
 ## Objetivo
@@ -674,9 +672,7 @@ Além da DoD global:
 - nenhuma migration/snapshot;
 - nenhuma entidade de histórico;
 - nenhum UC010+;
-- documentação pós-implementação marca UC009 como Implementado;
-- F002/catálogo/ordem ficam coerentes;
-- UC010 passa a próximo caso de Produtos;
+- F002/catálogo/backlog/ordem ficam coerentes;
 - matriz U1-U5, P1-P3 e W1-W11 atendida;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

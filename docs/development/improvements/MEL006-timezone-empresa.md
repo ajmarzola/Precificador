@@ -1,6 +1,5 @@
 # MEL006 — Tornar a data operacional dependente do timezone da Empresa
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / fundação temporal multiempresa
 - **Origem:** especificação do UC006
 - **Dependências:** FT002 implementada

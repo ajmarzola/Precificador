@@ -51,7 +51,7 @@ A mesma Ficha é atualizada quando Rendimento/Tempo ativo mudam. UC013 não cria
 
 Implementada após revalidação contra a implementação real da UC013.
 
-Modelo implementado:
+Modelo atual:
 
 ~~~text
 ItemFichaTecnica
@@ -89,7 +89,7 @@ EmpresaId, FichaTecnicaId e InsumoId permanecem imutáveis. Item de Insumo inati
 
 A UC015 também adiciona uma lista operacional mínima de Itens na página da Ficha (Insumo, Quantidade, Unidade, Situação e Editar), apenas para tornar edição/removal futuros navegáveis. A consulta completa continua reservada ao UC017.
 
-### Próximos incrementos
+### Incrementos relacionados
 
 - UC016 — remover item; remoção não desbloqueia identidade do Insumo;
 - UC017 — consultar Ficha e composição completa.
@@ -158,9 +158,9 @@ FichaTecnica é tenant-owned:
 
 ## Casos de uso
 
-- [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md) — implementado;
-- [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md) — implementado;
-- [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md) — implementado;
+- [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md);
+- [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md);
+- [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md);
 - UC016 — Remover item da Ficha Técnica;
 - UC017 — Consultar Ficha Técnica e composição.
 

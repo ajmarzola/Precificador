@@ -132,14 +132,14 @@ Além da página de histórico, Detalhes do Insumo passa a exibir um resumo do p
 
 ## Casos de uso
 
-- [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md) — implementado;
-- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — implementado;
-- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md) — implementado;
-- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md) — implementado;
-- [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md) — implementado;
-- [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md) — implementado;
-- [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md) — implementado;
-- [UC006 — Consultar histórico de preços do insumo](../use-cases/UC006-consultar-historico-precos-insumo.md) — implementado.
+- [UC001 — Cadastrar insumo](../use-cases/UC001-cadastrar-insumo.md);
+- [UC001B — Generalizar categoria e unidades de insumo](../use-cases/UC001B-generalizar-categoria-unidades-insumo.md);
+- [UC001A — Complementar cadastro com marca e observação](../use-cases/UC001A-complementar-insumo-marca-observacao.md);
+- [UC002 — Listar e consultar insumos](../use-cases/UC002-listar-consultar-insumos.md);
+- [UC003 — Editar insumo](../use-cases/UC003-editar-insumo.md);
+- [UC004 — Desativar e reativar insumo](../use-cases/UC004-desativar-reativar-insumo.md);
+- [UC005 — Registrar preço de insumo](../use-cases/UC005-registrar-preco-insumo.md);
+- [UC006 — Consultar histórico de preços do insumo](../use-cases/UC006-consultar-historico-precos-insumo.md).
 
 ## Fora do escopo
 

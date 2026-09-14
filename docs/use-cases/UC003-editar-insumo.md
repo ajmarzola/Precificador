@@ -1,10 +1,8 @@
 # UC003 — Editar insumo
 
-- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC001, UC001B, UC001A, UC002 e FT002 implementados
 - **Não depende de:** MEL001–MEL004
-- **Próximo caso relacionado:** UC004 — Desativar insumo
 
 ## Objetivo
 
@@ -579,8 +577,6 @@ Além da DoD global:
 - PRG + mensagem de sucesso funcionam;
 - não há migration/snapshot;
 - matriz de testes está coberta com testes focados;
-- documentação pós-implementação deixa UC003 como Implementado;
-- F001, catálogo e ordem de implementação ficam coerentes;
-- UC004 passa a ser o próximo caso a detalhar/revalidar, sem ser implementado nesta PR;
+- F001, catálogo, backlog e ordem de implementação ficam coerentes;
 - toda a suíte está verde e build Release sem warnings novos relevantes;
 - qualquer ideia útil fora do escopo é registrada em `docs/development/melhorias.md`.

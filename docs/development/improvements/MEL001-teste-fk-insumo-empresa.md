@@ -1,6 +1,5 @@
 # MEL001 — Teste explícito da FK Insumo → Empresa
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de persistência
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada
@@ -167,8 +166,7 @@ A MEL001 está concluída quando:
 - não houve mudança de código de produção/schema;
 - toda a suíte permanece verde;
 - build Release não introduz warnings relevantes;
-- `docs/development/melhorias.md` marca MEL001 como `Concluída`;
-- este documento passa para **Status: Concluída**;
+- `docs/development/backlog.md` fica coerente quando houver mudança de estado, gate ou ordem;
 - o diff final permanece restrito à MEL001.
 
 ## Resultado esperado do Codex

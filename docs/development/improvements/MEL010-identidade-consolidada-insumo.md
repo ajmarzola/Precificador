@@ -1,6 +1,5 @@
 # MEL010 — Persistir identidade consolidada do Insumo
 
-- **Status:** Pronto para implementação
 - **Tipo:** melhoria técnica / consolidação de identidade
 - **Origem:** decisão pré-UC016
 - **Dependências:** UC005, UC014 e UC015 implementados
