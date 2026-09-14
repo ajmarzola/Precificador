@@ -21,7 +21,7 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
         using var client = factory.CreateClient();
         var resposta = await client.GetAsync("/Conta/Login");
         var pagina = await resposta.Content.ReadAsStringAsync();
-        var token = Token(pagina);
+        var token = WebTestHtml.ExtrairTokenAntiforgery(pagina);
         var post = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token, ["Input.Email"] = "inexistente@teste.local", ["Input.Senha"] = "SenhaTeste1"
@@ -30,6 +30,4 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
         Assert.Equal(HttpStatusCode.OK, post.StatusCode);
         Assert.Contains("E-mail ou senha inválidos.", WebUtility.HtmlDecode(conteudo));
     }
-
-    private static string Token(string pagina) => WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
 }

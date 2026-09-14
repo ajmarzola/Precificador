@@ -15,6 +15,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task CA01_Edicao_de_produto_exige_autenticacao_e_empresa_ativa()
     {
@@ -37,10 +38,10 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     {
         var nomeProduto = NomeUnico("Produto edicao");
         var id = await CriarProdutoAsync(1, nomeProduto, "Catálogo", 0.255m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/Editar/{id}");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("Nome", conteudo);
@@ -61,7 +62,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     public async Task CA04_CA15_Post_valido_atualiza_produto_e_faz_PRG_para_detalhes()
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto original"), "Planners", 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
         var novoNome = NomeUnico("Calendário atualizado");
 
         var response = await EnviarFormularioAsync(client, id, $"  {novoNome}  ", "  Datas   2027 ", "25,5");
@@ -80,7 +81,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
             Assert.True(produto.Ativo);
         }
 
-        var detalhes = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
+        var detalhes = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Produto atualizado com sucesso.", detalhes);
         Assert.Contains(novoNome, detalhes);
     }
@@ -100,7 +101,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     {
         var nomeOriginal = NomeUnico("Produto preservado");
         var id = await CriarProdutoAsync(1, nomeOriginal, "Original", 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, nome, categoria, margemPercentual);
 
@@ -113,7 +114,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     {
         var nomeProduto = NomeUnico("Produto proprio nome");
         var id = await CriarProdutoAsync(1, nomeProduto, "Original", 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, $"  {nomeProduto.ToUpperInvariant()}  ", "Atualizada", "20");
 
@@ -129,10 +130,10 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         var nomeExistente = NomeUnico("Produto existente");
         var id = await CriarProdutoAsync(1, nomeOriginal, "Original", 0.30m);
         await CriarProdutoAsync(1, nomeExistente, "Outra", 0.25m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, $"  {nomeExistente.ToUpperInvariant()}  ", "Alterada", "20");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Já existe um produto cadastrado com esse nome.", conteudo);
@@ -142,11 +143,11 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     [Fact]
     public async Task CA11_Nome_existente_apenas_em_outra_empresa_nao_bloqueia_edicao()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var nomeOutroTenant = NomeUnico("Produto outro tenant");
         await CriarProdutoAsync(empresaDois, nomeOutroTenant, null, 0.30m);
         var id = await CriarProdutoAsync(1, NomeUnico("Produto empresa um"), null, 0.25m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, $"  {nomeOutroTenant.ToUpperInvariant()}  ", null, "35");
 
@@ -158,9 +159,9 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     [Fact]
     public async Task CA12_Request_nao_controla_empresa_ou_status()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var id = await CriarProdutoAsync(1, NomeUnico("Produto manipulado"), null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
         var novoNome = NomeUnico("Produto atualizado manipulado");
 
         var response = await EnviarFormularioAsync(client, id, novoNome, null, "40", new Dictionary<string, string>
@@ -179,7 +180,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     public async Task CA13_Get_e_post_de_id_inexistente_retornam_404()
     {
         var idExistente = await CriarProdutoAsync(1, NomeUnico("Produto token"), null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync("/Produtos/Editar/999999");
         var post = await EnviarFormularioAsync(client, 999999, "Produto inexistente", null, "30", tokenProdutoId: idExistente);
@@ -191,11 +192,11 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     [Fact]
     public async Task CA14_Get_e_post_cross_tenant_retornam_404_sem_alterar_registro()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var nomeOutroTenant = NomeUnico("Produto cross tenant");
         var idOutroTenant = await CriarProdutoAsync(empresaDois, nomeOutroTenant, "Externo", 0.30m);
         var idEmpresaUm = await CriarProdutoAsync(1, NomeUnico("Produto token empresa um"), null, 0.20m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync($"/Produtos/Editar/{idOutroTenant}");
         var post = await EnviarFormularioAsync(
@@ -215,10 +216,10 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     public async Task CA16_Detalhes_exibe_editar_e_edicao_exibe_cancelar_para_o_mesmo_produto()
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto navegacao edicao"), null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var detalhes = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
-        var edicao = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Editar/{id}"));
+        var detalhes = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
+        var edicao = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Editar/{id}"));
 
         Assert.Contains("Editar", detalhes);
         Assert.Contains($"href=\"/Produtos/Editar/{id}\"", detalhes);
@@ -241,7 +242,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina),
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.Nome"] = nome,
             ["Input.Categoria"] = categoria ?? string.Empty
         };
@@ -272,67 +273,12 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         await context.SaveChangesAsync();
         return produto.Id;
     }
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
     private async Task<HttpClient> CriarClienteAutenticadoSemEmpresaAtivaAsync()
     {
-        var empresaDois = await CriarEmpresaAsync();
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaDois, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        var client = web.CriarCliente();
+        var resposta = await web.LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         Assert.Contains("/Empresas/Selecionar", resposta.Headers.Location!.ToString());
         return client;
@@ -363,13 +309,6 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
         return await context.Produtos.IgnoreQueryFilters().CountAsync(produto => produto.NomeNormalizado == nomeNormalizado);
     }
-
-    private static async Task<string> LerHtmlDecodificadoAsync(HttpResponseMessage response)
-    {
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        return WebUtility.HtmlDecode(Encoding.UTF8.GetString(bytes));
-    }
-
     private static string ValorDoInput(string conteudo, string nome)
     {
         var input = Regex.Match(conteudo, $"<input[^>]*name=\"{Regex.Escape(nome)}\"[^>]*>").Value;
@@ -381,14 +320,4 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         decimal.Parse(valor.Replace(',', '.'), CultureInfo.InvariantCulture);
 
     private static string NomeUnico(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
-
-    private static string Token(string pagina) =>
-        WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
-    }
 }

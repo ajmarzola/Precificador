@@ -46,6 +46,14 @@ Autenticação deve possuir smoke/integration de bootstrap, login, logout, pági
 
 Manter poucos e focados. No MVP não adotar Selenium/Playwright como requisito geral.
 
+Testes Web tenant-aware usam composição por `WebTestContext` para setup transversal de infraestrutura: criação de `HttpClient` com redirects visíveis, cookies reais, usuário Identity de teste, vínculos `UsuarioEmpresa`, empresa auxiliar e login real por `/Conta/Login`. A Empresa Ativa deve ser estabelecida pelo fluxo real da aplicação; testes não devem fabricar cookies, claims ou Session para simular autenticação ou tenant ativo.
+
+Tokens antiforgery devem vir do HTML real por `WebTestHtml`. Testes que validam rejeição sem token continuam enviando POST sem `__RequestVerificationToken`, sem desabilitar antiforgery na configuração.
+
+Helpers de domínio continuam locais à suíte que valida o comportamento: criação de Produto, Insumo, Ficha Técnica, Item, Preço, payloads `Input.*`, seletores e asserts específicos do caso de uso não devem migrar para builders genéricos ou classe base.
+
+Testes cujo objeto é autenticação, seleção de empresa, logout ou limpeza de sessão podem reutilizar `WebTestContext` para criar usuário/empresa/client e `WebTestHtml` para token, mas devem manter explícitos os atos sob teste. Eles não devem usar conveniências de cliente já autenticado para provar o próprio fluxo de login.
+
 ## 5. Golden cases
 
 O motor de precificação terá cenários canônicos obtidos de dados conferidos. Casos futuros devem declarar o contexto de Empresa quando configurações/ownership forem relevantes.

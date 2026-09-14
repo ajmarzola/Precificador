@@ -14,7 +14,7 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
     {
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         var pagina = await client.GetAsync("/Setup");
-        var token = Token(await pagina.Content.ReadAsStringAsync());
+        var token = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync());
         var resposta = await client.PostAsync("/Setup", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
@@ -35,6 +35,4 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
         var repetido = await client.GetAsync("/Setup");
         Assert.Equal(HttpStatusCode.NotFound, repetido.StatusCode);
     }
-
-    private static string Token(string pagina) => WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
 }

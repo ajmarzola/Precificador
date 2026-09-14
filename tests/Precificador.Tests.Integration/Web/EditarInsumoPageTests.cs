@@ -13,6 +13,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task CA01_Edicao_exige_autenticacao()
     {
@@ -28,7 +29,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     {
         var nome = Nome("Farinha");
         var id = await CriarInsumoAsync(1, nome, "Renata", "W 300", CategoriaInsumo.Consumivel, UnidadeMedida.Metro);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await client.GetAsync($"/Insumos/Editar/{id}");
         var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
@@ -50,7 +51,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     public async Task CA04_Post_valido_atualiza_insumo_da_empresa_ativa_e_redireciona()
     {
         var id = await CriarInsumoAsync(1, Nome("Farinha"), "Renata", "Original", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(client, id, "  Açúcar   cristal ", "Embalagem", "Unidade", "  União   Premium ", "  Nova observação  ");
 
@@ -73,7 +74,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     {
         var nome = Nome("Farinha");
         var id = await CriarInsumoAsync(1, nome, "Renata", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(client, id, nome, "Consumivel", "Metro", "Renata", "Alterada");
 
@@ -90,7 +91,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
         var nomeDuplicado = Nome("Farinha");
         await CriarInsumoAsync(1, nomeDuplicado, "Renata", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
         var editavel = await CriarInsumoAsync(1, Nome("Açúcar"), "União", "Original", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(client, editavel, $" {nomeDuplicado.ToUpperInvariant()} ", "Embalagem", "Unidade", " RENATA ", "Alterada");
         var conteudo = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
@@ -106,11 +107,11 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     [Fact]
     public async Task CA08_Post_para_combinacao_existente_apenas_em_outra_empresa_e_permitido()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var nome = Nome("Farinha");
         await CriarInsumoAsync(empresaDois, nome, "Renata", "Outra empresa", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
         var editavel = await CriarInsumoAsync(1, Nome("Açúcar"), "União", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(client, editavel, nome, "Embalagem", "Unidade", "Renata", "Empresa um");
 
@@ -136,7 +137,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     {
         var nomeOriginal = Nome("Farinha");
         var id = await CriarInsumoAsync(1, nomeOriginal, "Renata", "Original", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(client, id, nomeEnviado, categoriaEnviada, unidadeEnviada, marcaEnviada, observacaoEnviada);
 
@@ -153,7 +154,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     public async Task CA11_Get_e_post_de_id_inexistente_retornam_404()
     {
         var idExistente = await CriarInsumoAsync(1, Nome("Farinha"), "Renata", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/Insumos/Editar/999999")).StatusCode);
         var token = await ObterTokenAsync(client, idExistente);
@@ -164,10 +165,10 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     [Fact]
     public async Task CA12_Get_e_post_de_id_de_outro_tenant_retornam_404_sem_alterar_registro()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var idOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Segredo"), "Outra", "Intacto", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
         var idEmpresaAtiva = await CriarInsumoAsync(1, Nome("Farinha"), "Renata", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/Insumos/Editar/{idOutroTenant}")).StatusCode);
         var token = await ObterTokenAsync(client, idEmpresaAtiva);
@@ -183,7 +184,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     public async Task CA14_Detalhes_exibe_link_editar_do_registro()
     {
         var id = await CriarInsumoAsync(1, Nome("Farinha"), "Renata", null, CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var conteudo = await (await client.GetAsync($"/Insumos/Detalhes/{id}")).Content.ReadAsStringAsync();
 
@@ -208,7 +209,7 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
     private static async Task<string> ObterTokenAsync(HttpClient client, int id)
     {
         var pagina = await (await client.GetAsync($"/Insumos/Editar/{id}")).Content.ReadAsStringAsync();
-        return WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
+        return WebTestHtml.ExtrairTokenAntiforgery(pagina);
     }
 
     private static string Nome(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
@@ -221,17 +222,6 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
         ["Nome válido", "0", "Grama", "Marca válida", "Observação válida"],
         ["Nome válido", "MateriaPrima", "0", "Marca válida", "Observação válida"]
     ];
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
     private async Task<int> CriarInsumoAsync(int empresaId, string nome, string? marca, string? observacao, CategoriaInsumo categoria, UnidadeMedida unidade)
     {
         using var scope = factory.Services.CreateScope();
@@ -249,38 +239,5 @@ public sealed class EditarInsumoPageTests(CustomWebApplicationFactory factory) :
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         return await context.Insumos.AsNoTracking().SingleAsync(item => item.Id == id);
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId = 1)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = WebUtility.HtmlDecode(Regex.Match(await login.Content.ReadAsStringAsync(), "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

@@ -18,6 +18,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task CA01_Ficha_tecnica_exige_autenticacao_e_empresa_ativa()
     {
@@ -40,10 +41,10 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var nome = NomeUnico("Produto sem ficha");
         var id = await CriarProdutoAsync(1, nome, "Catálogo", 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/FichaTecnica/{id}");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
         Assert.Contains(nome, conteudo);
@@ -62,7 +63,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     public async Task CA03_CA04_CA18_Post_valido_cria_ficha_e_faz_PRG_com_sucesso()
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto cria ficha"), null, 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, "2,5", "45");
 
@@ -74,7 +75,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.Equal(2.5m, ficha.Rendimento);
         Assert.Equal(45, ficha.TempoAtivoMinutos);
 
-        var paginaAposRedirect = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
+        var paginaAposRedirect = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Ficha técnica salva com sucesso.", paginaAposRedirect);
     }
 
@@ -108,9 +109,9 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto ficha existente"), null, 0.30m, ativo: true);
         await CriarFichaAsync(1, id, 3.5m, 75);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
 
         Assert.Equal(3.5m, DecimalInformado(ValorDoInput(conteudo, "Input.Rendimento")));
         Assert.Equal("75", ValorDoInput(conteudo, "Input.TempoAtivoMinutos"));
@@ -121,7 +122,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto atualiza ficha"), null, 0.30m, ativo: true);
         var fichaId = await CriarFichaAsync(1, id, 3m, 60);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, "4,25", "90");
 
@@ -147,10 +148,10 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto ficha invalida"), null, 0.30m, ativo: true);
         var fichaId = await CriarFichaAsync(1, id, 2m, 30);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, rendimento, tempoAtivo);
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(mensagem, conteudo);
@@ -164,7 +165,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     public async Task CA13_Get_e_post_de_produto_inexistente_retornam_404()
     {
         var idExistente = await CriarProdutoAsync(1, NomeUnico("Produto token ficha"), null, 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync("/Produtos/FichaTecnica/999999");
         var post = await EnviarFormularioAsync(client, 999999, "2", "30", tokenProdutoId: idExistente);
@@ -176,11 +177,11 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     [Fact]
     public async Task CA14_Get_e_post_cross_tenant_retornam_404_sem_alteracao()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var idOutroTenant = await CriarProdutoAsync(empresaDois, NomeUnico("Produto ficha cross tenant"), null, 0.30m, ativo: true);
         var fichaId = await CriarFichaAsync(empresaDois, idOutroTenant, 2m, 30);
         var idEmpresaUm = await CriarProdutoAsync(1, NomeUnico("Produto token empresa um"), null, 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync($"/Produtos/FichaTecnica/{idOutroTenant}");
         var post = await EnviarFormularioAsync(client, idOutroTenant, "9", "99", tokenProdutoId: idEmpresaUm);
@@ -196,10 +197,10 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     [Fact]
     public async Task CA15_Request_nao_controla_empresa_produto_ou_id_da_ficha()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var idProdutoEmpresaDois = await CriarProdutoAsync(empresaDois, NomeUnico("Produto manipulado outro tenant"), null, 0.30m, ativo: true);
         var id = await CriarProdutoAsync(1, NomeUnico("Produto request manipulado"), null, 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, "2", "30", new Dictionary<string, string>
         {
@@ -221,7 +222,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     public async Task CA16_Produto_inativo_pode_salvar_ficha_sem_reativacao()
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto inativo ficha"), null, 0.30m, ativo: false);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, id, "2", "0");
 
@@ -236,11 +237,11 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var idAtivo = await CriarProdutoAsync(1, NomeUnico("Produto ativo nav ficha"), null, 0.30m, ativo: true);
         var idInativo = await CriarProdutoAsync(1, NomeUnico("Produto inativo nav ficha"), null, 0.30m, ativo: false);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var ativo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{idAtivo}"));
-        var inativo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{idInativo}"));
-        var ficha = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{idAtivo}"));
+        var ativo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{idAtivo}"));
+        var inativo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{idInativo}"));
+        var ficha = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{idAtivo}"));
 
         Assert.Contains("Ficha técnica", ativo);
         Assert.Contains($"href=\"/Produtos/FichaTecnica/{idAtivo}\"", ativo);
@@ -254,7 +255,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     public async Task CA19_Post_sem_antiforgery_e_rejeitado_sem_alterar_ficha()
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto ficha antiforgery"), null, 0.30m, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.PostAsync($"/Produtos/FichaTecnica/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -279,7 +280,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina)
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina)
         };
 
         if (rendimento is not null)
@@ -355,78 +356,16 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         return await context.Produtos.AsNoTracking().SingleAsync(produto => produto.Id == id);
     }
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
     private async Task<HttpClient> CriarClienteAutenticadoSemEmpresaAtivaAsync()
     {
-        var empresaDois = await CriarEmpresaAsync();
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaDois, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        var client = web.CriarCliente();
+        var resposta = await web.LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         Assert.Contains("/Empresas/Selecionar", resposta.Headers.Location!.ToString());
         return client;
     }
-
-    private static async Task<string> LerHtmlDecodificadoAsync(HttpResponseMessage response)
-    {
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        return WebUtility.HtmlDecode(Encoding.UTF8.GetString(bytes));
-    }
-
     private static string ValorDoInput(string conteudo, string nome)
     {
         var input = Regex.Match(conteudo, $"<input[^>]*name=\"{Regex.Escape(nome)}\"[^>]*>").Value;
@@ -438,14 +377,4 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         decimal.Parse(valor.Replace(',', '.'), CultureInfo.InvariantCulture);
 
     private static string NomeUnico(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
-
-    private static string Token(string pagina) =>
-        WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
-    }
 }
