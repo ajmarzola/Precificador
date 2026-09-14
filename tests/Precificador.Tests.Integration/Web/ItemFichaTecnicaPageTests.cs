@@ -113,6 +113,26 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     }
 
     [Fact]
+    public async Task W8_Post_valido_adiciona_insumo_ja_consolidado_a_ficha()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto insumo consolidado"), ativo: true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo consolidado"), "Marca", UnidadeMedida.Grama, ativo: true);
+        await CriarPrecoAsync(1, insumoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        Assert.True((await ObterInsumoAsync(insumoId, 1)).IdentidadeConsolidada);
+
+        var response = await EnviarFormularioAsync(client, produtoId, insumoId, "2", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var item = Assert.Single(await ListarItensAsync(produtoId: produtoId));
+        Assert.Equal(fichaId, item.FichaTecnicaId);
+        Assert.Equal(insumoId, item.InsumoId);
+        Assert.Equal(2m, item.Quantidade);
+    }
+
+    [Fact]
     public void W19_Parsing_de_quantidade_com_virgula_independe_da_cultura_atual()
     {
         var culturaOriginal = CultureInfo.CurrentCulture;
@@ -295,6 +315,33 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(CategoriaInsumo.MateriaPrima, insumo.Categoria);
         Assert.Equal("Global original", insumo.Observacao);
         Assert.Equal("Contextual original", (await ObterItemAsync(itemId, 1)).Observacao);
+    }
+
+    [Fact]
+    public async Task W5_Post_com_identidade_consolidada_inalterada_atualiza_categoria_e_observacao()
+    {
+        var nome = Nome("Insumo editável consolidado");
+        var insumoId = await CriarInsumoAsync(1, nome, "Marca original", UnidadeMedida.Grama, ativo: true, observacao: "Original");
+        await CriarPrecoAsync(1, insumoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarEdicaoInsumoAsync(
+            client,
+            insumoId,
+            nome,
+            "Marca original",
+            "Embalagem",
+            "Grama",
+            "Observação atualizada");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal($"/Insumos/Detalhes/{insumoId}", response.Headers.Location!.OriginalString);
+        var insumo = await ObterInsumoAsync(insumoId, 1);
+        Assert.Equal(nome, insumo.Nome);
+        Assert.Equal("Marca original", insumo.Marca);
+        Assert.Equal(UnidadeMedida.Grama, insumo.UnidadeBase);
+        Assert.Equal(CategoriaInsumo.Embalagem, insumo.Categoria);
+        Assert.Equal("Observação atualizada", insumo.Observacao);
     }
 
     [Fact]
