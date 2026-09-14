@@ -14,6 +14,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task CA01_Cadastro_de_produto_exige_autenticacao()
     {
@@ -33,10 +34,10 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA02_Get_exibe_apenas_campos_funcionais_do_cadastro()
     {
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await client.GetAsync("/Produtos/Novo");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("Nome", conteudo);
@@ -53,7 +54,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA03_CA16_Post_valido_persiste_produto_da_empresa_ativa_e_faz_PRG()
     {
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
         var nome = $"Agenda {Guid.NewGuid():N}";
 
         var response = await EnviarFormularioAsync(client, nome, "  Planners   2027  ", "30");
@@ -71,7 +72,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         }
 
         var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
-        var conteudo = await LerHtmlDecodificadoAsync(paginaAposRedirect);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(paginaAposRedirect);
         Assert.Contains("Produto cadastrado com sucesso.", conteudo);
         Assert.DoesNotContain($"value=\"{nome}\"", conteudo);
     }
@@ -85,7 +86,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [InlineData("Agenda", "Categoria", "101")]
     public async Task CA04_CA06_CA07_Post_invalido_nao_persiste_produto(string nome, string categoria, string margemPercentual)
     {
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarProdutosAsync();
 
         var response = await EnviarFormularioAsync(client, nome, categoria, margemPercentual);
@@ -97,12 +98,12 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA08_Duplicidade_na_mesma_empresa_exibe_mensagem_e_nao_cria_segundo_produto()
     {
-        using var client = await CriarClienteAutenticadoAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
         var nome = $"Pão de Açúcar {Guid.NewGuid():N}";
         Assert.Equal(HttpStatusCode.Redirect, (await EnviarFormularioAsync(client, nome, null, "30")).StatusCode);
 
         var response = await EnviarFormularioAsync(client, $"  {nome.ToUpperInvariant()}  ", "Outra", "25");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Já existe um produto cadastrado com esse nome.", conteudo);
@@ -112,11 +113,11 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA09_Mesmo_nome_em_outra_empresa_nao_bloqueia_cadastro()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var nome = $"Agenda {Guid.NewGuid():N}";
-        using var clienteEmpresaDois = await CriarClienteAutenticadoAsync(empresaDois);
+        using var clienteEmpresaDois = await web.CriarClienteAutenticadoAsync(empresaDois);
         Assert.Equal(HttpStatusCode.Redirect, (await EnviarFormularioAsync(clienteEmpresaDois, nome, null, "30")).StatusCode);
-        using var clienteEmpresaUm = await CriarClienteAutenticadoAsync();
+        using var clienteEmpresaUm = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(clienteEmpresaUm, $"  {nome.ToUpperInvariant()}  ", null, "25");
 
@@ -127,8 +128,8 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA11_Request_nao_controla_empresa_ou_status_inicial()
     {
-        var empresaDois = await CriarEmpresaAsync();
-        using var client = await CriarClienteAutenticadoAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
+        using var client = await web.CriarClienteAutenticadoAsync();
         var nome = $"Produto manipulado {Guid.NewGuid():N}";
 
         var response = await EnviarFormularioAsync(client, nome, null, "30", new Dictionary<string, string>
@@ -153,7 +154,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("Cadastrar produto", conteudo);
@@ -170,7 +171,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var respostaPagina = await client.GetAsync("/Produtos/Novo");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
-        var token = Token(pagina);
+        var token = WebTestHtml.ExtrairTokenAntiforgery(pagina);
         var dados = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
@@ -205,78 +206,14 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
         return await context.Produtos.IgnoreQueryFilters().CountAsync(produto => produto.NomeNormalizado == nomeNormalizado);
     }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId = 1)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var pagina = await (await client.GetAsync("/Conta/Login")).Content.ReadAsStringAsync();
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(pagina),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
     private async Task<HttpClient> CriarClienteAutenticadoSemEmpresaAtivaAsync()
     {
-        var empresaDois = await CriarEmpresaAsync();
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaDois, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var pagina = await (await client.GetAsync("/Conta/Login")).Content.ReadAsStringAsync();
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(pagina),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        var client = web.CriarCliente();
+        var resposta = await web.LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         Assert.Contains("/Empresas/Selecionar", resposta.Headers.Location!.ToString());
         return client;
     }
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
-    private static async Task<string> LerHtmlDecodificadoAsync(HttpResponseMessage response)
-    {
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        return WebUtility.HtmlDecode(Encoding.UTF8.GetString(bytes));
-    }
-
-    private static string Token(string pagina) =>
-        WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
 }

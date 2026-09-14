@@ -19,6 +19,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task W1_Adicionar_insumo_exige_autenticacao_e_empresa_ativa()
     {
@@ -43,7 +44,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo sem ficha"), "Marca", UnidadeMedida.Grama, ativo: true);
         var produtoComFicha = await CriarProdutoAsync(1, Nome("Produto token item"), ativo: true);
         await CriarFichaAsync(1, produtoComFicha);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo");
         var post = await EnviarFormularioAsync(client, produtoId, insumoId, "1", null, tokenProdutoId: produtoComFicha);
@@ -54,14 +55,14 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal($"/Produtos/FichaTecnica/{produtoId}", post.Headers.Location!.ToString());
         Assert.Empty(await ListarItensAsync(produtoId: produtoId));
 
-        var ficha = await LerHtmlDecodificadoAsync(await client.GetAsync(get.Headers.Location));
+        var ficha = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(get.Headers.Location));
         Assert.Contains("Defina a base da ficha técnica antes de adicionar insumos.", ficha);
     }
 
     [Fact]
     public async Task W3_Get_lista_apenas_insumos_ativos_do_tenant_e_ficha_mostra_acao_quando_existe()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoSemFicha = await CriarProdutoAsync(1, Nome("Produto sem acao item"), ativo: true);
         var produtoId = await CriarProdutoAsync(1, Nome("Produto com acao item"), ativo: true);
         await CriarFichaAsync(1, produtoId, 2.5m, 45);
@@ -69,11 +70,11 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var ativoSemMarca = await CriarInsumoAsync(1, Nome("Cola ativa"), null, UnidadeMedida.Unidade, ativo: true);
         var inativo = await CriarInsumoAsync(1, Nome("Papel inativo"), "Fora", UnidadeMedida.Grama, ativo: false);
         var outroTenant = await CriarInsumoAsync(empresaDois, Nome("Papel externo"), "Segredo", UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var fichaSemRegistro = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoSemFicha}"));
-        var fichaComRegistro = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
-        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo"));
+        var fichaSemRegistro = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoSemFicha}"));
+        var fichaComRegistro = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo"));
 
         Assert.DoesNotContain("Adicionar insumo", fichaSemRegistro);
         Assert.Contains("Adicionar insumo", fichaComRegistro);
@@ -93,7 +94,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto cria item"), ativo: true);
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Farinha item"), "Renata", UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, "1,25", "  camada 1\r\ncamada 2  ");
 
@@ -106,7 +107,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(1.25m, item.Quantidade);
         Assert.Equal("camada 1\r\ncamada 2", item.Observacao);
 
-        var paginaAposRedirect = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
+        var paginaAposRedirect = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
         Assert.Contains("Insumo adicionado à ficha técnica com sucesso.", paginaAposRedirect);
     }
 
@@ -145,11 +146,11 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto item invalido"), ativo: true);
         await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo item invalido"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var obs = observacao == "LONGA" ? new string('a', 1001) : observacao;
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, quantidade, obs);
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(await ListarItensAsync(produtoId: produtoId));
@@ -163,10 +164,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo duplicado item"), null, UnidadeMedida.Grama, ativo: true);
         await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, "2", null);
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Este insumo já foi adicionado à ficha técnica.", conteudo);
@@ -176,17 +177,17 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task W7_W10_Insumo_inativo_ou_cross_tenant_e_rejeitado_sem_vazamento()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoId = await CriarProdutoAsync(1, Nome("Produto insumo indisponivel"), ativo: true);
         await CriarFichaAsync(1, produtoId);
         var inativo = await CriarInsumoAsync(1, Nome("Insumo inativo ficha"), null, UnidadeMedida.Grama, ativo: false);
         var outroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo outro tenant ficha"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var postInativo = await EnviarFormularioAsync(client, produtoId, inativo, "1", null);
-        var paginaInativo = await LerHtmlDecodificadoAsync(postInativo);
+        var paginaInativo = await WebTestHtml.LerHtmlDecodificadoAsync(postInativo);
         var postOutroTenant = await EnviarFormularioAsync(client, produtoId, outroTenant, "1", null);
-        var paginaOutroTenant = await LerHtmlDecodificadoAsync(postOutroTenant);
+        var paginaOutroTenant = await WebTestHtml.LerHtmlDecodificadoAsync(postOutroTenant);
 
         Assert.Equal(HttpStatusCode.OK, postInativo.StatusCode);
         Assert.Equal(HttpStatusCode.OK, postOutroTenant.StatusCode);
@@ -201,7 +202,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto inativo com item"), ativo: false);
         await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo produto inativo"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, "1", null);
 
@@ -213,13 +214,13 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task W9_Produto_ou_ficha_cross_tenant_retorna_404_sem_criar_item()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto outro tenant item"), ativo: true);
         await CriarFichaAsync(empresaDois, produtoOutroTenant);
         var produtoToken = await CriarProdutoAsync(1, Nome("Produto token cross item"), ativo: true);
         await CriarFichaAsync(1, produtoToken);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo cross item"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync($"/Produtos/FichaTecnica/{produtoOutroTenant}/Itens/Novo");
         var post = await EnviarFormularioAsync(client, produtoOutroTenant, insumoId, "1", null, tokenProdutoId: produtoToken);
@@ -232,13 +233,13 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task W11_Request_nao_controla_ids_ou_ownership()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto manipulado item externo"), ativo: true);
         var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
         var produtoId = await CriarProdutoAsync(1, Nome("Produto manipulado item"), ativo: true);
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo manipulado item"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, "1", null, new Dictionary<string, string>
         {
@@ -267,9 +268,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var nomeOriginal = Nome("Insumo RN048");
         var insumoId = await CriarInsumoAsync(1, nomeOriginal, "Marca original", UnidadeMedida.Grama, ativo: true, observacao: "Global original");
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "Contextual original");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
         Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.", pagina);
         Assert.Contains("readonly", ObterTag(pagina, "input", "Input.Nome"), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("readonly", ObterTag(pagina, "input", "Input.Marca"), StringComparison.OrdinalIgnoreCase);
@@ -303,9 +304,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo RN040"), "Marca", UnidadeMedida.Grama, ativo: true);
         await CriarItemAsync(1, fichaId, insumoId, 1m, null);
         await CriarPrecoAsync(1, insumoId);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
 
         Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo já possui histórico de preços.", pagina);
         Assert.DoesNotContain("está sendo usado em ficha técnica.", pagina);
@@ -317,7 +318,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto get nao muta"), ativo: true);
         await CriarFichaAsync(1, produtoId);
         await CriarInsumoAsync(1, Nome("Insumo get nao muta"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo");
 
@@ -331,7 +332,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto antiforgery item"), ativo: true);
         await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo antiforgery item"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Novo", new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -372,9 +373,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, insumoNome, "Marca atual", UnidadeMedida.Metro, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "observacao atual");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
 
         Assert.Contains(produtoNome, pagina);
         Assert.Contains(insumoNome, pagina);
@@ -396,7 +397,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo edita item"), "Marca", UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "1,25", "  ajustado\r\ncom quebra  ");
 
@@ -409,7 +410,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(1.25m, item.Quantidade);
         Assert.Equal("ajustado\r\ncom quebra", item.Observacao);
 
-        var paginaAposRedirect = await LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
+        var paginaAposRedirect = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location));
         Assert.Contains("Item da ficha técnica atualizado com sucesso.", paginaAposRedirect);
         Assert.Contains("1,25", paginaAposRedirect);
     }
@@ -426,11 +427,11 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo edicao invalida"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 2m, "original");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var obs = observacao == "LONGA" ? new string('a', 1001) : observacao;
         var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, quantidade, obs);
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(mensagem, conteudo);
@@ -444,7 +445,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task UC015_W5_Request_manipulado_nao_altera_vinculos()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto item manipulado externo"), ativo: true);
         var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
         var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo item manipulado externo"), null, UnidadeMedida.Metro, ativo: true);
@@ -452,7 +453,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo item manipulado"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "3", "alterado", new Dictionary<string, string>
         {
@@ -483,10 +484,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo inativo editavel"), "Marca", UnidadeMedida.Unidade, ativo: false);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var ficha = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
-        var get = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
+        var ficha = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+        var get = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}"));
         var post = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "inativo mantido");
 
         Assert.Contains("Itens da ficha", ficha);
@@ -506,7 +507,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo produto inativo editavel"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", null);
 
@@ -518,7 +519,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task UC015_W8_Produto_inexistente_ou_cross_tenant_retorna_404()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoOutroTenant = await CriarProdutoAsync(empresaDois, Nome("Produto outro tenant edicao item"), ativo: true);
         var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
         var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo outro tenant edicao item"), null, UnidadeMedida.Grama, ativo: true);
@@ -527,7 +528,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaToken = await CriarFichaAsync(1, produtoToken);
         var insumoToken = await CriarInsumoAsync(1, Nome("Insumo token edicao item"), null, UnidadeMedida.Grama, ativo: true);
         var itemToken = await CriarItemAsync(1, fichaToken, insumoToken, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var getInexistente = await client.GetAsync($"/Produtos/FichaTecnica/999999/Itens/Editar/{itemToken}");
         var postInexistente = await EnviarEdicaoItemAsync(client, 999999, itemToken, "2", null, tokenProdutoId: produtoToken, tokenItemId: itemToken);
@@ -544,7 +545,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task UC015_W9_Item_inexistente_ou_cross_tenant_retorna_404()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoId = await CriarProdutoAsync(1, Nome("Produto item inexistente"), ativo: true);
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo item inexistente"), null, UnidadeMedida.Grama, ativo: true);
@@ -553,7 +554,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaOutroTenant = await CriarFichaAsync(empresaDois, produtoOutroTenant);
         var insumoOutroTenant = await CriarInsumoAsync(empresaDois, Nome("Insumo item cross tenant"), null, UnidadeMedida.Grama, ativo: true);
         var itemOutroTenant = await CriarItemAsync(empresaDois, fichaOutroTenant, insumoOutroTenant, 1m, "externo");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var getInexistente = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/999999");
         var postInexistente = await EnviarEdicaoItemAsync(client, produtoId, 999999, "2", null, tokenItemId: itemId);
@@ -577,7 +578,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var outraFichaId = await CriarFichaAsync(1, outroProdutoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo outra ficha"), null, UnidadeMedida.Grama, ativo: true);
         var itemOutraFicha = await CriarItemAsync(1, outraFichaId, insumoId, 1m, "outra ficha");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var get = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemOutraFicha}");
         var post = await EnviarEdicaoItemAsync(client, produtoId, itemOutraFicha, "2", null, tokenProdutoId: outroProdutoId);
@@ -594,7 +595,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo get edicao nao muta"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}");
 
@@ -611,7 +612,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo antiforgery edicao item"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -632,10 +633,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo RN048 edicao item"), "Marca", UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var post = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "referencia mantida");
-        var paginaInsumo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
+        var paginaInsumo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Insumos/Editar/{insumoId}"));
 
         Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
         Assert.Contains("Nome, marca e unidade base não podem ser alterados porque este insumo está sendo usado em ficha técnica.", paginaInsumo);
@@ -647,7 +648,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     [Fact]
     public async Task UC015_W14_Ficha_lista_somente_itens_da_propria_ficha_com_link_editar()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var produtoId = await CriarProdutoAsync(1, Nome("Produto lista itens"), ativo: true);
         var fichaId = await CriarFichaAsync(1, produtoId);
         var insumoNome = Nome("Insumo lista proprio");
@@ -663,9 +664,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var insumoOutroTenantNome = Nome("Insumo lista tenant");
         var insumoOutroTenant = await CriarInsumoAsync(empresaDois, insumoOutroTenantNome, null, UnidadeMedida.Grama, ativo: true);
         await CriarItemAsync(empresaDois, fichaOutroTenant, insumoOutroTenant, 3m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var pagina = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}"));
 
         Assert.Contains("Itens da ficha", pagina);
         Assert.Contains($"{insumoNome} — Marca propria", pagina);
@@ -688,10 +689,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var fichaId = await CriarFichaAsync(1, produtoId, 2m, 30);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo base invalida itens"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
-        var pagina = await LerHtmlDecodificadoAsync(response);
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("O rendimento deve ser maior que zero.", pagina);
@@ -735,7 +736,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var produtoId = await CriarProdutoAsync(1, Nome("Produto novo pos refatoracao"), ativo: true);
         await CriarFichaAsync(1, produtoId);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo novo pos refatoracao"), null, UnidadeMedida.Grama, ativo: true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await EnviarFormularioAsync(client, produtoId, insumoId, "2,5", null);
 
@@ -757,7 +758,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina),
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.InsumoId"] = insumoId.ToString(CultureInfo.InvariantCulture),
             ["Input.Observacao"] = observacao ?? string.Empty
         };
@@ -793,7 +794,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina),
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.Observacao"] = observacao ?? string.Empty
         };
 
@@ -824,7 +825,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var dados = new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina)
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina)
         };
 
         if (rendimento is not null)
@@ -852,7 +853,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var pagina = await client.GetStringAsync($"/Insumos/Editar/{insumoId}");
         return await client.PostAsync($"/Insumos/Editar/{insumoId}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["__RequestVerificationToken"] = Token(pagina),
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.Nome"] = nome,
             ["Input.Marca"] = marca,
             ["Input.Categoria"] = categoria,
@@ -988,78 +989,16 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
             ? $"{insumo.Nome} ({Precificador.Web.Apresentacao.InsumoRotulos.Unidade(insumo.UnidadeBase)})"
             : $"{insumo.Nome} — {insumo.Marca} ({Precificador.Web.Apresentacao.InsumoRotulos.Unidade(insumo.UnidadeBase)})";
     }
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
     private async Task<HttpClient> CriarClienteAutenticadoSemEmpresaAtivaAsync()
     {
-        var empresaDois = await CriarEmpresaAsync();
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = 1, Ativo = true });
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaDois, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        var client = web.CriarCliente();
+        var resposta = await web.LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         Assert.Contains("/Empresas/Selecionar", resposta.Headers.Location!.ToString());
         return client;
     }
-
-    private static async Task<string> LerHtmlDecodificadoAsync(HttpResponseMessage response)
-    {
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        return WebUtility.HtmlDecode(Encoding.UTF8.GetString(bytes));
-    }
-
     private static string ObterTag(string html, string tag, string nomeCampo) =>
         Regex.Match(html, $"<{tag}[^>]*name=\"{Regex.Escape(nomeCampo)}\"[^>]*>", RegexOptions.IgnoreCase).Value;
 
@@ -1069,16 +1008,5 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.False(string.IsNullOrEmpty(input), conteudo);
         return Regex.Match(input, "value=\"([^\"]*)\"").Groups[1].Value;
     }
-
-    private static string Token(string pagina) =>
-        WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
-
     private static string Nome(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
-    }
 }

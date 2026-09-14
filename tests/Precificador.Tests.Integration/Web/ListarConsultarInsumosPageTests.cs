@@ -14,6 +14,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task Area_de_insumos_exige_autenticacao()
     {
@@ -27,13 +28,13 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
     [Fact]
     public async Task Listagem_pesquisa_e_detalhes_respeitam_empresa_ativa()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var nomeFarinha = $"Farinha X {Guid.NewGuid():N}";
         var id = await CriarInsumoAsync(1, nomeFarinha, "Renata", "W 300", true);
         await CriarInsumoAsync(1, nomeFarinha, "Caputo", null, true);
         await CriarInsumoAsync(1, $"Copo {Guid.NewGuid():N}", null, null, false);
         var idOutroTenant = await CriarInsumoAsync(empresaDois, $"Segredo {Guid.NewGuid():N}", "Outra", null, true);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var lista = await client.GetStringAsync("/Insumos");
         Assert.Equal(2, Regex.Matches(lista, Regex.Escape(nomeFarinha)).Count);
@@ -54,7 +55,7 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
         Assert.Contains("Nenhum insumo encontrado para a pesquisa.", semResultado);
 
         var detalhes = await client.GetAsync($"/Insumos/Detalhes/{id}");
-        var conteudo = WebUtility.HtmlDecode(await LerComoUtf8Async(detalhes));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(detalhes);
         detalhes.EnsureSuccessStatusCode();
         Assert.Contains("Nome", conteudo);
         Assert.Contains(nomeFarinha, conteudo);
@@ -79,25 +80,12 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
     [Fact]
     public async Task Empresa_ativa_sem_insumos_exibe_estado_vazio()
     {
-        var empresaSemInsumos = await CriarEmpresaAsync();
-        using var client = await CriarClienteAutenticadoAsync(empresaSemInsumos);
+        var empresaSemInsumos = await web.CriarEmpresaAsync();
+        using var client = await web.CriarClienteAutenticadoAsync(empresaSemInsumos);
         var pagina = await client.GetStringAsync("/Insumos");
         Assert.Contains("insumos cadastrados para a empresa ativa", pagina);
         Assert.Contains("Cadastrar insumo", pagina);
     }
-
-    private static async Task<string> LerComoUtf8Async(HttpResponseMessage response) => Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync());
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
     private async Task<int> CriarInsumoAsync(int empresaId, string nome, string? marca, string? observacao, bool ativo)
     {
         using var scope = factory.Services.CreateScope();
@@ -111,39 +99,5 @@ public sealed class ListarConsultarInsumosPageTests(CustomWebApplicationFactory 
             await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE Insumos SET Ativo = 0 WHERE Id = {insumo.Id}");
         }
         return insumo.Id;
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
-    private static string Token(string pagina) => WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }

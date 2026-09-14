@@ -14,6 +14,7 @@ namespace Precificador.Tests.Integration.Web;
 
 public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly WebTestContext web = new(factory);
     [Fact]
     public async Task CA01_Area_de_produtos_exige_autenticacao()
     {
@@ -34,10 +35,10 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         var nomeProduto = NomeUnico("Agenda");
         var id = await CriarProdutoAsync(1, nomeProduto, "Planners", 0.30m);
         var outroTenant = NomeUnico("Produto externo");
-        await CriarProdutoAsync(await CriarEmpresaAsync(), outroTenant, "Externa", 0.20m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        await CriarProdutoAsync(await web.CriarEmpresaAsync(), outroTenant, "Externa", 0.20m);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
         var linha = LinhaProduto(conteudo, nomeProduto);
 
         Assert.Contains(nomeProduto, linha);
@@ -58,9 +59,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto sem categoria");
         await CriarProdutoAsync(1, nomeProduto, null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
 
         Assert.Contains("—", LinhaProduto(conteudo, nomeProduto));
     }
@@ -74,9 +75,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         await CriarProdutoAsync(1, margemZero, null, 0m);
         await CriarProdutoAsync(1, margemFracionada, null, 0.255m);
         await CriarProdutoAsync(1, margemInteira, null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
 
         Assert.Contains("0%", LinhaProduto(conteudo, margemZero));
         Assert.Contains("25,5%", LinhaProduto(conteudo, margemFracionada));
@@ -90,15 +91,15 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         var nomeAgenda = NomeUnico("Agenda");
         await CriarProdutoAsync(1, nomeCalendario, "Datas", 0.255m);
         await CriarProdutoAsync(1, nomeAgenda, "Planners", 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
         var termoNormalizado = Uri.EscapeDataString(nomeCalendario.ToLowerInvariant().Replace(" ", "  "));
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos?q=%20%20{termoNormalizado}%20%20"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos?q=%20%20{termoNormalizado}%20%20"));
 
         Assert.Contains(nomeCalendario, conteudo);
         Assert.DoesNotContain(nomeAgenda, conteudo);
 
-        var semAcento = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=calendario"));
+        var semAcento = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=calendario"));
         Assert.DoesNotContain(nomeCalendario, semAcento);
         Assert.Contains("Nenhum produto encontrado para a pesquisa.", semAcento);
     }
@@ -108,9 +109,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto pesquisa vazia");
         await CriarProdutoAsync(1, nomeProduto, null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=%20%20%20"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=%20%20%20"));
 
         Assert.Contains(nomeProduto, conteudo);
         Assert.DoesNotContain("Nenhum produto encontrado para a pesquisa.", conteudo);
@@ -121,9 +122,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto por nome");
         await CriarProdutoAsync(1, nomeProduto, "Categoria Exclusiva Busca", 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=Categoria%20Exclusiva%20Busca"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=Categoria%20Exclusiva%20Busca"));
 
         Assert.DoesNotContain(nomeProduto, conteudo);
         Assert.Contains("Nenhum produto encontrado para a pesquisa.", conteudo);
@@ -132,10 +133,10 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     [Fact]
     public async Task CA12_Empresa_sem_produtos_exibe_estado_vazio_e_link_de_cadastro()
     {
-        var empresaSemProdutos = await CriarEmpresaAsync();
-        using var client = await CriarClienteAutenticadoAsync(empresaSemProdutos);
+        var empresaSemProdutos = await web.CriarEmpresaAsync();
+        using var client = await web.CriarClienteAutenticadoAsync(empresaSemProdutos);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
 
         Assert.Contains("Não há produtos cadastrados para a empresa ativa.", conteudo);
         Assert.Contains("Cadastrar produto", conteudo);
@@ -146,9 +147,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     public async Task CA13_Pesquisa_sem_resultado_exibe_estado_apropriado()
     {
         await CriarProdutoAsync(1, NomeUnico("Produto existente"), null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var conteudo = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=naoexiste"));
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=naoexiste"));
 
         Assert.Contains("Nenhum produto encontrado para a pesquisa.", conteudo);
         Assert.Contains("Voltar para listagem completa", conteudo);
@@ -160,10 +161,10 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto detalhes");
         var id = await CriarProdutoAsync(1, nomeProduto, "Catálogo", 0.255m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/Detalhes/{id}");
-        var conteudo = await LerHtmlDecodificadoAsync(response);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("Nome", conteudo);
@@ -189,7 +190,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     [Fact]
     public async Task CA16_Detalhes_de_id_inexistente_retorna_404()
     {
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync("/Produtos/Detalhes/999999");
 
@@ -199,9 +200,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     [Fact]
     public async Task CA17_Detalhes_cross_tenant_retorna_404()
     {
-        var empresaDois = await CriarEmpresaAsync();
+        var empresaDois = await web.CriarEmpresaAsync();
         var idOutroTenant = await CriarProdutoAsync(empresaDois, NomeUnico("Produto outro tenant"), null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var response = await client.GetAsync($"/Produtos/Detalhes/{idOutroTenant}");
 
@@ -213,10 +214,10 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto ativo");
         var id = await CriarProdutoAsync(1, nomeProduto, null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var lista = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
-        var detalhes = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
+        var lista = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var detalhes = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
 
         Assert.Contains("Ativo", LinhaProduto(lista, nomeProduto));
         Assert.Contains("Situação", detalhes);
@@ -228,10 +229,10 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     {
         var nomeProduto = NomeUnico("Produto navegacao");
         var id = await CriarProdutoAsync(1, nomeProduto, null, 0.30m);
-        using var client = await CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var lista = await LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
-        var detalhes = await LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
+        var lista = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+        var detalhes = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Detalhes/{id}"));
 
         Assert.Contains("Produtos", lista);
         Assert.Contains("href=\"/Produtos\"", lista);
@@ -253,49 +254,6 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         await context.SaveChangesAsync();
         return produto.Id;
     }
-
-    private async Task<int> CriarEmpresaAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var empresa = Empresa.Criar($"Empresa {Guid.NewGuid():N}");
-        context.Empresas.Add(empresa);
-        await context.SaveChangesAsync();
-        return empresa.Id;
-    }
-
-    private async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId)
-    {
-        var email = $"usuario-{Guid.NewGuid():N}@teste.local";
-        const string senha = "SenhaTeste1";
-        using (var scope = factory.Services.CreateScope())
-        {
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
-            var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
-            Assert.True((await users.CreateAsync(usuario, senha)).Succeeded);
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
-            await context.SaveChangesAsync();
-        }
-
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
-        var login = await client.GetAsync("/Conta/Login");
-        var resposta = await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["__RequestVerificationToken"] = Token(await login.Content.ReadAsStringAsync()),
-            ["Input.Email"] = email,
-            ["Input.Senha"] = senha
-        }));
-        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        return client;
-    }
-
-    private static async Task<string> LerHtmlDecodificadoAsync(HttpResponseMessage response)
-    {
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        return WebUtility.HtmlDecode(Encoding.UTF8.GetString(bytes));
-    }
-
     private static string LinhaProduto(string conteudo, string nome)
     {
         var match = Regex.Match(conteudo, $"<tr>.*?{Regex.Escape(nome)}.*?</tr>", RegexOptions.Singleline);
@@ -304,14 +262,4 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     }
 
     private static string NomeUnico(string prefixo) => $"{prefixo} {Guid.NewGuid():N}";
-
-    private static string Token(string pagina) =>
-        WebUtility.HtmlDecode(Regex.Match(pagina, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value);
-
-    private sealed class ContextoEmpresaTeste(int empresaId) : IEmpresaContext
-    {
-        public int? EmpresaId => empresaId;
-        public int EmpresaIdOuSentinela => empresaId;
-        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
-    }
 }
