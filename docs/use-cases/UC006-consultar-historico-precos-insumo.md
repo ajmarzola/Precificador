@@ -1,9 +1,7 @@
 # UC006 — Consultar histórico de preços do insumo
 
-- **Status:** Implementado
 - **Funcionalidade:** F001 — Gestão de Insumos
 - **Dependências:** UC005, MEL006, FT002, RN004, RN005, RN006, RN007 e RN040
-- **Próximo caso:** UC007 — Cadastrar produto
 - **Sem alteração de schema:** este UC é exclusivamente de consulta/apresentação
 
 ## Objetivo
@@ -599,9 +597,7 @@ Além da DoD global:
 - links Histórico/Registrar novo preço funcionam;
 - nenhuma mutação de preço;
 - nenhuma migration/snapshot;
-- UC006 passa para Implementado;
-- F001/catálogo/ordem/modelo de preço ficam coerentes;
-- UC007 passa a ser o próximo caso;
+- F001/catálogo/backlog/ordem/modelo de preço ficam coerentes;
 - gate do UC014 permanece;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

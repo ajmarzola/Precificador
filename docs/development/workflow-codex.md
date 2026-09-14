@@ -13,6 +13,7 @@ necessidade
   -> funcionalidade/regra
   -> caso de uso/melhoria documentado
   -> critérios de aceitação + matriz de testes
+  -> backlog com item Pronto e gate liberado
   -> instrução de implementação versionada
   -> master atualizada
   -> branch dedicada da tarefa
@@ -67,15 +68,18 @@ O agente não pode:
 ## Antes de enviar uma implementação ao Codex
 
 1. confirmar que o UC, MEL ou fundação existe em arquivo individual;
-2. confirmar regras de negócio aplicáveis;
-3. fechar critérios de aceitação;
-4. fechar a matriz de testes;
-5. listar explicitamente o que está fora do escopo;
-6. identificar se haverá migration;
-7. garantir que o incremento seja pequeno o suficiente para revisão;
-8. criar a instrução executável correspondente em `docs/codex/`;
-9. definir explicitamente o nome da branch de implementação;
-10. confirmar que dependências anteriores já foram implementadas/revisadas/mergeadas quando o sequenciamento exigir.
+2. confirmar que o item existe em [`backlog.md`](backlog.md);
+3. confirmar `Estado = Pronto`, salvo instrução versionada explicitamente diferente;
+4. confirmar que o gate/dependência operacional está satisfeito;
+5. confirmar regras de negócio aplicáveis;
+6. fechar critérios de aceitação;
+7. fechar a matriz de testes;
+8. listar explicitamente o que está fora do escopo;
+9. identificar se haverá migration;
+10. garantir que o incremento seja pequeno o suficiente para revisão;
+11. criar a instrução executável correspondente em `docs/codex/`;
+12. definir explicitamente o nome da branch de implementação;
+13. confirmar que dependências anteriores já foram implementadas/revisadas/mergeadas quando o sequenciamento exigir.
 
 ## Instruções versionadas
 
@@ -141,7 +145,8 @@ Antes de declarar a implementação concluída, o agente deve confirmar:
 4. build e testes estão verdes;
 5. migrations estão corretas quando aplicável;
 6. documentação pós-implementação foi atualizada;
-7. nenhuma alteração foi feita diretamente em `master`.
+7. `backlog.md` foi atualizado quando a entrega alterou estado, gate ou ordem;
+8. nenhuma alteração foi feita diretamente em `master`.
 
 A entrega termina em branch/PR. **Merge é uma ação humana posterior à revisão.**
 
@@ -165,6 +170,8 @@ Se o head mudar depois da revisão, revisar novamente o novo diff/checks antes d
 
 Implementações são seriais quando a fila do projeto assim determinar.
 
+[`backlog.md`](backlog.md) define a fila operacional e os gates atuais.
+
 Uma tarefa posterior pode ser documentada antecipadamente, mas sua implementação só começa depois que a dependência/etapa anterior estiver:
 
 ```text
@@ -173,6 +180,8 @@ implementada
 -> corrigida, se necessário
 -> mergeada em master
 ```
+
+Não há atualização intermediária para `Em andamento`; branch e Pull Request representam essa condição transitória.
 
 ## Proteção técnica da master
 

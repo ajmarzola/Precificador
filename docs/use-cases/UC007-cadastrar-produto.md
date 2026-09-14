@@ -1,10 +1,8 @@
 # UC007 — Cadastrar produto
 
-- **Status:** Implementado
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências materiais:** FT002
 - **Sequenciamento:** implementar somente após concluir/mergear o UC006, preservando a fila serial
-- **Próximo caso relacionado:** UC008 — Listar e consultar produtos
 
 ## Objetivo
 
@@ -702,9 +700,7 @@ Além da DoD global:
 - Home permite navegar ao cadastro;
 - nenhuma listagem do UC008;
 - nenhum preço/ficha/custo antecipado;
-- documentação pós-implementação marca UC007 como Implementado;
-- F002/catálogo/ordem/regras/glossário ficam coerentes;
-- UC008 passa a ser próximo caso de Produtos;
+- F002/catálogo/backlog/ordem/regras/glossário ficam coerentes;
 - implementação do UC007 só inicia depois do UC006 conforme a fila serial;
 - build Release sem warnings novos relevantes;
 - suíte completa verde.

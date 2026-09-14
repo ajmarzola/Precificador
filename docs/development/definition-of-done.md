@@ -7,6 +7,7 @@ Um caso de uso, melhoria ou fundação só está concluído quando todos os iten
 - a implementação foi feita em branch dedicada à tarefa;
 - nenhuma edição/commit/push direto foi feito em `master`;
 - a branch segue a instrução versionada ou convenção aprovada;
+- o item constava em `docs/development/backlog.md` como `Pronto` e com gate liberado antes da implementação, salvo instrução versionada explicitamente diferente;
 - o diff foi comparado com `master`;
 - a entrega está em Pull Request;
 - base da PR é a branch esperada, normalmente `master`;
@@ -58,7 +59,8 @@ Quando aplicável:
 
 ## Documentação
 
-- documento individual do UC/MEL está atualizado e com status coerente;
+- documento individual do UC/MEL está atualizado quanto a comportamento, critérios e decisões aplicáveis;
+- `docs/development/backlog.md` foi atualizado quando a entrega altera estado, gate ou ordem;
 - regras de negócio afetadas foram atualizadas;
 - funcionalidade afetada foi atualizada quando necessário;
 - ADR foi criado/alterado se houve decisão arquitetural;

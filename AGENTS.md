@@ -36,6 +36,7 @@ Fluxo normativo detalhado: `docs/development/workflow-codex.md`.
 
 Antes de implementar qualquer caso de uso, leia os documentos aplicáveis em `docs/`, especialmente:
 
+- `docs/development/backlog.md`
 - `docs/product/vision.md`
 - `docs/product/scope.md`
 - `docs/business/business-rules.md`
@@ -45,6 +46,8 @@ Antes de implementar qualquer caso de uso, leia os documentos aplicáveis em `do
 - o documento individual do caso de uso
 - `docs/development/definition-of-done.md`
 - `docs/development/testing-strategy.md`
+
+`docs/development/backlog.md` é a fonte normativa de estado, gate/dependência operacional e ordem da fila. Antes de implementar UC, MEL ou fundação, confirme no backlog que o item está `Pronto` e com gate liberado, salvo instrução versionada explicitamente diferente.
 
 Em caso de conflito, decisões mais específicas e ADRs aceitos prevalecem sobre descrições genéricas. Não invente requisitos para preencher lacunas.
 
@@ -103,6 +106,7 @@ Ao concluir um caso de uso:
 - mantenha o `.md` do caso de uso coerente com a implementação;
 - atualize regras de negócio afetadas;
 - atualize a documentação da funcionalidade quando o comportamento externo mudar;
+- atualize `docs/development/backlog.md` quando a entrega alterar estado, gate ou ordem;
 - crie/atualize ADR somente quando houver uma decisão arquitetural relevante.
 
 ## 8. Qualidade e revisão
@@ -115,6 +119,7 @@ Antes de considerar uma alteração concluída:
 - execute todos os testes;
 - confirme que não foram introduzidos warnings novos relevantes;
 - verifique migrations quando houver alteração de banco;
+- confirme que `docs/development/backlog.md` está coerente quando houver mudança de estado, gate ou ordem;
 - revise o diff contra `master` e remova mudanças fora do escopo;
 - deixe a entrega pronta para Pull Request;
 - não faça merge em `master`.

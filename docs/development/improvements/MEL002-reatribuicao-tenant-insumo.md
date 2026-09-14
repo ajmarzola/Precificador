@@ -1,6 +1,5 @@
 # MEL002 — Teste de tentativa de reatribuição de tenant no domínio
 
-- **Status:** Concluída
 - **Tipo:** melhoria técnica / hardening de domínio
 - **Origem:** revisão da FT002
 - **Dependências:** FT002 implementada
@@ -152,8 +151,7 @@ A MEL002 está concluída quando:
 - nenhum código de produção foi alterado;
 - toda a suíte permanece verde;
 - build Release não introduz warnings relevantes;
-- `docs/development/melhorias.md` marca MEL002 como `Concluída`;
-- este documento passa para **Status: Concluída**;
+- `docs/development/backlog.md` fica coerente quando houver mudança de estado, gate ou ordem;
 - o diff final permanece restrito à MEL002.
 
 ## Resultado esperado do Codex

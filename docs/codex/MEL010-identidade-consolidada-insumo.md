@@ -19,6 +19,7 @@ Não fazer merge da própria implementação.
 Ler antes de alterar:
 
 - AGENTS.md;
+- docs/development/backlog.md;
 - docs/development/improvements/MEL010-identidade-consolidada-insumo.md;
 - docs/business/business-rules.md;
 - docs/business/insumo-historical-stability.md;
@@ -34,7 +35,7 @@ Ler antes de alterar:
 - /Produtos/FichaTecnica/{produtoId}/Itens/Novo;
 - testes de Insumo, preço e ItemFichaTecnica.
 
-Confirmar que a master contém as PRs #56 e #58.
+Confirmar que a master contém as PRs #56 e #58, e que MEL010 está Pronto e sem gate pendente em docs/development/backlog.md.
 
 ## Domínio
 
@@ -237,13 +238,12 @@ Build sem warnings novos relevantes e suíte completa verde.
 
 Atualizar:
 
-- MEL010 para Concluída;
-- docs/development/melhorias.md;
-- docs/development/implementation-order.md;
-- docs/use-cases/catalog.md se necessário;
+- docs/development/backlog.md para refletir mudança de estado/gate/ordem;
+- docs/development/implementation-order.md somente se houver decisão duradoura de estratégia;
+- docs/use-cases/catalog.md somente se houver mudança de dependência funcional estável;
 - F001/F003 se houver divergência de implementação.
 
-Depois da MEL010 validada/mergeada, UC016 fica liberada para especificação.
+Depois da MEL010 validada/mergeada, UC016 fica liberada para especificação no backlog.
 
 ## Retorno obrigatório
 

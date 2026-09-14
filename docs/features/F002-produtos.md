@@ -17,7 +17,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 
 ## Cadastro inicial — UC007
 
-Implementado com a página `/Produtos/Novo`, entidade tenant-owned `Produto`, migration evolutiva e margem-alvo armazenada como fração decimal.
+A página `/Produtos/Novo` usa a entidade tenant-owned `Produto`, migration evolutiva e margem-alvo armazenada como fração decimal.
 
 O Produto inicial contém:
 
@@ -109,7 +109,7 @@ Todo Produto é tenant-owned:
 
 ## Consulta — UC008
 
-Implementado com as páginas `/Produtos` e `/Produtos/Detalhes/{id}`, mantendo consultas tenant-aware somente leitura.
+As páginas `/Produtos` e `/Produtos/Detalhes/{id}` mantêm consultas tenant-aware somente leitura.
 
 - listar Produtos da Empresa Ativa;
 - pesquisar por Nome;
@@ -124,7 +124,7 @@ Preço sugerido, Preço de prateleira, custo, margem atual e Ficha Técnica perm
 
 ## Edição cadastral — UC009
 
-Implementado com a página `/Produtos/Editar/{id}`, preservando o mesmo Id, a Empresa proprietária e a Situação do Produto.
+A página `/Produtos/Editar/{id}` preserva o mesmo Id, a Empresa proprietária e a Situação do Produto.
 
 Campos editáveis:
 
@@ -140,7 +140,7 @@ UC009 não cria histórico de Nome/Categoria/Margem, não altera schema e não i
 
 ## Situação — UC010
 
-Implementado com ações em `/Produtos/Detalhes/{id}` para o ciclo reversível de situação:
+As ações em `/Produtos/Detalhes/{id}` controlam o ciclo reversível de situação:
 
 - Ativo -> Inativo por Desativar;
 - Inativo -> Ativo por Reativar;
@@ -153,14 +153,12 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 
 ## Casos de uso
 
-- [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md) — implementado;
-- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md) — implementado;
-- [UC009 — Editar produto](../use-cases/UC009-editar-produto.md) — implementado;
-- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md) — implementado;
-- UC011 — Registrar preço de prateleira preservando snapshot de precificação — após UC023;
-- UC012 — Consultar histórico de precificação do Produto — após UC011.
-
-O próximo caso na fila global passa a ser UC013.
+- [UC007 — Cadastrar produto](../use-cases/UC007-cadastrar-produto.md);
+- [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md);
+- [UC009 — Editar produto](../use-cases/UC009-editar-produto.md);
+- [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md);
+- UC011 — Registrar preço de prateleira preservando snapshot de precificação;
+- UC012 — Consultar histórico de precificação do Produto.
 
 ## Fora do escopo
 

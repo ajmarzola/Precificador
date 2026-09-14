@@ -1,166 +1,86 @@
-# Ordem Inicial de Implementação
+# Estratégia de Implementação
 
-A ordem prioriza dependências do domínio e entrega incremental. Não representa calendário rígido.
+Este documento preserva o racional duradouro de sequenciamento do projeto. A fila operacional, os estados correntes e os gates de cada item ficam somente em [`backlog.md`](backlog.md).
 
-## Etapa 0 — Fundação técnica
+## Princípios
 
-FT001 concluída: solution, projetos, EF Core/SQLite, testes, logging e CI.
+- entregar incrementos pequenos, testáveis e revisáveis;
+- priorizar dependências de domínio antes de telas de decisão comercial;
+- evitar antecipar schema ou comportamento fora do UC/MEL em execução;
+- manter dependências materiais no catálogo funcional e ordem operacional no backlog.
 
-## Etapa 0.5 — Primeiro caso funcional
+## Fundação
 
-UC001 — Cadastrar Insumo — implementado.
+FT001 estabelece a base técnica do monólito local-first com EF Core, SQLite, testes, logging e CI.
 
-## Etapa 0.6 — FT002 Multiempresa e Autenticação
+FT002 estabelece Empresa, autenticação, vínculo usuário-empresa, Empresa Ativa e isolamento tenant-aware. O bootstrap/login mínimo pertence à fundação porque é pré-requisito transversal; CRUD administrativo completo será detalhado depois.
 
-FT002 concluída: Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa, isolamento tenant-aware e `EmpresaId` em Insumo.
+## Insumos Antes de Produtos
 
-Especificação: [`foundation-multiempresa-auth.md`](foundation-multiempresa-auth.md).
+O domínio de Insumos vem antes de Produtos porque o motor de custo depende de catálogo, unidades, situação e histórico de preços confiáveis.
 
-## Etapa 1 — Insumos
+A sequência funcional de Insumos consolidou:
 
-Estado atual:
+- cadastro e vocabulário de categoria/unidade;
+- marca e observação;
+- listagem, consulta, edição e situação;
+- histórico append-only de preços;
+- data operacional por Empresa para regras de vigência.
 
-1. **UC001B — Generalizar categoria e unidades** — implementado;
-2. **UC001A — Marca e Observação** — implementado, com unicidade `(EmpresaId, NomeNormalizado, MarcaNormalizada)`;
-3. **UC002 — Listar e consultar Insumos** — implementado;
-4. **UC003 — Editar Insumo** — implementado;
-5. **UC004 — Desativar e reativar Insumo** — implementado;
-6. **UC005 — Registrar preço de Insumo** — implementado;
-7. **UC006 — Consultar histórico de preços do insumo** — implementado.
+A RN040 protege Nome, Marca e Unidade base após o primeiro preço. A RN048 estende a proteção ao primeiro uso em Ficha, e a RN051 consolida a decisão de imutabilidade permanente.
 
-Especificação UC006: [`../use-cases/UC006-consultar-historico-precos-insumo.md`](../use-cases/UC006-consultar-historico-precos-insumo.md).
+## Produtos Antes da Precificação Comercial
 
-Instrução Codex UC006: [`../codex/UC006-consultar-historico-precos-insumo.md`](../codex/UC006-consultar-historico-precos-insumo.md).
+Produto cadastral existe antes de Ficha Técnica e antes de preço comercial.
 
-Objetivo: possuir catálogo e histórico de preços confiável, genérico e isolado por Empresa antes de precificar Produtos.
+O cadastro de Produto mantém Nome, Categoria, Margem-alvo e situação. Preço de prateleira e histórico comercial ficam separados porque dependem do cálculo completo de custo e preço sugerido.
 
-A MEL006 foi concluída e o UC006 consome `IDataOperacionalEmpresa` para definir vigência/futuro com a data operacional da Empresa, sem depender do timezone do servidor.
+UC011 e UC012 permanecem no domínio Produtos, mas só devem ocorrer depois do cálculo até UC023, pois o registro comercial deve congelar Custo de referência, Margem de referência, Preço sugerido e Reserva comercial de referência.
 
-A revalidação anterior ao UC005 foi concluída pela RN040, e o UC005 implementou a restrição: após o primeiro preço, Nome, Marca e Unidade base tornam-se imutáveis.
+## Ficha Técnica Antes do Motor de Custo
 
-O gate específico de referências de Ficha Técnica foi concluído na revalidação pós-UC013: RN048 protege Nome, Marca e Unidade base enquanto houver referência atual em Ficha.
+Ficha Técnica concentra a composição produtiva atual usada pelo motor de custo.
 
-## Etapa 2 — Produtos cadastrais
+O núcleo da Ficha nasce com Rendimento e TempoAtivoMinutos. Depois entram Itens de Ficha e edição de Quantidade/Observação. A remoção de Item depende da MEL010 para garantir que remover a última referência não desbloqueie Nome, Marca ou Unidade base do Insumo.
 
-Todo Produto é tenant-owned.
+## Configurações Antes do Motor Completo
 
-Estado documental:
+Configurações de precificação da Empresa devem existir antes dos cálculos que dependem delas:
 
-1. **UC007 — Cadastrar Produto** — implementado;
-2. **UC008 — Listar e consultar Produtos** — implementado;
-3. **UC009 — Editar Produto** — implementado;
-4. **UC010 — Desativar e reativar Produto** — implementado.
+- custo de mão de obra;
+- custo de energia/equipamentos;
+- arredondamento do Preço sugerido;
+- Reserva comercial do Desconto de referência definida pela MEL009.
 
-UC011 e UC012 continuam pertencendo ao domínio Produtos, porém foram deslocados para depois da UC023. O registro comercial definido para a UC011 deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema; por isso não deve ser implementado antes de existir o cálculo completo.
+Por isso UC026/UC027 antecedem o bloco completo de cálculo de custo e preço sugerido.
 
-Especificação UC007: [`../use-cases/UC007-cadastrar-produto.md`](../use-cases/UC007-cadastrar-produto.md).
+## Motor de Custo e Preço
 
-Instrução Codex UC007: [`../codex/UC007-cadastrar-produto.md`](../codex/UC007-cadastrar-produto.md).
+O motor de custo deve evoluir em fatias que preservem explicabilidade:
 
-Especificação UC008: [`../use-cases/UC008-listar-consultar-produtos.md`](../use-cases/UC008-listar-consultar-produtos.md).
+- itens do lote;
+- perdas aplicáveis;
+- mão de obra;
+- energia/equipamentos;
+- custo total e unitário;
+- preço teórico e sugerido.
 
-Instrução Codex UC008: [`../codex/UC008-listar-consultar-produtos.md`](../codex/UC008-listar-consultar-produtos.md).
+Perdas e energia/equipamentos exigem revalidação antes de implementação para evitar modelagem específica demais para um único tipo de negócio.
 
-Especificação UC009: [`../use-cases/UC009-editar-produto.md`](../use-cases/UC009-editar-produto.md).
+## Decisão Comercial e Histórico
 
-Instrução Codex UC009: [`../codex/UC009-editar-produto.md`](../codex/UC009-editar-produto.md).
+Depois do preço sugerido existir, o usuário registra somente o Preço de prateleira.
 
-Especificação UC010: [`../use-cases/UC010-desativar-reativar-produto.md`](../use-cases/UC010-desativar-reativar-produto.md).
+O sistema determina a data de referência e congela os valores calculados que explicam a decisão comercial. O histórico é append-only, admite correções por múltiplos registros na mesma data e não reinterpreta registros antigos quando ficha, custos ou configurações mudam.
 
-Instrução Codex UC010: [`../codex/UC010-desativar-reativar-produto.md`](../codex/UC010-desativar-reativar-produto.md).
+## Dashboard
 
-A revalidação obrigatória do UC010 contra a master real pós-UC009 foi concluída; CA10/W6 está confirmado e a implementação está liberada.
+O dashboard depende de margem atual, preço, ficha e precificação incompleta. Ele opera exclusivamente sobre a Empresa Ativa e deve ser construído depois dos cálculos e consultas que alimentam seus indicadores.
 
-O UC007 respeitou a fila serial do projeto, foi revisado e mergeado. A revisão obrigatória pós-UC007 do UC008 foi concluída contra o modelo real de Produto, e o UC008 foi implementado sem alteração de schema.
+## Melhorias
 
-O UC009 foi implementado contra a master pós-UC008. Ele edita Nome, Categoria e Margem-alvo do Produto, preserva ownership/status, não altera schema e não antecipa UC010+.
+Melhorias não bloqueantes ficam catalogadas em [`melhorias.md`](melhorias.md). Quando uma melhoria vira pré-requisito obrigatório, ela deve aparecer na fila principal de [`backlog.md`](backlog.md).
 
-O UC010 implementou o ciclo reversível de desativação/reativação. Produto inativo continua editável, a edição preserva `Ativo` e a cobertura Web usa `Produto.Desativar()` sem bypass técnico.
-
-## Etapa 3 — Ficha técnica
-
-A revalidação genérica da UC013 foi concluída: este incremento fica restrito a Rendimento e TempoAtivoMinutos. UC014 a UC017 continuam sujeitos às revalidações específicas antes da implementação.
-
-A UC014 foi implementada após revalidação contra a implementação real da UC013. O modelo de ItemFichaTecnica permanece coerente; Quantidade usa parsing Web explícito pt-BR/invariant seguindo o aprendizado da UC013.
-
-A UC015 foi implementada após revalidação contra a implementação real da UC014. A edição de Item altera somente Quantidade e Observação contextual, preserva vínculos e adiciona uma lista operacional mínima de Itens na página da Ficha.
-
-Especificação UC013: [`../use-cases/UC013-definir-base-ficha-tecnica.md`](../use-cases/UC013-definir-base-ficha-tecnica.md).
-
-Instrução Codex UC013: [`../codex/UC013-definir-base-ficha-tecnica.md`](../codex/UC013-definir-base-ficha-tecnica.md).
-
-Especificação UC014 revalidada: [`../use-cases/UC014-adicionar-insumo-ficha.md`](../use-cases/UC014-adicionar-insumo-ficha.md).
-
-Instrução Codex UC014: [`../codex/UC014-adicionar-insumo-ficha.md`](../codex/UC014-adicionar-insumo-ficha.md).
-
-Especificação UC015 revalidada: [`../use-cases/UC015-alterar-item-ficha.md`](../use-cases/UC015-alterar-item-ficha.md).
-
-Instrução Codex UC015: [`../codex/UC015-alterar-item-ficha.md`](../codex/UC015-alterar-item-ficha.md).
-
-Especificação MEL010: [`improvements/MEL010-identidade-consolidada-insumo.md`](improvements/MEL010-identidade-consolidada-insumo.md).
-
-Instrução Codex MEL010: [`../codex/MEL010-identidade-consolidada-insumo.md`](../codex/MEL010-identidade-consolidada-insumo.md).
-
-Ordem prevista:
-
-1. **UC013 — Definir rendimento e tempo ativo da Ficha Técnica** — implementado;
-2. **UC014 — Adicionar Insumo à Ficha Técnica** — implementado;
-3. **UC015 — Alterar item da Ficha Técnica** — implementado;
-4. **MEL010 — Identidade consolidada do Insumo** — implementar antes do UC016;
-5. UC016 — Remover item da Ficha Técnica — especificar somente após MEL010;
-6. UC017 — Consultar Ficha Técnica e composição.
-
-## Etapa 4 — Configurações de precificação
-
-Antecipar UC026 e UC027 antes do motor completo, pois mão de obra, energia/equipamentos e o arredondamento do Preço sugerido dependem de configurações da Empresa. Conforme MEL009, essas configurações já devem nascer com a Reserva comercial para desconto; não criar uma implementação separada posterior.
-
-1. UC026 — Consultar configurações de precificação da Empresa;
-2. UC027 — Alterar configurações de precificação da Empresa.
-
-## Etapa 5 — Motor de custo e preço sugerido
-
-Executar UC018 a UC023 antes da decisão comercial de preço.
-
-1. UC018 — Calcular custo atual dos itens do lote;
-2. UC019 — Calcular perdas aplicáveis — revalidar antes de implementar;
-3. UC020 — Calcular custo de mão de obra;
-4. UC021 — Calcular custo de energia/equipamentos — revalidar antes de implementar;
-5. UC022 — Calcular custo total e custo unitário;
-6. UC023 — Calcular preço teórico e sugerido.
-
-## Etapa 6 — Decisão comercial e histórico de preço
-
-1. UC011 — Registrar Preço de prateleira preservando snapshot de precificação;
-2. UC012 — Consultar histórico de precificação do Produto.
-
-A UC011 receberá do usuário somente o Preço de prateleira. Data de referência, Custo de referência, Margem de referência, Preço sugerido e Reserva comercial de referência são determinados pelo sistema. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e permite novo registro para Produto inativo sem reativá-lo. Conforme MEL009, o Desconto de referência é derivado usando a reserva congelada no próprio registro.
-
-## Etapa 7 — Margem e detalhamento
-
-1. UC024 — Calcular margem atual e situação;
-2. UC025 — Consultar detalhamento da precificação.
-
-## Etapa 8 — Dashboard
-
-UC028 a UC030 operam exclusivamente sobre a Empresa Ativa.
-
-## Administração multiempresa
-
-O backlog deverá detalhar posteriormente:
-
-- cadastro/consulta de empresas;
-- cadastro de usuários e gestão de vínculos usuário-empresa.
-
-O bootstrap e login mínimos pertencem à FT002 porque são pré-requisitos transversais de isolamento.
-
-## Melhorias não bloqueantes
-
-Melhorias identificadas durante implementação e revisão que não bloqueiam as histórias principais ficam em [`melhorias.md`](melhorias.md) e podem ser executadas quando houver oportunidade técnica adequada.
-
-## Regra de tamanho
+## Regra de Tamanho
 
 Se um UC não puder ser implementado, testado e revisado como um incremento pequeno, deve ser dividido antes de ser enviado ao agente.
-
-## Próximo passo
-
-Implementar e validar a **MEL010 — Identidade consolidada do Insumo** antes de especificar a UC016. A remoção de Item não poderá desbloquear Nome, Marca ou Unidade base. A UC011 permanece bloqueada até a conclusão da UC023.
