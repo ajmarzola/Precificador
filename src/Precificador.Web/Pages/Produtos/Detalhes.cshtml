@@ -19,9 +19,26 @@
     <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
 </dl>
 
+<section class="mb-4">
+    <h2 class="h4">Preço de prateleira atual</h2>
+    @if (Model.PrecoPrateleiraAtual is null)
+    {
+        <p>Preço de prateleira atual: não definido.</p>
+    }
+    else
+    {
+        var precoAtual = Model.PrecoPrateleiraAtual;
+        <dl class="row">
+            <dt class="col-sm-3">Referência</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Data(precoAtual.DataReferencia)</dd>
+            <dt class="col-sm-3">Preço de prateleira</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.CustoCalculado(precoAtual.PrecoPrateleira)</dd>
+        </dl>
+    }
+</section>
+
 <a asp-page="/Produtos/Editar" asp-route-id="@produto.Id" class="btn btn-primary">Editar</a>
 <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-outline-primary">Ficha técnica</a>
 <a asp-page="/Produtos/Precos/Novo" asp-route-id="@produto.Id" class="btn btn-outline-primary">Registrar preço de prateleira</a>
+<a asp-page="/Produtos/Precos/Historico" asp-route-id="@produto.Id" class="btn btn-outline-secondary">Histórico de precificação</a>
 @if (produto.Ativo)
 {
     <form method="post" asp-page-handler="Desativar" asp-route-id="@produto.Id" class="d-inline">

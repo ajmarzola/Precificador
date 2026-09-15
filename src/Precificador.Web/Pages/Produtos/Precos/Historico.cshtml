@@ -1,0 +1,71 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.Precos.HistoricoModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Histórico de precificação do produto";
+    var produto = Model.Produto!;
+}
+
+<h1>Histórico de precificação do produto</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@(produto.Categoria ?? "—")</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
+</dl>
+
+<section class="mb-4">
+    <h2 class="h4">Preço de prateleira atual</h2>
+    @if (Model.PrecoAtual is null)
+    {
+        <p>Preço de prateleira atual: não definido.</p>
+    }
+    else
+    {
+        var preco = Model.PrecoAtual;
+        <dl class="row">
+            <dt class="col-sm-3">Referência</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Data(preco.DataReferencia)</dd>
+            <dt class="col-sm-3">Preço de prateleira</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.CustoCalculado(preco.PrecoPrateleira)</dd>
+        </dl>
+    }
+</section>
+
+@if (Model.Historico.Count == 0)
+{
+    <p>Nenhum preço de prateleira registrado para este produto.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Custo de referência</th>
+                <th>Margem de referência</th>
+                <th>Preço sugerido</th>
+                <th>Preço de prateleira</th>
+                <th>Reserva comercial de referência</th>
+                <th>Desconto de referência</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var preco in Model.Historico)
+        {
+            <tr>
+                <td>@PrecoInsumoFormatacao.Data(preco.DataReferencia)</td>
+                <td>@preco.Status</td>
+                <td>@PrecoInsumoFormatacao.CustoCalculado(preco.CustoReferencia)</td>
+                <td>@ProdutoFormatacao.MargemAlvo(preco.MargemReferencia)</td>
+                <td>@PrecoInsumoFormatacao.CustoCalculado(preco.PrecoSugerido)</td>
+                <td>@PrecoInsumoFormatacao.CustoCalculado(preco.PrecoPrateleira)</td>
+                <td>@ProdutoFormatacao.MargemAlvo(preco.ReservaComercialReferencia)</td>
+                <td>@(preco.DescontoReferencia is decimal desconto ? ProdutoFormatacao.MargemAlvo(desconto) : "Não aplicável")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<a asp-page="/Produtos/Precos/Novo" asp-route-id="@produto.Id" class="btn btn-primary">Registrar novo preço</a>
+<a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar ao produto</a>
