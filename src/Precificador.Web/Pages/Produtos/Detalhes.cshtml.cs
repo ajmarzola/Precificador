@@ -1,15 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Precificacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Precificacao;
 
 namespace Precificador.Web.Pages.Produtos;
 
-public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
+public sealed class DetalhesModel(PrecificadorDbContext context, PrecificacaoProdutoAtual precificacaoAtual) : PageModel
 {
     public ProdutoDetalhes? Produto { get; private set; }
 
-    public PrecoPrateleiraAtualResumo? PrecoPrateleiraAtual { get; private set; }
+    public ResultadoPrecificacaoProdutoAtual? Precificacao { get; private set; }
 
     public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
 
@@ -25,11 +27,11 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        var registroAtual = await context.RegistrosPrecosProdutos.AsNoTracking()
-            .SelecionarAtualAsync(id);
-        PrecoPrateleiraAtual = registroAtual is null
-            ? null
-            : new PrecoPrateleiraAtualResumo(registroAtual.DataReferencia, registroAtual.PrecoPrateleira);
+        Precificacao = await precificacaoAtual.CalcularAsync(id);
+        if (Precificacao is null)
+        {
+            return NotFound();
+        }
 
         return Page();
     }
@@ -64,5 +66,11 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
 
     public sealed record ProdutoDetalhes(int Id, string Nome, string? Categoria, decimal MargemAlvo, bool Ativo);
 
-    public sealed record PrecoPrateleiraAtualResumo(DateOnly DataReferencia, decimal PrecoPrateleira);
+    public static string SituacaoMargemRotulo(SituacaoMargemProduto situacao) =>
+        situacao switch
+        {
+            SituacaoMargemProduto.AbaixoDaMargem => "Abaixo da margem",
+            SituacaoMargemProduto.DentroDaMargem => "Dentro da margem",
+            _ => "Incompleto"
+        };
 }

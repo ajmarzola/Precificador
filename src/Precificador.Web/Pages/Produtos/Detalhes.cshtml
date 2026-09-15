@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Consultar produto";
     var produto = Model.Produto!;
+    var precificacao = Model.Precificacao!;
 }
 <h1>Consultar produto</h1>
 
@@ -20,18 +21,43 @@
 </dl>
 
 <section class="mb-4">
-    <h2 class="h4">Preço de prateleira atual</h2>
-    @if (Model.PrecoPrateleiraAtual is null)
+    <h2 class="h4">Margem atual</h2>
+    @if (precificacao.PrecoPrateleiraAtual is null)
     {
         <p>Preço de prateleira atual: não definido.</p>
     }
-    else
+    <dl class="row">
+        <dt class="col-sm-3">Custo unitário atual</dt>
+        <dd class="col-sm-9">@(precificacao.CustoUnitarioProduto is decimal custo ? PrecoInsumoFormatacao.CustoCalculado(custo) : "indisponível")</dd>
+
+        <dt class="col-sm-3">Preço de prateleira atual</dt>
+        <dd class="col-sm-9">@(precificacao.PrecoPrateleiraAtual is decimal preco ? PrecoInsumoFormatacao.CustoCalculado(preco) : "não definido.")</dd>
+
+        @if (precificacao.DataReferenciaPrecoAtual is DateOnly dataReferencia)
+        {
+            <dt class="col-sm-3">Referência do preço</dt>
+            <dd class="col-sm-9">@PrecoInsumoFormatacao.Data(dataReferencia)</dd>
+        }
+
+        <dt class="col-sm-3">Margem-alvo</dt>
+        <dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(precificacao.MargemAlvo)</dd>
+
+        <dt class="col-sm-3">Margem atual</dt>
+        <dd class="col-sm-9">@(precificacao.MargemAtual is decimal margem ? ProdutoFormatacao.MargemAlvo(margem) : "indisponível")</dd>
+
+        <dt class="col-sm-3">Situação</dt>
+        <dd class="col-sm-9">@DetalhesModel.SituacaoMargemRotulo(precificacao.SituacaoMargem)</dd>
+    </dl>
+
+    @if (precificacao.SituacaoMargem == Precificador.Core.Precificacao.SituacaoMargemProduto.Incompleto
+        && precificacao.ImpedimentosMargemAtual.Count > 0)
     {
-        var precoAtual = Model.PrecoPrateleiraAtual;
-        <dl class="row">
-            <dt class="col-sm-3">Referência</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Data(precoAtual.DataReferencia)</dd>
-            <dt class="col-sm-3">Preço de prateleira</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.CustoCalculado(precoAtual.PrecoPrateleira)</dd>
-        </dl>
+        <ul>
+            @foreach (var impedimento in precificacao.ImpedimentosMargemAtual)
+            {
+                <li>@impedimento</li>
+            }
+        </ul>
     }
 </section>
 

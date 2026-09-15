@@ -1,0 +1,195 @@
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Empresas;
+using Precificador.Core.FichasTecnicas;
+using Precificador.Core.Insumos;
+using Precificador.Core.Precificacao;
+using Precificador.Core.Produtos;
+using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Precificacao;
+
+namespace Precificador.Tests.Integration.Infrastructure;
+
+public sealed class PrecificacaoProdutoAtualTests
+{
+    private static readonly DateOnly Hoje = new(2026, 9, 15);
+
+    [Fact]
+    public async Task P1_P2_Orquestracao_usa_registro_atual_por_data_e_id()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, new DateOnly(2026, 9, 1), prateleira: 15m));
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
+        await context.SaveChangesAsync();
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 25m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(25m, resultado!.PrecoPrateleiraAtual);
+        Assert.Equal(Hoje, resultado.DataReferenciaPrecoAtual);
+        Assert.Equal(.60m, resultado.MargemAtual);
+    }
+
+    [Fact]
+    public async Task P3_Preco_atual_retorna_mesmo_sem_ficha()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var produto = Produto.Criar(1, "Produto sem ficha", .30m);
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(20m, resultado!.PrecoPrateleiraAtual);
+        Assert.Null(resultado.CustoUnitarioProduto);
+        Assert.Null(resultado.MargemAtual);
+        Assert.Equal(SituacaoMargemProduto.Incompleto, resultado.SituacaoMargem);
+        Assert.Contains("A ficha técnica não foi cadastrada.", resultado.ImpedimentosMargemAtual);
+    }
+
+    [Fact]
+    public async Task P4_P5_Usa_custo_e_margem_alvo_atuais_em_vez_de_snapshots()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, custoReferencia: 90m, margemReferencia: .90m, prateleira: 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(10m, resultado!.CustoUnitarioProduto);
+        Assert.Equal(.50m, resultado.MargemAtual);
+        Assert.Equal(.30m, resultado.MargemAlvo);
+        Assert.Equal(SituacaoMargemProduto.DentroDaMargem, resultado.SituacaoMargem);
+    }
+
+    [Fact]
+    public async Task P6_Incremento_null_nao_torna_margem_incompleta()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.False(resultado!.PrecoProdutoCompleto);
+        Assert.Equal(.50m, resultado.MargemAtual);
+        Assert.Equal(SituacaoMargemProduto.DentroDaMargem, resultado.SituacaoMargem);
+        Assert.Contains("Incremento comercial não configurado.", resultado.Impedimentos);
+        Assert.DoesNotContain("Incremento comercial não configurado.", resultado.ImpedimentosMargemAtual);
+    }
+
+    [Fact]
+    public async Task P7_Gqf_impede_usar_registro_comercial_de_outra_empresa()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        context.Empresas.Add(Empresa.Criar("Empresa dois"));
+        await context.SaveChangesAsync();
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO RegistrosPrecosProdutos
+                (EmpresaId, ProdutoId, DataReferencia, CustoReferencia, MargemReferencia, PrecoSugerido, PrecoPrateleira, ReservaComercialReferencia)
+            VALUES
+                ({2}, {produto.Id}, {Hoje}, {10m}, {0.30m}, {14.29m}, {99m}, {0.10m})
+            """);
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Null(resultado!.PrecoPrateleiraAtual);
+        Assert.Null(resultado.MargemAtual);
+        Assert.Equal(SituacaoMargemProduto.Incompleto, resultado.SituacaoMargem);
+        Assert.Contains("Preço de prateleira não definido.", resultado.ImpedimentosMargemAtual);
+    }
+
+    [Fact]
+    public async Task P8_Execucao_nao_persiste_resultado_derivado()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(.50m, resultado!.MargemAtual);
+        Assert.Equal(0, await context.SaveChangesAsync());
+        Assert.Equal(1, await context.RegistrosPrecosProdutos.CountAsync());
+        Assert.Equal(.30m, (await context.Produtos.SingleAsync(p => p.Id == produto.Id)).MargemAlvo);
+    }
+
+    private static async Task<Produto> CriarProdutoPrecificavelAsync(
+        PrecificadorDbContext context,
+        decimal margemAlvo,
+        decimal custoInsumo)
+    {
+        var produto = Produto.Criar(1, $"Produto {Guid.NewGuid():N}", margemAlvo);
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+        var ficha = FichaTecnica.Criar(1, produto.Id, 1m, 0);
+        var insumo = Insumo.Criar(1, $"Insumo {Guid.NewGuid():N}", CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade);
+        context.FichasTecnicas.Add(ficha);
+        context.Insumos.Add(insumo);
+        await context.SaveChangesAsync();
+        context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, ficha.Id, insumo.Id, 1m, null, 0m));
+        context.PrecosInsumos.Add(PrecoInsumo.Criar(1, insumo.Id, 1m, custoInsumo, Hoje));
+        await context.SaveChangesAsync();
+        return produto;
+    }
+
+    private static RegistroPrecoProduto Registro(
+        int empresaId,
+        int produtoId,
+        DateOnly data,
+        decimal prateleira,
+        decimal custoReferencia = 10m,
+        decimal margemReferencia = .30m) =>
+        RegistroPrecoProduto.Criar(empresaId, produtoId, data, custoReferencia, margemReferencia, 14.29m, prateleira, .10m);
+
+    private static Task<ResultadoPrecificacaoProdutoAtual?> CalcularAsync(PrecificadorDbContext context, int produtoId) =>
+        new PrecificacaoProdutoAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync(produtoId);
+
+    private static async Task<SqliteConnection> AbrirAsync()
+    {
+        var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        return connection;
+    }
+
+    private static PrecificadorDbContext Criar(SqliteConnection connection, int empresaId) =>
+        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new Contexto(empresaId));
+
+    private sealed class DataOperacionalFixa(DateOnly hoje) : IDataOperacionalEmpresa
+    {
+        public DateOnly Hoje => hoje;
+    }
+
+    private sealed class Contexto(int id) : IEmpresaContext
+    {
+        public int? EmpresaId => id;
+        public int EmpresaIdOuSentinela => id;
+        public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
+    }
+}

@@ -174,7 +174,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
     }
 
     [Fact]
-    public async Task W18_W19_W20_Historico_independe_da_precificacao_atual_e_nao_antecipa_uc024()
+    public async Task W18_W19_Historico_independe_da_precificacao_atual()
     {
         var produto = await CriarProdutoAsync(1, ativo: true);
         await CriarRegistroAsync(1, produto, new DateOnly(2026, 9, 15), 12.3456m, .30m, 14.29m, 20m, .10m);
@@ -187,9 +187,6 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         AssertLinha(linha, "12,3456", "30%", "14,29", "20");
         Assert.Contains("Atual alterada", conteudo);
         Assert.DoesNotContain("60%", linha);
-        Assert.DoesNotContain("Margem atual", conteudo);
-        Assert.DoesNotContain("Situação da margem", conteudo);
-        Assert.DoesNotContain("Abaixo da margem", conteudo);
     }
 
     private static IReadOnlyList<string> LinhasPreco(string html) =>
