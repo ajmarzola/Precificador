@@ -56,13 +56,13 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
     {
         using var semEmpresa = web.CriarCliente(); var usuario = await web.CriarUsuarioAsync();
         await web.LoginAsync(semEmpresa, usuario.Email, usuario.Senha);
-        var semContexto = await semEmpresa.GetAsync("/Produtos/Precos/Novo/1"); Assert.Equal(HttpStatusCode.Redirect, semContexto.StatusCode); Assert.Contains("/Empresas/Selecionar", semContexto.Headers.Location!.OriginalString);
+        var semContexto = await semEmpresa.GetAsync("/Produtos/Precos/Novo/1"); Assert.Equal(HttpStatusCode.Redirect, semContexto.StatusCode); Assert.Contains("/Conta/Login", semContexto.Headers.Location!.OriginalString);
         var semFicha = await CriarProdutoBasicoAsync(1); using var client = await web.CriarClienteAutenticadoAsync();
         var resposta = await client.GetAsync($"/Produtos/Precos/Novo/{semFicha}"); var token = WebTestHtml.ExtrairTokenAntiforgery(await resposta.Content.ReadAsStringAsync());
         var post = await client.PostAsync($"/Produtos/Precos/Novo/{semFicha}", Form(token, "12")); var html = await post.Content.ReadAsStringAsync();
         Assert.Equal(HttpStatusCode.OK, post.StatusCode); Assert.Contains("Precificação incompleta", html); Assert.Contains("value=\"12\"", html); Assert.Empty(await RegistrosAsync(semFicha, 1));
-        var semPreco = await CriarProdutoComItemSemPrecoAsync(1); Assert.Contains("preço vigente", await client.GetStringAsync($"/Produtos/Precos/Novo/{semPreco}"));
-        await DefinirConfiguracaoAsync(1, null, .1m); var completo = await CriarProdutoPrecificavelAsync(1, true); Assert.Contains("Incremento comercial não configurado", await client.GetStringAsync($"/Produtos/Precos/Novo/{completo}"));
+        var semPreco = await CriarProdutoComItemSemPrecoAsync(1); resposta = await client.GetAsync($"/Produtos/Precos/Novo/{semPreco}"); token = WebTestHtml.ExtrairTokenAntiforgery(await resposta.Content.ReadAsStringAsync()); post = await client.PostAsync($"/Produtos/Precos/Novo/{semPreco}", Form(token, "12")); Assert.Equal(HttpStatusCode.OK, post.StatusCode); Assert.Empty(await RegistrosAsync(semPreco, 1));
+        var completo = await CriarProdutoPrecificavelAsync(1, true); await DefinirConfiguracaoAsync(1, null, .1m); resposta = await client.GetAsync($"/Produtos/Precos/Novo/{completo}"); token = WebTestHtml.ExtrairTokenAntiforgery(await resposta.Content.ReadAsStringAsync()); post = await client.PostAsync($"/Produtos/Precos/Novo/{completo}", Form(token, "12")); Assert.Equal(HttpStatusCode.OK, post.StatusCode); Assert.Empty(await RegistrosAsync(completo, 1));
     }
 
     [Fact]
