@@ -71,6 +71,15 @@ A composição só é considerada completa quando todos os componentes são dete
 
 O custo unitário divide o custo completo do lote pelo Rendimento atual da Ficha. Os resultados são derivados em consulta, sem arredondamento intermediário e sem persistência.
 
+## UC023 — Preço teórico e sugerido
+
+UC023 usa o `CustoUnitarioProduto` calculado pelo UC022 e a `MargemAlvo` persistida no Produto para obter o `PrecoTeorico` pela RN020.
+
+O `PrecoSugerido` aplica RN021 usando o `IncrementoComercial` vigente da Empresa, sempre para o menor múltiplo maior ou igual ao preço teórico. Se o preço teórico já for múltiplo exato do incremento, ele é preservado.
+
+Quando o custo unitário estiver indisponível, ambos os preços ficam indisponíveis. Quando somente o incremento comercial estiver ausente, o preço teórico continua explicável, mas o preço sugerido permanece indisponível e a precificação continua incompleta.
+
+`MargemPadrao` não substitui a margem do Produto e `ReservaComercialDesconto` não participa do cálculo de UC023. Os resultados são derivados em consulta, sem persistência e sem arredondamento intermediário.
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
