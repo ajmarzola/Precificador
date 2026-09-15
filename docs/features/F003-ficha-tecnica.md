@@ -166,7 +166,9 @@ FichaTecnica é tenant-owned:
 - RN048;
 - RN049;
 - RN050;
-- RN051.
+- RN051;
+- RN055;
+- RN056.
 
 ## Casos de uso
 
