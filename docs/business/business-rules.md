@@ -275,10 +275,11 @@ O mesmo Insumo pode participar de Fichas diferentes da mesma Empresa.
 
 ### RN050 — Atualização do Item preserva seus vínculos
 
-A edição de um ItemFichaTecnica altera somente:
+A edição de um ItemFichaTecnica altera:
 
 - Quantidade;
-- Observação contextual.
+- Observação contextual;
+- PercentualPerda, após UC019.
 
 Permanecem imutáveis:
 
@@ -336,6 +337,8 @@ Regra:
 
 A quantidade de cada item da ficha técnica deve ser maior que zero e estar expressa na unidade base do insumo.
 
+A Quantidade representa a quantidade base necessária para o lote antes de perda adicional esperada. Quando houver perda de material configurada no Item, ela é calculada separadamente conforme RN012; não embutir a mesma perda simultaneamente na Quantidade e no PercentualPerda.
+
 ### RN011 — Custo dos itens do lote
 
 Para cada item:
@@ -354,11 +357,32 @@ Ficha sem Itens não equivale a custo base zero; o componente permanece indispon
 
 Aplicar RN026: não realizar arredondamento intermediário do custo unitário, custo do Item ou soma dos Itens.
 
-### RN012 — Perdas de material/processo
+### RN012 — Perdas aplicáveis
 
-Perda deixa de ser assumida como atributo obrigatório específico de panificação. Quando aplicável, representa perda de material/processo.
+No MVP, perda de material é opcional e pertence ao Item da Ficha por `PercentualPerda`, armazenado como fração decimal:
 
-O modelo exato e a forma de incidência serão fechados antes do UC019, considerando os diferentes negócios. Até lá, nenhuma implementação nova deve cristalizar uma fórmula específica de panificação.
+~~~text
+0 <= PercentualPerda < 1
+~~~
+
+Zero significa nenhuma perda adicional esperada. Categoria do Insumo não aplica perda automaticamente.
+
+`Quantidade` continua sendo a quantidade base antes da perda. O percentual representa acréscimo esperado sobre essa base:
+
+~~~text
+CustoPerdaItem = CustoItemBase × PercentualPerda
+CustoPerdasLote = soma dos CustoPerdaItem
+~~~
+
+Se PercentualPerda = 0, CustoPerdaItem = 0 mesmo quando o custo base estiver indisponível.
+
+Se PercentualPerda > 0 e o custo base do Item estiver indisponível, o custo da perda daquele Item e o total de perdas ficam indisponíveis. Custos conhecidos dos demais Itens podem ser exibidos, mas não como total parcial confiável.
+
+Ficha sem Itens possui CustoPerdasLote = 0/completo, embora UC018 continue considerando o custo base dos Itens incompleto.
+
+Perda que reduz a quantidade de unidades finais vendáveis do processo não deve ser duplicada em PercentualPerda: deve ser refletida no Rendimento esperado da Ficha. Assim, perda de material aumenta materiais consumidos; perda de saída reduz Rendimento e afeta todos os componentes por unidade no UC022.
+
+Aplicar RN026 sem arredondamento intermediário. Custos de perda são derivados em consulta e não persistidos.
 
 ### RN013 — Mão de obra
 
