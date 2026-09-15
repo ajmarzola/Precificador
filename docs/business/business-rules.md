@@ -476,7 +476,9 @@ Aplicar RN019: `0 <= MargemAlvo < 1`.
 
 A interface pode receber percentual e convertê-lo para fração antes de criar/atualizar o domínio.
 
-Uma futura margem padrão da Empresa pode pré-preencher novos Produtos, mas não altera silenciosamente Produtos já existentes.
+Quando `MargemPadrao` estiver configurada, o GET de cadastro de novo Produto pode pré-preencher a Margem-alvo com esse valor. O usuário continua livre para alterá-lo antes de salvar, e o Produto persiste sua própria `MargemAlvo`.
+
+Se `MargemPadrao` estiver `null`, o cadastro não inventa valor padrão. Alterações posteriores da configuração nunca alteram silenciosamente Produtos já existentes.
 
 ### RN046 — Produto pode existir sem preço de prateleira
 
@@ -585,6 +587,8 @@ Cada Empresa possui uma configuração de precificação 1:1 contendo, no mínim
 - `ReservaComercialDesconto`, conforme RN052.
 
 Não existem defaults de negócio aprovados para `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, esses campos permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+
+UC027 permite limpar qualquer um desses quatro parâmetros opcionais de volta para `null`. Entrada vazia significa **Não configurado**, enquanto zero é um valor explícito e distinto quando permitido pela regra do campo.
 
 Quando informados:
 

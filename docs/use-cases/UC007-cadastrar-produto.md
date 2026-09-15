@@ -183,9 +183,9 @@ Zero é válido.
 
 100% e valores negativos são inválidos.
 
-Não buscar margem padrão de Configurações neste UC, porque UC026/UC027 ainda não existem.
+Este UC foi implementado antes de Configurações.
 
-Quando Configurações forem implementadas, margem padrão poderá apenas **pré-preencher** novos Produtos; não deve alterar silenciosamente Produtos existentes.
+A integração posterior definida pela UC027 permite que `MargemPadrao` da Empresa apenas **pré-preencha** a Margem-alvo no GET de novos Produtos. O usuário pode sobrescrever o valor antes do POST, e Produtos existentes nunca são alterados silenciosamente.
 
 ## Produto sem preço de venda — RN046
 
