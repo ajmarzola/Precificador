@@ -22,9 +22,18 @@ Os itens podem representar materiais/ingredientes, embalagens ou consumíveis co
 
 ### 2. Perdas
 
-Perdas são opcionais e representam material/processo desperdiçado quando aplicável.
+Perdas de material são opcionais e configuradas por Item da Ficha, sem regra automática por Categoria.
 
-A regra originalmente definida apenas para ingredientes de panificação será revalidada antes do UC019 para atender diferentes processos produtivos sem tornar perda um atributo obrigatório de todos os Produtos.
+~~~text
+custo_perda_item = custo_item_base × percentual_perda
+custo_perdas_lote = soma(custo_perda_item)
+~~~
+
+`percentual_perda` é armazenado como fração entre 0 e 1 e representa acréscimo esperado sobre a quantidade/custo base do Item.
+
+Perda zero possui custo zero mesmo se o Item estiver sem preço. Perda positiva com custo base indisponível torna o total de perdas indisponível; totais parciais não são apresentados como completos.
+
+Quando a perda do processo reduz unidades finais vendáveis, ela deve ser refletida no `Rendimento`, não duplicada como percentual de material. Isso faz com que todos os custos do lote sejam distribuídos pelas unidades vendáveis no cálculo unitário.
 
 ### 3. Mão de obra
 
