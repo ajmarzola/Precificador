@@ -82,7 +82,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | [UC021](UC021-calcular-custo-energia-equipamentos.md) | Calcular custo de energia/equipamentos | UC013, UC027 |
 | [UC019](UC019-calcular-perdas-aplicaveis.md) | Calcular perdas aplicáveis | UC018 |
 | [UC022](UC022-calcular-custo-total-unitario.md) | Calcular custo total e custo unitário | UC018–UC021 |
-| UC023 | Calcular preço teórico e sugerido | UC022, UC027 |
+| [UC023](UC023-calcular-preco-teorico-sugerido.md) | Calcular preço teórico e sugerido | UC022, UC027 |
 | UC024 | Calcular margem atual e situação | UC011, UC022 |
 | UC025 | Consultar detalhamento da precificação | UC023, UC024 |
 
