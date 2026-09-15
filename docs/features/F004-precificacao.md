@@ -35,6 +35,18 @@ Item sem preço vigente e Ficha vazia tornam esse componente indisponível; nunc
 
 Os cálculos são derivados em tempo de consulta e não são persistidos. Perdas, mão de obra, energia e custo total pertencem aos UCs posteriores.
 
+## UC019 — Perdas aplicáveis
+
+UC019 calcula perda adicional de material por Item da Ficha, sem percentual global no Produto.
+
+`PercentualPerda` é uma fração entre 0 e 1 aplicada sobre o CustoItem base já calculado pelo UC018. Perda zero custa zero mesmo se o Item estiver sem preço; perda positiva depende de custo base conhecido.
+
+`CustoPerdasLote` só é apresentado quando todas as perdas positivas são determináveis. A ausência de Itens resulta em perda zero, mas não torna o custo base da Ficha completo.
+
+Perdas de saída que reduzam unidades vendáveis pertencem ao Rendimento e não ao PercentualPerda.
+
+O componente é derivado em consulta e não persistido.
+
 ## UC020 — Custo de mão de obra
 
 O custo de mão de obra do lote aplica RN013 usando o `TempoAtivoMinutos` persistido na Ficha e o `ValorHoraTrabalho` atual da configuração da Empresa.
