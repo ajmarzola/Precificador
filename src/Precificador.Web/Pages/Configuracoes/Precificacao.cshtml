@@ -9,6 +9,11 @@
 <h1>Configurações de precificação</h1>
 <p class="text-muted">Empresa ativa: @Model.EmpresaNome</p>
 
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+
 <dl class="row">
     <dt class="col-sm-4">Valor da hora de trabalho</dt>
     <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.ValorHoraTrabalho)</dd>
@@ -28,3 +33,5 @@
         <div class="form-text">Percentual reservado acima do preço sugerido antes de formar o desconto de referência.</div>
     </dd>
 </dl>
+
+<a class="btn btn-primary" asp-page="/Configuracoes/Precificacao/Editar">Alterar configurações</a>

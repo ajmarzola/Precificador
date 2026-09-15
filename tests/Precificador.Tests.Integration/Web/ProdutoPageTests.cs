@@ -52,6 +52,122 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     }
 
     [Fact]
+    public async Task UC027_W17_MargemPadrao_configurada_preenche_margem_alvo()
+    {
+        await AtualizarMargemPadraoAsync(1, 0.255m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await client.GetAsync("/Produtos/Novo");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("25,5", ValorDoInput(conteudo, "Input.MargemAlvoPercentual"));
+    }
+
+    [Fact]
+    public async Task UC027_W17_MargemPadrao_preserva_precisao_ao_preencher_e_salvar_sem_alteracao()
+    {
+        await AtualizarMargemPadraoAsync(1, 0.123456m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var responseGet = await client.GetAsync("/Produtos/Novo");
+        var conteudoGet = await WebTestHtml.LerHtmlDecodificadoAsync(responseGet);
+        var margemPreenchida = ValorDoInput(conteudoGet, "Input.MargemAlvoPercentual");
+        var nome = $"Produto margem precisa {Guid.NewGuid():N}";
+
+        var responsePost = await EnviarFormularioAsync(client, nome, null, margemPreenchida);
+
+        responseGet.EnsureSuccessStatusCode();
+        Assert.Equal("12,3456", margemPreenchida);
+        Assert.Equal(HttpStatusCode.Redirect, responsePost.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
+        Assert.Equal(0.123456m, produto.MargemAlvo);
+    }
+
+    [Fact]
+    public async Task UC027_W18_MargemPadrao_null_nao_preenche_margem_alvo()
+    {
+        await AtualizarMargemPadraoAsync(1, null);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await client.GetAsync("/Produtos/Novo");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(string.Empty, ValorDoInput(conteudo, "Input.MargemAlvoPercentual"));
+    }
+
+    [Fact]
+    public async Task UC027_W19_MargemPadrao_zero_preenche_zero()
+    {
+        await AtualizarMargemPadraoAsync(1, 0m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await client.GetAsync("/Produtos/Novo");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("0", ValorDoInput(conteudo, "Input.MargemAlvoPercentual"));
+    }
+
+    [Fact]
+    public async Task UC027_ProdutoNovo_sem_configuracao_retorna_404()
+    {
+        var empresa = await web.CriarEmpresaAsync("Empresa produto sem config");
+        await RemoverConfiguracaoAsync(empresa);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var response = await client.GetAsync("/Produtos/Novo");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UC027_W20_Usuario_pode_sobrescrever_margem_preenchida()
+    {
+        await AtualizarMargemPadraoAsync(1, 0.40m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var nome = $"Produto margem sobrescrita {Guid.NewGuid():N}";
+
+        var response = await EnviarFormularioAsync(client, nome, null, "25");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
+        Assert.Equal(0.25m, produto.MargemAlvo);
+    }
+
+    [Fact]
+    public async Task UC027_W21_Post_invalido_preserva_margem_digitada_sem_reaplicar_padrao()
+    {
+        await AtualizarMargemPadraoAsync(1, 0.40m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await EnviarFormularioAsync(client, " ", null, "25");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("25", ValorDoInput(conteudo, "Input.MargemAlvoPercentual"));
+    }
+
+    [Fact]
+    public async Task UC027_W22_Produto_existente_nao_muda_ao_alterar_margem_padrao()
+    {
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var nome = $"Produto existente margem {Guid.NewGuid():N}";
+        Assert.Equal(HttpStatusCode.Redirect, (await EnviarFormularioAsync(client, nome, null, "30")).StatusCode);
+
+        await AtualizarMargemPadraoAsync(1, 0.10m);
+
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
+        Assert.Equal(0.30m, produto.MargemAlvo);
+    }
+
+    [Fact]
     public async Task CA03_CA16_Post_valido_persiste_produto_da_empresa_ativa_e_faz_PRG()
     {
         using var client = await web.CriarClienteAutenticadoAsync();
@@ -206,6 +322,37 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
         return await context.Produtos.IgnoreQueryFilters().CountAsync(produto => produto.NomeNormalizado == nomeNormalizado);
     }
+
+    private async Task AtualizarMargemPadraoAsync(int empresaId, decimal? margemPadrao)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE ConfiguracoesPrecificacaoEmpresas
+            SET MargemPadrao = {margemPadrao}
+            WHERE EmpresaId = {empresaId}
+            """);
+    }
+
+    private async Task RemoverConfiguracaoAsync(int empresaId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            DELETE FROM ConfiguracoesPrecificacaoEmpresas
+            WHERE EmpresaId = {empresaId}
+            """);
+    }
+
+    private static string ValorDoInput(string html, string nome)
+    {
+        var pattern = "<input[^>]+name=\"" + Regex.Escape(nome) + "\"[^>]*value=\"([^\"]*)\"";
+        var match = Regex.Match(html, pattern);
+        return match.Success ? match.Groups[1].Value : string.Empty;
+    }
+
     private async Task<HttpClient> CriarClienteAutenticadoSemEmpresaAtivaAsync()
     {
         var empresaDois = await web.CriarEmpresaAsync();

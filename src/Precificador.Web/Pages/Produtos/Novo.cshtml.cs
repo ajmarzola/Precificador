@@ -16,8 +16,23 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 
     public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
 
-    public void OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
+
+        if (configuracao is null)
+        {
+            return NotFound();
+        }
+
+        if (configuracao.MargemPadrao.HasValue)
+        {
+            Input.MargemAlvoPercentual = ProdutoFormulario.FormatarMargemAlvoPercentual(configuracao.MargemPadrao.Value);
+        }
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()

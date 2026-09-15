@@ -32,7 +32,7 @@ public static class ProdutoFormulario
     }
 
     public static string FormatarMargemAlvoPercentual(decimal margemAlvo) =>
-        (margemAlvo * 100m).ToString("0.##", CulturaBrasileira);
+        (margemAlvo * 100m).ToString("0.######", CulturaBrasileira);
 
     public static void AdicionarErroDominio(ModelStateDictionary modelState, ArgumentException exception) =>
         modelState.AddModelError(CampoPara(exception.ParamName), exception.Message);
