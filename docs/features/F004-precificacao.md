@@ -53,7 +53,7 @@ O componente é independente de Itens e mão de obra, derivado em tempo de consu
 
 ## Regras relacionadas
 
-RN004, RN006, RN007, RN009 a RN027.
+RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
 
 ## Princípio de explicabilidade
 
