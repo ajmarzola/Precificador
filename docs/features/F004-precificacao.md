@@ -91,6 +91,20 @@ UC012 consulta os snapshots comerciais em `DataReferencia DESC, Id DESC`; o prim
 
 Configuração, custo, margem e Ficha Técnica atuais não reinterpretam decisões antigas. `DescontoReferencia` permanece derivado e não persistido. Se `PrecoSugerido = 0`, o desconto é não aplicável porque a razão percentual é indefinida. UC012 não calcula `MargemAtual` nem situação — esses conceitos permanecem no UC024.
 
+## UC024 — Margem atual e situação
+
+UC024 combina três valores correntes: `CustoUnitarioProduto` atual da UC022, `PrecoPrateleiraAtual` selecionado pela UC012 e `Produto.MargemAlvo` atual.
+
+~~~text
+MargemAtual = (PrecoPrateleiraAtual - CustoUnitarioProduto) / PrecoPrateleiraAtual
+~~~
+
+Sem custo atual ou sem Preço de prateleira atual, a situação é `Incompleto` e a Margem atual fica indisponível. Com ambos conhecidos, `MargemAtual < MargemAlvo` resulta `AbaixoDaMargem`; igualdade ou valor superior resulta `DentroDaMargem`.
+
+O cálculo não usa `CustoReferencia`/`MargemReferencia` históricos, Preço sugerido, Incremento comercial, Reserva comercial ou Desconto de referência. Em especial, `IncrementoComercial = null` não impede Margem atual quando custo e preço corrente são conhecidos.
+
+Margem atual e situação são derivadas em consulta, sem arredondamento intermediário e sem persistência. Produto inativo permanece calculável.
+
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
