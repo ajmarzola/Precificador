@@ -153,6 +153,15 @@
     else { <table class="table"><thead><tr><th scope="col">Equipamento</th><th scope="col">Potência (kW)</th><th scope="col">Tempo (min)</th><th scope="col">Consumo (kWh)</th><th scope="col">Custo de energia</th><th scope="col">Ações</th></tr></thead><tbody>@foreach (var uso in Model.UsosEquipamentos) { <tr><td>@uso.NomeEquipamento</td><td>@uso.PotenciaFormatada</td><td>@uso.TempoUsoMinutos</td><td>@uso.ConsumoFormatado</td><td>@uso.CustoFormatado</td><td><a asp-page="/Produtos/FichaTecnica/Equipamentos/Editar" asp-route-produtoId="@produto.Id" asp-route-usoId="@uso.Id">Editar</a> <a asp-page="/Produtos/FichaTecnica/Equipamentos/Remover" asp-route-produtoId="@produto.Id" asp-route-usoId="@uso.Id">Remover</a></td></tr> }</tbody></table> }
     <p class="mt-3"><strong>Custo de energia do lote:</strong> @(Model.CustoEnergiaCompleto ? Model.CustoEnergiaLoteFormatado : "indisponível")</p>
     @if (!Model.CustoEnergiaCompleto) { <p>Tarifa de energia não configurada.</p> }
+
+    <h2 class="h4 mt-4">Custo do produto</h2>
+    <p><strong>Custo total do lote:</strong> @(Model.CustoProdutoCompleto ? Model.CustoLoteFormatado : "indisponível")</p>
+    <p><strong>Rendimento:</strong> @FichaTecnicaFormulario.FormatarRendimento(Model.RendimentoAtual!.Value)</p>
+    <p><strong>Custo unitário do produto:</strong> @(Model.CustoProdutoCompleto ? Model.CustoUnitarioProdutoFormatado : "indisponível")</p>
+    @if (!Model.CustoProdutoCompleto)
+    {
+        <p>Precificação incompleta.</p>
+    }
 }
 
 @section Scripts {
