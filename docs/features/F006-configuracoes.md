@@ -22,22 +22,22 @@ Os parâmetros `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `Increm
 
 A `ReservaComercialDesconto` nasce em `0,10` (10 p.p.) conforme MEL009/RN052.
 
-UC026 introduz o modelo e consulta read-only. UC027 permitirá alteração.
+UC026 introduz o modelo e consulta read-only. UC027 permite alteração tenant-aware dos cinco parâmetros e ativa o pré-preenchimento de Margem padrão em novos Produtos.
 
 ## Comportamento
 
 Alterar uma configuração deve afetar os cálculos atuais dos produtos dependentes **somente da mesma Empresa**, sem necessidade de editar cada produto.
 
-A margem padrão vale como valor inicial de novos produtos quando essa integração for habilitada; depois de criado, cada produto mantém sua margem-alvo própria.
+A margem padrão, quando configurada, pré-preenche novos Produtos; o usuário pode alterar o valor antes do cadastro e cada Produto mantém sua Margem-alvo própria depois de criado.
 
-Parâmetros ausentes não são tratados como zero; o cálculo futuro dependente permanece incompleto.
+Os quatro parâmetros opcionais podem ser limpos de volta para **Não configurado**. Parâmetros ausentes não são tratados como zero; o cálculo futuro dependente permanece incompleto.
 
 A reserva comercial não participa do Preço sugerido. Ela será congelada como referência em registros comerciais futuros pelo UC011.
 
 ## Casos de uso
 
 - [UC026 — Consultar configurações de precificação da Empresa](../use-cases/UC026-consultar-configuracoes-precificacao.md);
-- UC027 — Alterar configurações de precificação da Empresa.
+- [UC027 — Alterar configurações de precificação da Empresa](../use-cases/UC027-alterar-configuracoes-precificacao.md).
 
 ## Regras relacionadas
 
