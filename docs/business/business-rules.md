@@ -647,13 +647,14 @@ O Preço de prateleira pode ser inferior ao Preço sugerido. Essa decisão não 
 
 O DescontoReferencia é derivado, não persistido. Cada registro comercial congela `ReservaComercialReferencia` conforme RN054.
 
-Definir:
+Definir, quando `PrecoSugerido > 0`:
 
 ```text
 PercentualAcimaDoSugerido = (PrecoPrateleira / PrecoSugerido) - 1
 LimiarAplicacao = ReservaComercialReferencia + 0,01
 ```
 
+- se `PrecoSugerido = 0`, DescontoReferencia não é aplicável; a razão percentual é indefinida e não deve haver divisão por zero;
 - se o Preço de prateleira for inferior ao Preço sugerido, DescontoReferencia não é aplicável;
 - se `PercentualAcimaDoSugerido < LimiarAplicacao`, DescontoReferencia não é aplicável;
 - caso contrário, `DescontoReferencia = PercentualAcimaDoSugerido - ReservaComercialReferencia`;
