@@ -51,6 +51,41 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
         Assert.Equal(HttpStatusCode.Redirect, post.StatusCode); Assert.Equal(1, Assert.Single(await RegistrosAsync(produto, 1)).EmpresaId);
     }
 
+    [Fact]
+    public async Task W1_W8_W9_W10_W23_Sem_empresa_ativa_e_precificacao_incompleta_nao_registram()
+    {
+        using var semEmpresa = web.CriarCliente(); var usuario = await web.CriarUsuarioAsync();
+        await web.LoginAsync(semEmpresa, usuario.Email, usuario.Senha);
+        Assert.Equal(HttpStatusCode.Forbidden, (await semEmpresa.GetAsync("/Produtos/Precos/Novo/1")).StatusCode);
+        var semFicha = await CriarProdutoBasicoAsync(1); using var client = await web.CriarClienteAutenticadoAsync();
+        var resposta = await client.GetAsync($"/Produtos/Precos/Novo/{semFicha}"); var token = WebTestHtml.ExtrairTokenAntiforgery(await resposta.Content.ReadAsStringAsync());
+        var post = await client.PostAsync($"/Produtos/Precos/Novo/{semFicha}", Form(token, "12")); var html = await post.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, post.StatusCode); Assert.Contains("Precificação incompleta", html); Assert.Contains("value=\"12\"", html); Assert.Empty(await RegistrosAsync(semFicha, 1));
+        var semPreco = await CriarProdutoComItemSemPrecoAsync(1); Assert.Contains("preço vigente", await client.GetStringAsync($"/Produtos/Precos/Novo/{semPreco}"));
+        await DefinirConfiguracaoAsync(1, null, .1m); var completo = await CriarProdutoPrecificavelAsync(1, true); Assert.Contains("Incremento comercial não configurado", await client.GetStringAsync($"/Produtos/Precos/Novo/{completo}"));
+    }
+
+    [Fact]
+    public async Task W14_W15_W16_W17_W18_W19_Snapshot_usa_estado_vigente_no_post_e_preserva_anterior()
+    {
+        await using var fabrica = new CustomWebApplicationFactory(new DateOnly(2030, 1, 2)); var teste = new RegistroPrecoProdutoPageTests(fabrica); var produto = await teste.CriarProdutoPrecificavelAsync(1, true);
+        using var client = await teste.web.CriarClienteAutenticadoAsync(); var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
+        await teste.AlterarEstadoAsync(produto, margem: .5m, incremento: .5m, reserva: .2m, precoInsumo: 20m);
+        var post = await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "50")); Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        var primeiro = Assert.Single(await teste.RegistrosAsync(produto, 1)); Assert.Equal(new DateOnly(2030, 1, 2), primeiro.DataReferencia); Assert.Equal(20m, primeiro.CustoReferencia); Assert.Equal(.5m, primeiro.MargemReferencia); Assert.Equal(40m, primeiro.PrecoSugerido); Assert.Equal(.2m, primeiro.ReservaComercialReferencia);
+        await teste.AlterarEstadoAsync(produto, reserva: .3m); token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}")); await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "51"));
+        var registros = await teste.RegistrosAsync(produto, 1); Assert.Equal(2, registros.Count); Assert.Equal(.2m, registros.Single(r => r.Id == primeiro.Id).ReservaComercialReferencia); Assert.Equal(.3m, registros.Single(r => r.Id != primeiro.Id).ReservaComercialReferencia);
+    }
+
+    [Fact]
+    public async Task W20_W21_Configuracao_de_outra_empresa_nao_vaza_e_detalhes_tem_acao_em_ambos_status()
+    {
+        var ativo = await CriarProdutoPrecificavelAsync(1, true); var inativo = await CriarProdutoPrecificavelAsync(1, false); var empresaDois = await web.CriarEmpresaAsync(); await DefinirConfiguracaoAsync(empresaDois, 99m, .9m);
+        using var client = await web.CriarClienteAutenticadoAsync(); var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{ativo}")); await client.PostAsync($"/Produtos/Precos/Novo/{ativo}", Form(token, "15"));
+        var registro = Assert.Single(await RegistrosAsync(ativo, 1)); Assert.Equal(.1m, registro.ReservaComercialReferencia);
+        Assert.Contains("Registrar preço de prateleira", await client.GetStringAsync($"/Produtos/Detalhes/{ativo}")); Assert.Contains("Registrar preço de prateleira", await client.GetStringAsync($"/Produtos/Detalhes/{inativo}"));
+    }
+
     private static FormUrlEncodedContent Form(string token, string preco) => new(new Dictionary<string,string> { ["__RequestVerificationToken"] = token, ["Input.PrecoPrateleira"] = preco });
     private async Task<int> CriarProdutoPrecificavelAsync(int empresa, bool ativo)
     {
@@ -60,6 +95,10 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
         var ficha = FichaTecnica.Criar(empresa, produto.Id, 1m, 0); context.FichasTecnicas.Add(ficha); var insumo = Insumo.Criar(empresa, Guid.NewGuid().ToString(), CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade); context.Insumos.Add(insumo); await context.SaveChangesAsync();
         context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(empresa, ficha.Id, insumo.Id, 1m, null, 0m)); context.PrecosInsumos.Add(PrecoInsumo.Criar(empresa, insumo.Id, 1m, 10m, new DateOnly(2026,9,15))); await context.SaveChangesAsync(); return produto.Id;
     }
+    private async Task<int> CriarProdutoBasicoAsync(int empresa) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); var p=Produto.Criar(empresa,Guid.NewGuid().ToString(),.3m); c.Produtos.Add(p); await c.SaveChangesAsync(); return p.Id; }
+    private async Task<int> CriarProdutoComItemSemPrecoAsync(int empresa) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); var p=Produto.Criar(empresa,Guid.NewGuid().ToString(),.3m); c.Produtos.Add(p); await c.SaveChangesAsync(); var f=FichaTecnica.Criar(empresa,p.Id,1m,0); var i=Insumo.Criar(empresa,Guid.NewGuid().ToString(),CategoriaInsumo.MateriaPrima,UnidadeMedida.Unidade); c.FichasTecnicas.Add(f); c.Insumos.Add(i); await c.SaveChangesAsync(); c.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(empresa,f.Id,i.Id,1m,null,0m)); await c.SaveChangesAsync(); return p.Id; }
+    private async Task DefinirConfiguracaoAsync(int empresa, decimal? incremento, decimal reserva) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); var x=await c.ConfiguracoesPrecificacaoEmpresas.SingleAsync(); x.Atualizar(null,null,null,incremento,reserva); await c.SaveChangesAsync(); }
+    private async Task AlterarEstadoAsync(int produto, decimal? margem=null, decimal? incremento=null, decimal? reserva=null, decimal? precoInsumo=null) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(1)); if(margem.HasValue){var p=await c.Produtos.SingleAsync(x=>x.Id==produto); p.AtualizarDados(p.Nome,margem.Value,p.Categoria);} if(incremento.HasValue||reserva.HasValue){var x=await c.ConfiguracoesPrecificacaoEmpresas.SingleAsync(); x.Atualizar(null,null,null,incremento ?? x.IncrementoComercial,reserva ?? x.ReservaComercialDesconto);} if(precoInsumo.HasValue){var ficha=await c.FichasTecnicas.SingleAsync(x=>x.ProdutoId==produto); var insumo=await c.ItensFichaTecnica.Where(x=>x.FichaTecnicaId==ficha.Id).Select(x=>x.InsumoId).SingleAsync(); c.PrecosInsumos.Add(PrecoInsumo.Criar(1,insumo,1m,precoInsumo.Value,new DateOnly(2030,1,2)));} await c.SaveChangesAsync(); }
     private async Task<List<RegistroPrecoProduto>> RegistrosAsync(int produto, int empresa) { using var scope = factory.Services.CreateScope(); var o=scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); return await c.RegistrosPrecosProdutos.Where(r=>r.ProdutoId==produto).ToListAsync(); }
     private async Task<Produto> ProdutoAsync(int id,int empresa) { using var scope=factory.Services.CreateScope(); var o=scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); return await c.Produtos.SingleAsync(p=>p.Id==id); }
     private sealed class Contexto(int id) : IEmpresaContext { public int? EmpresaId=>id; public int EmpresaIdOuSentinela=>id; public string? TimeZoneId=>Empresa.TimeZoneIdPadrao; }
