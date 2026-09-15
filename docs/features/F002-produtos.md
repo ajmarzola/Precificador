@@ -14,7 +14,8 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - calcular Preço sugerido a partir do custo e da margem de referência;
 - registrar Preço de prateleira preservando snapshot da precificação;
 - consultar histórico de precificação do Produto;
-- consultar margem atual e situação frente à Margem-alvo.
+- consultar margem atual e situação frente à Margem-alvo;
+- consultar detalhamento da precificação atual.
 
 ## Cadastro inicial — UC007
 
@@ -73,6 +74,8 @@ UC012 consulta esse histórico em ordem `DataReferencia DESC, Id DESC`. O primei
 A consulta histórica é somente leitura e continua válida mesmo que custo, Margem-alvo, Ficha Técnica, Incremento comercial ou Reserva comercial atuais mudem depois. Não persistir um simples `PrecoVendaAtual` ou `PrecoPrateleiraAtual` diretamente em Produto; o valor atual é derivado do histórico.
 
 UC024 combina o Preço de prateleira atual selecionado pela UC012 com o Custo unitário atual da UC022 e a `MargemAlvo` atual do Produto. `CustoReferencia` e `MargemReferencia` históricos não são usados para julgar a situação corrente. A Margem atual e a situação são derivadas em consulta e nunca persistidas.
+
+UC025 adiciona uma visão analítica somente leitura da precificação corrente. Essa visão reúne composição de custos, parâmetros atuais, Preço teórico/sugerido, Preço de prateleira atual e Margem/Situação usando a mesma fotografia de `PrecificacaoProdutoAtual`. Ela não substitui a Ficha Técnica editável nem o histórico comercial.
 
 ## Ficha Técnica e produção
 
@@ -162,7 +165,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md);
 - [UC011 — Registrar preço de prateleira preservando snapshot de precificação](../use-cases/UC011-registrar-preco-prateleira-snapshot.md);
 - [UC012 — Consultar histórico de precificação do Produto](../use-cases/UC012-consultar-historico-precificacao-produto.md);
-- [UC024 — Calcular margem atual e situação](../use-cases/UC024-calcular-margem-atual-situacao.md).
+- [UC024 — Calcular margem atual e situação](../use-cases/UC024-calcular-margem-atual-situacao.md);
+- [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md).
 
 ## Fora do escopo
 
