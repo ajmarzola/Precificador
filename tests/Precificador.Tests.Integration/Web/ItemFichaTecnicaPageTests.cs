@@ -1120,6 +1120,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var itens = await ListarItensAsync(produtoId);
         Assert.Equal(0.123456m, itens.Single(item => item.FichaTecnicaId == fichaId && item.InsumoId == primeiroInsumo).PercentualPerda);
         Assert.Equal(0m, itens.Single(item => item.FichaTecnicaId == fichaId && item.InsumoId == segundoInsumo).PercentualPerda);
+
+        var pontoInvariant = await CriarInsumoAsync(1, Nome("Insumo perda invariant"), null, UnidadeMedida.Grama, true);
+        Assert.Equal(HttpStatusCode.Redirect, (await EnviarFormularioAsync(client, produtoId, pontoInvariant, "1", null, percentualPerda: "12.5")).StatusCode);
+        Assert.Equal(0.125m, (await ListarItensAsync(produtoId)).Single(item => item.InsumoId == pontoInvariant).PercentualPerda);
     }
 
     [Fact]
@@ -1165,6 +1169,120 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains("Custo de perdas do lote:", pagina);
         Assert.Contains("indisponível", pagina);
         Assert.Contains("Há perda(s) sem custo base determinável.", pagina);
+    }
+
+    [Fact]
+    public async Task UC019_W5_W6_Ficha_exibe_custos_individuais_e_total_exato_de_perdas_conhecidas()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto perdas completas"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var primeiro = await CriarInsumoAsync(1, Nome("Insumo perda primeiro"), null, UnidadeMedida.Grama, true);
+        var segundo = await CriarInsumoAsync(1, Nome("Insumo perda segundo"), null, UnidadeMedida.Grama, true);
+        var itemPrimeiro = await CriarItemAsync(1, fichaId, primeiro, 2m, null);
+        var itemSegundo = await CriarItemAsync(1, fichaId, segundo, 3m, null);
+        await CriarPrecoAsync(1, primeiro);
+        await CriarPrecoAsync(1, segundo);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        await EnviarEdicaoItemAsync(client, produtoId, itemPrimeiro, "2", null, percentualPerda: "10");
+        await EnviarEdicaoItemAsync(client, produtoId, itemSegundo, "3", null, percentualPerda: "20");
+        var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
+
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(primeiro, 1)).Nome)}.*?<td>10%</td>.*?<td>2</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(segundo, 1)).Nome)}.*?<td>20%</td>.*?<td>6</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*8", RegexOptions.Singleline), pagina);
+    }
+
+    [Fact]
+    public async Task UC019_W7_W8_W9_Perda_zero_sem_preco_e_perda_positiva_indisponivel_preservam_custo_conhecido()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto perdas incompletas"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var conhecido = await CriarInsumoAsync(1, Nome("Insumo conhecido"), null, UnidadeMedida.Grama, true);
+        var perdaZero = await CriarInsumoAsync(1, Nome("Insumo perda zero"), null, UnidadeMedida.Grama, true);
+        var perdaSemPreco = await CriarInsumoAsync(1, Nome("Insumo perda sem preco"), null, UnidadeMedida.Grama, true);
+        var itemConhecido = await CriarItemAsync(1, fichaId, conhecido, 2m, null);
+        var itemZero = await CriarItemAsync(1, fichaId, perdaZero, 1m, null);
+        var itemIndisponivel = await CriarItemAsync(1, fichaId, perdaSemPreco, 1m, null);
+        await CriarPrecoAsync(1, conhecido);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        await EnviarEdicaoItemAsync(client, produtoId, itemConhecido, "2", null, percentualPerda: "10");
+        await EnviarEdicaoItemAsync(client, produtoId, itemZero, "1", null, percentualPerda: "0");
+        await EnviarEdicaoItemAsync(client, produtoId, itemIndisponivel, "1", null, percentualPerda: "10");
+        var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
+
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(conhecido, 1)).Nome)}.*?<td>2</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(perdaZero, 1)).Nome)}.*?<td>0%</td>.*?<td>0</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(perdaSemPreco, 1)).Nome)}.*?<td>10%</td>.*?<td>(?:—|&#x2014;)</td>", RegexOptions.Singleline), pagina);
+        Assert.Contains("Há perda(s) sem custo base determinável.", pagina);
+    }
+
+    [Fact]
+    public async Task UC019_W10_Ficha_vazia_mantem_custo_base_indisponivel_e_perdas_zero()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto ficha vazia"), true);
+        await CriarFichaAsync(1, produtoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
+
+        Assert.Matches(new Regex("Custo base dos itens:</strong>\\s*indisponível", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*0", RegexOptions.Singleline), pagina);
+    }
+
+    [Fact]
+    public async Task UC019_W11_W12_Categoria_e_situacao_inativa_nao_bloqueiam_perda_de_item_existente()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto inativo perdas"), false);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo embalagem inativo"), null, UnidadeMedida.Unidade, false, CategoriaInsumo.Embalagem);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 2m, null);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var resposta = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", null, percentualPerda: "15");
+
+        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
+        Assert.Equal(0.15m, (await ObterItemAsync(itemId, 1)).PercentualPerda);
+        Assert.Contains("15%", await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}"));
+    }
+
+    [Fact]
+    public async Task UC019_W14_Post_invalido_da_base_reusa_perda_persistida_sem_mutar_item()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto base invalida perdas"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo base invalida perdas"), null, UnidadeMedida.Grama, true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 2m, "persistido");
+        await CriarPrecoAsync(1, insumoId);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+        await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "persistido", percentualPerda: "10");
+
+        var resposta = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var pagina = await resposta.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*2", RegexOptions.Singleline), pagina);
+        var item = await ObterItemAsync(itemId, 1);
+        Assert.Equal((2m, "persistido", 0.10m), (item.Quantidade, item.Observacao, item.PercentualPerda));
+    }
+
+    [Fact]
+    public async Task UC019_W15_Get_nao_muta_percentual_ou_persiste_custos()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto get perdas"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo get perdas"), null, UnidadeMedida.Grama, true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 2m, "original");
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+        await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "original", percentualPerda: "12.3456");
+        var antes = await ObterItemAsync(itemId, 1);
+
+        var resposta = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}");
+        var depois = await ObterItemAsync(itemId, 1);
+
+        Assert.True(resposta.IsSuccessStatusCode);
+        Assert.Equal((antes.Quantidade, antes.Observacao, antes.PercentualPerda), (depois.Quantidade, depois.Observacao, depois.PercentualPerda));
     }
 
     private static async Task<HttpResponseMessage> EnviarRemocaoAsync(

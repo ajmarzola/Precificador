@@ -62,7 +62,7 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(7, 11, 13, 1m, "original");
 
-        item.AtualizarDados(2.5m, "  massa principal  ");
+        item.AtualizarDados(2.5m, "  massa principal  ", 0m);
 
         Assert.Equal(7, item.EmpresaId);
         Assert.Equal(11, item.FichaTecnicaId);
@@ -79,7 +79,7 @@ public sealed class ItemFichaTecnicaTests
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            item.AtualizarDados(decimal.Parse(quantidade, System.Globalization.CultureInfo.InvariantCulture), "alterada"));
+            item.AtualizarDados(decimal.Parse(quantidade, System.Globalization.CultureInfo.InvariantCulture), "alterada", 0m));
 
         Assert.Equal(1m, item.Quantidade);
         Assert.Equal("original", item.Observacao);
@@ -90,13 +90,13 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
-        item.AtualizarDados(1m, "   ");
+        item.AtualizarDados(1m, "   ", 0m);
         Assert.Null(item.Observacao);
 
-        item.AtualizarDados(1m, "  linha 1\r\nlinha 2  ");
+        item.AtualizarDados(1m, "  linha 1\r\nlinha 2  ", 0m);
         Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
 
-        Assert.Throws<ArgumentException>(() => item.AtualizarDados(1m, new string('a', 1001)));
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(1m, new string('a', 1001), 0m));
         Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
     }
 
@@ -105,7 +105,7 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
-        Assert.Throws<ArgumentException>(() => item.AtualizarDados(2m, new string('a', 1001)));
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(2m, new string('a', 1001), 0m));
 
         Assert.Equal(1m, item.Quantidade);
         Assert.Equal("original", item.Observacao);

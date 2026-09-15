@@ -165,6 +165,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
     private static string CampoPara(string? nomeParametro) => nomeParametro switch
     {
         "observacao" => "Input.Observacao",
+        "percentualPerda" => "Input.PercentualPerda",
         _ => "Input.Quantidade"
     };
 

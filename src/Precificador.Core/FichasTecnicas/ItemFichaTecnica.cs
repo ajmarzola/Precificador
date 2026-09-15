@@ -50,7 +50,7 @@ public sealed class ItemFichaTecnica : IEntidadeEmpresa
         decimal percentualPerda = 0m) =>
         new(empresaId, fichaTecnicaId, insumoId, quantidade, observacao, percentualPerda);
 
-    public void AtualizarDados(decimal quantidade, string? observacao, decimal percentualPerda = 0m)
+    public void AtualizarDados(decimal quantidade, string? observacao, decimal percentualPerda)
     {
         var observacaoNormalizada = NormalizarObservacao(observacao);
         ValidarQuantidade(quantidade);

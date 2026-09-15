@@ -219,7 +219,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
 
         context.ChangeTracker.Clear();
         var persistido = await context.ItensFichaTecnica.SingleAsync(item => item.Id == itemId);
-        persistido.AtualizarDados(1.25m, "  ajustado  ");
+        persistido.AtualizarDados(1.25m, "  ajustado  ", 0m);
         await context.SaveChangesAsync();
 
         context.ChangeTracker.Clear();
@@ -241,7 +241,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         await context.SaveChangesAsync();
         var itemId = item.Id;
 
-        item.AtualizarDados(2m, "alterado");
+        item.AtualizarDados(2m, "alterado", 0m);
         await context.SaveChangesAsync();
 
         var atualizado = await context.ItensFichaTecnica.AsNoTracking().SingleAsync(item => item.Id == itemId);
@@ -262,7 +262,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         context.ItensFichaTecnica.Add(item);
         await context.SaveChangesAsync();
 
-        item.AtualizarDados(2m, null);
+        item.AtualizarDados(2m, null, 0m);
         context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 3m));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());

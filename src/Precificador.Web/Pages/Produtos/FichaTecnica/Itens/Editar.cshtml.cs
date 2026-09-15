@@ -126,6 +126,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     private static string CampoPara(string? nomeParametro) => nomeParametro switch
     {
         "observacao" => "Input.Observacao",
+        "percentualPerda" => "Input.PercentualPerda",
         _ => "Input.Quantidade"
     };
 
