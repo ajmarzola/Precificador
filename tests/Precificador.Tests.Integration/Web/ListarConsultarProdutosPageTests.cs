@@ -180,10 +180,8 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         Assert.DoesNotContain("NomeNormalizado", conteudo);
         Assert.DoesNotContain("Preço de venda", conteudo);
         Assert.DoesNotContain("Histórico de venda", conteudo);
-        Assert.DoesNotContain("Custo", conteudo);
         Assert.DoesNotContain("Preço teórico", conteudo);
         Assert.DoesNotContain("Preço sugerido", conteudo);
-        Assert.DoesNotContain("Margem atual", conteudo);
         Assert.DoesNotContain("Ficha Técnica", conteudo);
     }
 

@@ -42,7 +42,7 @@ A ordem das linhas define a fila normativa.
 | UC023 — Calcular preço teórico e sugerido | UC | Concluído | UC022, UC027 | [UC023](../use-cases/UC023-calcular-preco-teorico-sugerido.md) |
 | UC011 — Registrar preço de prateleira preservando snapshot de precificação | UC | Concluído | UC023; incorporar MEL009 | [UC011](../use-cases/UC011-registrar-preco-prateleira-snapshot.md) |
 | UC012 — Consultar histórico de precificação do Produto | UC | Concluído | UC011; incorporar MEL009 | [UC012](../use-cases/UC012-consultar-historico-precificacao-produto.md) |
-| UC024 — Calcular margem atual e situação | UC | Pronto | UC012, UC022 | [UC024](../use-cases/UC024-calcular-margem-atual-situacao.md) |
+| UC024 — Calcular margem atual e situação | UC | Concluído | UC012, UC022 | [UC024](../use-cases/UC024-calcular-margem-atual-situacao.md) |
 | UC025 — Consultar detalhamento da precificação | UC | Planejado | UC023, UC024 | Documento a criar |
 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | UC024 | Documento a criar |
 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
