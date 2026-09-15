@@ -84,7 +84,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | [UC022](UC022-calcular-custo-total-unitario.md) | Calcular custo total e custo unitário | UC018–UC021 |
 | [UC023](UC023-calcular-preco-teorico-sugerido.md) | Calcular preço teórico e sugerido | UC022, UC027 |
 | [UC024](UC024-calcular-margem-atual-situacao.md) | Calcular margem atual e situação | UC012, UC022 |
-| UC025 | Consultar detalhamento da precificação | UC023, UC024 |
+| [UC025](UC025-consultar-detalhamento-precificacao.md) | Consultar detalhamento da precificação | UC023, UC024 |
 
 ## Dashboard
 
