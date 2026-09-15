@@ -201,6 +201,50 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
     }
 
     [Fact]
+    public async Task UC027_P3_Guard_central_rejeita_alteracao_tecnica_cross_tenant_de_configuracao_existente()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using (var contexto = CriarContexto(connection, 1))
+        {
+            await contexto.Database.MigrateAsync();
+            var empresaDois = Empresa.Criar("Empresa dois");
+            contexto.Empresas.Add(empresaDois);
+            await contexto.SaveChangesAsync();
+            await using var contextoEmpresaDois = CriarContexto(connection, empresaDois.Id);
+            contextoEmpresaDois.ConfiguracoesPrecificacaoEmpresas.Add(ConfiguracaoPrecificacaoEmpresa.CriarPadrao(empresaDois.Id));
+            await contextoEmpresaDois.SaveChangesAsync();
+        }
+
+        await using (var contextoEmpresaDois = CriarContexto(connection, 2))
+        {
+            var configuracao = await contextoEmpresaDois.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+            configuracao.Atualizar(77m, 7m, 0.70m, 7m, 0.17m);
+            await contextoEmpresaDois.SaveChangesAsync();
+        }
+
+        await using (var contextoEmpresaUm = CriarContexto(connection, 1))
+        {
+            var configuracaoDeOutraEmpresa = await contextoEmpresaUm.ConfiguracoesPrecificacaoEmpresas
+                .IgnoreQueryFilters()
+                .SingleAsync(configuracao => configuracao.EmpresaId == 2);
+            configuracaoDeOutraEmpresa.Atualizar(11m, 1m, 0.10m, 1m, 0.05m);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
+        }
+
+        await using var consultaEmpresaDois = CriarContexto(connection, 2);
+        var configuracaoPreservada = await consultaEmpresaDois.ConfiguracoesPrecificacaoEmpresas
+            .AsNoTracking()
+            .SingleAsync();
+        Assert.Equal(77m, configuracaoPreservada.ValorHoraTrabalho);
+        Assert.Equal(7m, configuracaoPreservada.TarifaEnergiaKwh);
+        Assert.Equal(0.70m, configuracaoPreservada.MargemPadrao);
+        Assert.Equal(7m, configuracaoPreservada.IncrementoComercial);
+        Assert.Equal(0.17m, configuracaoPreservada.ReservaComercialDesconto);
+    }
+
+    [Fact]
     public async Task UC027_P4_Atualizacao_nao_cria_segunda_configuracao()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

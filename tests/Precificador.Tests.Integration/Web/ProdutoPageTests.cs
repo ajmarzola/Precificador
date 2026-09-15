@@ -65,6 +65,27 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     }
 
     [Fact]
+    public async Task UC027_W17_MargemPadrao_preserva_precisao_ao_preencher_e_salvar_sem_alteracao()
+    {
+        await AtualizarMargemPadraoAsync(1, 0.123456m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var responseGet = await client.GetAsync("/Produtos/Novo");
+        var conteudoGet = await WebTestHtml.LerHtmlDecodificadoAsync(responseGet);
+        var margemPreenchida = ValorDoInput(conteudoGet, "Input.MargemAlvoPercentual");
+        var nome = $"Produto margem precisa {Guid.NewGuid():N}";
+
+        var responsePost = await EnviarFormularioAsync(client, nome, null, margemPreenchida);
+
+        responseGet.EnsureSuccessStatusCode();
+        Assert.Equal("12,3456", margemPreenchida);
+        Assert.Equal(HttpStatusCode.Redirect, responsePost.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
+        Assert.Equal(0.123456m, produto.MargemAlvo);
+    }
+
+    [Fact]
     public async Task UC027_W18_MargemPadrao_null_nao_preenche_margem_alvo()
     {
         await AtualizarMargemPadraoAsync(1, null);
