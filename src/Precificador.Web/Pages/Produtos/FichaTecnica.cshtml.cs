@@ -9,11 +9,12 @@ using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos;
+using Precificador.Web.Precificacao;
 using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
 
-public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperacionalEmpresa dataOperacionalEmpresa) : PageModel
+public sealed class FichaTecnicaModel(PrecificadorDbContext context, PrecificacaoProdutoAtual precificacaoAtual) : PageModel
 {
     [BindProperty]
     public FichaTecnicaInputModel Input { get; set; } = new();
@@ -207,40 +208,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
                 insumo.Ativo))
             .ToListAsync();
 
-        var precosVigentes = await context.PrecosInsumos.AsNoTracking().SelecionarVigentesAsync(
-            itens.Select(item => item.InsumoId).Distinct().ToArray(),
-            dataOperacionalEmpresa.Hoje);
-        var calculo = CalculadoraCustoItens.Calcular(itens.Select(item =>
-            new ItemCustoEntrada(
-                item.Id,
-                item.Quantidade,
-                precosVigentes.GetValueOrDefault(item.InsumoId)?.CustoUnitario)));
-        var custosPorItem = calculo.Itens.ToDictionary(item => item.ItemId);
-        var perdas = CalculadoraCustoPerdas.Calcular(itens.Select(item =>
-            new ItemCustoPerdaEntrada(item.Id, item.PercentualPerda, custosPorItem[item.Id].CustoItem)));
-        var perdasPorItem = perdas.Itens.ToDictionary(item => item.ItemId);
-
-        Itens = itens.Select(item =>
-        {
-            var custo = custosPorItem[item.Id];
-            return new ItemFichaResumo(
-                item.Id,
-                item.InsumoId,
-                item.Nome,
-                item.Marca,
-                item.Quantidade,
-                item.PercentualPerda,
-                item.Unidade,
-                item.Observacao,
-                item.InsumoAtivo,
-                custo.CustoUnitario,
-                custo.CustoItem,
-                perdasPorItem[item.Id].CustoPerdaItem);
-        }).ToList();
-        CustoBaseItens = calculo.CustoBaseItens;
-        CustoBaseItensCompleto = calculo.Completo;
-        CustoPerdasLote = perdas.CustoPerdasLote;
-        CustoPerdasCompleto = perdas.Completo;
+        Itens = itens.Select(item => new ItemFichaResumo(item.Id, item.InsumoId, item.Nome, item.Marca, item.Quantidade, item.PercentualPerda, item.Unidade, item.Observacao, item.InsumoAtivo, null, null, null)).ToList();
 
         var usos = await context.UsosEquipamentosFicha.AsNoTracking().Where(uso => uso.FichaTecnicaId == ficha.Id)
             .OrderBy(uso => uso.NomeEquipamentoNormalizado)
@@ -252,36 +220,28 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     private async Task<bool> CarregarCustosConfiguracaoAsync(FichaResumo ficha)
     {
-        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho, item.TarifaEnergiaKwh, item.IncrementoComercial))
-            .SingleOrDefaultAsync();
-
-        if (configuracao is null)
+        if (!await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking().AnyAsync())
         {
             return false;
         }
-
-        var calculo = CalculadoraCustoMaoDeObra.Calcular(ficha.TempoAtivoMinutos, configuracao.ValorHoraTrabalho);
-        CustoMaoDeObraLote = calculo.CustoMaoDeObraLote;
-        CustoMaoDeObraCompleto = calculo.Completo;
-        var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh, UsosEquipamentos.Select(uso => new UsoEquipamentoCustoEntrada(uso.Id, uso.PotenciaKw, uso.TempoUsoMinutos)));
-        var energiaPorUso = energia.Usos.ToDictionary(uso => uso.UsoId);
-        UsosEquipamentos = UsosEquipamentos.Select(uso => uso with { ConsumoKwh = energiaPorUso[uso.Id].ConsumoKwh, CustoEnergiaUso = energiaPorUso[uso.Id].CustoEnergiaUso }).ToList();
-        CustoEnergiaLote = energia.CustoEnergiaLote;
-        CustoEnergiaCompleto = energia.Completo;
-        var custoProduto = CalculadoraCustoProduto.Calcular(
-            CustoBaseItens,
-            CustoPerdasLote,
-            CustoMaoDeObraLote,
-            CustoEnergiaLote,
-            ficha.Rendimento);
-        CustoLote = custoProduto.CustoLote;
-        CustoUnitarioProduto = custoProduto.CustoUnitarioProduto;
-        CustoProdutoCompleto = custoProduto.Completo;
-        var precoProduto = CalculadoraPrecoProduto.Calcular(CustoUnitarioProduto, Produto!.MargemAlvo, configuracao.IncrementoComercial);
-        PrecoTeorico = precoProduto.PrecoTeorico;
-        PrecoSugerido = precoProduto.PrecoSugerido;
-        PrecoProdutoCompleto = precoProduto.Completo;
+        var atual = await precificacaoAtual.CalcularAsync(Produto!.Id);
+        if (atual is null) return false;
+        CustoBaseItens = atual.CustoBaseItens;
+        CustoBaseItensCompleto = atual.CustoBaseItens is not null;
+        CustoPerdasLote = atual.CustoPerdasLote;
+        CustoPerdasCompleto = atual.CustoPerdasLote is not null;
+        CustoMaoDeObraLote = atual.CustoMaoDeObraLote;
+        CustoMaoDeObraCompleto = atual.CustoMaoDeObraLote is not null;
+        CustoEnergiaLote = atual.CustoEnergiaLote;
+        CustoEnergiaCompleto = atual.CustoEnergiaLote is not null;
+        Itens = Itens.Select(item => atual.Itens.TryGetValue(item.Id, out var custo) ? item with { CustoUnitario = custo.CustoUnitario, CustoItem = custo.CustoItem, CustoPerdaItem = custo.CustoPerdaItem } : item).ToList();
+        UsosEquipamentos = UsosEquipamentos.Select(uso => atual.Usos.TryGetValue(uso.Id, out var custo) ? uso with { ConsumoKwh = custo.ConsumoKwh, CustoEnergiaUso = custo.CustoEnergiaUso } : uso).ToList();
+        CustoLote = atual.CustoLote;
+        CustoUnitarioProduto = atual.CustoUnitarioProduto;
+        CustoProdutoCompleto = atual.CustoProdutoCompleto;
+        PrecoTeorico = atual.PrecoTeorico;
+        PrecoSugerido = atual.PrecoSugerido;
+        PrecoProdutoCompleto = atual.PrecoProdutoCompleto;
         return true;
     }
 
@@ -307,8 +267,6 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo, decimal MargemAlvo);
 
     public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
-
-    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial);
 
     public sealed record UsoEquipamentoResumo(int Id, string NomeEquipamento, decimal PotenciaKw, int TempoUsoMinutos, decimal ConsumoKwh, decimal? CustoEnergiaUso)
     {
