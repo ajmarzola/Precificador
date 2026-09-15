@@ -68,6 +68,55 @@ public sealed class PrecoInsumoConsultaTests
         Assert.Null(vigente);
     }
 
+    [Fact]
+    public async Task P1_P2_P3_P4_P5_Seleciona_vigentes_em_lote_respeitando_data_e_desempate()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var primeiro = await CriarInsumoAsync(context, 1);
+        var segundo = await CriarInsumoAsync(context, 1);
+        var passado = PrecoInsumo.Criar(1, primeiro.Id, 1m, 8m, new DateOnly(2026, 9, 1));
+        var empateAntigo = PrecoInsumo.Criar(1, primeiro.Id, 1m, 10m, DataOperacional);
+        var empateNovo = PrecoInsumo.Criar(1, primeiro.Id, 1m, 12m, DataOperacional);
+        var futuro = PrecoInsumo.Criar(1, primeiro.Id, 1m, 99m, new DateOnly(2026, 9, 20));
+        var somenteFuturo = PrecoInsumo.Criar(1, segundo.Id, 1m, 15m, new DateOnly(2026, 9, 20));
+        context.PrecosInsumos.AddRange(passado, empateAntigo, empateNovo, futuro, somenteFuturo);
+        await context.SaveChangesAsync();
+
+        var vigentes = await context.PrecosInsumos.AsNoTracking().SelecionarVigentesAsync(
+            [primeiro.Id, segundo.Id], DataOperacional);
+
+        Assert.Single(vigentes);
+        Assert.Equal(empateNovo.Id, vigentes[primeiro.Id].Id);
+        Assert.DoesNotContain(segundo.Id, vigentes.Keys);
+    }
+
+    [Fact]
+    public async Task P6_P7_Consulta_em_lote_respeita_tenant_e_retorna_um_preco_por_insumo()
+    {
+        await using var connection = await AbrirAsync();
+        await using var empresaUm = CriarContexto(connection, 1);
+        await empresaUm.Database.MigrateAsync();
+        empresaUm.Empresas.Add(Empresa.Criar("Empresa dois"));
+        await empresaUm.SaveChangesAsync();
+        var insumoUm = await CriarInsumoAsync(empresaUm, 1);
+        empresaUm.PrecosInsumos.Add(PrecoInsumo.Criar(1, insumoUm.Id, 1m, 10m, DataOperacional));
+        await empresaUm.SaveChangesAsync();
+
+        await using var empresaDois = CriarContexto(connection, 2);
+        var insumoDois = await CriarInsumoAsync(empresaDois, 2);
+        empresaDois.PrecosInsumos.Add(PrecoInsumo.Criar(2, insumoDois.Id, 1m, 20m, DataOperacional));
+        await empresaDois.SaveChangesAsync();
+
+        var vigentes = await empresaUm.PrecosInsumos.AsNoTracking().SelecionarVigentesAsync(
+            [insumoUm.Id, insumoDois.Id], DataOperacional);
+
+        Assert.Single(vigentes);
+        Assert.Equal(10m, vigentes[insumoUm.Id].PrecoCompra);
+        Assert.DoesNotContain(insumoDois.Id, vigentes.Keys);
+    }
+
     private static async Task<SqliteConnection> AbrirAsync()
     {
         var connection = new SqliteConnection("Data Source=:memory:");

@@ -58,6 +58,8 @@
                     <th scope="col">Marca</th>
                     <th scope="col">Quantidade</th>
                     <th scope="col">Unidade</th>
+                    <th scope="col">Custo unitário</th>
+                    <th scope="col">Custo do item</th>
                     <th scope="col">Observação contextual</th>
                     <th scope="col">Situação</th>
                     <th scope="col">Ações</th>
@@ -69,8 +71,10 @@
                     <tr>
                         <td>@item.Nome</td>
                         <td>@(string.IsNullOrWhiteSpace(item.Marca) ? "—" : item.Marca)</td>
-                        <td>@item.Quantidade</td>
+                        <td>@item.QuantidadeFormatada</td>
                         <td>@item.UnidadeFormatada</td>
+                        <td>@item.CustoUnitarioFormatado</td>
+                        <td>@item.CustoItemFormatado</td>
                         <td style="white-space: pre-wrap">@(string.IsNullOrWhiteSpace(item.Observacao) ? "—" : item.Observacao)</td>
                         <td>@item.Situacao</td>
                         <td>
@@ -85,6 +89,26 @@
                 }
             </tbody>
         </table>
+    }
+
+    <p class="mt-3">
+        <strong>Custo base dos itens:</strong>
+        @if (Model.CustoBaseItensCompleto)
+        {
+            @Model.CustoBaseItensFormatado
+        }
+        else
+        {
+            <text>indisponível</text>
+        }
+    </p>
+    @if (!Model.CustoBaseItensCompleto)
+    {
+        <p>
+            @(Model.Itens.Count == 0
+                ? "A ficha não possui itens."
+                : "Há item(ns) sem preço vigente.")
+        </p>
     }
 }
 

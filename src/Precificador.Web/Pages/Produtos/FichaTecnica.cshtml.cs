@@ -2,7 +2,9 @@ using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
+using Precificador.Core.Precificacao;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
@@ -10,7 +12,7 @@ using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
 
-public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
+public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperacionalEmpresa dataOperacionalEmpresa) : PageModel
 {
     [BindProperty]
     public FichaTecnicaInputModel Input { get; set; } = new();
@@ -24,6 +26,14 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
     public bool PossuiFicha { get; private set; }
 
     public IReadOnlyList<ItemFichaResumo> Itens { get; private set; } = [];
+
+    public decimal? CustoBaseItens { get; private set; }
+
+    public bool CustoBaseItensCompleto { get; private set; }
+
+    public string? CustoBaseItensFormatado => CustoBaseItens is null
+        ? null
+        : PrecoInsumoFormatacao.CustoCalculado(CustoBaseItens.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -106,26 +116,56 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         {
             PossuiFicha = false;
             Itens = [];
+            CustoBaseItens = null;
+            CustoBaseItensCompleto = false;
             return null;
         }
 
         PossuiFicha = true;
-        Itens = await (
+        var itens = await (
             from item in context.ItensFichaTecnica.AsNoTracking()
             join insumo in context.Insumos.AsNoTracking()
                 on item.InsumoId equals insumo.Id
             where item.FichaTecnicaId == ficha.Id
             orderby insumo.NomeNormalizado, insumo.MarcaNormalizada
-            select new ItemFichaResumo(
+            select new ItemFichaCarregado(
                 item.Id,
                 item.InsumoId,
                 insumo.Nome,
                 insumo.Marca,
-                ItemFichaTecnicaFormulario.FormatarQuantidade(item.Quantidade),
+                item.Quantidade,
                 insumo.UnidadeBase,
                 item.Observacao,
                 insumo.Ativo))
             .ToListAsync();
+
+        var precosVigentes = await context.PrecosInsumos.AsNoTracking().SelecionarVigentesAsync(
+            itens.Select(item => item.InsumoId).Distinct().ToArray(),
+            dataOperacionalEmpresa.Hoje);
+        var calculo = CalculadoraCustoItens.Calcular(itens.Select(item =>
+            new ItemCustoEntrada(
+                item.Id,
+                item.Quantidade,
+                precosVigentes.GetValueOrDefault(item.InsumoId)?.CustoUnitario)));
+        var custosPorItem = calculo.Itens.ToDictionary(item => item.ItemId);
+
+        Itens = itens.Select(item =>
+        {
+            var custo = custosPorItem[item.Id];
+            return new ItemFichaResumo(
+                item.Id,
+                item.InsumoId,
+                item.Nome,
+                item.Marca,
+                item.Quantidade,
+                item.Unidade,
+                item.Observacao,
+                item.InsumoAtivo,
+                custo.CustoUnitario,
+                custo.CustoItem);
+        }).ToList();
+        CustoBaseItens = calculo.CustoBaseItens;
+        CustoBaseItensCompleto = calculo.Completo;
 
         return ficha;
     }
@@ -158,13 +198,35 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context) : PageModel
         int InsumoId,
         string Nome,
         string? Marca,
-        string Quantidade,
+        decimal Quantidade,
         UnidadeMedida Unidade,
         string? Observacao,
-        bool InsumoAtivo)
+        bool InsumoAtivo,
+        decimal? CustoUnitario,
+        decimal? CustoItem)
     {
+        public string QuantidadeFormatada => ItemFichaTecnicaFormulario.FormatarQuantidade(Quantidade);
+
         public string UnidadeFormatada => InsumoRotulos.Unidade(Unidade);
 
         public string Situacao => InsumoAtivo ? "Ativo" : "Inativo";
+
+        public string CustoUnitarioFormatado => CustoUnitario is null
+            ? "Sem preço vigente"
+            : PrecoInsumoFormatacao.CustoUnitario(CustoUnitario.Value);
+
+        public string CustoItemFormatado => CustoItem is null
+            ? "—"
+            : PrecoInsumoFormatacao.CustoCalculado(CustoItem.Value);
     }
+
+    private sealed record ItemFichaCarregado(
+        int Id,
+        int InsumoId,
+        string Nome,
+        string? Marca,
+        decimal Quantidade,
+        UnidadeMedida Unidade,
+        string? Observacao,
+        bool InsumoAtivo);
 }

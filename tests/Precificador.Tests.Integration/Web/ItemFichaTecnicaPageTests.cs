@@ -727,9 +727,8 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.DoesNotContain(outroInsumoNome, pagina);
         Assert.DoesNotContain(insumoOutroTenantNome, pagina);
         Assert.Contains("—", pagina);
-        Assert.DoesNotContain("Custo", pagina);
-        Assert.DoesNotContain("Preço", pagina);
-        Assert.DoesNotContain("Total", pagina);
+        Assert.Contains("Custo unitário", pagina);
+        Assert.Contains("Custo do item", pagina);
     }
 
     [Fact]
@@ -776,9 +775,8 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.True(pagina.IndexOf("Z marca", StringComparison.Ordinal) < pagina.IndexOf(nomeZeta, StringComparison.Ordinal));
         Assert.DoesNotContain(nomeOutraFicha, pagina);
         Assert.DoesNotContain(nomeOutroTenant, pagina);
-        Assert.DoesNotContain("Custo", pagina);
-        Assert.DoesNotContain("Preço", pagina);
-        Assert.DoesNotContain("Total", pagina);
+        Assert.Contains("Custo unitário", pagina);
+        Assert.Contains("Custo do item", pagina);
         Assert.DoesNotContain("Margem", pagina);
     }
 
