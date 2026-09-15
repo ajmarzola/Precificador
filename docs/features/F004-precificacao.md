@@ -105,6 +105,30 @@ O cálculo não usa `CustoReferencia`/`MargemReferencia` históricos, Preço sug
 
 Margem atual e situação são derivadas em consulta, sem arredondamento intermediário e sem persistência. Produto inativo permanece calculável.
 
+## UC025 — Detalhamento da precificação atual
+
+UC025 materializa uma visão explicativa somente leitura do estado corrente já calculado por UC018–UC024.
+
+A rota `/Produtos/Precificacao/{id}` apresenta, na mesma fotografia:
+
+- parâmetros atuais usados no cálculo;
+- Itens e perdas;
+- mão de obra;
+- equipamentos/energia;
+- consolidação do custo;
+- Margem-alvo;
+- Preço teórico;
+- Incremento comercial;
+- Preço sugerido;
+- Preço de prateleira atual;
+- Margem atual;
+- Situação;
+- pendências da precificação.
+
+A página não cria fórmulas. Os valores numéricos vêm de uma única execução de `PrecificacaoProdutoAtual`; consultas adicionais servem apenas para metadados estruturais de Ficha/Itens/Equipamentos.
+
+UC025 não substitui a Ficha Técnica editável, não lista histórico comercial, não deriva DescontoReferencia e não persiste resultados.
+
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
