@@ -29,6 +29,26 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
 
     public static ConfiguracaoPrecificacaoEmpresa CriarPadrao(int empresaId) => new(empresaId);
 
+    public void Atualizar(
+        decimal? valorHoraTrabalho,
+        decimal? tarifaEnergiaKwh,
+        decimal? margemPadrao,
+        decimal? incrementoComercial,
+        decimal reservaComercialDesconto)
+    {
+        ValidarValorNaoNegativo(valorHoraTrabalho, nameof(ValorHoraTrabalho));
+        ValidarValorNaoNegativo(tarifaEnergiaKwh, nameof(TarifaEnergiaKwh));
+        ValidarFracaoMenorQueUm(margemPadrao, nameof(MargemPadrao));
+        ValidarIncremento(incrementoComercial);
+        ValidarReservaComercialDesconto(reservaComercialDesconto);
+
+        ValorHoraTrabalho = valorHoraTrabalho;
+        TarifaEnergiaKwh = tarifaEnergiaKwh;
+        MargemPadrao = margemPadrao;
+        IncrementoComercial = incrementoComercial;
+        ReservaComercialDesconto = reservaComercialDesconto;
+    }
+
     public void DefinirEmpresa(int empresaId)
     {
         if (empresaId <= 0)
@@ -57,7 +77,10 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     {
         if (valor < 0)
         {
-            throw new ArgumentOutOfRangeException(nomeParametro);
+            var mensagem = nomeParametro == nameof(ValorHoraTrabalho)
+                ? "O valor da hora de trabalho não pode ser negativo."
+                : "A tarifa de energia não pode ser negativa.";
+            throw new ArgumentOutOfRangeException(nomeParametro, mensagem);
         }
     }
 
@@ -65,7 +88,9 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     {
         if (valor < 0 || valor >= 1)
         {
-            throw new ArgumentOutOfRangeException(nomeParametro);
+            throw new ArgumentOutOfRangeException(
+                nomeParametro,
+                "A margem padrão deve ser maior ou igual a 0% e menor que 100%.");
         }
     }
 
@@ -73,7 +98,9 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     {
         if (valor <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(IncrementoComercial));
+            throw new ArgumentOutOfRangeException(
+                nameof(IncrementoComercial),
+                "O incremento comercial deve ser maior que zero.");
         }
     }
 
@@ -81,7 +108,9 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     {
         if (valor < 0 || valor >= 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(ReservaComercialDesconto));
+            throw new ArgumentOutOfRangeException(
+                nameof(ReservaComercialDesconto),
+                "A reserva comercial para desconto deve ser maior ou igual a 0% e menor que 100%.");
         }
     }
 }

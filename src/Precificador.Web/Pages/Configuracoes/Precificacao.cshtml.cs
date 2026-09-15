@@ -12,6 +12,8 @@ public sealed class PrecificacaoModel(PrecificadorDbContext context, EmpresaCont
 
     public string EmpresaNome => empresaContext.Nome ?? "não selecionada";
 
+    public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
+
     public async Task<IActionResult> OnGetAsync()
     {
         Configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()

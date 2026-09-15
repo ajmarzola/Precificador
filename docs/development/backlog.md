@@ -41,7 +41,7 @@ A ordem das linhas define a fila normativa.
 | UC017 — Consultar Ficha Técnica e composição | UC | Concluído | — | [UC017-consultar-ficha-composicao.md](../use-cases/UC017-consultar-ficha-composicao.md) |
 | MEL009 — Reserva comercial do Desconto de referência | MEL | Especificado | Implementação distribuída em UC026, UC027, UC011 e UC012 | [MEL009-reserva-comercial-desconto.md](improvements/MEL009-reserva-comercial-desconto.md) |
 | UC026 — Consultar configurações de precificação da Empresa | UC | Concluído | — | [UC026-consultar-configuracoes-precificacao.md](../use-cases/UC026-consultar-configuracoes-precificacao.md) |
-| UC027 — Alterar configurações de precificação da Empresa | UC | Pronto | — | [UC027-alterar-configuracoes-precificacao.md](../use-cases/UC027-alterar-configuracoes-precificacao.md) |
+| UC027 — Alterar configurações de precificação da Empresa | UC | Concluído | — | [UC027-alterar-configuracoes-precificacao.md](../use-cases/UC027-alterar-configuracoes-precificacao.md) |
 | UC018 — Calcular custo atual dos itens do lote | UC | Especificado | UC027; revalidar antes de implementar | [UC018-calcular-custo-itens-lote.md](../use-cases/UC018-calcular-custo-itens-lote.md) |
 | UC019 — Calcular perdas aplicáveis | UC | Planejado | UC018; revalidar antes de implementar | Documento a criar |
 | UC020 — Calcular custo de mão de obra | UC | Planejado | UC013, UC027 | Documento a criar |

@@ -1,0 +1,42 @@
+@page
+@model Precificador.Web.Pages.Configuracoes.Precificacao.EditarModel
+@{
+    ViewData["Title"] = "Alterar configurações de precificação";
+}
+
+<h1>Alterar configurações de precificação</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.ValorHoraTrabalho" class="form-label"></label>
+        <input asp-for="Input.ValorHoraTrabalho" class="form-control" />
+        <span asp-validation-for="Input.ValorHoraTrabalho" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.TarifaEnergiaKwh" class="form-label"></label>
+        <input asp-for="Input.TarifaEnergiaKwh" class="form-control" />
+        <span asp-validation-for="Input.TarifaEnergiaKwh" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.MargemPadraoPercentual" class="form-label"></label>
+        <input asp-for="Input.MargemPadraoPercentual" class="form-control" />
+        <span asp-validation-for="Input.MargemPadraoPercentual" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.IncrementoComercial" class="form-label"></label>
+        <input asp-for="Input.IncrementoComercial" class="form-control" />
+        <span asp-validation-for="Input.IncrementoComercial" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.ReservaComercialDescontoPercentual" class="form-label"></label>
+        <input asp-for="Input.ReservaComercialDescontoPercentual" class="form-control" />
+        <span asp-validation-for="Input.ReservaComercialDescontoPercentual" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" asp-page="/Configuracoes/Precificacao">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
