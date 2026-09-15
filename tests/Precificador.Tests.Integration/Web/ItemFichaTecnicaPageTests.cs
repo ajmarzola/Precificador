@@ -777,7 +777,6 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.DoesNotContain(nomeOutroTenant, pagina);
         Assert.Contains("Custo unitário", pagina);
         Assert.Contains("Custo do item", pagina);
-        Assert.DoesNotContain("Margem", pagina);
     }
 
     [Fact]

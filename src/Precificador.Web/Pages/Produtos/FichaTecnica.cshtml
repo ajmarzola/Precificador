@@ -162,6 +162,19 @@
     {
         <p>Precificação incompleta.</p>
     }
+
+    <h2 class="h4 mt-4">Preço do produto</h2>
+    <p><strong>Margem-alvo:</strong> @Precificador.Web.Apresentacao.ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</p>
+    <p><strong>Preço teórico:</strong> @(Model.PrecoTeoricoFormatado ?? "indisponível")</p>
+    <p><strong>Preço sugerido:</strong> @(Model.PrecoSugeridoFormatado ?? "indisponível")</p>
+    @if (!Model.PrecoProdutoCompleto)
+    {
+        @if (Model.CustoUnitarioProduto is not null && Model.PrecoSugerido is null)
+        {
+            <p>Incremento comercial não configurado.</p>
+        }
+        <p>Precificação incompleta.</p>
+    }
 }
 
 @section Scripts {
