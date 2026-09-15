@@ -20,6 +20,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         var produtoId = IdRota();
         if (!await CarregarAsync(produtoId)) return NotFoundOuRedirect(produtoId);
         var potenciaValida = UsoEquipamentoFichaFormulario.TentarObterPotencia(ModelState, Input.PotenciaKw, out var potencia);
+        if (string.IsNullOrWhiteSpace(Input.NomeEquipamento)) ModelState.AddModelError("Input.NomeEquipamento", "O nome do equipamento é obrigatório.");
         if (Input.TempoUsoMinutos is null || Input.TempoUsoMinutos <= 0) ModelState.AddModelError("Input.TempoUsoMinutos", "O tempo de uso deve ser maior que zero.");
         if (!potenciaValida || !ModelState.IsValid) return Page();
         var nomeNormalizado = Normalizar(Input.NomeEquipamento);

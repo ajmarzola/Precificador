@@ -1,4 +1,4 @@
-@page "{produtoId:int}/{usoId:int}"
+@page "/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Remover/{usoId:int}"
 @model Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos.RemoverModel
 @{ var produtoId = RouteData.Values["produtoId"]; }
 <h1>Remover equipamento</h1><p>Confirma a remoção de <strong>@Model.NomeEquipamento</strong>?</p>
