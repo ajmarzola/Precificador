@@ -366,9 +366,24 @@ O tempo ativo é informado para o lote/execução em minutos inteiros.
 
 `TempoAtivoMinutos` é obrigatório na Ficha Técnica e deve ser maior ou igual a zero. Zero é válido quando explicitamente informado para um processo sem trabalho humano ativo; ausência não deve ser convertida silenciosamente em zero.
 
-O cálculo futuro é:
+O valor da hora de trabalho pertence à configuração tenant-aware da Empresa:
 
-`CustoMaoDeObraLote = (TempoAtivoMinutos / 60) × ValorHoraTrabalhoDaEmpresa`.
+`ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho`.
+
+Quando informado, deve ser maior ou igual a zero. `null` significa não configurado; zero configurado é um valor válido e não equivale a `null`.
+
+O cálculo é:
+
+`CustoMaoDeObraLote = (TempoAtivoMinutos / 60m) × ValorHoraTrabalhoDaEmpresa`.
+
+Aplicar as seguintes semânticas:
+
+- se `TempoAtivoMinutos = 0`, `CustoMaoDeObraLote = 0` e o componente é determinável mesmo que `ValorHoraTrabalho = null`;
+- se `TempoAtivoMinutos > 0` e `ValorHoraTrabalho = null`, o custo de mão de obra fica indisponível e nunca é substituído por zero;
+- se `ValorHoraTrabalho = 0`, o custo resultante é zero e é considerado determinável;
+- aplicar RN026 sem arredondamento intermediário.
+
+O custo de mão de obra é derivado em tempo de consulta e não é persistido na Ficha ou no Produto.
 
 ### RN014 — Energia de equipamento
 

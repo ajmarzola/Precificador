@@ -35,6 +35,14 @@ Item sem preço vigente e Ficha vazia tornam esse componente indisponível; nunc
 
 Os cálculos são derivados em tempo de consulta e não são persistidos. Perdas, mão de obra, energia e custo total pertencem aos UCs posteriores.
 
+## UC020 — Custo de mão de obra
+
+O custo de mão de obra do lote aplica RN013 usando o `TempoAtivoMinutos` persistido na Ficha e o `ValorHoraTrabalho` atual da configuração da Empresa.
+
+Tempo ativo zero representa ausência explícita de trabalho humano ativo e resulta em custo zero mesmo se o valor/hora não estiver configurado. Para tempo maior que zero, valor/hora ausente torna apenas esse componente indisponível; zero configurado continua sendo um valor válido.
+
+O componente é derivado em tempo de consulta, independente do custo dos Itens e não é persistido. A soma dos componentes pertence ao UC022.
+
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027.
