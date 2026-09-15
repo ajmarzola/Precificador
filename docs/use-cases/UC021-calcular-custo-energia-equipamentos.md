@@ -1,7 +1,7 @@
 # UC021 — Calcular custo de energia/equipamentos
 
 - **Funcionalidades:** F003 — Ficha Técnica; F004 — Precificação
-- **Dependências:** UC013, UC020 e UC027
+- **Dependências funcionais:** UC013 e UC027\n- **Base de revalidação:** UC020 já implementada
 - **Schema:** sim
 - **Persistência do custo:** não
 
