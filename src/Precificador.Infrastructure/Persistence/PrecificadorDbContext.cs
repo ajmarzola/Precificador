@@ -22,6 +22,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<UsoEquipamentoFicha> UsosEquipamentosFicha => Set<UsoEquipamentoFicha>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
+    public DbSet<RegistroPrecoProduto> RegistrosPrecosProdutos => Set<RegistroPrecoProduto>();
     public DbSet<Produto> Produtos => Set<Produto>();
     public DbSet<UsuarioEmpresa> UsuariosEmpresas => Set<UsuarioEmpresa>();
 
@@ -41,6 +42,8 @@ public sealed class PrecificadorDbContext(
             insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<PrecoInsumo>().HasQueryFilter(preco =>
             preco.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<RegistroPrecoProduto>().HasQueryFilter(registro =>
+            registro.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<Produto>().HasQueryFilter(produto =>
             produto.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
@@ -52,6 +55,7 @@ public sealed class PrecificadorDbContext(
         ValidarReferenciasDosUsosEquipamentosFicha();
         ValidarReferenciaProdutoDasFichas();
         ValidarReferenciaInsumoDosPrecos();
+        ValidarReferenciaProdutoDosRegistrosPrecos();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -62,6 +66,7 @@ public sealed class PrecificadorDbContext(
         await ValidarReferenciasDosUsosEquipamentosFichaAsync(cancellationToken);
         await ValidarReferenciaProdutoDasFichasAsync(cancellationToken);
         await ValidarReferenciaInsumoDosPrecosAsync(cancellationToken);
+        await ValidarReferenciaProdutoDosRegistrosPrecosAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -110,6 +115,15 @@ public sealed class PrecificadorDbContext(
             {
                 throw new InvalidOperationException("O produto referenciado pela ficha técnica não pertence à mesma empresa.");
             }
+        }
+    }
+
+    private void ValidarReferenciaProdutoDosRegistrosPrecos()
+    {
+        foreach (var registro in RegistrosPrecosAlterados())
+        {
+            if (!Produtos.IgnoreQueryFilters().Any(produto => produto.Id == registro.ProdutoId && produto.EmpresaId == registro.EmpresaId))
+                throw new InvalidOperationException("O produto referenciado pelo registro de preco nao pertence a mesma empresa.");
         }
     }
 
@@ -177,6 +191,15 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private async Task ValidarReferenciaProdutoDosRegistrosPrecosAsync(CancellationToken cancellationToken)
+    {
+        foreach (var registro in RegistrosPrecosAlterados())
+        {
+            if (!await Produtos.IgnoreQueryFilters().AnyAsync(produto => produto.Id == registro.ProdutoId && produto.EmpresaId == registro.EmpresaId, cancellationToken))
+                throw new InvalidOperationException("O produto referenciado pelo registro de preco nao pertence a mesma empresa.");
+        }
+    }
+
     private async Task ValidarReferenciasDosItensFichaTecnicaAsync(CancellationToken cancellationToken)
     {
         foreach (var item in ItensFichaTecnicaAlterados())
@@ -220,6 +243,11 @@ public sealed class PrecificadorDbContext(
 
     private IEnumerable<FichaTecnica> FichasAlteradas() =>
         ChangeTracker.Entries<FichaTecnica>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity);
+
+    private IEnumerable<RegistroPrecoProduto> RegistrosPrecosAlterados() =>
+        ChangeTracker.Entries<RegistroPrecoProduto>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
             .Select(entry => entry.Entity);
 

@@ -1,0 +1,22 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.Precos.NovoModel
+@using Precificador.Web.Apresentacao
+@{ ViewData["Title"] = "Registrar preço de prateleira"; var produto = Model.Produto!; }
+<h1>Registrar preço de prateleira</h1>
+<dl class="row">
+    <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">@produto.Nome</dd>
+    <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@(produto.Categoria ?? "—")</dd>
+    <dt class="col-sm-3">Situação</dt><dd class="col-sm-9">@(produto.Ativo ? "Ativo" : "Inativo")</dd>
+    <dt class="col-sm-3">Margem-alvo</dt><dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</dd>
+    <dt class="col-sm-3">Custo unitário</dt><dd class="col-sm-9">@(Model.Precificacao?.CustoUnitarioProduto is decimal custo ? PrecoInsumoFormatacao.CustoCalculado(custo) : "indisponível")</dd>
+    <dt class="col-sm-3">Preço teórico</dt><dd class="col-sm-9">@(Model.Precificacao?.PrecoTeorico is decimal teorico ? PrecoInsumoFormatacao.CustoCalculado(teorico) : "indisponível")</dd>
+    <dt class="col-sm-3">Preço sugerido</dt><dd class="col-sm-9">@(Model.Precificacao?.PrecoSugerido is decimal sugerido ? PrecoInsumoFormatacao.CustoCalculado(sugerido) : "indisponível")</dd>
+</dl>
+@if (Model.Precificacao is null || !Model.Precificacao.PrecoProdutoCompleto) { <p>Precificação incompleta. Complete os dados necessários antes de registrar o preço.</p> }
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.PrecoPrateleira" class="form-label">Preço de prateleira</label><input asp-for="Input.PrecoPrateleira" class="form-control" /><span asp-validation-for="Input.PrecoPrateleira" class="text-danger"></span></div>
+    <button type="submit" class="btn btn-primary" disabled="@(Model.Precificacao is null || !Model.Precificacao.PrecoProdutoCompleto)">Registrar preço de prateleira</button>
+    <a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id" class="btn btn-secondary">Cancelar</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

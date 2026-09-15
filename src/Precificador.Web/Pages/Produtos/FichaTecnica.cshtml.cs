@@ -9,11 +9,12 @@ using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos;
+using Precificador.Web.Precificacao;
 using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
 
-public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperacionalEmpresa dataOperacionalEmpresa) : PageModel
+public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperacionalEmpresa dataOperacionalEmpresa, PrecificacaoProdutoAtual precificacaoAtual) : PageModel
 {
     [BindProperty]
     public FichaTecnicaInputModel Input { get; set; } = new();
@@ -278,10 +279,14 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         CustoLote = custoProduto.CustoLote;
         CustoUnitarioProduto = custoProduto.CustoUnitarioProduto;
         CustoProdutoCompleto = custoProduto.Completo;
-        var precoProduto = CalculadoraPrecoProduto.Calcular(CustoUnitarioProduto, Produto!.MargemAlvo, configuracao.IncrementoComercial);
-        PrecoTeorico = precoProduto.PrecoTeorico;
-        PrecoSugerido = precoProduto.PrecoSugerido;
-        PrecoProdutoCompleto = precoProduto.Completo;
+        var atual = await precificacaoAtual.CalcularAsync(Produto!.Id);
+        if (atual is null) return false;
+        CustoLote = atual.CustoLote;
+        CustoUnitarioProduto = atual.CustoUnitarioProduto;
+        CustoProdutoCompleto = atual.CustoProdutoCompleto;
+        PrecoTeorico = atual.PrecoTeorico;
+        PrecoSugerido = atual.PrecoSugerido;
+        PrecoProdutoCompleto = atual.PrecoProdutoCompleto;
         return true;
     }
 
