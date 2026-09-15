@@ -43,9 +43,17 @@ Tempo ativo zero representa ausência explícita de trabalho humano ativo e resu
 
 O componente é derivado em tempo de consulta, independente do custo dos Itens e não é persistido. A soma dos componentes pertence ao UC022.
 
+## UC021 — Custo de energia/equipamentos
+
+A Ficha registra usos atuais de equipamentos elétricos por Nome, Potência em kW e Tempo de uso em minutos.
+
+O custo aplica RN014 usando a TarifaEnergiaKwh atual da Empresa. Sem usos, o componente vale zero mesmo se a tarifa estiver ausente. Com usos e tarifa ausente, consumos em kWh permanecem explicáveis, mas custos ficam indisponíveis.
+
+O componente é independente de Itens e mão de obra, derivado em tempo de consulta e não persistido. UC022 fará a composição final.
+
 ## Regras relacionadas
 
-RN004, RN006, RN007, RN009 a RN027.
+RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
 
 ## Princípio de explicabilidade
 

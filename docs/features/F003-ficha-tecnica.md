@@ -94,16 +94,28 @@ A UC015 também adiciona uma lista operacional mínima de Itens na página da Fi
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md) — remoção física do Item atual não desbloqueia a identidade do Insumo, não remove a Ficha e permite composição vazia;
 - [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md) — completa a leitura da rota existente com Nome, Marca, Quantidade, Unidade, Observação contextual, Situação e ações, sem antecipar custos/preços.
 
-## Equipamentos e recursos
+## Equipamentos e recursos — UC021
 
-UC013 **não** cria:
+UC021 mantém o domínio genérico sem criar campos específicos de forno e sem introduzir um cadastro patrimonial global.
 
-- TempoForno;
-- PotenciaFornoKw;
-- Equipamento;
-- UsoEquipamento.
+Modelo:
 
-Forno, impressora, laminadora e outros recursos serão modelados genericamente no UC021 quando necessário ao custo.
+~~~text
+UsoEquipamentoFicha
+- Id
+- EmpresaId
+- FichaTecnicaId
+- NomeEquipamento
+- NomeEquipamentoNormalizado
+- PotenciaKw
+- TempoUsoMinutos
+~~~
+
+O registro representa o uso total do equipamento naquela execução/lote. Forno, impressora, plotter, laminadora e equipamentos equivalentes usam o mesmo modelo.
+
+Um mesmo nome normalizado aparece no máximo uma vez por Ficha. Se houver dois equipamentos físicos distintos, usar nomes distintos.
+
+A Ficha continua sendo estado atual editável: uso pode ser criado, alterado ou removido. O histórico comercial futuro preservará o custo de referência sem exigir versionamento da Ficha.
 
 ## Cálculos posteriores
 
@@ -154,7 +166,9 @@ FichaTecnica é tenant-owned:
 - RN048;
 - RN049;
 - RN050;
-- RN051.
+- RN051;
+- RN055;
+- RN056.
 
 ## Casos de uso
 
@@ -162,7 +176,7 @@ FichaTecnica é tenant-owned:
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md);
 - [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md);
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md);
-- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md).
+- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md);\n- [UC021 — Calcular custo de energia/equipamentos](../use-cases/UC021-calcular-custo-energia-equipamentos.md).
 
 ## Fora do escopo do estágio atual
 
