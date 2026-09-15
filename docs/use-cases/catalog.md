@@ -71,7 +71,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | UC | Nome | Dependências funcionais |
 |---|---|---|
 | [UC026](UC026-consultar-configuracoes-precificacao.md) | Consultar configurações de precificação da Empresa | FT002, MEL009 |
-| UC027 | Alterar configurações de precificação da Empresa | UC026 |
+| [UC027](UC027-alterar-configuracoes-precificacao.md) | Alterar configurações de precificação da Empresa | UC026, MEL009 |
 
 ## Precificação
 
