@@ -80,6 +80,17 @@ O `PrecoSugerido` aplica RN021 usando o `IncrementoComercial` vigente da Empresa
 Quando o custo unitário estiver indisponível, ambos os preços ficam indisponíveis. Quando somente o incremento comercial estiver ausente, o preço teórico continua explicável, mas o preço sugerido permanece indisponível e a precificação continua incompleta.
 
 `MargemPadrao` não substitui a margem do Produto e `ReservaComercialDesconto` não participa do cálculo de UC023. Os resultados são derivados em consulta, sem persistência e sem arredondamento intermediário.
+
+## UC011 — Preço de prateleira e snapshot comercial
+
+UC011 registra a decisão comercial append-only e congela `CustoReferencia`, `MargemReferencia`, `PrecoSugerido`, `PrecoPrateleira` e `ReservaComercialReferencia` no momento do POST. O registro atual é derivado do histórico, não armazenado diretamente no Produto.
+
+## UC012 — Histórico de precificação
+
+UC012 consulta os snapshots comerciais em `DataReferencia DESC, Id DESC`; o primeiro registro é o Preço de prateleira atual. O `DescontoReferencia` é calculado em consulta usando exclusivamente `PrecoSugerido`, `PrecoPrateleira` e `ReservaComercialReferencia` do próprio registro.
+
+Configuração, custo, margem e Ficha Técnica atuais não reinterpretam decisões antigas. `DescontoReferencia` permanece derivado e não persistido. Se `PrecoSugerido = 0`, o desconto é não aplicável porque a razão percentual é indefinida. UC012 não calcula `MargemAtual` nem situação — esses conceitos permanecem no UC024.
+
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
