@@ -67,12 +67,11 @@ public sealed class FichaTecnicaCustoPageTests
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
         await ambiente.CriarFichaAsync(1, produto, tempo: 60);
+        await ambiente.DefinirValorHoraAsync(1, 10m);
         var empresaDois = await ambiente.CriarEmpresaAsync();
         await ambiente.DefinirValorHoraAsync(empresaDois, 99m);
 
-        var semValor = await ambiente.ObterFichaAsync(produto);
-        Assert.DoesNotContain("99", semValor);
-        Assert.Contains("indisponível", semValor);
+        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(produto), "10");
 
         await ambiente.RemoverConfiguracaoAsync(1);
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
