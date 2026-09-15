@@ -318,6 +318,8 @@ Um usuário pode possuir vínculos com múltiplas Empresas. Vínculo inativo ou 
 
 Configurações de precificação pertencem a uma Empresa e suas alterações não afetam cálculos de outra Empresa.
 
+O modelo é tenant-owned e 1:1 por Empresa. A configuração não deve ser inferida de outra Empresa quando ausente nem receber `EmpresaId` controlado pelo request.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
@@ -574,17 +576,30 @@ LimiarAplicacao = ReservaComercialReferencia + 0,01
 
 ### RN025 — Configurações de precificação por empresa
 
-Cada Empresa possui configurações para, no mínimo:
+Cada Empresa possui uma configuração de precificação 1:1 contendo, no mínimo:
 
-- valor/hora de trabalho;
-- tarifa de energia por kWh;
-- margem padrão para novos produtos;
-- incremento comercial de arredondamento;
-- reserva comercial para desconto, conforme RN052.
+- `ValorHoraTrabalho`;
+- `TarifaEnergiaKwh`;
+- `MargemPadrao`;
+- `IncrementoComercial`;
+- `ReservaComercialDesconto`, conforme RN052.
+
+Não existem defaults de negócio aprovados para `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, esses campos permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+
+Quando informados:
+
+- `ValorHoraTrabalho >= 0`;
+- `TarifaEnergiaKwh >= 0`;
+- `0 <= MargemPadrao < 1`;
+- `IncrementoComercial > 0`.
+
+A reserva comercial possui default e validação próprios na RN052.
 
 A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
 
-Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa.
+Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa. Parâmetro obrigatório ausente torna o cálculo dependente incompleto conforme RN017.
+
+A Margem padrão pode futuramente pré-preencher novos Produtos, mas nunca altera silenciosamente a `MargemAlvo` de Produtos já existentes.
 
 ### RN052 — Reserva comercial de desconto por Empresa
 
