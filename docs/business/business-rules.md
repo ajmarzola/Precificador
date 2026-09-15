@@ -617,15 +617,34 @@ Aplicar RN026: não arredondar o Preço teórico antes de determinar o múltiplo
 
 ### RN022 — Margem atual
 
-Para Preço de prateleira vigente maior que zero:
+A Margem atual usa exclusivamente estado corrente:
+
+- `CustoUnitarioProduto` atual calculado pela UC022;
+- `PrecoPrateleiraAtual` selecionado pela UC012 por `DataReferencia DESC, Id DESC`;
+- `Produto.MargemAlvo` atual.
+
+Quando custo e Preço de prateleira estiverem disponíveis:
 
 `MargemAtual = (PrecoPrateleiraAtual - CustoUnitarioProduto) / PrecoPrateleiraAtual`.
 
-Preço sugerido é referência econômica; margem atual usa o preço comercial efetivamente definido para prateleira.
+Não usar `CustoReferencia` ou `MargemReferencia` históricos no cálculo atual.
+
+Se custo atual ou Preço de prateleira atual estiverem indisponíveis, `MargemAtual` permanece indisponível. Ausência de preço nunca é convertida em zero.
+
+Preço sugerido, Incremento comercial, Reserva comercial e Desconto de referência não participam da Margem atual.
+
+Aplicar RN026 sem arredondamento intermediário.
 
 ### RN023 — Produto abaixo da margem
 
-Um produto com precificação completa está abaixo da margem quando `MargemAtual < MargemAlvo`.
+Com Margem atual calculável:
+
+- se `MargemAtual < Produto.MargemAlvo`, a situação é `AbaixoDaMargem`;
+- se `MargemAtual >= Produto.MargemAlvo`, a situação é `DentroDaMargem`.
+
+A igualdade exata pertence a `DentroDaMargem`.
+
+Quando Margem atual não for calculável por ausência de custo atual ou Preço de prateleira atual, a situação é `Incompleto`.
 
 ### RN024 — Preço de prateleira e histórico de precificação
 
@@ -735,8 +754,12 @@ Cálculos intermediários não devem ser arredondados para centavos. O arredonda
 
 ### RN027 — Estados mínimos
 
-Para fins de acompanhamento, um produto ativo pode estar pelo menos em um dos estados:
+Para fins de acompanhamento, Produto ativo ou inativo pode estar em um dos estados correntes:
 
-- `Incompleto`: não pode ser precificado com segurança;
-- `AbaixoDaMargem`: cálculo válido e margem atual inferior à meta;
-- `DentroDaMargem`: cálculo válido e margem atual igual ou superior à meta.
+- `Incompleto`: Margem atual não pode ser determinada porque o Custo unitário atual ou o Preço de prateleira atual está indisponível;
+- `AbaixoDaMargem`: Margem atual calculável e inferior à `MargemAlvo` atual;
+- `DentroDaMargem`: Margem atual calculável e igual ou superior à `MargemAlvo` atual.
+
+A situação é derivada em consulta e não é persistida.
+
+A completude de `PrecoSugerido`/UC023 é independente desta classificação. Por exemplo, `IncrementoComercial = null` pode deixar UC023 incompleta e ainda assim permitir Margem atual e Situação quando custo e Preço de prateleira estiverem conhecidos.
