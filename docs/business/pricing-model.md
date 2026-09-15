@@ -213,6 +213,26 @@ A consulta histórica deriva `DescontoReferencia` usando somente `PrecoSugerido`
 
 O custo atual continua calculado sob demanda para a visão corrente. O CustoReferencia persistido no histórico existe para preservar a decisão tomada naquele momento e não substitui o cálculo atual.
 
+## Visão detalhada da precificação atual
+
+A consulta detalhada deve explicar a fotografia corrente sem criar uma segunda implementação do motor de cálculo.
+
+A mesma execução da orquestração deve fornecer:
+
+- componentes de custo;
+- total e custo unitário;
+- Preço teórico e sugerido;
+- Preço de prateleira atual;
+- Margem atual e Situação;
+- impedimentos conhecidos;
+- parâmetros correntes usados, como Rendimento, Tempo ativo, Valor/hora, Tarifa de energia e Incremento comercial.
+
+Metadados de Item/equipamento podem ser consultados separadamente apenas para rotulagem e devem ser associados aos resultados calculados por seus Ids.
+
+A visão atual não deve usar `CustoReferencia`, `MargemReferencia` ou outros snapshots históricos como substitutos de valores correntes. Histórico e Desconto de referência continuam pertencendo à consulta histórica.
+
+Null permanece diferente de zero: valores ausentes são apresentados como indisponíveis/não configurados conforme seu domínio, enquanto zero conhecido continua sendo um valor válido.
+
 ## Golden cases
 
 O motor de cálculo deve possuir cenários canônicos derivados de produtos conferidos nos negócios de referência. Os golden cases devem validar a composição completa do custo e respeitar o contexto da Empresa.
