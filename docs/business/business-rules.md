@@ -387,13 +387,47 @@ O custo de mão de obra é derivado em tempo de consulta e não é persistido na
 
 ### RN014 — Energia de equipamento
 
-Quando houver equipamento com consumo mensurável:
+Para cada uso de equipamento elétrico na Ficha:
 
-`CustoEnergiaUso = PotenciaEquipamentoKw × (TempoUsoMinutos / 60) × TarifaKwhDaEmpresa`.
+`ConsumoKwh = PotenciaEquipamentoKw × (TempoUsoMinutos / 60m)`.
 
-O custo de energia do lote soma os usos aplicáveis. Forno é um possível equipamento, não um conceito universal de toda ficha.
+`CustoEnergiaUso = ConsumoKwh × TarifaKwhDaEmpresa`.
 
-O modelo de Equipamento/Uso será detalhado antes do UC021.
+O custo de energia do lote soma os usos aplicáveis. Forno é um possível equipamento, não um conceito universal de toda Ficha.
+
+Aplicar RN026 sem arredondamento intermediário.
+
+Se não houver usos, o custo de energia do lote é zero e o componente é determinável mesmo com tarifa não configurada.
+
+Se houver pelo menos um uso e a tarifa estiver `null`, os consumos em kWh permanecem conhecidos, mas os custos por uso e do lote ficam indisponíveis.
+
+Tarifa igual a zero é valor configurado válido e resulta em custo zero.
+
+### RN055 — Uso de equipamento na Ficha
+
+No MVP, equipamento não possui catálogo global. Cada `UsoEquipamentoFicha` representa o uso total atual de um equipamento em uma Ficha.
+
+O uso contém Nome do equipamento, Potência em kW e Tempo de uso em minutos.
+
+Regras:
+
+- Nome obrigatório, normalizado e com máximo de 120 caracteres;
+- PotenciaKw > 0;
+- TempoUsoMinutos > 0;
+- um mesmo NomeEquipamentoNormalizado aparece no máximo uma vez por Ficha;
+- EmpresaId e FichaTecnicaId são imutáveis após criação;
+- edição altera somente Nome/Potência/Tempo;
+- remoção física é permitida porque a Ficha representa estado atual.
+
+### RN056 — Completude do custo de energia
+
+O componente de energia é calculado em tempo de consulta e nunca persistido.
+
+- zero usos => CustoEnergiaLote = 0 e componente completo;
+- usos existentes + TarifaEnergiaKwh = null => custo indisponível e componente incompleto;
+- TarifaEnergiaKwh = 0 => custo zero e componente completo;
+- a incompletude de Itens ou mão de obra não impede exibir energia conhecida;
+- a composição final dos componentes pertence ao UC022.
 
 ### RN015 — Custo do lote
 
