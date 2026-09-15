@@ -463,11 +463,15 @@ O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recurso
 
 ### RN017 — Precificação incompleta
 
-Se qualquer dado obrigatório para o cálculo estiver ausente ou inválido — incluindo preço vigente de um insumo — o produto deve ser marcado como precificação incompleta. Não deve ser exibido custo total ou margem como se fossem confiáveis.
+Se qualquer dado obrigatório para um resultado estiver ausente ou inválido — incluindo preço vigente de um insumo para os cálculos de custo dependentes — esse resultado e seus dependentes permanecem indisponíveis. Não deve ser exibido custo total ou margem como se fossem confiáveis quando faltarem entradas necessárias para esses resultados.
 
 A ausência de preço vigente nunca é substituída por custo zero. Se apenas parte da composição possuir custo conhecido, resultados individuais conhecidos podem ser apresentados para explicabilidade, mas totais dependentes do conjunto completo permanecem indisponíveis.
 
-Ficha Técnica existente sem Itens também não equivale a custo zero nem torna a precificação completa.
+Ficha Técnica existente sem Itens também não equivale a custo zero nem torna os resultados dependentes do custo completos.
+
+A completude é específica por etapa. Um dado ausente que afete somente uma etapa posterior não invalida resultados independentes já determináveis. Em particular, `IncrementoComercial = null` mantém UC023/Preço sugerido incompleto, mas não invalida por si só Custo unitário conhecido nem a Margem atual da UC024 quando existe Preço de prateleira atual.
+
+`SituacaoMargem` da UC024 representa especificamente a situação frente à Margem-alvo e não substitui um indicador global de completude da precificação.
 
 ### RN018 — Desativação e reativação de produto
 
@@ -752,14 +756,14 @@ Cálculos intermediários não devem ser arredondados para centavos. O arredonda
 
 ## Status de cálculo
 
-### RN027 — Estados mínimos
+### RN027 — Estados mínimos da situação de margem
 
-Para fins de acompanhamento, Produto ativo ou inativo pode estar em um dos estados correntes:
+Para fins de acompanhamento da Margem atual, Produto ativo ou inativo pode estar em um dos estados:
 
 - `Incompleto`: Margem atual não pode ser determinada porque o Custo unitário atual ou o Preço de prateleira atual está indisponível;
 - `AbaixoDaMargem`: Margem atual calculável e inferior à `MargemAlvo` atual;
 - `DentroDaMargem`: Margem atual calculável e igual ou superior à `MargemAlvo` atual.
 
-A situação é derivada em consulta e não é persistida.
+A `SituacaoMargem` é derivada em consulta e não é persistida.
 
-A completude de `PrecoSugerido`/UC023 é independente desta classificação. Por exemplo, `IncrementoComercial = null` pode deixar UC023 incompleta e ainda assim permitir Margem atual e Situação quando custo e Preço de prateleira estiverem conhecidos.
+Ela não representa, isoladamente, a completude global de todas as etapas de precificação. A completude de `PrecoSugerido`/UC023 é independente desta classificação. Por exemplo, `IncrementoComercial = null` pode deixar UC023 incompleta e ainda assim permitir Margem atual e Situação de margem quando custo e Preço de prateleira estiverem conhecidos.
