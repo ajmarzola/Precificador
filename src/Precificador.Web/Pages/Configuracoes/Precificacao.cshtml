@@ -1,0 +1,30 @@
+@page
+@model Precificador.Web.Pages.Configuracoes.PrecificacaoModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Configurações de precificação";
+    var configuracao = Model.Configuracao!;
+}
+
+<h1>Configurações de precificação</h1>
+<p class="text-muted">Empresa ativa: @Model.EmpresaNome</p>
+
+<dl class="row">
+    <dt class="col-sm-4">Valor da hora de trabalho</dt>
+    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.ValorHoraTrabalho)</dd>
+
+    <dt class="col-sm-4">Tarifa de energia (R$/kWh)</dt>
+    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.TarifaEnergiaKwh)</dd>
+
+    <dt class="col-sm-4">Margem padrão para novos produtos (%)</dt>
+    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Percentual(configuracao.MargemPadrao)</dd>
+
+    <dt class="col-sm-4">Incremento comercial de arredondamento</dt>
+    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.IncrementoComercial)</dd>
+
+    <dt class="col-sm-4">Reserva comercial para desconto (%)</dt>
+    <dd class="col-sm-8">
+        @ConfiguracaoPrecificacaoFormatacao.Percentual(configuracao.ReservaComercialDesconto)
+        <div class="form-text">Percentual reservado acima do preço sugerido antes de formar o desconto de referência.</div>
+    </dd>
+</dl>

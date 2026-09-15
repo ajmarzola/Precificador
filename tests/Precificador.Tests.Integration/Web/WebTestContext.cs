@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
@@ -66,6 +67,11 @@ internal sealed class WebTestContext(CustomWebApplicationFactory factory)
             : Empresa.Criar(nome ?? $"Empresa {Guid.NewGuid():N}", timeZoneId);
         context.Empresas.Add(empresa);
         await context.SaveChangesAsync();
+
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var contextoEmpresa = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresa.Id));
+        contextoEmpresa.ConfiguracoesPrecificacaoEmpresas.Add(ConfiguracaoPrecificacaoEmpresa.CriarPadrao(empresa.Id));
+        await contextoEmpresa.SaveChangesAsync();
         return empresa.Id;
     }
 }

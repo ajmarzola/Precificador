@@ -16,6 +16,7 @@ public sealed class PrecificadorDbContext(
     private readonly IEmpresaContext empresaContext = empresaContext;
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
+    public DbSet<ConfiguracaoPrecificacaoEmpresa> ConfiguracoesPrecificacaoEmpresas => Set<ConfiguracaoPrecificacaoEmpresa>();
     public DbSet<FichaTecnica> FichasTecnicas => Set<FichaTecnica>();
     public DbSet<ItemFichaTecnica> ItensFichaTecnica => Set<ItemFichaTecnica>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
@@ -27,6 +28,8 @@ public sealed class PrecificadorDbContext(
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
+        modelBuilder.Entity<ConfiguracaoPrecificacaoEmpresa>().HasQueryFilter(configuracao =>
+            configuracao.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<FichaTecnica>().HasQueryFilter(ficha =>
             ficha.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<ItemFichaTecnica>().HasQueryFilter(item =>
