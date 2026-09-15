@@ -18,11 +18,11 @@ Anotação contextual associada ao uso de um insumo em uma receita, destinada a 
 
 ## Ingrediente
 
-Insumo que compõe fisicamente o produto alimentício e pode estar sujeito ao percentual de perda de produção.
+Termo legado para matéria-prima alimentícia. No domínio atual, perda não é automática por Categoria; quando aplicável, é configurada no Item da Ficha.
 
 ## Embalagem
 
-Insumo utilizado para acondicionar a unidade vendida ou o lote. É precificado como qualquer outro insumo, mas não recebe automaticamente percentual de perda de ingredientes.
+Insumo utilizado para acondicionar a unidade vendida ou o lote. É precificado como qualquer outro Insumo e pode possuir perda esperada quando o processo justificar; nenhuma Categoria recebe perda automaticamente.
 
 ## Consumível
 
@@ -65,6 +65,10 @@ Quantidade produzida por uma execução da ficha técnica.
 ## Rendimento
 
 Quantidade decimal de unidades de venda obtidas por lote. Deve ser maior que zero.
+
+## Perda esperada de material
+
+Percentual adicional configurado em um Item da Ficha para representar desperdício esperado de material no lote. É aplicado sobre a quantidade/custo base do Item. Perdas que reduzem unidades finais vendáveis pertencem ao Rendimento, evitando dupla contagem.
 
 ## Tempo ativo
 

@@ -61,6 +61,7 @@ ItemFichaTecnica
 - InsumoId
 - Quantidade
 - Observacao
+- PercentualPerda
 ~~~
 
 Regras fechadas:
@@ -93,6 +94,22 @@ A UC015 também adiciona uma lista operacional mínima de Itens na página da Fi
 
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md) — remoção física do Item atual não desbloqueia a identidade do Insumo, não remove a Ficha e permite composição vazia;
 - [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md) — completa a leitura da rota existente com Nome, Marca, Quantidade, Unidade, Observação contextual, Situação e ações, sem antecipar custos/preços.
+
+## Perdas de material — UC019
+
+Perda deixa de ser atributo global do Produto e passa a ser específica de cada Item da Ficha:
+
+~~~text
+ItemFichaTecnica.PercentualPerda
+~~~
+
+O percentual é opcional, default zero e representa material adicional esperado sobre a Quantidade base.
+
+Não existe regra automática por Categoria. Matéria-prima, embalagem ou consumível podem possuir perda quando o processo real justificar.
+
+Perdas que reduzam unidades finais vendáveis devem ser refletidas no Rendimento da Ficha, e não duplicadas como perda de material.
+
+O custo da perda é derivado em consulta pelo UC019 e não é persistido.
 
 ## Equipamentos e recursos — UC021
 
@@ -133,7 +150,7 @@ Rendimento
 
 Itens da Ficha alimentarão UC018.
 
-Perdas serão revalidadas no UC019.
+Perdas de material são tratadas pelo UC019 por Item da Ficha.
 
 Equipamentos/energia serão tratados no UC021.
 
@@ -176,7 +193,9 @@ FichaTecnica é tenant-owned:
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md);
 - [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md);
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md);
-- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md);\n- [UC021 — Calcular custo de energia/equipamentos](../use-cases/UC021-calcular-custo-energia-equipamentos.md).
+- [UC017 — Consultar Ficha Técnica e composição](../use-cases/UC017-consultar-ficha-composicao.md);
+- [UC019 — Calcular perdas aplicáveis](../use-cases/UC019-calcular-perdas-aplicaveis.md);
+- [UC021 — Calcular custo de energia/equipamentos](../use-cases/UC021-calcular-custo-energia-equipamentos.md).
 
 ## Fora do escopo do estágio atual
 

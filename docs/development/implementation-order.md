@@ -65,7 +65,7 @@ O motor de custo deve evoluir em fatias que preservem explicabilidade:
 - custo total e unitário;
 - preço teórico e sugerido.
 
-Perdas e energia/equipamentos exigem revalidação antes de implementação para evitar modelagem específica demais para um único tipo de negócio.
+Perdas e energia/equipamentos foram revalidadas antes da implementação para evitar modelagem específica demais para um único tipo de negócio. Energia foi generalizada por uso de equipamento; perdas foram generalizadas por Item da Ficha, com perda de saída representada pelo Rendimento.
 
 ## Decisão Comercial e Histórico
 
