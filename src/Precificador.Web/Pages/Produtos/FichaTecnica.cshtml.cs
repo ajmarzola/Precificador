@@ -52,6 +52,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public bool CustoProdutoCompleto { get; private set; }
 
+    public decimal? PrecoTeorico { get; private set; }
+
+    public decimal? PrecoSugerido { get; private set; }
+
+    public bool PrecoProdutoCompleto { get; private set; }
+
     public string? CustoBaseItensFormatado => CustoBaseItens is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoBaseItens.Value);
@@ -67,6 +73,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public string? CustoLoteFormatado => CustoLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoLote.Value);
 
     public string? CustoUnitarioProdutoFormatado => CustoUnitarioProduto is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoUnitarioProduto.Value);
+
+    public string? PrecoTeoricoFormatado => PrecoTeorico is null ? null : PrecoInsumoFormatacao.CustoCalculado(PrecoTeorico.Value);
+
+    public string? PrecoSugeridoFormatado => PrecoSugerido is null ? null : PrecoInsumoFormatacao.CustoCalculado(PrecoSugerido.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -140,7 +150,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
                 produto.EmpresaId,
                 produto.Nome,
                 produto.Categoria,
-                produto.Ativo))
+                produto.Ativo,
+                produto.MargemAlvo))
             .SingleOrDefaultAsync();
 
         return Produto is not null;
@@ -170,6 +181,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
             CustoLote = null;
             CustoUnitarioProduto = null;
             CustoProdutoCompleto = false;
+            PrecoTeorico = null;
+            PrecoSugerido = null;
+            PrecoProdutoCompleto = false;
             return null;
         }
 
@@ -239,7 +253,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     private async Task<bool> CarregarCustosConfiguracaoAsync(FichaResumo ficha)
     {
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho, item.TarifaEnergiaKwh))
+            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho, item.TarifaEnergiaKwh, item.IncrementoComercial))
             .SingleOrDefaultAsync();
 
         if (configuracao is null)
@@ -264,6 +278,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         CustoLote = custoProduto.CustoLote;
         CustoUnitarioProduto = custoProduto.CustoUnitarioProduto;
         CustoProdutoCompleto = custoProduto.Completo;
+        var precoProduto = CalculadoraPrecoProduto.Calcular(CustoUnitarioProduto, Produto!.MargemAlvo, configuracao.IncrementoComercial);
+        PrecoTeorico = precoProduto.PrecoTeorico;
+        PrecoSugerido = precoProduto.PrecoSugerido;
+        PrecoProdutoCompleto = precoProduto.Completo;
         return true;
     }
 
@@ -286,11 +304,11 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         public int? TempoAtivoMinutos { get; set; }
     }
 
-    public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo);
+    public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo, decimal MargemAlvo);
 
     public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
 
-    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh);
+    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial);
 
     public sealed record UsoEquipamentoResumo(int Id, string NomeEquipamento, decimal PotenciaKw, int TempoUsoMinutos, decimal ConsumoKwh, decimal? CustoEnergiaUso)
     {
