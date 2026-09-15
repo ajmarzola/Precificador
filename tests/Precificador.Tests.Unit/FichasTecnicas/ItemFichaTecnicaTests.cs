@@ -110,4 +110,25 @@ public sealed class ItemFichaTecnicaTests
         Assert.Equal(1m, item.Quantidade);
         Assert.Equal("original", item.Observacao);
     }
+
+    [Fact]
+    public void D1_D2_D3_Criacao_defaulta_aceita_e_valida_percentual_de_perda()
+    {
+        Assert.Equal(0m, ItemFichaTecnica.Criar(1, 2, 3, 1m).PercentualPerda);
+        Assert.Equal(0.123456m, ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: 0.123456m).PercentualPerda);
+        Assert.Throws<ArgumentOutOfRangeException>(() => ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: -0.01m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: 1m));
+    }
+
+    [Fact]
+    public void D4_D5_Edicao_altera_perda_e_permanece_atomica()
+    {
+        var item = ItemFichaTecnica.Criar(7, 11, 13, 1m, "original", 0.10m);
+
+        item.AtualizarDados(2m, "alterada", 0.25m);
+        Assert.Equal((7, 11, 13, 2m, "alterada", 0.25m), (item.EmpresaId, item.FichaTecnicaId, item.InsumoId, item.Quantidade, item.Observacao, item.PercentualPerda));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => item.AtualizarDados(3m, "invalida", 1m));
+        Assert.Equal((2m, "alterada", 0.25m), (item.Quantidade, item.Observacao, item.PercentualPerda));
+    }
 }

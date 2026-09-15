@@ -45,4 +45,30 @@ public static class ItemFichaTecnicaFormulario
 
     public static string FormatarQuantidade(decimal quantidade) =>
         quantidade.ToString("0.######", CulturaBrasileira);
+
+    public static bool TentarObterPercentualPerda(
+        ModelStateDictionary modelState,
+        string? percentualInformado,
+        out decimal percentualPerda)
+    {
+        percentualPerda = 0m;
+        percentualInformado = percentualInformado?.Trim();
+        if (string.IsNullOrEmpty(percentualInformado))
+        {
+            return true;
+        }
+
+        var cultura = percentualInformado.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
+        if (!decimal.TryParse(percentualInformado, NumberStyles.Number, cultura, out var percentual) || percentual < 0 || percentual >= 100)
+        {
+            modelState.AddModelError("Input.PercentualPerda", "A perda esperada deve ser um percentual maior ou igual a zero e menor que 100.");
+            return false;
+        }
+
+        percentualPerda = percentual / 100m;
+        return true;
+    }
+
+    public static string FormatarPercentualPerda(decimal percentualPerda) =>
+        (percentualPerda * 100m).ToString("0.######", CulturaBrasileira);
 }

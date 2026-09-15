@@ -16,6 +16,7 @@ public sealed class ItemFichaTecnicaConfiguration : IEntityTypeConfiguration<Ite
         builder.Property(item => item.InsumoId).IsRequired();
         builder.Property(item => item.Quantidade).HasPrecision(18, 6).IsRequired();
         builder.Property(item => item.Observacao).HasMaxLength(1000);
+        builder.Property(item => item.PercentualPerda).HasPrecision(9, 6).HasDefaultValue(0m).IsRequired();
         builder.HasIndex(item => new { item.EmpresaId, item.FichaTecnicaId, item.InsumoId }).IsUnique();
         builder.HasOne<Precificador.Core.Empresas.Empresa>()
             .WithMany()

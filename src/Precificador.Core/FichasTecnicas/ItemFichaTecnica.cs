@@ -10,19 +10,21 @@ public sealed class ItemFichaTecnica : IEntidadeEmpresa
     {
     }
 
-    private ItemFichaTecnica(int empresaId, int fichaTecnicaId, int insumoId, decimal quantidade, string? observacao)
+    private ItemFichaTecnica(int empresaId, int fichaTecnicaId, int insumoId, decimal quantidade, string? observacao, decimal percentualPerda)
     {
         ValidarIds(empresaId, fichaTecnicaId, insumoId);
         ValidarQuantidade(quantidade);
 
         var observacaoNormalizada = NormalizarObservacao(observacao);
         ValidarObservacao(observacaoNormalizada);
+        ValidarPercentualPerda(percentualPerda);
 
         EmpresaId = empresaId;
         FichaTecnicaId = fichaTecnicaId;
         InsumoId = insumoId;
         Quantidade = quantidade;
         Observacao = observacaoNormalizada;
+        PercentualPerda = percentualPerda;
     }
 
     public int Id { get; private set; }
@@ -37,22 +39,27 @@ public sealed class ItemFichaTecnica : IEntidadeEmpresa
 
     public string? Observacao { get; private set; }
 
+    public decimal PercentualPerda { get; private set; }
+
     public static ItemFichaTecnica Criar(
         int empresaId,
         int fichaTecnicaId,
         int insumoId,
         decimal quantidade,
-        string? observacao = null) =>
-        new(empresaId, fichaTecnicaId, insumoId, quantidade, observacao);
+        string? observacao = null,
+        decimal percentualPerda = 0m) =>
+        new(empresaId, fichaTecnicaId, insumoId, quantidade, observacao, percentualPerda);
 
-    public void AtualizarDados(decimal quantidade, string? observacao)
+    public void AtualizarDados(decimal quantidade, string? observacao, decimal percentualPerda = 0m)
     {
         var observacaoNormalizada = NormalizarObservacao(observacao);
         ValidarQuantidade(quantidade);
         ValidarObservacao(observacaoNormalizada);
+        ValidarPercentualPerda(percentualPerda);
 
         Quantidade = quantidade;
         Observacao = observacaoNormalizada;
+        PercentualPerda = percentualPerda;
     }
 
     public void DefinirEmpresa(int empresaId)
@@ -93,6 +100,14 @@ public sealed class ItemFichaTecnica : IEntidadeEmpresa
         if (quantidade <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(quantidade), "A quantidade deve ser maior que zero.");
+        }
+    }
+
+    private static void ValidarPercentualPerda(decimal percentualPerda)
+    {
+        if (percentualPerda < 0 || percentualPerda >= 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(percentualPerda), "O percentual de perda deve ser maior ou igual a zero e menor que um.");
         }
     }
 

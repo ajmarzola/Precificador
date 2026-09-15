@@ -34,7 +34,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         Input = new ItemFichaTecnicaInputModel
         {
             Quantidade = ItemFichaTecnicaFormulario.FormatarQuantidade(Item!.Quantidade),
-            Observacao = Item.Observacao
+            Observacao = Item.Observacao,
+            PercentualPerda = ItemFichaTecnicaFormulario.FormatarPercentualPerda(Item.PercentualPerda)
         };
 
         return Page();
@@ -50,14 +51,15 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         }
 
         var quantidadeInformada = ItemFichaTecnicaFormulario.TentarObterQuantidade(ModelState, Input.Quantidade, out var quantidade);
-        if (!quantidadeInformada || !ModelState.IsValid)
+        var percentualPerdaInformado = ItemFichaTecnicaFormulario.TentarObterPercentualPerda(ModelState, Input.PercentualPerda, out var percentualPerda);
+        if (!quantidadeInformada || !percentualPerdaInformado || !ModelState.IsValid)
         {
             return Page();
         }
 
         try
         {
-            itemRastreado!.AtualizarDados(quantidade, Input.Observacao);
+            itemRastreado!.AtualizarDados(quantidade, Input.Observacao, percentualPerda);
         }
         catch (ArgumentException exception)
         {
@@ -111,7 +113,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         }
 
         itemRastreado = rastrearItem ? item : null;
-        Item = new ItemResumo(item.Id, item.Quantidade, item.Observacao, item.InsumoId);
+        Item = new ItemResumo(item.Id, item.Quantidade, item.Observacao, item.PercentualPerda, item.InsumoId);
 
         Insumo = await context.Insumos.AsNoTracking()
             .Where(insumo => insumo.Id == item.InsumoId)
@@ -132,6 +134,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         public string? Quantidade { get; set; }
 
         public string? Observacao { get; set; }
+
+        public string? PercentualPerda { get; set; }
     }
 
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, bool Ativo)
@@ -141,7 +145,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
 
     public sealed record FichaResumo(int Id, int EmpresaId);
 
-    public sealed record ItemResumo(int Id, decimal Quantidade, string? Observacao, int InsumoId);
+    public sealed record ItemResumo(int Id, decimal Quantidade, string? Observacao, decimal PercentualPerda, int InsumoId);
 
     public sealed record InsumoResumo(int Id, string Nome, string? Marca, UnidadeMedida UnidadeBase, bool Ativo)
     {

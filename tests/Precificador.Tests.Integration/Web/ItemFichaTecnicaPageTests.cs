@@ -1103,6 +1103,70 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains("disabled", ObterTag(paginaEdicao, "select", "Input.UnidadeBase"), StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task UC019_W1_W2_Novo_converte_percentual_e_vazio_para_fracao_ou_zero()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto perdas novo"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var primeiroInsumo = await CriarInsumoAsync(1, Nome("Insumo perda pt"), null, UnidadeMedida.Grama, true);
+        var segundoInsumo = await CriarInsumoAsync(1, Nome("Insumo perda zero"), null, UnidadeMedida.Grama, true);
+        var client = await web.CriarClienteAutenticadoAsync();
+
+        var ptBr = await EnviarFormularioAsync(client, produtoId, primeiroInsumo, "1", null, percentualPerda: "12,3456");
+        var vazio = await EnviarFormularioAsync(client, produtoId, segundoInsumo, "1", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, ptBr.StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, vazio.StatusCode);
+        var itens = await ListarItensAsync(produtoId);
+        Assert.Equal(0.123456m, itens.Single(item => item.FichaTecnicaId == fichaId && item.InsumoId == primeiroInsumo).PercentualPerda);
+        Assert.Equal(0m, itens.Single(item => item.FichaTecnicaId == fichaId && item.InsumoId == segundoInsumo).PercentualPerda);
+    }
+
+    [Fact]
+    public async Task UC019_W3_W4_Editar_preserva_precision_e_rejeita_percentual_invalido_sem_mutar()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto perdas editar"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var insumoId = await CriarInsumoAsync(1, Nome("Insumo perdas editar"), null, UnidadeMedida.Grama, true);
+        var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, "original");
+        var client = await web.CriarClienteAutenticadoAsync();
+
+        var valido = await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "alterada", percentualPerda: "12.3456");
+        Assert.Equal(HttpStatusCode.Redirect, valido.StatusCode);
+        var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}");
+        Assert.Equal("12,3456", ValorDoInput(pagina, "Input.PercentualPerda"));
+
+        var invalido = await EnviarEdicaoItemAsync(client, produtoId, itemId, "3", "nao deve persistir", percentualPerda: "100");
+        var conteudo = await invalido.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, invalido.StatusCode);
+        Assert.Contains("100", ValorDoInput(conteudo, "Input.PercentualPerda"));
+        var persistido = await ObterItemAsync(itemId, 1);
+        Assert.Equal((2m, "alterada", 0.123456m), (persistido.Quantidade, persistido.Observacao, persistido.PercentualPerda));
+    }
+
+    [Fact]
+    public async Task UC019_W5_W7_W8_W9_W10_Ficha_exibe_perdas_e_nunca_total_parcial()
+    {
+        var produtoId = await CriarProdutoAsync(1, Nome("Produto perdas ficha"), true);
+        var fichaId = await CriarFichaAsync(1, produtoId);
+        var conhecido = await CriarInsumoAsync(1, Nome("Insumo perda conhecido"), null, UnidadeMedida.Grama, true);
+        var semPreco = await CriarInsumoAsync(1, Nome("Insumo perda sem preco"), null, UnidadeMedida.Grama, true);
+        var itemConhecido = await CriarItemAsync(1, fichaId, conhecido, 2m, null);
+        var itemSemPreco = await CriarItemAsync(1, fichaId, semPreco, 1m, null);
+        await CriarPrecoAsync(1, conhecido);
+        var client = await web.CriarClienteAutenticadoAsync();
+
+        Assert.Equal(HttpStatusCode.Redirect, (await EnviarEdicaoItemAsync(client, produtoId, itemConhecido, "2", null, percentualPerda: "10")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await EnviarEdicaoItemAsync(client, produtoId, itemSemPreco, "1", null, percentualPerda: "10")).StatusCode);
+        var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
+
+        Assert.Contains("Perda esperada (%)", pagina);
+        Assert.Contains("Custo da perda", pagina);
+        Assert.Contains("Custo de perdas do lote:", pagina);
+        Assert.Contains("indisponível", pagina);
+        Assert.Contains("Há perda(s) sem custo base determinável.", pagina);
+    }
+
     private static async Task<HttpResponseMessage> EnviarRemocaoAsync(
         HttpClient client,
         int produtoId,
@@ -1136,7 +1200,8 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         string? quantidade,
         string? observacao,
         Dictionary<string, string>? camposExtras = null,
-        int? tokenProdutoId = null)
+        int? tokenProdutoId = null,
+        string? percentualPerda = null)
     {
         var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{tokenProdutoId ?? produtoId}/Itens/Novo");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
@@ -1151,6 +1216,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         if (quantidade is not null)
         {
             dados["Input.Quantidade"] = quantidade;
+        }
+        if (percentualPerda is not null)
+        {
+            dados["Input.PercentualPerda"] = percentualPerda;
         }
 
         if (camposExtras is not null)
@@ -1172,7 +1241,8 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         string? observacao,
         Dictionary<string, string>? camposExtras = null,
         int? tokenProdutoId = null,
-        int? tokenItemId = null)
+        int? tokenItemId = null,
+        string? percentualPerda = null)
     {
         var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{tokenProdutoId ?? produtoId}/Itens/Editar/{tokenItemId ?? itemId}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
@@ -1186,6 +1256,10 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         if (quantidade is not null)
         {
             dados["Input.Quantidade"] = quantidade;
+        }
+        if (percentualPerda is not null)
+        {
+            dados["Input.PercentualPerda"] = percentualPerda;
         }
 
         if (camposExtras is not null)

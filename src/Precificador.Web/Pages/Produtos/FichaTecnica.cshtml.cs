@@ -32,6 +32,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public bool CustoBaseItensCompleto { get; private set; }
 
+    public decimal? CustoPerdasLote { get; private set; }
+
+    public bool CustoPerdasCompleto { get; private set; }
+
     public decimal? CustoMaoDeObraLote { get; private set; }
 
     public bool CustoMaoDeObraCompleto { get; private set; }
@@ -47,6 +51,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public string? CustoMaoDeObraLoteFormatado => CustoMaoDeObraLote is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoMaoDeObraLote.Value);
+    public string? CustoPerdasLoteFormatado => CustoPerdasLote is null
+        ? null
+        : PrecoInsumoFormatacao.CustoCalculado(CustoPerdasLote.Value);
     public string? CustoEnergiaLoteFormatado => CustoEnergiaLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoEnergiaLote.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -140,6 +147,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
             Itens = [];
             CustoBaseItens = null;
             CustoBaseItensCompleto = false;
+            CustoPerdasLote = null;
+            CustoPerdasCompleto = false;
             CustoMaoDeObraLote = null;
             CustoMaoDeObraCompleto = false;
             UsosEquipamentos = [];
@@ -161,6 +170,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
                 insumo.Nome,
                 insumo.Marca,
                 item.Quantidade,
+                item.PercentualPerda,
                 insumo.UnidadeBase,
                 item.Observacao,
                 insumo.Ativo))
@@ -175,6 +185,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
                 item.Quantidade,
                 precosVigentes.GetValueOrDefault(item.InsumoId)?.CustoUnitario)));
         var custosPorItem = calculo.Itens.ToDictionary(item => item.ItemId);
+        var perdas = CalculadoraCustoPerdas.Calcular(itens.Select(item =>
+            new ItemCustoPerdaEntrada(item.Id, item.PercentualPerda, custosPorItem[item.Id].CustoItem)));
+        var perdasPorItem = perdas.Itens.ToDictionary(item => item.ItemId);
 
         Itens = itens.Select(item =>
         {
@@ -185,14 +198,18 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
                 item.Nome,
                 item.Marca,
                 item.Quantidade,
+                item.PercentualPerda,
                 item.Unidade,
                 item.Observacao,
                 item.InsumoAtivo,
                 custo.CustoUnitario,
-                custo.CustoItem);
+                custo.CustoItem,
+                perdasPorItem[item.Id].CustoPerdaItem);
         }).ToList();
         CustoBaseItens = calculo.CustoBaseItens;
         CustoBaseItensCompleto = calculo.Completo;
+        CustoPerdasLote = perdas.CustoPerdasLote;
+        CustoPerdasCompleto = perdas.Completo;
 
         var usos = await context.UsosEquipamentosFicha.AsNoTracking().Where(uso => uso.FichaTecnicaId == ficha.Id)
             .OrderBy(uso => uso.NomeEquipamentoNormalizado)
@@ -264,17 +281,21 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         string Nome,
         string? Marca,
         decimal Quantidade,
+        decimal PercentualPerda,
         UnidadeMedida Unidade,
         string? Observacao,
         bool InsumoAtivo,
         decimal? CustoUnitario,
-        decimal? CustoItem)
+        decimal? CustoItem,
+        decimal? CustoPerdaItem)
     {
         public string QuantidadeFormatada => ItemFichaTecnicaFormulario.FormatarQuantidade(Quantidade);
 
         public string UnidadeFormatada => InsumoRotulos.Unidade(Unidade);
 
         public string Situacao => InsumoAtivo ? "Ativo" : "Inativo";
+
+        public string PercentualPerdaFormatado => ItemFichaTecnicaFormulario.FormatarPercentualPerda(PercentualPerda) + "%";
 
         public string CustoUnitarioFormatado => CustoUnitario is null
             ? "Sem preço vigente"
@@ -283,6 +304,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         public string CustoItemFormatado => CustoItem is null
             ? "—"
             : PrecoInsumoFormatacao.CustoCalculado(CustoItem.Value);
+
+        public string CustoPerdaFormatado => CustoPerdaItem is null
+            ? "—"
+            : PrecoInsumoFormatacao.CustoCalculado(CustoPerdaItem.Value);
     }
 
     private sealed record ItemFichaCarregado(
@@ -291,6 +316,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         string Nome,
         string? Marca,
         decimal Quantidade,
+        decimal PercentualPerda,
         UnidadeMedida Unidade,
         string? Observacao,
         bool InsumoAtivo);

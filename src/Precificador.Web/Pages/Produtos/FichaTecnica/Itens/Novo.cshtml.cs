@@ -53,6 +53,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         }
 
         var quantidadeInformada = ItemFichaTecnicaFormulario.TentarObterQuantidade(ModelState, Input, out var quantidade);
+        var percentualPerdaInformado = ItemFichaTecnicaFormulario.TentarObterPercentualPerda(ModelState, Input.PercentualPerda, out var percentualPerda);
         if (!Input.InsumoId.HasValue)
         {
             ModelState.AddModelError("Input.InsumoId", MensagemInsumoIndisponivel);
@@ -67,7 +68,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
             ModelState.AddModelError("Input.InsumoId", MensagemInsumoIndisponivel);
         }
 
-        if (!quantidadeInformada || !ModelState.IsValid)
+        if (!quantidadeInformada || !percentualPerdaInformado || !ModelState.IsValid)
         {
             await CarregarInsumosAsync();
             return Page();
@@ -89,7 +90,8 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
                 Ficha.Id,
                 insumo!.Id,
                 quantidade,
-                Input.Observacao));
+                Input.Observacao,
+                percentualPerda));
             insumo!.ConsolidarIdentidade();
         }
         catch (ArgumentException exception)
@@ -173,6 +175,8 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         public string? Quantidade { get; set; }
 
         public string? Observacao { get; set; }
+
+        public string? PercentualPerda { get; set; }
     }
 
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, bool Ativo);

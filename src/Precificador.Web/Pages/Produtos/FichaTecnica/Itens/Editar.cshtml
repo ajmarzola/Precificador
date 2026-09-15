@@ -29,6 +29,12 @@
         <textarea asp-for="Input.Observacao" class="form-control"></textarea>
         <span asp-validation-for="Input.Observacao" class="text-danger"></span>
     </div>
+    <div class="mb-3">
+        <label asp-for="Input.PercentualPerda" class="form-label">Perda esperada (%)</label>
+        <input asp-for="Input.PercentualPerda" class="form-control" inputmode="decimal" />
+        <div class="form-text">Informe o acréscimo esperado de material sobre a quantidade base do lote.</div>
+        <span asp-validation-for="Input.PercentualPerda" class="text-danger"></span>
+    </div>
     <button type="submit" class="btn btn-primary">Salvar</button>
     <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para a ficha</a>
 </form>
