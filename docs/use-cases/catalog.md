@@ -80,7 +80,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | [UC018](UC018-calcular-custo-itens-lote.md) | Calcular custo atual dos itens do lote | UC005, UC006, UC014, UC017 |
 | [UC020](UC020-calcular-custo-mao-de-obra.md) | Calcular custo de mão de obra | UC013, UC027 |
 | [UC021](UC021-calcular-custo-energia-equipamentos.md) | Calcular custo de energia/equipamentos | UC013, UC027 |
-| UC019 | Calcular perdas aplicáveis | UC018 |
+| [UC019](UC019-calcular-perdas-aplicaveis.md) | Calcular perdas aplicáveis | UC018 |
 | UC022 | Calcular custo total e custo unitário | UC018–UC021 |
 | UC023 | Calcular preço teórico e sugerido | UC022, UC027 |
 | UC024 | Calcular margem atual e situação | UC011, UC022 |
