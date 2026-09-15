@@ -117,6 +117,20 @@ O acréscimo fixo de 0,01 representa 1 ponto percentual e preserva a regra atual
 Se:
 
 ~~~text
+PrecoSugerido = 0
+~~~
+
+então:
+
+~~~text
+DescontoReferencia = não aplicável
+~~~
+
+A base percentual é indefinida; não dividir por zero.
+
+Se:
+
+~~~text
 PrecoPrateleira < PrecoSugerido
 ~~~
 
@@ -399,7 +413,8 @@ Preço de prateleira abaixo do sugerido continua sem Desconto de referência.
 - D5: reserva 5%, +6% => 1%;
 - D6: prateleira abaixo do sugerido => não aplicável;
 - D7: histórico usa snapshot antigo após mudança de configuração;
-- D8: nenhum arredondamento intermediário altera o limiar.
+- D8: nenhum arredondamento intermediário altera o limiar;
+- D9: PrecoSugerido = 0 => não aplicável, sem divisão por zero.
 
 ## Estratégia de implementação
 
@@ -415,7 +430,7 @@ UC012       -> derivação histórica pelo snapshot
 
 Antes de cada um desses UCs ser liberado, sua especificação deve ser revalidada contra esta MEL.
 
-A MEL009 só será considerada integralmente concluída quando os três blocos estiverem implementados e validados.
+A MEL009 só será considerada integralmente concluída quando os blocos UC026/027/011 estiverem implementados e o UC012 estiver implementado e validado consumindo `ReservaComercialReferencia` na derivação histórica. Nesse momento, seu estado no backlog deve passar de `Especificado` para `Concluído`.
 
 ## Fora do escopo
 
