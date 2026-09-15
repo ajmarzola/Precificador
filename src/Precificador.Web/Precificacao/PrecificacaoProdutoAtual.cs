@@ -16,12 +16,12 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
 
         var ficha = await context.FichasTecnicas.AsNoTracking().Where(f => f.ProdutoId == produtoId)
             .Select(f => new FichaCarregada(f.Id, f.Rendimento, f.TempoAtivoMinutos)).SingleOrDefaultAsync();
-        if (ficha is null) return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, null, null, null, null, null, null, null, null, null, false, false);
+        if (ficha is null) return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, null, null, null, null, null, null, null, null, null, false, false, produto.MargemAlvo, ["A ficha técnica não foi cadastrada."]);
 
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
             .Select(c => new ConfiguracaoCarregada(c.ValorHoraTrabalho, c.TarifaEnergiaKwh, c.IncrementoComercial, c.ReservaComercialDesconto))
             .SingleOrDefaultAsync();
-        if (configuracao is null) return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, null, null, null, null, null, null, null, null, null, false, false);
+        if (configuracao is null) return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, null, null, null, null, null, null, null, null, null, false, false, produto.MargemAlvo, ["As configurações de precificação não foram encontradas."]);
 
         var itens = await context.ItensFichaTecnica.AsNoTracking().Where(i => i.FichaTecnicaId == ficha.Id)
             .Select(i => new ItemCarregado(i.Id, i.InsumoId, i.Quantidade, i.PercentualPerda)).ToListAsync();
@@ -35,7 +35,17 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh, usos);
         var custoProduto = CalculadoraCustoProduto.Calcular(itensCalculados.CustoBaseItens, perdas.CustoPerdasLote, maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, ficha.Rendimento);
         var precoProduto = CalculadoraPrecoProduto.Calcular(custoProduto.CustoUnitarioProduto, produto.MargemAlvo, configuracao.IncrementoComercial);
-        return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, itensCalculados.CustoBaseItens, perdas.CustoPerdasLote, maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, custoProduto.CustoLote, custoProduto.CustoUnitarioProduto, precoProduto.PrecoTeorico, precoProduto.PrecoSugerido, configuracao.ReservaComercialDesconto, custoProduto.Completo, precoProduto.Completo);
+        var impedimentos = new List<string>();
+        if (itens.Count == 0) impedimentos.Add("A ficha não possui itens.");
+        else if (!itensCalculados.Completo) impedimentos.Add("Há item(ns) sem preço vigente.");
+        if (!maoDeObra.Completo) impedimentos.Add("Valor da hora de trabalho não configurado.");
+        if (!energia.Completo) impedimentos.Add("Tarifa de energia não configurada.");
+        if (configuracao.IncrementoComercial is null) impedimentos.Add("Incremento comercial não configurado.");
+        return new ResultadoPrecificacaoProdutoAtual(produto.EmpresaId, itensCalculados.CustoBaseItens, perdas.CustoPerdasLote, maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, custoProduto.CustoLote, custoProduto.CustoUnitarioProduto, precoProduto.PrecoTeorico, precoProduto.PrecoSugerido, configuracao.ReservaComercialDesconto, custoProduto.Completo, precoProduto.Completo, produto.MargemAlvo, impedimentos)
+        {
+            Itens = itensCalculados.Itens.ToDictionary(i => i.ItemId, i => new ItemPrecificacaoAtual(i.CustoUnitario, i.CustoItem, perdas.Itens.Single(p => p.ItemId == i.ItemId).CustoPerdaItem)),
+            Usos = energia.Usos.ToDictionary(u => u.UsoId, u => new UsoPrecificacaoAtual(u.ConsumoKwh, u.CustoEnergiaUso))
+        };
     }
 
     private sealed record ProdutoCarregado(int Id, int EmpresaId, decimal MargemAlvo);
@@ -44,4 +54,10 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
     private sealed record ConfiguracaoCarregada(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial, decimal ReservaComercialDesconto);
 }
 
-public sealed record ResultadoPrecificacaoProdutoAtual(int EmpresaId, decimal? CustoBaseItens, decimal? CustoPerdasLote, decimal? CustoMaoDeObraLote, decimal? CustoEnergiaLote, decimal? CustoLote, decimal? CustoUnitarioProduto, decimal? PrecoTeorico, decimal? PrecoSugerido, decimal? ReservaComercialDesconto, bool CustoProdutoCompleto, bool PrecoProdutoCompleto);
+public sealed record ResultadoPrecificacaoProdutoAtual(int EmpresaId, decimal? CustoBaseItens, decimal? CustoPerdasLote, decimal? CustoMaoDeObraLote, decimal? CustoEnergiaLote, decimal? CustoLote, decimal? CustoUnitarioProduto, decimal? PrecoTeorico, decimal? PrecoSugerido, decimal? ReservaComercialDesconto, bool CustoProdutoCompleto, bool PrecoProdutoCompleto, decimal MargemAlvo, IReadOnlyList<string> Impedimentos)
+{
+    public IReadOnlyDictionary<int, ItemPrecificacaoAtual> Itens { get; init; } = new Dictionary<int, ItemPrecificacaoAtual>();
+    public IReadOnlyDictionary<int, UsoPrecificacaoAtual> Usos { get; init; } = new Dictionary<int, UsoPrecificacaoAtual>();
+}
+public sealed record ItemPrecificacaoAtual(decimal? CustoUnitario, decimal? CustoItem, decimal? CustoPerdaItem);
+public sealed record UsoPrecificacaoAtual(decimal ConsumoKwh, decimal? CustoEnergiaUso);

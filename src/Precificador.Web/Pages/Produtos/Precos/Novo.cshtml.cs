@@ -28,7 +28,7 @@ public sealed class NovoModel(PrecificadorDbContext context, IDataOperacionalEmp
             ModelState.AddModelError(string.Empty, "Precificação incompleta. Não é possível registrar o preço de prateleira.");
         if (!ModelState.IsValid) return Page();
 
-        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(Produto!.EmpresaId, Produto.Id, dataOperacionalEmpresa.Hoje, Precificacao!.CustoUnitarioProduto!.Value, Produto.MargemAlvo, Precificacao.PrecoSugerido!.Value, Input.PrecoPrateleira, Precificacao.ReservaComercialDesconto!.Value));
+        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(Precificacao!.EmpresaId, Produto!.Id, dataOperacionalEmpresa.Hoje, Precificacao.CustoUnitarioProduto!.Value, Precificacao.MargemAlvo, Precificacao.PrecoSugerido!.Value, Input.PrecoPrateleira, Precificacao.ReservaComercialDesconto!.Value));
         await context.SaveChangesAsync();
         TempData["MensagemSucesso"] = "Preço de prateleira registrado com sucesso.";
         return RedirectToPage("/Produtos/Detalhes", new { id });

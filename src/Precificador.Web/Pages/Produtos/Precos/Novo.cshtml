@@ -13,6 +13,12 @@
     <dt class="col-sm-3">Preço sugerido</dt><dd class="col-sm-9">@(Model.Precificacao?.PrecoSugerido is decimal sugerido ? PrecoInsumoFormatacao.CustoCalculado(sugerido) : "indisponível")</dd>
 </dl>
 @if (Model.Precificacao is null || !Model.Precificacao.PrecoProdutoCompleto) { <p>Precificação incompleta. Complete os dados necessários antes de registrar o preço.</p> }
+@if (Model.Precificacao is not null && Model.Precificacao.Impedimentos.Count > 0)
+{
+    <ul>
+    @foreach (var impedimento in Model.Precificacao.Impedimentos) { <li>@impedimento</li> }
+    </ul>
+}
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3"><label asp-for="Input.PrecoPrateleira" class="form-label">Preço de prateleira</label><input asp-for="Input.PrecoPrateleira" class="form-control" /><span asp-validation-for="Input.PrecoPrateleira" class="text-danger"></span></div>
