@@ -20,7 +20,7 @@ public sealed class RegistroPrecoProdutoPersistenceTests
         context.RegistrosPrecosProdutos.AddRange(Criar(1, produto.Id, 12.345678m), Criar(1, produto.Id, 9.876543m));
         await context.SaveChangesAsync(); context.ChangeTracker.Clear();
         var registros = await context.RegistrosPrecosProdutos.OrderBy(r => r.Id).ToListAsync();
-        Assert.Equal(2, registros.Count); Assert.Equal(12.345678m, registros[0].CustoReferencia); Assert.Equal(9.876543m, registros[1].CustoReferencia);
+        Assert.Equal(2, registros.Count); Assert.Equal(12.345678m, registros[0].CustoReferencia); Assert.Equal(.3m, registros[0].MargemReferencia); Assert.Equal(20m, registros[0].PrecoSugerido); Assert.Equal(10m, registros[0].PrecoPrateleira); Assert.Equal(.1m, registros[0].ReservaComercialReferencia); Assert.Equal(9.876543m, registros[1].CustoReferencia);
     }
 
     [Fact]
@@ -36,6 +36,10 @@ public sealed class RegistroPrecoProdutoPersistenceTests
         empresaUm.RegistrosPrecosProdutos.Add(Criar(1, produtoDois.Id, 3m));
         await Assert.ThrowsAsync<InvalidOperationException>(() => empresaUm.SaveChangesAsync());
         await Assert.ThrowsAsync<SqliteException>(() => empresaUm.Database.ExecuteSqlAsync($"DELETE FROM Produtos WHERE Id = {produtoUm.Id}"));
+        await Assert.ThrowsAsync<SqliteException>(() => empresaUm.Database.ExecuteSqlAsync($"DELETE FROM Empresas WHERE Id = 1"));
+        empresaUm.ChangeTracker.Clear();
+        empresaUm.RegistrosPrecosProdutos.Add(Criar(2, produtoDois.Id, 4m));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => empresaUm.SaveChangesAsync());
     }
 
     private static RegistroPrecoProduto Criar(int empresa, int produto, decimal custo) => RegistroPrecoProduto.Criar(empresa, produto, new DateOnly(2026, 9, 15), custo, .3m, 20m, 10m, .1m);
