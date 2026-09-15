@@ -389,9 +389,9 @@ O custo de mão de obra é derivado em tempo de consulta e não é persistido na
 
 Para cada uso de equipamento elétrico na Ficha:
 
-`ConsumoKwh = PotenciaEquipamentoKw × (TempoUsoMinutos / 60m)`.
+`ConsumoKwh = PotenciaKw × (TempoUsoMinutos / 60m)`.
 
-`CustoEnergiaUso = ConsumoKwh × TarifaKwhDaEmpresa`.
+`CustoEnergiaUso = ConsumoKwh × TarifaEnergiaKwhDaEmpresa`.
 
 O custo de energia do lote soma os usos aplicáveis. Forno é um possível equipamento, não um conceito universal de toda Ficha.
 
