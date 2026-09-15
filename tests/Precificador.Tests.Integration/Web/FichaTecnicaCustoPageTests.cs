@@ -299,17 +299,21 @@ public sealed class FichaTecnicaCustoPageTests
         var ficha = await ambiente.CriarFichaAsync(1, produto, tempo: 30);
         var semPreco = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, semPreco, 2m, percentualPerda: 0.1m);
+        await ambiente.CriarUsoAsync(1, ficha, 2m, 30);
 
         var html = await ambiente.ObterFichaAsync(produto);
         AssertExibeCustoProdutoIndisponivel(html);
         Assert.Contains("Há item(ns) sem preço vigente.", html);
         Assert.Contains("Há perda(s) sem custo base determinável.", html);
         Assert.Contains("Valor da hora de trabalho não configurado.", html);
+        Assert.Matches("<td>2</td><td>30</td><td>1</td><td>—</td>", html);
+        Assert.Matches("Custo de energia do lote:</strong>\\s*indisponível", html);
+        Assert.Contains("Tarifa de energia não configurada.", html);
         Assert.Contains("Precificação incompleta.", html);
 
         await ambiente.CriarPrecoAsync(1, semPreco, 1m, 3m, Hoje);
         await ambiente.DefinirValorHoraAsync(1, 0m);
-        await ambiente.DefinirTarifaAsync(1, null);
+        await ambiente.DefinirTarifaAsync(1, 0m);
         AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "6,6", "6,6");
 
         var vazia = await ambiente.CriarProdutoAsync(1, ativo: true);
@@ -335,6 +339,7 @@ public sealed class FichaTecnicaCustoPageTests
 
         Assert.DoesNotContain("Custo total do lote", await ambiente.ObterFichaAsync(semFicha));
         Assert.Equal(fichasAntes, await ambiente.ContarFichasAsync(1));
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "40", "20");
 
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
         var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
@@ -354,7 +359,7 @@ public sealed class FichaTecnicaCustoPageTests
         var empresaDois = await ambiente.CriarEmpresaAsync();
         var externo = await ambiente.CriarInsumoAsync(empresaDois, ativo: true);
         await ambiente.CriarPrecoAsync(empresaDois, externo, 1m, 999m, Hoje);
-        Assert.DoesNotContain("999", await ambiente.ObterFichaAsync(produto));
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "40", "20");
     }
 
     private static void AssertExibeCustoProduto(string html, string lote, string unitario)
