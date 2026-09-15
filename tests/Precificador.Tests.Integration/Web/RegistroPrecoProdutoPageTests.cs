@@ -56,7 +56,7 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
     {
         using var semEmpresa = web.CriarCliente(); var usuario = await web.CriarUsuarioAsync();
         await web.LoginAsync(semEmpresa, usuario.Email, usuario.Senha);
-        Assert.Equal(HttpStatusCode.Forbidden, (await semEmpresa.GetAsync("/Produtos/Precos/Novo/1")).StatusCode);
+        var semContexto = await semEmpresa.GetAsync("/Produtos/Precos/Novo/1"); Assert.Equal(HttpStatusCode.Redirect, semContexto.StatusCode); Assert.Contains("/Empresas/Selecionar", semContexto.Headers.Location!.OriginalString);
         var semFicha = await CriarProdutoBasicoAsync(1); using var client = await web.CriarClienteAutenticadoAsync();
         var resposta = await client.GetAsync($"/Produtos/Precos/Novo/{semFicha}"); var token = WebTestHtml.ExtrairTokenAntiforgery(await resposta.Content.ReadAsStringAsync());
         var post = await client.PostAsync($"/Produtos/Precos/Novo/{semFicha}", Form(token, "12")); var html = await post.Content.ReadAsStringAsync();
