@@ -2,7 +2,7 @@
 
 ## Tarefa
 
-Implementar integralmente a UC020 conforme `docs/use-cases/UC020-calcular-custo-mao-de-obra.md`.
+Implementar `docs/use-cases/UC020-calcular-custo-mao-de-obra.md`.
 
 Branch obrigatória:
 
@@ -10,259 +10,124 @@ Branch obrigatória:
 feat/uc020-custo-mao-de-obra
 ~~~
 
-Não editar/commitar/push direto em `master`. Não fazer merge da própria implementação.
+Não trabalhar diretamente em `master` e não fazer merge da própria PR.
 
-## Precondições
-
-Antes de alterar arquivos:
+## Antes de editar
 
 1. atualizar `master`;
-2. criar/trocar para a branch obrigatória;
-3. confirmar branch != master;
-4. ler `AGENTS.md`;
-5. ler `docs/development/backlog.md` e confirmar UC020 = `Pronto`;
-6. ler UC020, F003, F004, UC013, UC027 e RN013/RN017/RN026/RN039;
-7. inspecionar `FichaTecnicaModel`, `FichaTecnica.cshtml`, `ConfiguracaoPrecificacaoEmpresa`, `CalculadoraCustoItens` e testes atuais da Ficha/configurações.
+2. criar/trocar para a branch acima;
+3. confirmar UC020 = `Pronto` no backlog;
+4. ler UC020, RN013/RN017/RN026/RN039, UC013 e UC027;
+5. inspecionar Ficha atual, `ConfiguracaoPrecificacaoEmpresa`, calculadora UC018 e testes relacionados.
 
-Se UC020 não estiver `Pronto`, não implementar.
+## Implementação
 
-## Regra principal
+### Core
 
-Calcular:
+Criar calculadora pura em `Precificador.Core.Precificacao`.
 
-~~~text
-CustoMaoDeObraLote =
-    (TempoAtivoMinutos / 60m)
-    × ValorHoraTrabalho
-~~~
-
-Usar `decimal`. Não usar divisão inteira.
-
-## Semântica null x zero
-
-Implementar exatamente:
+Regra:
 
 ~~~text
-TempoAtivoMinutos = 0
-=> custo = 0
-=> completo = true
-mesmo se ValorHoraTrabalho = null
+(TempoAtivoMinutos / 60m) × ValorHoraTrabalho
 ~~~
+
+Semântica obrigatória:
 
 ~~~text
-TempoAtivoMinutos > 0
-E ValorHoraTrabalho = null
-=> custo = null
-=> completo = false
+tempo = 0 + valor/hora null => custo 0, completo
+tempo > 0 + valor/hora null => custo null, incompleto
+valor/hora = 0 => custo 0, completo
 ~~~
 
-~~~text
-ValorHoraTrabalho = 0
-=> custo = 0
-=> completo = true
-~~~
+Rejeitar tempo ou valor/hora negativos.
 
-Não converter configuração ausente em zero.
+Não arredondar.
 
-## Core
+### Web
 
-Criar componente puro em `Precificador.Core.Precificacao`, preferencialmente:
-
-~~~text
-CalculadoraCustoMaoDeObra
-~~~
-
-Entrada:
-
-~~~text
-int TempoAtivoMinutos
-decimal? ValorHoraTrabalho
-~~~
-
-Saída:
-
-~~~text
-decimal? CustoMaoDeObraLote
-bool Completo
-~~~
-
-Requisitos:
-
-- sem EF;
-- sem Web;
-- sem contexto de Empresa;
-- sem formatação;
-- sem persistência;
-- rejeitar tempo negativo;
-- rejeitar valor/hora negativo quando informado;
-- sem arredondamento intermediário.
-
-## Configuração
-
-Usar `ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho` da Empresa Ativa.
-
-No código de produção:
-
-- GQF normal;
-- sem `IgnoreQueryFilters`;
-- sem EmpresaId no request;
-- sem parâmetro de ValorHora vindo do request;
-- não criar configuração silenciosamente.
-
-Se a entidade 1:1 estiver ausente, retornar 404 no fluxo da Ficha.
-
-Não confundir:
-
-~~~text
-configuração ausente
-~~~
-
-com:
-
-~~~text
-configuração existente + ValorHoraTrabalho = null
-~~~
-
-## Integração na Ficha
-
-Evoluir:
+Integrar à rota existente:
 
 ~~~text
 /Produtos/FichaTecnica/{id:int}
 ~~~
 
-Não criar página nova.
+Usar:
 
-Quando houver Ficha, acrescentar:
+- TempoAtivoMinutos persistido;
+- ValorHoraTrabalho da configuração da Empresa Ativa via GQF.
+
+Não receber EmpresaId ou ValorHora pelo request.
+
+Configuração 1:1 ausente => 404, sem lazy-create.
+
+Mostrar:
 
 ~~~text
 Custo de mão de obra do lote: <valor>
 ~~~
 
-ou, quando indisponível:
+ou:
 
 ~~~text
 Custo de mão de obra do lote: indisponível
 Valor da hora de trabalho não configurado.
 ~~~
 
-Produto sem Ficha não mostra esse componente.
+Produto sem Ficha não mostra componente.
 
-## Relação com UC018
+Produto inativo continua calculável.
 
-Preservar tudo que UC018 já entrega:
+### Preservar UC018
+
+Não alterar semântica de:
 
 - custos dos Itens;
-- total base dos Itens;
-- mensagens de incompletude;
-- data operacional;
+- CustoBaseItens;
 - seleção de preço vigente;
-- composição e ações da Ficha.
+- mensagens de incompletude.
 
-Mão de obra é independente.
+Mão de obra é independente: se UC018 estiver incompleta, ainda mostrar mão de obra quando conhecida.
 
-Mesmo com `CustoBaseItens = null`, mostrar CustoMaoDeObraLote quando determinável.
+### POST da Ficha
 
-Não somar mão de obra ao custo base dos Itens.
+POST válido:
 
-## GET
+~~~text
+salvar -> PRG -> GET recalcula
+~~~
 
-Calcular usando:
+POST inválido:
 
-- TempoAtivoMinutos persistido da Ficha;
-- ValorHoraTrabalho atual da configuração.
+- preservar Input/erros;
+- calcular mão de obra com o TempoAtivoMinutos persistido;
+- não usar valor postado não salvo para representar "custo atual";
+- não persistir custo.
 
-GET não chama SaveChanges.
+## Persistência
 
-## POST válido
-
-Preservar o fluxo atual:
-
-1. validar base da Ficha;
-2. salvar TempoAtivoMinutos;
-3. PRG;
-4. GET recalcula com o novo valor persistido.
-
-Não persistir o custo.
-
-## POST inválido
-
-Este ponto é obrigatório.
-
-O Input postado deve continuar visível e com seus erros.
-
-O custo exibido deve representar o estado persistido atual da Ficha, não o valor postado ainda não salvo.
-
-Portanto:
-
-- não sobrescrever `Input.TempoAtivoMinutos`;
-- carregar separadamente TempoAtivoMinutos persistido para o cálculo;
-- não simular novo custo com valor não persistido;
-- não salvar nada.
-
-## Configuração alterada
-
-Alterar ValorHoraTrabalho na UC027 deve refletir no próximo GET da Ficha.
-
-Não atualizar Produto, Ficha ou Item.
-
-## Produto inativo
-
-Calcular normalmente sem reativar.
-
-## Precisão/apresentação
-
-Aplicar RN026.
-
-Não arredondar cálculo.
-
-Na UI usar formatação pt-BR consistente com os componentes de custo existentes, preferencialmente até 4 casas decimais.
-
-Pode reutilizar helper existente ou criar helper genérico de precificação pequeno.
-
-Não fazer refatoração ampla de apresentação nesta UC.
+Não criar migration, DbSet, coluna ou snapshot.
 
 ## Não antecipar
 
-Não implementar:
+Não implementar UC019, UC021, UC022 ou UC023.
 
-- perdas;
-- equipamentos/energia;
-- custo total do lote;
-- custo unitário do Produto;
-- preço sugerido;
-- margem;
-- categorias de mão de obra;
-- funcionários/salários/encargos;
-- snapshots comerciais.
+Não modelar funcionários, salários, encargos ou categorias de mão de obra.
 
-## Testes obrigatórios
+## Testes
 
-### Unitários U1–U8
+Implementar U1–U8 e W1–W15 da UC020.
 
-Cobrir toda a matriz definida na UC020.
+Riscos que devem estar explicitamente cobertos:
 
-### Web W1–W15
-
-Cobrir toda a matriz definida na UC020, com ênfase em:
-
-- null x zero;
-- tempo zero;
-- divisão decimal;
-- alteração de configuração refletida dinamicamente;
-- Produto inativo;
-- independência de UC018;
-- isolamento tenant;
-- entidade de configuração ausente;
-- GET sem mutação;
-- POST inválido usando estado persistido;
-- PRG após POST válido.
-
-Não criar migration.
+1. divisão inteira;
+2. `null` confundido com zero;
+3. tempo zero exigindo configuração desnecessariamente;
+4. vazamento cross-tenant;
+5. POST inválido usando valor não persistido;
+6. dependência indevida de UC018 completa.
 
 ## Validação
-
-Executar:
 
 ~~~text
 dotnet tool restore
@@ -272,32 +137,8 @@ dotnet test Precificador.slnx --configuration Release --no-build
 git diff --check
 ~~~
 
-## Documentação pós-implementação
+Na PR, mover apenas UC020 de `Pronto` para `Concluído`.
 
-Na PR de implementação:
+## Retorno
 
-- alterar UC020 de `Pronto` para `Concluído` somente no backlog;
-- não alterar MEL009;
-- não marcar UC019/UC021 como concluídos;
-- não criar migration.
-
-## Retorno obrigatório
-
-Informar:
-
-1. branch;
-2. arquivos alterados;
-3. componente de cálculo criado;
-4. tratamento de tempo zero/null/zero configurado;
-5. integração na Ficha;
-6. comportamento em POST inválido;
-7. tenant/configuração ausente;
-8. testes U/W;
-9. build/test;
-10. URL da PR.
-
-Commit sugerido:
-
-~~~text
-feat: calcula custo de mao de obra
-~~~
+Informar branch, arquivos alterados, calculadora criada, tratamento null/zero, integração Web, testes, resultado do build/test e URL da PR.
