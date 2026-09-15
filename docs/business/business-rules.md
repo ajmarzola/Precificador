@@ -463,11 +463,15 @@ O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recurso
 
 ### RN017 — Precificação incompleta
 
-Se qualquer dado obrigatório para o cálculo estiver ausente ou inválido — incluindo preço vigente de um insumo — o produto deve ser marcado como precificação incompleta. Não deve ser exibido custo total ou margem como se fossem confiáveis.
+Se qualquer dado obrigatório para um resultado estiver ausente ou inválido — incluindo preço vigente de um insumo para os cálculos de custo dependentes — esse resultado e seus dependentes permanecem indisponíveis. Não deve ser exibido custo total ou margem como se fossem confiáveis quando faltarem entradas necessárias para esses resultados.
 
 A ausência de preço vigente nunca é substituída por custo zero. Se apenas parte da composição possuir custo conhecido, resultados individuais conhecidos podem ser apresentados para explicabilidade, mas totais dependentes do conjunto completo permanecem indisponíveis.
 
-Ficha Técnica existente sem Itens também não equivale a custo zero nem torna a precificação completa.
+Ficha Técnica existente sem Itens também não equivale a custo zero nem torna os resultados dependentes do custo completos.
+
+A completude é específica por etapa. Um dado ausente que afete somente uma etapa posterior não invalida resultados independentes já determináveis. Em particular, `IncrementoComercial = null` mantém UC023/Preço sugerido incompleto, mas não invalida por si só Custo unitário conhecido nem a Margem atual da UC024 quando existe Preço de prateleira atual.
+
+`SituacaoMargem` da UC024 representa especificamente a situação frente à Margem-alvo e não substitui um indicador global de completude da precificação.
 
 ### RN018 — Desativação e reativação de produto
 
@@ -617,15 +621,34 @@ Aplicar RN026: não arredondar o Preço teórico antes de determinar o múltiplo
 
 ### RN022 — Margem atual
 
-Para Preço de prateleira vigente maior que zero:
+A Margem atual usa exclusivamente estado corrente:
+
+- `CustoUnitarioProduto` atual calculado pela UC022;
+- `PrecoPrateleiraAtual` selecionado pela UC012 por `DataReferencia DESC, Id DESC`;
+- `Produto.MargemAlvo` atual.
+
+Quando custo e Preço de prateleira estiverem disponíveis:
 
 `MargemAtual = (PrecoPrateleiraAtual - CustoUnitarioProduto) / PrecoPrateleiraAtual`.
 
-Preço sugerido é referência econômica; margem atual usa o preço comercial efetivamente definido para prateleira.
+Não usar `CustoReferencia` ou `MargemReferencia` históricos no cálculo atual.
+
+Se custo atual ou Preço de prateleira atual estiverem indisponíveis, `MargemAtual` permanece indisponível. Ausência de preço nunca é convertida em zero.
+
+Preço sugerido, Incremento comercial, Reserva comercial e Desconto de referência não participam da Margem atual.
+
+Aplicar RN026 sem arredondamento intermediário.
 
 ### RN023 — Produto abaixo da margem
 
-Um produto com precificação completa está abaixo da margem quando `MargemAtual < MargemAlvo`.
+Com Margem atual calculável:
+
+- se `MargemAtual < Produto.MargemAlvo`, a situação é `AbaixoDaMargem`;
+- se `MargemAtual >= Produto.MargemAlvo`, a situação é `DentroDaMargem`.
+
+A igualdade exata pertence a `DentroDaMargem`.
+
+Quando Margem atual não for calculável por ausência de custo atual ou Preço de prateleira atual, a situação é `Incompleto`.
 
 ### RN024 — Preço de prateleira e histórico de precificação
 
@@ -733,10 +756,14 @@ Cálculos intermediários não devem ser arredondados para centavos. O arredonda
 
 ## Status de cálculo
 
-### RN027 — Estados mínimos
+### RN027 — Estados mínimos da situação de margem
 
-Para fins de acompanhamento, um produto ativo pode estar pelo menos em um dos estados:
+Para fins de acompanhamento da Margem atual, Produto ativo ou inativo pode estar em um dos estados:
 
-- `Incompleto`: não pode ser precificado com segurança;
-- `AbaixoDaMargem`: cálculo válido e margem atual inferior à meta;
-- `DentroDaMargem`: cálculo válido e margem atual igual ou superior à meta.
+- `Incompleto`: Margem atual não pode ser determinada porque o Custo unitário atual ou o Preço de prateleira atual está indisponível;
+- `AbaixoDaMargem`: Margem atual calculável e inferior à `MargemAlvo` atual;
+- `DentroDaMargem`: Margem atual calculável e igual ou superior à `MargemAlvo` atual.
+
+A `SituacaoMargem` é derivada em consulta e não é persistida.
+
+Ela não representa, isoladamente, a completude global de todas as etapas de precificação. A completude de `PrecoSugerido`/UC023 é independente desta classificação. Por exemplo, `IncrementoComercial = null` pode deixar UC023 incompleta e ainda assim permitir Margem atual e Situação de margem quando custo e Preço de prateleira estiverem conhecidos.

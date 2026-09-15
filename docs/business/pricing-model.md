@@ -113,11 +113,35 @@ Para histórico, cada registro comercial congela `ReservaComercialReferencia` us
 
 ## Margem atual
 
+A Margem atual representa a condição econômica **corrente** do Produto e combina:
+
+- Custo unitário atual calculado pela UC022;
+- Preço de prateleira atual selecionado do histórico comercial por `DataReferencia DESC, Id DESC`;
+- Margem-alvo atual persistida no Produto.
+
 ```text
-margem_atual = (preço_prateleira_atual - custo_unitário) / preço_prateleira_atual
+margem_atual = (preço_prateleira_atual - custo_unitário_atual) / preço_prateleira_atual
 ```
 
-A margem atual usa o Preço de prateleira vigente e o custo calculado com preços e configurações vigentes da mesma Empresa.
+Não usar `CustoReferencia` ou `MargemReferencia` do snapshot histórico para calcular a situação atual.
+
+Sem custo unitário atual ou sem Preço de prateleira atual, a Margem atual é indisponível e a situação é `Incompleto`.
+
+Com ambos conhecidos:
+
+```text
+margem_atual < margem_alvo
+=> AbaixoDaMargem
+
+margem_atual >= margem_alvo
+=> DentroDaMargem
+```
+
+A igualdade pertence a `DentroDaMargem`. Custo zero é conhecido e pode resultar em Margem atual de 100%; custo superior ao preço pode produzir margem negativa.
+
+Preço sugerido, Incremento comercial, Reserva comercial e Desconto de referência não participam deste cálculo. Portanto, ausência de Incremento comercial não torna a Margem atual incompleta quando custo e Preço de prateleira estão conhecidos.
+
+Aplicar RN026 sem arredondamento intermediário antes da comparação com a meta.
 
 ## Ausência de dados
 
