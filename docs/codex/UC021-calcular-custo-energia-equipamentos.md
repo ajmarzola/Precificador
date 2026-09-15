@@ -4,23 +4,24 @@
 
 Implementar `docs/use-cases/UC021-calcular-custo-energia-equipamentos.md`.
 
-Branch obrigatória:
+Branch:
 
 ~~~text
 feat/uc021-custo-energia-equipamentos
 ~~~
 
-Não trabalhar diretamente em `master` e não fazer merge da própria PR.
+Não trabalhar em `master` nem fazer merge da própria PR.
 
 ## Antes de editar
 
-1. atualizar `master`;
-2. criar/trocar para a branch acima;
-3. confirmar UC021 = `Pronto` no backlog;
-4. ler UC021, F003, F004, RN014/RN017/RN026/RN039/RN055/RN056;
-5. inspecionar `ItemFichaTecnica`, páginas Itens Novo/Editar/Remover, `FichaTecnicaModel`, UC020 e `ConfiguracaoPrecificacaoEmpresa`.
+1. atualizar master e criar a branch;
+2. confirmar UC021 = `Pronto`;
+3. ler UC021, F003/F004, RN014/RN026/RN039/RN055/RN056;
+4. inspecionar ItemFichaTecnica, páginas Itens, FichaTecnicaModel, UC020 e configuração da Empresa.
 
-## Modelo
+## Implementar
+
+### Domínio
 
 Criar `UsoEquipamentoFicha : IEntidadeEmpresa`:
 
@@ -34,28 +35,26 @@ PotenciaKw
 TempoUsoMinutos
 ~~~
 
-Não criar cadastro global `Equipamento`.
+Sem cadastro global de Equipamento.
 
-Regras:
-
-- nome obrigatório, normalizado, máx. 120;
-- potência > 0;
-- tempo > 0;
-- um NomeNormalizado por Ficha;
+- nome obrigatório/normalizado/máx.120;
+- potência >0;
+- tempo >0;
 - edição atômica;
-- EmpresaId/FichaTecnicaId imutáveis;
+- Empresa/Ficha imutáveis;
 - remoção física permitida.
 
-## Persistência
+### Persistência
 
-Criar:
+Adicionar DbSet/configuration/GQF/guard e validação sync+async Ficha/Empresa.
 
-- DbSet;
-- configuration EF;
-- GQF;
-- índice único `(EmpresaId, FichaTecnicaId, NomeEquipamentoNormalizado)`;
-- FKs Restrict para Empresa/Ficha;
-- validação sync/async de referência Ficha/Empresa no DbContext.
+Índice único:
+
+~~~text
+EmpresaId + FichaTecnicaId + NomeEquipamentoNormalizado
+~~~
+
+FKs Restrict.
 
 Migration:
 
@@ -63,107 +62,71 @@ Migration:
 AddUsosEquipamentosFicha
 ~~~
 
-Não editar migrations históricas e não fazer backfill.
+Sem backfill/mudança de migrations antigas.
 
-## Cálculo
+### Cálculo
 
-Criar calculadora pura em Core.
+Criar calculadora pura:
 
 ~~~text
 ConsumoKwh = PotenciaKw × (TempoUsoMinutos / 60m)
 CustoEnergiaUso = ConsumoKwh × TarifaEnergiaKwh
-CustoEnergiaLote = soma dos usos
+CustoEnergiaLote = soma
 ~~~
 
 Semântica:
 
 ~~~text
-zero usos + tarifa null => custo 0/completo
-usos + tarifa null => consumos conhecidos; custos null/incompleto
-tarifa 0 => custos 0/completo
+zero usos + tarifa null => 0/completo
+usos + tarifa null => consumo conhecido; custos null/incompleto
+tarifa 0 => custo 0/completo
 ~~~
 
-Sem arredondamento intermediário.
+Sem arredondamento.
 
-## Configuração
+### Configuração
 
-Usar `TarifaEnergiaKwh` da configuração tenant-aware.
+Usar TarifaEnergiaKwh tenant-aware.
 
-Ao carregar Ficha existente, preferir uma única projeção de configuração para:
+Refatorar o carregamento da Ficha para preferencialmente consultar uma vez a configuração e alimentar UC020 + UC021.
 
-- ValorHoraTrabalho (UC020);
-- TarifaEnergiaKwh (UC021).
+Configuração 1:1 ausente => 404, sem lazy-create.
 
-Entidade 1:1 ausente => 404, sem lazy-create.
+### Web
 
-## Web — manutenção
-
-Criar páginas no padrão de Itens:
+Criar:
 
 ~~~text
-/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Novo
-/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Editar/{usoId:int}
-/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Remover/{usoId:int}
+/Produtos/FichaTecnica/{produtoId}/Equipamentos/Novo
+/Produtos/FichaTecnica/{produtoId}/Equipamentos/Editar/{usoId}
+/Produtos/FichaTecnica/{produtoId}/Equipamentos/Remover/{usoId}
 ~~~
 
-Campos de Novo/Editar:
+Seguir padrões das páginas Itens.
 
-- Nome do equipamento;
-- Potência (kW);
-- Tempo de uso (minutos).
+Potência aceita pt-BR/invariant por helper explícito.
 
-Produto sem Ficha => redirecionar à Ficha com aviso.
+Produto sem Ficha => redirect com aviso.
 
-Produto inativo pode manter usos.
+Produto inativo funciona.
 
-Parsing de potência:
+Request não controla ownership.
 
-- vírgula => pt-BR;
-- senão => invariant;
-- decimal.TryParse + NumberStyles.Number.
-
-Request não controla EmpresaId/FichaTecnicaId.
-
-## Web — Ficha
-
-Adicionar seção Equipamentos.
-
-Tabela:
+Na Ficha, seção:
 
 ~~~text
-Equipamento | Potência (kW) | Tempo (min) | Consumo (kWh) | Custo de energia | Ações
+Equipamento | Potência | Tempo | Consumo | Custo de energia | Ações
 ~~~
 
-Adicionar ação `Adicionar equipamento`.
+Sem usos => custo energia 0.
 
-Resumo:
+Com tarifa null => mostrar consumo, custo indisponível e mensagem.
 
-~~~text
-Custo de energia do lote
-~~~
+Preservar UC018/UC020 e o retorno de POST inválido baseado no estado persistido.
 
-Tarifa null com usos:
+## Não implementar
 
-~~~text
-indisponível
-Tarifa de energia não configurada.
-~~~
-
-Sem usos:
-
-~~~text
-0
-~~~
-
-Preservar integralmente UC018 e UC020.
-
-POST inválido da base deve recarregar energia pelo estado persistido sem sobrescrever Input.
-
-## Não antecipar
-
-Não implementar:
-
-- cadastro global de ativos;
+- catálogo patrimonial;
 - depreciação/manutenção;
 - gás/água;
 - perdas;
@@ -173,18 +136,18 @@ Não implementar:
 
 ## Testes
 
-Atender D1–D8, U1–U8, P1–P8 e W1–W18 da UC021.
+Atender D1–D7, U1–U8, P1–P8 e W1–W18.
 
-Riscos prioritários:
+Prioridades de revisão:
 
-1. duplicidade por nome normalizado;
-2. referência cross-tenant Ficha/Empresa;
-3. divisão inteira;
-4. tarifa null confundida com zero;
-5. zero usos exigindo tarifa desnecessariamente;
-6. arredondamento intermediário;
-7. POST inválido usando estado não persistido;
-8. regressão de UC018/UC020.
+1. unicidade normalizada;
+2. cross-tenant Ficha/Empresa;
+3. divisão decimal;
+4. tarifa null x zero;
+5. zero usos sem tarifa;
+6. precisão;
+7. POST inválido;
+8. regressão UC018/UC020.
 
 ## Validação
 
@@ -196,8 +159,6 @@ dotnet test Precificador.slnx --configuration Release --no-build
 git diff --check
 ~~~
 
-Na PR, mover apenas UC021 de `Pronto` para `Concluído`.
+Na PR, mover somente UC021 de `Pronto` para `Concluído`.
 
-## Retorno
-
-Informar branch, arquivos/migration, modelo criado, calculadora, semântica null/zero, isolamento tenant, integração Web, testes, build/test e URL da PR.
+Retornar arquivos/migration, modelo, calculadora, Web, testes, build/test e URL da PR.
