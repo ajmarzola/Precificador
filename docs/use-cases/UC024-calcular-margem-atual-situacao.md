@@ -332,6 +332,10 @@ PrecoProdutoCompleto   => UC023
 SituacaoMargem         => UC024
 ~~~
 
+`SituacaoMargem` descreve exclusivamente a capacidade de avaliar o Produto **frente à MargemAlvo atual**. Ela não é sinônimo do indicador global de precificação completa e não substitui `PrecoProdutoCompleto`.
+
+O futuro UC030 poderá combinar sinais de incompletude de outras dimensões; não deve inferir a completude global apenas de `SituacaoMargem`.
+
 É permitido:
 
 ~~~text
