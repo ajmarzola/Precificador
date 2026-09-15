@@ -473,6 +473,40 @@ public sealed class FichaTecnicaCustoPageTests
         Assert.Equal(0, await ambiente.ContarConfiguracoesAsync(1));
     }
 
+    [Fact]
+    public async Task UC025_W3_W5_W7_W13_W16_W28_W29_W32_W35_Detalhamento_projeta_estado_atual_sem_edicao()
+    {
+        await using var ambiente = await CriarAmbienteAsync();
+        var produto = await ambiente.CriarProdutoAsync(1, ativo: false, margemAlvo: .2m);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, ficha, insumo, 2m, percentualPerda: .1m);
+        await ambiente.CriarPrecoAsync(1, insumo, 1m, 3m, Hoje);
+        await ambiente.CriarUsoAsync(1, ficha, 1m, 30);
+        await ambiente.DefinirValorHoraAsync(1, 20m);
+        await ambiente.DefinirTarifaAsync(1, 4m);
+        await ambiente.DefinirIncrementoAsync(1, .5m);
+        var empresaDois = await ambiente.CriarEmpresaAsync();
+        var produtoExterno = await ambiente.CriarProdutoAsync(empresaDois, ativo: true);
+        using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Precificacao/{produto}"));
+        var externo = await client.GetAsync($"/Produtos/Precificacao/{produtoExterno}");
+
+        foreach (var bloco in new[] { "Produto", "Estado da precificação", "Parâmetros usados", "Itens e perdas", "Mão de obra", "Equipamentos e energia", "Consolidação do custo", "Formação do preço", "Situação comercial atual", "Pendências da precificação" })
+            Assert.Contains(bloco, pagina);
+        Assert.Contains("Inativo", pagina);
+        Assert.Contains("10%", pagina);
+        Assert.Contains("1", pagina);
+        Assert.Contains("Custo total do lote", pagina);
+        Assert.Contains($"/Produtos/Detalhes/{produto}", pagina);
+        Assert.Contains($"/Produtos/FichaTecnica/{produto}", pagina);
+        Assert.Contains($"/Produtos/Precos/Novo/{produto}", pagina);
+        Assert.Contains($"/Produtos/Precos/Historico/{produto}", pagina);
+        Assert.DoesNotContain("DescontoReferencia", pagina);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, externo.StatusCode);
+    }
+
     private static void AssertExibeCustoProduto(string html, string lote, string unitario)
     {
         Assert.Matches($"Custo total do lote:</strong>\\s*{Regex.Escape(lote)}", html);

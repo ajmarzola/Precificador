@@ -43,7 +43,7 @@ A ordem das linhas define a fila normativa.
 | UC011 — Registrar preço de prateleira preservando snapshot de precificação | UC | Concluído | UC023; incorporar MEL009 | [UC011](../use-cases/UC011-registrar-preco-prateleira-snapshot.md) |
 | UC012 — Consultar histórico de precificação do Produto | UC | Concluído | UC011; incorporar MEL009 | [UC012](../use-cases/UC012-consultar-historico-precificacao-produto.md) |
 | UC024 — Calcular margem atual e situação | UC | Concluído | UC012, UC022 | [UC024](../use-cases/UC024-calcular-margem-atual-situacao.md) |
-| UC025 — Consultar detalhamento da precificação | UC | Pronto | UC023, UC024 | [UC025](../use-cases/UC025-consultar-detalhamento-precificacao.md) |
+| UC025 — Consultar detalhamento da precificação | UC | Concluído | UC023, UC024 | [UC025](../use-cases/UC025-consultar-detalhamento-precificacao.md) |
 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | UC024 | Documento a criar |
 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |

@@ -140,6 +140,58 @@ public sealed class PrecificacaoProdutoAtualTests
         Assert.Equal(.30m, (await context.Produtos.SingleAsync(p => p.Id == produto.Id)).MargemAlvo);
     }
 
+    [Fact]
+    public async Task UC025_P1_P2_P3_Resultado_expoe_parametros_da_mesma_fotografia_e_preserva_zero()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(0m, 0m, null, .5m, .1m);
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        var ficha = await context.FichasTecnicas.SingleAsync(f => f.ProdutoId == produto.Id);
+        ficha.AtualizarBase(2m, 30);
+        await context.SaveChangesAsync();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(Hoje, resultado!.DataOperacional);
+        Assert.Equal(2m, resultado.Rendimento);
+        Assert.Equal(30, resultado.TempoAtivoMinutos);
+        Assert.Equal(0m, resultado.ValorHoraTrabalho);
+        Assert.Equal(0m, resultado.TarifaEnergiaKwh);
+        Assert.Equal(.5m, resultado.IncrementoComercial);
+    }
+
+    [Fact]
+    public async Task UC025_P4_P5_Retorno_incompleto_preserva_apenas_entradas_conhecidas()
+    {
+        await using var connection = await AbrirAsync();
+        await using var context = Criar(connection, 1);
+        await context.Database.MigrateAsync();
+        var semFicha = Produto.Criar(1, "Produto sem ficha UC025", .30m);
+        context.Produtos.Add(semFicha);
+        await context.SaveChangesAsync();
+        var resultadoSemFicha = await CalcularAsync(context, semFicha.Id);
+
+        Assert.Equal(Hoje, resultadoSemFicha!.DataOperacional);
+        Assert.Null(resultadoSemFicha.Rendimento);
+        Assert.Null(resultadoSemFicha.TempoAtivoMinutos);
+
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        context.ConfiguracoesPrecificacaoEmpresas.RemoveRange(context.ConfiguracoesPrecificacaoEmpresas);
+        await context.SaveChangesAsync();
+        var resultadoSemConfiguracao = await CalcularAsync(context, produto.Id);
+
+        Assert.Equal(Hoje, resultadoSemConfiguracao!.DataOperacional);
+        Assert.Equal(1m, resultadoSemConfiguracao.Rendimento);
+        Assert.Equal(0, resultadoSemConfiguracao.TempoAtivoMinutos);
+        Assert.Null(resultadoSemConfiguracao.ValorHoraTrabalho);
+        Assert.Null(resultadoSemConfiguracao.TarifaEnergiaKwh);
+        Assert.Null(resultadoSemConfiguracao.IncrementoComercial);
+        Assert.Equal(0, await context.ConfiguracoesPrecificacaoEmpresas.CountAsync());
+    }
+
     private static async Task<Produto> CriarProdutoPrecificavelAsync(
         PrecificadorDbContext context,
         decimal margemAlvo,

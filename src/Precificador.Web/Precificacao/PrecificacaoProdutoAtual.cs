@@ -25,10 +25,13 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             return ResultadoIncompleto(
                 produto,
+                dataOperacionalEmpresa.Hoje,
                 precoPrateleiraAtual,
                 dataReferenciaPrecoAtual,
                 ["A ficha técnica não foi cadastrada."],
-                ["A ficha técnica não foi cadastrada."]);
+                ["A ficha técnica não foi cadastrada."],
+                null,
+                null);
         }
 
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
@@ -38,10 +41,13 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             return ResultadoIncompleto(
                 produto,
+                dataOperacionalEmpresa.Hoje,
                 precoPrateleiraAtual,
                 dataReferenciaPrecoAtual,
                 ["As configurações de precificação não foram encontradas."],
-                ["As configurações de precificação não foram encontradas."]);
+                ["As configurações de precificação não foram encontradas."],
+                ficha.Rendimento,
+                ficha.TempoAtivoMinutos);
         }
 
         var itens = await context.ItensFichaTecnica.AsNoTracking().Where(i => i.FichaTecnicaId == ficha.Id)
@@ -106,6 +112,12 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
             impedimentos,
             ImpedimentosMargem(precoPrateleiraAtual, impedimentosCusto))
         {
+            DataOperacional = dataOperacionalEmpresa.Hoje,
+            Rendimento = ficha.Rendimento,
+            TempoAtivoMinutos = ficha.TempoAtivoMinutos,
+            ValorHoraTrabalho = configuracao.ValorHoraTrabalho,
+            TarifaEnergiaKwh = configuracao.TarifaEnergiaKwh,
+            IncrementoComercial = configuracao.IncrementoComercial,
             Itens = itensCalculados.Itens.ToDictionary(i => i.ItemId, i => new ItemPrecificacaoAtual(i.CustoUnitario, i.CustoItem, perdas.Itens.Single(p => p.ItemId == i.ItemId).CustoPerdaItem)),
             Usos = energia.Usos.ToDictionary(u => u.UsoId, u => new UsoPrecificacaoAtual(u.ConsumoKwh, u.CustoEnergiaUso))
         };
@@ -113,10 +125,13 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
 
     private static ResultadoPrecificacaoProdutoAtual ResultadoIncompleto(
         ProdutoCarregado produto,
+        DateOnly dataOperacional,
         decimal? precoPrateleiraAtual,
         DateOnly? dataReferenciaPrecoAtual,
         IReadOnlyList<string> impedimentos,
-        IReadOnlyList<string> impedimentosCusto)
+        IReadOnlyList<string> impedimentosCusto,
+        decimal? rendimento,
+        int? tempoAtivoMinutos)
     {
         var margemAtual = CalculadoraMargemAtual.Calcular(null, precoPrateleiraAtual, produto.MargemAlvo);
         return new ResultadoPrecificacaoProdutoAtual(
@@ -138,7 +153,12 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
             margemAtual.MargemAtual,
             margemAtual.Situacao,
             impedimentos,
-            ImpedimentosMargem(precoPrateleiraAtual, impedimentosCusto));
+            ImpedimentosMargem(precoPrateleiraAtual, impedimentosCusto))
+        {
+            DataOperacional = dataOperacional,
+            Rendimento = rendimento,
+            TempoAtivoMinutos = tempoAtivoMinutos
+        };
     }
 
     private static IReadOnlyList<string> ImpedimentosMargem(decimal? precoPrateleiraAtual, IReadOnlyList<string> impedimentosCusto)
@@ -176,6 +196,12 @@ public sealed record ResultadoPrecificacaoProdutoAtual(
     IReadOnlyList<string> Impedimentos,
     IReadOnlyList<string> ImpedimentosMargemAtual)
 {
+    public DateOnly DataOperacional { get; init; }
+    public decimal? Rendimento { get; init; }
+    public int? TempoAtivoMinutos { get; init; }
+    public decimal? ValorHoraTrabalho { get; init; }
+    public decimal? TarifaEnergiaKwh { get; init; }
+    public decimal? IncrementoComercial { get; init; }
     public IReadOnlyDictionary<int, ItemPrecificacaoAtual> Itens { get; init; } = new Dictionary<int, ItemPrecificacaoAtual>();
     public IReadOnlyDictionary<int, UsoPrecificacaoAtual> Usos { get; init; } = new Dictionary<int, UsoPrecificacaoAtual>();
 }
