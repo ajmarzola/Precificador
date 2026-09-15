@@ -11,6 +11,7 @@ namespace Precificador.Tests.Integration.Infrastructure;
 public sealed class ItemFichaTecnicaPersistenceTests
 {
     private const string MigrationAnteriorItens = "20260913215922_AddFichasTecnicas";
+    private const string MigrationAnteriorPercentualPerda = "20260915134504_AddUsosEquipamentosFicha";
 
     [Fact]
     public async Task P1_Migration_cria_itens_e_preserva_dados_existentes()
@@ -33,6 +34,40 @@ public sealed class ItemFichaTecnicaPersistenceTests
         Assert.Equal("Agenda", (await context.Produtos.SingleAsync()).Nome);
         Assert.Equal("Papel", (await context.Insumos.SingleAsync()).Nome);
         Assert.Empty(await context.ItensFichaTecnica.ToListAsync());
+    }
+
+    [Fact]
+    public async Task UC019_P1_P2_Migration_preserva_item_existente_com_percentual_zero()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync(MigrationAnteriorPercentualPerda);
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Agenda', 'AGENDA', '0.30', 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO Insumos (EmpresaId, Nome, NomeNormalizado, MarcaNormalizada, Categoria, UnidadeBase, Ativo) VALUES (1, 'Papel', 'PAPEL', '', 1, 4, 1)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '2', 0)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade, Observacao) VALUES (1, 1, 1, '1.25', 'existente')");
+
+        await context.Database.MigrateAsync();
+        context.ChangeTracker.Clear();
+        var item = await context.ItensFichaTecnica.SingleAsync();
+
+        Assert.Equal((1.25m, "existente", 0m), (item.Quantidade, item.Observacao, item.PercentualPerda));
+    }
+
+    [Fact]
+    public async Task UC019_P3_Percentual_perda_persiste_com_seis_casas()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = CriarContexto(connection, 1);
+        await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, percentualPerda: 0.123456m));
+        await context.SaveChangesAsync();
+
+        context.ChangeTracker.Clear();
+        Assert.Equal(0.123456m, (await context.ItensFichaTecnica.SingleAsync()).PercentualPerda);
     }
 
     [Fact]
@@ -184,7 +219,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
 
         context.ChangeTracker.Clear();
         var persistido = await context.ItensFichaTecnica.SingleAsync(item => item.Id == itemId);
-        persistido.AtualizarDados(1.25m, "  ajustado  ");
+        persistido.AtualizarDados(1.25m, "  ajustado  ", 0m);
         await context.SaveChangesAsync();
 
         context.ChangeTracker.Clear();
@@ -206,7 +241,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         await context.SaveChangesAsync();
         var itemId = item.Id;
 
-        item.AtualizarDados(2m, "alterado");
+        item.AtualizarDados(2m, "alterado", 0m);
         await context.SaveChangesAsync();
 
         var atualizado = await context.ItensFichaTecnica.AsNoTracking().SingleAsync(item => item.Id == itemId);
@@ -227,7 +262,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         context.ItensFichaTecnica.Add(item);
         await context.SaveChangesAsync();
 
-        item.AtualizarDados(2m, null);
+        item.AtualizarDados(2m, null, 0m);
         context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 3m));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
@@ -246,7 +281,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
             .ToListAsync();
 
         Assert.Equal(
-            ["Id", "EmpresaId", "FichaTecnicaId", "InsumoId", "Quantidade", "Observacao"],
+            ["Id", "EmpresaId", "FichaTecnicaId", "InsumoId", "Quantidade", "Observacao", "PercentualPerda"],
             colunas);
     }
 

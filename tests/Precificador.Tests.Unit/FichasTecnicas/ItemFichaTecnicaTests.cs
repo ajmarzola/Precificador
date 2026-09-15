@@ -62,7 +62,7 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(7, 11, 13, 1m, "original");
 
-        item.AtualizarDados(2.5m, "  massa principal  ");
+        item.AtualizarDados(2.5m, "  massa principal  ", 0m);
 
         Assert.Equal(7, item.EmpresaId);
         Assert.Equal(11, item.FichaTecnicaId);
@@ -79,7 +79,7 @@ public sealed class ItemFichaTecnicaTests
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            item.AtualizarDados(decimal.Parse(quantidade, System.Globalization.CultureInfo.InvariantCulture), "alterada"));
+            item.AtualizarDados(decimal.Parse(quantidade, System.Globalization.CultureInfo.InvariantCulture), "alterada", 0m));
 
         Assert.Equal(1m, item.Quantidade);
         Assert.Equal("original", item.Observacao);
@@ -90,13 +90,13 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
-        item.AtualizarDados(1m, "   ");
+        item.AtualizarDados(1m, "   ", 0m);
         Assert.Null(item.Observacao);
 
-        item.AtualizarDados(1m, "  linha 1\r\nlinha 2  ");
+        item.AtualizarDados(1m, "  linha 1\r\nlinha 2  ", 0m);
         Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
 
-        Assert.Throws<ArgumentException>(() => item.AtualizarDados(1m, new string('a', 1001)));
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(1m, new string('a', 1001), 0m));
         Assert.Equal("linha 1\r\nlinha 2", item.Observacao);
     }
 
@@ -105,9 +105,30 @@ public sealed class ItemFichaTecnicaTests
     {
         var item = ItemFichaTecnica.Criar(1, 2, 3, 1m, "original");
 
-        Assert.Throws<ArgumentException>(() => item.AtualizarDados(2m, new string('a', 1001)));
+        Assert.Throws<ArgumentException>(() => item.AtualizarDados(2m, new string('a', 1001), 0m));
 
         Assert.Equal(1m, item.Quantidade);
         Assert.Equal("original", item.Observacao);
+    }
+
+    [Fact]
+    public void D1_D2_D3_Criacao_defaulta_aceita_e_valida_percentual_de_perda()
+    {
+        Assert.Equal(0m, ItemFichaTecnica.Criar(1, 2, 3, 1m).PercentualPerda);
+        Assert.Equal(0.123456m, ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: 0.123456m).PercentualPerda);
+        Assert.Throws<ArgumentOutOfRangeException>(() => ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: -0.01m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ItemFichaTecnica.Criar(1, 2, 3, 1m, percentualPerda: 1m));
+    }
+
+    [Fact]
+    public void D4_D5_Edicao_altera_perda_e_permanece_atomica()
+    {
+        var item = ItemFichaTecnica.Criar(7, 11, 13, 1m, "original", 0.10m);
+
+        item.AtualizarDados(2m, "alterada", 0.25m);
+        Assert.Equal((7, 11, 13, 2m, "alterada", 0.25m), (item.EmpresaId, item.FichaTecnicaId, item.InsumoId, item.Quantidade, item.Observacao, item.PercentualPerda));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => item.AtualizarDados(3m, "invalida", 1m));
+        Assert.Equal((2m, "alterada", 0.25m), (item.Quantidade, item.Observacao, item.PercentualPerda));
     }
 }
