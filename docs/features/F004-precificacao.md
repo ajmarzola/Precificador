@@ -63,6 +63,14 @@ O custo aplica RN014 usando a TarifaEnergiaKwh atual da Empresa. Sem usos, o com
 
 O componente é independente de Itens e mão de obra, derivado em tempo de consulta e não persistido. UC022 fará a composição final.
 
+## UC022 — Custo total e custo unitário
+
+UC022 compõe os resultados já calculados por UC018, UC019, UC020 e UC021 para obter o custo total do lote pela RN015 e o custo unitário do Produto pela RN016.
+
+A composição só é considerada completa quando todos os componentes são determináveis. Zero conhecido é valor válido; componente indisponível nunca é convertido em zero e impede a apresentação de soma parcial como custo total confiável, conforme RN017.
+
+O custo unitário divide o custo completo do lote pelo Rendimento atual da Ficha. Os resultados são derivados em consulta, sem arredondamento intermediário e sem persistência.
+
 ## Regras relacionadas
 
 RN004, RN006, RN007, RN009 a RN027, RN055 e RN056.
