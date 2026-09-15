@@ -1,0 +1,10 @@
+@page "/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Novo"
+@model Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos.NovoModel
+@{ var produtoId = RouteData.Values["produtoId"]; }
+<h1>Adicionar equipamento</h1>
+<form method="post"><div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3"><label asp-for="Input.NomeEquipamento" class="form-label">Equipamento</label><input asp-for="Input.NomeEquipamento" class="form-control" /><span asp-validation-for="Input.NomeEquipamento" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Input.PotenciaKw" class="form-label">Potência (kW)</label><input asp-for="Input.PotenciaKw" class="form-control" /><span asp-validation-for="Input.PotenciaKw" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Input.TempoUsoMinutos" class="form-label">Tempo de uso (minutos)</label><input asp-for="Input.TempoUsoMinutos" class="form-control" /><span asp-validation-for="Input.TempoUsoMinutos" class="text-danger"></span></div>
+<button class="btn btn-primary" type="submit">Adicionar</button> <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produtoId" class="btn btn-secondary">Cancelar</a></form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -8,6 +8,7 @@ using Precificador.Core.Precificacao;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
+using Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos;
 using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
 namespace Precificador.Web.Pages.Produtos;
@@ -35,6 +36,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public bool CustoMaoDeObraCompleto { get; private set; }
 
+    public IReadOnlyList<UsoEquipamentoResumo> UsosEquipamentos { get; private set; } = [];
+    public decimal? CustoEnergiaLote { get; private set; }
+    public bool CustoEnergiaCompleto { get; private set; }
+
     public string? CustoBaseItensFormatado => CustoBaseItens is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoBaseItens.Value);
@@ -42,6 +47,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public string? CustoMaoDeObraLoteFormatado => CustoMaoDeObraLote is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoMaoDeObraLote.Value);
+    public string? CustoEnergiaLoteFormatado => CustoEnergiaLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoEnergiaLote.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -51,7 +57,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         }
 
         var ficha = await CarregarEstadoFichaAsync(id);
-        if (PossuiFicha && !await CarregarCustoMaoDeObraAsync(ficha!))
+        if (PossuiFicha && !await CarregarCustosConfiguracaoAsync(ficha!))
         {
             return NotFound();
         }
@@ -78,7 +84,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         var rendimentoInformado = FichaTecnicaFormulario.TentarObterRendimento(ModelState, Input, out var rendimento);
         ValidarTempoAtivo();
         var fichaPersistida = await CarregarEstadoFichaAsync(id);
-        if (PossuiFicha && !await CarregarCustoMaoDeObraAsync(fichaPersistida!))
+        if (PossuiFicha && !await CarregarCustosConfiguracaoAsync(fichaPersistida!))
         {
             return NotFound();
         }
@@ -136,6 +142,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
             CustoBaseItensCompleto = false;
             CustoMaoDeObraLote = null;
             CustoMaoDeObraCompleto = false;
+            UsosEquipamentos = [];
+            CustoEnergiaLote = null;
+            CustoEnergiaCompleto = false;
             return null;
         }
 
@@ -185,13 +194,18 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         CustoBaseItens = calculo.CustoBaseItens;
         CustoBaseItensCompleto = calculo.Completo;
 
+        var usos = await context.UsosEquipamentosFicha.AsNoTracking().Where(uso => uso.FichaTecnicaId == ficha.Id)
+            .OrderBy(uso => uso.NomeEquipamentoNormalizado)
+            .Select(uso => new UsoEquipamentoCarregado(uso.Id, uso.NomeEquipamento, uso.PotenciaKw, uso.TempoUsoMinutos)).ToListAsync();
+        UsosEquipamentos = usos.Select(uso => new UsoEquipamentoResumo(uso.Id, uso.NomeEquipamento, uso.PotenciaKw, uso.TempoUsoMinutos, 0m, null)).ToList();
+
         return ficha;
     }
 
-    private async Task<bool> CarregarCustoMaoDeObraAsync(FichaResumo ficha)
+    private async Task<bool> CarregarCustosConfiguracaoAsync(FichaResumo ficha)
     {
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho))
+            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho, item.TarifaEnergiaKwh))
             .SingleOrDefaultAsync();
 
         if (configuracao is null)
@@ -202,6 +216,11 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         var calculo = CalculadoraCustoMaoDeObra.Calcular(ficha.TempoAtivoMinutos, configuracao.ValorHoraTrabalho);
         CustoMaoDeObraLote = calculo.CustoMaoDeObraLote;
         CustoMaoDeObraCompleto = calculo.Completo;
+        var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh, UsosEquipamentos.Select(uso => new UsoEquipamentoCustoEntrada(uso.Id, uso.PotenciaKw, uso.TempoUsoMinutos)));
+        var energiaPorUso = energia.Usos.ToDictionary(uso => uso.UsoId);
+        UsosEquipamentos = UsosEquipamentos.Select(uso => uso with { ConsumoKwh = energiaPorUso[uso.Id].ConsumoKwh, CustoEnergiaUso = energiaPorUso[uso.Id].CustoEnergiaUso }).ToList();
+        CustoEnergiaLote = energia.CustoEnergiaLote;
+        CustoEnergiaCompleto = energia.Completo;
         return true;
     }
 
@@ -228,7 +247,16 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
 
-    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho);
+    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh);
+
+    public sealed record UsoEquipamentoResumo(int Id, string NomeEquipamento, decimal PotenciaKw, int TempoUsoMinutos, decimal ConsumoKwh, decimal? CustoEnergiaUso)
+    {
+        public string PotenciaFormatada => UsoEquipamentoFichaFormulario.FormatarPotencia(PotenciaKw);
+        public string ConsumoFormatado => UsoEquipamentoFichaFormulario.FormatarConsumo(ConsumoKwh);
+        public string CustoFormatado => CustoEnergiaUso is null ? "—" : PrecoInsumoFormatacao.CustoCalculado(CustoEnergiaUso.Value);
+    }
+
+    private sealed record UsoEquipamentoCarregado(int Id, string NomeEquipamento, decimal PotenciaKw, int TempoUsoMinutos);
 
     public sealed record ItemFichaResumo(
         int Id,

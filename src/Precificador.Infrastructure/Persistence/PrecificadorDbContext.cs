@@ -19,6 +19,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<ConfiguracaoPrecificacaoEmpresa> ConfiguracoesPrecificacaoEmpresas => Set<ConfiguracaoPrecificacaoEmpresa>();
     public DbSet<FichaTecnica> FichasTecnicas => Set<FichaTecnica>();
     public DbSet<ItemFichaTecnica> ItensFichaTecnica => Set<ItemFichaTecnica>();
+    public DbSet<UsoEquipamentoFicha> UsosEquipamentosFicha => Set<UsoEquipamentoFicha>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
     public DbSet<Produto> Produtos => Set<Produto>();
@@ -34,6 +35,8 @@ public sealed class PrecificadorDbContext(
             ficha.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<ItemFichaTecnica>().HasQueryFilter(item =>
             item.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<UsoEquipamentoFicha>().HasQueryFilter(uso =>
+            uso.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<Insumo>().HasQueryFilter(insumo =>
             insumo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<PrecoInsumo>().HasQueryFilter(preco =>
@@ -46,6 +49,7 @@ public sealed class PrecificadorDbContext(
     {
         AplicarIsolamentoEmpresa();
         ValidarReferenciasDosItensFichaTecnica();
+        ValidarReferenciasDosUsosEquipamentosFicha();
         ValidarReferenciaProdutoDasFichas();
         ValidarReferenciaInsumoDosPrecos();
         return base.SaveChanges(acceptAllChangesOnSuccess);
@@ -55,6 +59,7 @@ public sealed class PrecificadorDbContext(
     {
         AplicarIsolamentoEmpresa();
         await ValidarReferenciasDosItensFichaTecnicaAsync(cancellationToken);
+        await ValidarReferenciasDosUsosEquipamentosFichaAsync(cancellationToken);
         await ValidarReferenciaProdutoDasFichasAsync(cancellationToken);
         await ValidarReferenciaInsumoDosPrecosAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -129,6 +134,17 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private void ValidarReferenciasDosUsosEquipamentosFicha()
+    {
+        foreach (var uso in UsosEquipamentosFichaAlterados())
+        {
+            var fichaValida = FichasTecnicas.IgnoreQueryFilters()
+                .Any(ficha => ficha.Id == uso.FichaTecnicaId && ficha.EmpresaId == uso.EmpresaId);
+            if (!fichaValida)
+                throw new InvalidOperationException("A ficha técnica referenciada pelo uso de equipamento não pertence à mesma empresa.");
+        }
+    }
+
     private async Task ValidarReferenciaInsumoDosPrecosAsync(CancellationToken cancellationToken)
     {
         foreach (var preco in PrecosAlterados())
@@ -186,6 +202,17 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private async Task ValidarReferenciasDosUsosEquipamentosFichaAsync(CancellationToken cancellationToken)
+    {
+        foreach (var uso in UsosEquipamentosFichaAlterados())
+        {
+            var fichaValida = await FichasTecnicas.IgnoreQueryFilters().AnyAsync(
+                ficha => ficha.Id == uso.FichaTecnicaId && ficha.EmpresaId == uso.EmpresaId, cancellationToken);
+            if (!fichaValida)
+                throw new InvalidOperationException("A ficha técnica referenciada pelo uso de equipamento não pertence à mesma empresa.");
+        }
+    }
+
     private IEnumerable<PrecoInsumo> PrecosAlterados() =>
         ChangeTracker.Entries<PrecoInsumo>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
@@ -198,6 +225,11 @@ public sealed class PrecificadorDbContext(
 
     private IEnumerable<ItemFichaTecnica> ItensFichaTecnicaAlterados() =>
         ChangeTracker.Entries<ItemFichaTecnica>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity);
+
+    private IEnumerable<UsoEquipamentoFicha> UsosEquipamentosFichaAlterados() =>
+        ChangeTracker.Entries<UsoEquipamentoFicha>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
             .Select(entry => entry.Entity);
 }

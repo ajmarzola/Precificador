@@ -38,6 +38,7 @@
     @if (Model.PossuiFicha)
     {
         <a asp-page="/Produtos/FichaTecnica/Itens/Novo" asp-route-produtoId="@produto.Id" class="btn btn-outline-primary">Adicionar insumo</a>
+        <a asp-page="/Produtos/FichaTecnica/Equipamentos/Novo" asp-route-produtoId="@produto.Id" class="btn btn-outline-primary">Adicionar equipamento</a>
     }
     <a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id" class="btn btn-secondary">Voltar para o produto</a>
 </form>
@@ -126,6 +127,12 @@
     {
         <p>Valor da hora de trabalho não configurado.</p>
     }
+
+    <h2 class="h4 mt-4">Equipamentos</h2>
+    @if (Model.UsosEquipamentos.Count == 0) { <p>Nenhum equipamento adicionado.</p> }
+    else { <table class="table"><thead><tr><th scope="col">Equipamento</th><th scope="col">Potência (kW)</th><th scope="col">Tempo (min)</th><th scope="col">Consumo (kWh)</th><th scope="col">Custo de energia</th><th scope="col">Ações</th></tr></thead><tbody>@foreach (var uso in Model.UsosEquipamentos) { <tr><td>@uso.NomeEquipamento</td><td>@uso.PotenciaFormatada</td><td>@uso.TempoUsoMinutos</td><td>@uso.ConsumoFormatado</td><td>@uso.CustoFormatado</td><td><a asp-page="/Produtos/FichaTecnica/Equipamentos/Editar" asp-route-produtoId="@produto.Id" asp-route-usoId="@uso.Id">Editar</a> <a asp-page="/Produtos/FichaTecnica/Equipamentos/Remover" asp-route-produtoId="@produto.Id" asp-route-usoId="@uso.Id">Remover</a></td></tr> }</tbody></table> }
+    <p class="mt-3"><strong>Custo de energia do lote:</strong> @(Model.CustoEnergiaCompleto ? Model.CustoEnergiaLoteFormatado : "indisponível")</p>
+    @if (!Model.CustoEnergiaCompleto) { <p>Tarifa de energia não configurada.</p> }
 }
 
 @section Scripts {
