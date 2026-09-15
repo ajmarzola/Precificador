@@ -95,13 +95,17 @@ limiar_aplicacao = reserva_comercial_referencia + 0,01
 O acréscimo fixo de `0,01` representa 1 ponto percentual e preserva a regra original: com reserva de 10 p.p., o Desconto de referência começa a ser aplicável em 11% acima do Preço sugerido.
 
 ```text
-se preço_prateleira < preço_sugerido
+se preço_sugerido = 0
+    desconto_referencia = não aplicável
+senão se preço_prateleira < preço_sugerido
     desconto_referencia = não aplicável
 senão se percentual_acima_sugerido < limiar_aplicacao
     desconto_referencia = não aplicável
 senão
     desconto_referencia = percentual_acima_sugerido - reserva_comercial_referencia
 ```
+
+`PrecoSugerido = 0` é válido quando o custo calculado é zero. Nesse caso, a razão percentual em relação ao sugerido é indefinida; não dividir por zero e não inventar percentual.
 
 O Desconto de referência é derivado e não deve ser persistido.
 
@@ -178,6 +182,10 @@ O usuário informa somente o Preço de prateleira. Os demais valores são deriva
 Não são permitidas datas futuras. Múltiplos registros na mesma DataReferencia são permitidos para correções sem edição/exclusão do histórico. O registro vigente é o de maior DataReferencia e, em empate, maior Id.
 
 Produto inativo pode receber novo registro comercial; isso não o reativa.
+
+O registro comercial atual é o primeiro em `DataReferencia DESC, Id DESC`; em empate de data, maior `Id` representa a decisão registrada por último. Esse estado não é persistido no Produto.
+
+A consulta histórica deriva `DescontoReferencia` usando somente `PrecoSugerido`, `PrecoPrateleira` e `ReservaComercialReferencia` de cada linha. Alterações posteriores de custo, MargemAlvo, IncrementoComercial ou ReservaComercialDesconto não reinterpretam o histórico.
 
 O custo atual continua calculado sob demanda para a visão corrente. O CustoReferencia persistido no histórico existe para preservar a decisão tomada naquele momento e não substitui o cálculo atual.
 
