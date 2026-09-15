@@ -67,9 +67,9 @@ A UC011 foi deslocada para depois da UC023. Ao registrar um novo Preço de prate
 
 O usuário informa somente o Preço de prateleira. O histórico é append-only, admite múltiplos registros na mesma data para correções, não aceita data futura e pode receber registros para Produto inativo sem reativá-lo.
 
-UC012 consultará esse histórico. O Desconto de referência continua derivado e deve usar a Reserva comercial congelada em cada registro, nunca a configuração atual da Empresa.
+UC012 consulta esse histórico em ordem `DataReferencia DESC, Id DESC`. O primeiro registro é a decisão comercial atual e os demais são anteriores. O Desconto de referência continua derivado e usa `PrecoSugerido`, `PrecoPrateleira` e `ReservaComercialReferencia` do próprio snapshot, nunca a configuração atual da Empresa. Se `PrecoSugerido = 0`, o percentual acima do sugerido é indefinido e o Desconto de referência é apresentado como não aplicável.
 
-Não persistir um simples `PrecoVendaAtual` ou `PrecoPrateleiraAtual` diretamente em Produto; o valor atual será derivado do histórico.
+A consulta histórica é somente leitura e continua válida mesmo que custo, Margem-alvo, Ficha Técnica, Incremento comercial ou Reserva comercial atuais mudem depois. Não persistir um simples `PrecoVendaAtual` ou `PrecoPrateleiraAtual` diretamente em Produto; o valor atual é derivado do histórico.
 
 ## Ficha Técnica e produção
 
@@ -157,8 +157,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC008 — Listar e consultar produtos](../use-cases/UC008-listar-consultar-produtos.md);
 - [UC009 — Editar produto](../use-cases/UC009-editar-produto.md);
 - [UC010 — Desativar e reativar produto](../use-cases/UC010-desativar-reativar-produto.md);
-- UC011 — Registrar preço de prateleira preservando snapshot de precificação;
-- UC012 — Consultar histórico de precificação do Produto.
+- [UC011 — Registrar preço de prateleira preservando snapshot de precificação](../use-cases/UC011-registrar-preco-prateleira-snapshot.md);
+- [UC012 — Consultar histórico de precificação do Produto](../use-cases/UC012-consultar-historico-precificacao-produto.md).
 
 ## Fora do escopo
 

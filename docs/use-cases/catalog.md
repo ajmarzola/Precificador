@@ -49,10 +49,10 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | [UC008](UC008-listar-consultar-produtos.md) | Listar e consultar produtos | UC007 |
 | [UC009](UC009-editar-produto.md) | Editar produto | UC007 |
 | [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007, UC009 |
-| UC011 | Registrar preço de prateleira preservando snapshot de precificação | UC023; incorporar snapshot `ReservaComercialReferencia` conforme MEL009 |
-| UC012 | Consultar histórico de precificação do produto | UC011; derivar desconto histórico pela reserva congelada conforme MEL009 |
+| [UC011](UC011-registrar-preco-prateleira-snapshot.md) | Registrar preço de prateleira preservando snapshot de precificação | UC023; incorporar snapshot `ReservaComercialReferencia` conforme MEL009 |
+| [UC012](UC012-consultar-historico-precificacao-produto.md) | Consultar histórico de precificação do produto | UC011; derivar desconto histórico pela reserva congelada conforme MEL009 |
 
-UC011/UC012 pertencem ao domínio Produtos, mas o registro comercial deve congelar Custo de referência, Margem de referência e Preço sugerido calculados pelo sistema.
+UC011 congela Custo de referência, Margem de referência, Preço sugerido, Preço de prateleira e Reserva comercial de referência. UC012 consulta esse histórico, deriva o registro atual por `DataReferencia DESC, Id DESC` e calcula o Desconto de referência somente a partir dos snapshots, sem reinterpretar registros antigos com configuração vigente.
 
 ## Ficha técnica
 
