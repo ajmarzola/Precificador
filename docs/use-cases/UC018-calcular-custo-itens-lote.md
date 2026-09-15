@@ -67,17 +67,32 @@ A data do servidor/UTC não substitui a data operacional da Empresa.
 
 A Ficha pode conter vários Insumos.
 
-Evitar executar uma consulta de preço por Item.
+A implementação deve resolver os preços vigentes **em lote**. Não executar uma consulta de preço por Item.
 
-Preferir uma resolução em lote dos preços vigentes dos `InsumoId` da Ficha, preservando RN006 e Global Query Filters.
+O código real pós-UC027 possui apenas `PrecoInsumoConsultas.SelecionarVigenteAsync` para um único Insumo. Portanto, UC018 deve ampliar `PrecoInsumoConsultas` com uma operação para múltiplos `InsumoId`, preservando RN006.
 
-É aceitável estender `PrecoInsumoConsultas` com uma consulta para múltiplos Insumos, desde que:
+Essa consulta em lote deve:
 
-- seja tenant-aware pelo GQF normal;
-- não use `IgnoreQueryFilters`;
-- preserve desempate DataReferencia/Id;
-- não altere a semântica de `SelecionarVigenteAsync` existente;
-- seja coberta por testes de infraestrutura.
+- realizar uma única ida lógica ao banco para o conjunto de Insumos da Ficha;
+- ser tenant-aware pelo GQF normal;
+- não usar `IgnoreQueryFilters`;
+- filtrar `DataReferencia <= dataOperacionalEmpresa`;
+- preservar desempate por `DataReferencia DESC, Id DESC` dentro de cada Insumo;
+- retornar no máximo um preço vigente por Insumo;
+- permitir ausência de resultado para Insumo sem preço vigente;
+- não alterar a semântica de `SelecionarVigenteAsync` existente;
+- ser coberta por testes de infraestrutura.
+
+Nome sugerido, não obrigatório:
+
+~~~text
+SelecionarVigentesAsync(
+    IQueryable<PrecoInsumo> precos,
+    IReadOnlyCollection<int> insumoIds,
+    DateOnly dataOperacionalEmpresa)
+~~~
+
+A implementação interna pode usar projeção/agrupamento compatível com SQLite/EF Core, desde que não introduza N+1.
 
 ## Precisão e arredondamento
 
@@ -355,6 +370,24 @@ GET da Ficha com cálculo:
 - não altera `IdentidadeConsolidada`;
 - não persiste custos.
 
+## Relação com UC026 e UC027
+
+A revalidação pós-UC027 confirmou que as configurações introduzidas por UC026/UC027 não participam do custo dos Itens da Ficha.
+
+UC018 **não deve consultar** `ConfiguracaoPrecificacaoEmpresa`.
+
+Em particular, não usar neste UC:
+
+- ValorHoraTrabalho;
+- TarifaEnergiaKwh;
+- MargemPadrao;
+- IncrementoComercial;
+- ReservaComercialDesconto.
+
+A única informação temporal da Empresa necessária é `IDataOperacionalEmpresa.Hoje`, usada para selecionar preço vigente pela RN006.
+
+Essas configurações entram apenas nos UCs posteriores correspondentes.
+
 ## Relação com UC019
 
 UC018 calcula apenas o custo base dos Itens sem perdas.
@@ -454,9 +487,10 @@ GET de cálculo não muta estado.
 - P3: ignora preço futuro;
 - P4: Insumo com apenas preço futuro não recebe vigente;
 - P5: vários Insumos são resolvidos corretamente no mesmo fluxo;
-- P6: consulta respeita tenant e não retorna preço de outra Empresa.
+- P6: consulta respeita tenant e não retorna preço de outra Empresa;
+- P7: resolução de vários Insumos ocorre por operação em lote, sem chamada individual de `SelecionarVigenteAsync` por Item.
 
-Se a implementação reutilizar `SelecionarVigenteAsync` individual sem criar consulta nova, P1–P4 existentes podem ser reaproveitados, mas deve existir evidência de que não foi introduzido N+1.
+Os testes existentes de `SelecionarVigenteAsync` continuam válidos como proteção da RN006, mas UC018 deve adicionar cobertura própria para a nova consulta em lote.
 
 ### Web
 
@@ -473,7 +507,8 @@ Se a implementação reutilizar `SelecionarVigenteAsync` individual sem criar co
 - W11: outro tenant não vaza preço/custo;
 - W12: GET não persiste/muta estado;
 - W13: tabela mantém Observação/Situação/Editar/Remover da UC017;
-- W14: valores de apresentação seguem pt-BR e não alteram o cálculo interno.
+- W14: valores de apresentação seguem pt-BR e não alteram o cálculo interno;
+- W15: POST inválido da base da Ficha preserva composição, custos individuais e resumo de custo calculado, sem mutação persistida.
 
 ## Alterações esperadas
 
@@ -484,16 +519,21 @@ Se a implementação reutilizar `SelecionarVigenteAsync` individual sem criar co
 
 ### Infrastructure
 
-- reutilizar ou ampliar `PrecoInsumoConsultas` para resolução eficiente dos preços vigentes de múltiplos Insumos;
-- manter RN006 centralizada.
+- ampliar `PrecoInsumoConsultas` com resolução em lote dos preços vigentes de múltiplos Insumos;
+- manter `SelecionarVigenteAsync` existente sem mudança de semântica;
+- manter RN006 centralizada;
+- não introduzir consulta por Item/N+1.
 
 ### Web
 
 - injetar `IDataOperacionalEmpresa` em `FichaTecnicaModel`;
+- não injetar `ConfiguracaoPrecificacaoEmpresa` nem consultar suas configurações neste UC;
 - carregar Quantidade decimal para cálculo;
 - compor custos na projeção da Ficha;
+- usar `PrecoInsumo.CustoUnitario` como fonte do custo unitário do preço selecionado, evitando duplicar a fórmula RN004 na PageModel;
 - adicionar colunas `Custo unitário` e `Custo do item`;
 - adicionar resumo `Custo base dos itens`;
+- garantir que o mesmo carregamento de composição/custos seja usado no GET e no retorno de POST inválido;
 - preservar UC013–UC017.
 
 ### Persistência
@@ -522,19 +562,37 @@ Se a implementação reutilizar `SelecionarVigenteAsync` individual sem criar co
 - filtros/pesquisa;
 - status final RN027 persistido.
 
-## Revalidação obrigatória antes da implementação
+## Revalidação pós-UC027
 
-A especificação foi fechada após UC017, mas a fila normativa executa UC026 e UC027 antes do motor de custo completo.
+Revalidação concluída contra a implementação real mergeada da UC027.
 
-Antes de liberar UC018 para `Pronto`:
+Foi confirmado:
 
-1. confirmar `master` após UC027;
-2. confirmar que nenhuma configuração introduzida em UC026/027 altera o cálculo dos Itens;
-3. confirmar que RN006/PrecoInsumoConsultas continuam com a mesma semântica;
-4. criar a instrução Codex executável;
-5. atualizar o backlog de `Especificado` para `Pronto`.
+1. UC027 está mergeada e UC026/UC027 não alteraram RN004, RN006, RN007, RN011, RN017 ou RN026;
+2. `ConfiguracaoPrecificacaoEmpresa` não participa do custo dos Itens e não deve ser consultada pela UC018;
+3. `IDataOperacionalEmpresa.Hoje` permanece a fonte normativa da data operacional;
+4. `PrecoInsumo.CustoUnitario` continua calculando `PrecoCompra / QuantidadeCompra`;
+5. `PrecoInsumoConsultas.SelecionarVigenteAsync` continua filtrando por data operacional e desempata por `DataReferencia DESC, Id DESC`;
+6. a infraestrutura atual ainda não possui seleção em lote, portanto UC018 deve adicioná-la sem N+1;
+7. a rota canônica continua `/Produtos/FichaTecnica/{id:int}`;
+8. a Ficha atual carrega Item + Insumo e preserva ordenação, observação, situação e ações da UC017;
+9. o POST inválido da base já recarrega a composição, então UC018 deve recarregar também os custos nesse mesmo fluxo;
+10. `PrecoInsumoFormatacao` já oferece formatação pt-BR de custo unitário até 6 casas, podendo ser reutilizado/ampliado;
+11. `CustomWebApplicationFactory` já suporta `IDataOperacionalEmpresa` fixa, permitindo testes Web determinísticos de preço vigente/futuro;
+12. nenhuma migration, novo DbSet ou persistência de custo é necessária.
 
-## Branch sugerida futura
+Não houve mudança material na regra funcional da UC018.
+
+Os refinamentos desta revalidação são apenas técnicos/de cobertura:
+
+- seleção vigente em lote passa a ser obrigatória;
+- N+1 deixa de ser alternativa aceitável;
+- POST inválido da Ficha deve preservar custos calculados na renderização;
+- UC018 não deve depender das configurações de precificação criadas em UC026/UC027.
+
+A UC018 está liberada para implementação.
+
+## Branch sugerida
 
 ~~~text
 feat/uc018-custo-itens-lote
