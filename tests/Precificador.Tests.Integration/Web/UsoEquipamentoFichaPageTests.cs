@@ -45,6 +45,8 @@ public sealed class UsoEquipamentoFichaPageTests
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
         var editar = await client.GetAsync($"/Produtos/FichaTecnica/{produto}/Equipamentos/Editar/{uso}"); Assert.Equal(System.Net.HttpStatusCode.OK, editar.StatusCode);
         var postEditar = await client.PostAsync($"/Produtos/FichaTecnica/{produto}/Equipamentos/Editar/{uso}", await ambiente.FormularioAsync(editar, "Forno ajustado", "1,5", "30")); Assert.Equal(System.Net.HttpStatusCode.Redirect, postEditar.StatusCode);
+        var usoAtualizado = await ambiente.DadosUsoAsync(uso, 1);
+        Assert.Equal("Forno ajustado", usoAtualizado.Nome); Assert.Equal(1.5m, usoAtualizado.PotenciaKw); Assert.Equal(30, usoAtualizado.TempoUsoMinutos);
         Assert.Equal((1, ficha), await ambiente.OwnershipAsync(uso, 1)); Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
         Assert.Equal(System.Net.HttpStatusCode.NotFound, (await client.GetAsync($"/Produtos/FichaTecnica/{produto}/Equipamentos/Editar/{usoDois}")).StatusCode);
         var paginaPropria = await client.GetAsync($"/Produtos/FichaTecnica/{produto}/Equipamentos/Editar/{uso}");
@@ -53,21 +55,31 @@ public sealed class UsoEquipamentoFichaPageTests
         Assert.Equal(0, await ambiente.ContarUsosAsync(1));
     }
 
+    private static void AssertExibeCustoEnergiaLote(string html, string valor) =>
+        Assert.Matches($"Custo de energia do lote:</strong>\\s*{System.Text.RegularExpressions.Regex.Escape(valor)}", html);
+
+    private static void AssertExibeUsoEnergia(string html, string equipamento, string consumo, string custo)
+    {
+        var custoEsperado = custo == "3" ? System.Text.RegularExpressions.Regex.Escape(custo) : "\\u2014";
+        Assert.Matches($"<td>{System.Text.RegularExpressions.Regex.Escape(equipamento)}</td>\\s*<td>[^<]*</td>\\s*<td>[^<]*</td>\\s*<td>{System.Text.RegularExpressions.Regex.Escape(consumo)}</td>\\s*<td>{custoEsperado}</td>", html);
+    }
+
     [Fact]
     public async Task W9_W10_W11_W12_W13_W14_W15_W16_W17_W18_EnergiaMantemSemanticaEEstadoPersistido()
     {
         await using var ambiente = await Ambiente.CriarAsync(); var produto = await ambiente.CriarProdutoAsync(1, true); var ficha = await ambiente.CriarFichaAsync(1, produto, 2m, 30);
-        Assert.Contains("Custo de energia do lote:</strong> 0", await ambiente.FichaAsync(produto));
+        AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
         await ambiente.CriarUsoAsync(1, ficha, "Forno", 2m, 30); await ambiente.TarifaAsync(1, 3m);
-        var configurada = await ambiente.FichaAsync(produto); Assert.Contains("1", configurada); Assert.Contains("3", configurada);
+        var configurada = await ambiente.FichaAsync(produto); AssertExibeUsoEnergia(configurada, "Forno", "1", "3"); AssertExibeCustoEnergiaLote(configurada, "3");
         await ambiente.TarifaAsync(1, null); var semTarifa = await ambiente.FichaAsync(produto); Assert.Contains("indisponível", semTarifa); Assert.Contains("Tarifa de energia não configurada.", semTarifa);
-        await ambiente.TarifaAsync(1, 0m); Assert.Contains("Custo de energia do lote:</strong> 0", await ambiente.FichaAsync(produto));
-        await ambiente.TarifaAsync(1, 4m); Assert.Contains("4", await ambiente.FichaAsync(produto));
+        AssertExibeUsoEnergia(semTarifa, "Forno", "1", "â€”");
+        await ambiente.TarifaAsync(1, 0m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
+        await ambiente.TarifaAsync(1, 4m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "4");
         await ambiente.ValorHoraAsync(1, null); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Contains("indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> 4", independente);
         var usosAntesGet = await ambiente.ContarUsosAsync(1); _ = await ambiente.FichaAsync(produto); Assert.Equal(usosAntesGet, await ambiente.ContarUsosAsync(1));
         var antes = await ambiente.EstadoAsync(ficha, 1); using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1); var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
         var invalido = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()), ["Input.Rendimento"] = "0", ["Input.TempoAtivoMinutos"] = "120" }));
-        Assert.Contains("4", await WebTestHtml.LerHtmlDecodificadoAsync(invalido)); Assert.Equal(antes, await ambiente.EstadoAsync(ficha, 1));
+        AssertExibeCustoEnergiaLote(await WebTestHtml.LerHtmlDecodificadoAsync(invalido), "4"); Assert.Equal(antes, await ambiente.EstadoAsync(ficha, 1));
         await ambiente.RemoverConfiguracaoAsync(1); Assert.Equal(System.Net.HttpStatusCode.NotFound, (await client.GetAsync($"/Produtos/FichaTecnica/{produto}")).StatusCode); Assert.Equal(0, await ambiente.ContarConfiguracoesAsync(1));
     }
 
@@ -80,6 +92,7 @@ public sealed class UsoEquipamentoFichaPageTests
         public async Task<int> CriarUsoAsync(int empresa, int ficha, string nome, decimal potencia, int tempo) { await using var c = Contexto(empresa); var u = UsoEquipamentoFicha.Criar(empresa, ficha, nome, potencia, tempo); c.UsosEquipamentosFicha.Add(u); await c.SaveChangesAsync(); return u.Id; }
         public async Task<int> ContarUsosAsync(int empresa) { await using var c = Contexto(empresa); return await c.UsosEquipamentosFicha.CountAsync(); }
         public async Task<(int, int)> OwnershipAsync(int uso, int empresa) { await using var c = Contexto(empresa); var u = await c.UsosEquipamentosFicha.SingleAsync(x => x.Id == uso); return (u.EmpresaId, u.FichaTecnicaId); }
+        public async Task<(string Nome, decimal PotenciaKw, int TempoUsoMinutos)> DadosUsoAsync(int uso, int empresa) { await using var c = Contexto(empresa); var u = await c.UsosEquipamentosFicha.SingleAsync(x => x.Id == uso); return (u.NomeEquipamento, u.PotenciaKw, u.TempoUsoMinutos); }
         public async Task<bool> ProdutoAtivoAsync(int produto, int empresa) { await using var c = Contexto(empresa); return (await c.Produtos.SingleAsync(x => x.Id == produto)).Ativo; }
         public async Task<string> FichaAsync(int produto) { using var client = await Web.CriarClienteAutenticadoAsync(1); return await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produto}")); }
         public Task<FormUrlEncodedContent> FormularioAsync(HttpResponseMessage pagina, string nome, string potencia, string tempo) => TokenAsync(pagina, new() { ["Input.NomeEquipamento"] = nome, ["Input.PotenciaKw"] = potencia, ["Input.TempoUsoMinutos"] = tempo });
