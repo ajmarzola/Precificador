@@ -31,7 +31,7 @@ A ordem das linhas define a fila normativa.
 | MEL010 — Identidade consolidada do Insumo | MEL | Concluído | UC005, UC014, UC015 | [MEL010](improvements/MEL010-identidade-consolidada-insumo.md) |
 | UC016 — Remover item da Ficha Técnica | UC | Concluído | — | [UC016](../use-cases/UC016-remover-item-ficha.md) |
 | UC017 — Consultar Ficha Técnica e composição | UC | Concluído | — | [UC017](../use-cases/UC017-consultar-ficha-composicao.md) |
-| MEL009 — Reserva comercial do Desconto de referência | MEL | Especificado | UC026, UC027, UC011 e UC012 | [MEL009](improvements/MEL009-reserva-comercial-desconto.md) |
+| MEL009 — Reserva comercial do Desconto de referência | MEL | Concluído | UC026, UC027, UC011 e UC012 | [MEL009](improvements/MEL009-reserva-comercial-desconto.md) |
 | UC026 — Consultar configurações de precificação da Empresa | UC | Concluído | — | [UC026](../use-cases/UC026-consultar-configuracoes-precificacao.md) |
 | UC027 — Alterar configurações de precificação da Empresa | UC | Concluído | — | [UC027](../use-cases/UC027-alterar-configuracoes-precificacao.md) |
 | UC018 — Calcular custo atual dos itens do lote | UC | Concluído | — | [UC018](../use-cases/UC018-calcular-custo-itens-lote.md) |
@@ -41,7 +41,7 @@ A ordem das linhas define a fila normativa.
 | UC022 — Calcular custo total e custo unitário | UC | Concluído | UC018 a UC021 | [UC022](../use-cases/UC022-calcular-custo-total-unitario.md) |
 | UC023 — Calcular preço teórico e sugerido | UC | Concluído | UC022, UC027 | [UC023](../use-cases/UC023-calcular-preco-teorico-sugerido.md) |
 | UC011 — Registrar preço de prateleira preservando snapshot de precificação | UC | Concluído | UC023; incorporar MEL009 | [UC011](../use-cases/UC011-registrar-preco-prateleira-snapshot.md) |
-| UC012 — Consultar histórico de precificação do Produto | UC | Pronto | UC011; incorporar MEL009 | [UC012](../use-cases/UC012-consultar-historico-precificacao-produto.md) |
+| UC012 — Consultar histórico de precificação do Produto | UC | Concluído | UC011; incorporar MEL009 | [UC012](../use-cases/UC012-consultar-historico-precificacao-produto.md) |
 | UC024 — Calcular margem atual e situação | UC | Planejado | UC011, UC022 | Documento a criar |
 | UC025 — Consultar detalhamento da precificação | UC | Planejado | UC023, UC024 | Documento a criar |
 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | UC024 | Documento a criar |

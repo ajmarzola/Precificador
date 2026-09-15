@@ -9,6 +9,8 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
 {
     public ProdutoDetalhes? Produto { get; private set; }
 
+    public PrecoPrateleiraAtualResumo? PrecoPrateleiraAtual { get; private set; }
+
     public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -18,7 +20,18 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
             .Select(produto => new ProdutoDetalhes(produto.Id, produto.Nome, produto.Categoria, produto.MargemAlvo, produto.Ativo))
             .SingleOrDefaultAsync();
 
-        return Produto is null ? NotFound() : Page();
+        if (Produto is null)
+        {
+            return NotFound();
+        }
+
+        var registroAtual = await context.RegistrosPrecosProdutos.AsNoTracking()
+            .SelecionarAtualAsync(id);
+        PrecoPrateleiraAtual = registroAtual is null
+            ? null
+            : new PrecoPrateleiraAtualResumo(registroAtual.DataReferencia, registroAtual.PrecoPrateleira);
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostDesativarAsync(int id)
@@ -50,4 +63,6 @@ public sealed class DetalhesModel(PrecificadorDbContext context) : PageModel
     }
 
     public sealed record ProdutoDetalhes(int Id, string Nome, string? Categoria, decimal MargemAlvo, bool Ativo);
+
+    public sealed record PrecoPrateleiraAtualResumo(DateOnly DataReferencia, decimal PrecoPrateleira);
 }
