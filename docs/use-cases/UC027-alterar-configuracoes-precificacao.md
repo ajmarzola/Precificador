@@ -219,9 +219,13 @@ Zero é válido.
 
 ## Parsing e cultura
 
-Usar parsing decimal explícito e determinístico, seguindo os padrões já usados por Produto/Ficha.
+Usar parsing decimal explícito e determinístico, seguindo o padrão já implementado em `ProdutoFormulario`:
 
-A interface pt-BR deve aceitar, no mínimo:
+- se o texto contiver vírgula, interpretar com cultura `pt-BR`;
+- caso contrário, interpretar com cultura invariável;
+- usar `decimal.TryParse` com `NumberStyles.Number`.
+
+A interface deve aceitar, no mínimo:
 
 ~~~text
 0
@@ -232,7 +236,7 @@ A interface pt-BR deve aceitar, no mínimo:
 
 Não depender implicitamente de `CurrentCulture` do processo.
 
-É aceitável aceitar também formato invariável quando o helper compartilhado do projeto já seguir essa política.
+Recomenda-se criar um helper compartilhado `ConfiguracaoPrecificacaoFormulario` para parsing, conversão percentual/fração e mapeamento de erros da edição.
 
 Evitar `[DataType]`/model binding decimal direto como única validação para campos em que vírgula pt-BR é requisito funcional.
 
@@ -419,6 +423,16 @@ Pré-preencher explicitamente:
 ~~~
 
 Não confundir zero configurado com `null`.
+
+### Se a configuração 1:1 estiver ausente
+
+A ausência de `ConfiguracaoPrecificacaoEmpresa` para uma Empresa válida é violação de integridade conforme UC026.
+
+No GET de `/Produtos/Novo`:
+
+- não tratar ausência da configuração como se `MargemPadrao = null`;
+- não criar configuração silenciosamente;
+- retornar `404`, mantendo o mesmo princípio já implementado em `/Configuracoes/Precificacao`.
 
 ### POST inválido de Produto Novo
 
@@ -655,21 +669,33 @@ Consulta pós-save apresenta novos valores e `Não configurado` para campos limp
 - snapshot de configuração;
 - API REST.
 
-## Revalidação obrigatória antes da implementação
+## Revalidação pós-UC026
 
-A UC027 foi especificada enquanto UC026 ainda estava apenas liberada para implementação.
+Revalidação concluída contra a implementação real mergeada da UC026.
 
-Antes de mover UC027 para `Pronto`:
+Foi confirmado:
 
-1. confirmar UC026 mergeada e validada;
-2. inspecionar `ConfiguracaoPrecificacaoEmpresa` real;
-3. confirmar nomes, nullability, precisões, fábrica e GQF;
-4. confirmar rota/helper de apresentação real de UC026;
-5. ajustar esta especificação somente se houver divergência material;
-6. criar instrução Codex executável;
-7. atualizar backlog de `Especificado` para `Pronto`.
+1. `ConfiguracaoPrecificacaoEmpresa` existe como entidade 1:1 tenant-owned;
+2. `EmpresaId` é PK/FK e não existe Id artificial;
+3. os nomes reais são `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao`, `IncrementoComercial` e `ReservaComercialDesconto`;
+4. os quatro primeiros campos são `decimal?`;
+5. `ReservaComercialDesconto` é `decimal` obrigatório com padrão `0,10`;
+6. precisões EF são 18,6 para hora/tarifa/incremento e 9,6 para margem/reserva;
+7. `CriarPadrao(empresaId)` existe e preserva os quatro opcionais em `null`;
+8. `DefinirEmpresa` impede reatribuição de tenant;
+9. GQF e guard central cobrem a configuração;
+10. a consulta real é `/Configuracoes/Precificacao`;
+11. configuração ausente nessa consulta retorna `404` e não é criada no GET;
+12. `ConfiguracaoPrecificacaoFormatacao` já centraliza formatação pt-BR e distinção `null`/zero;
+13. `WebTestContext.CriarEmpresaAsync` já cria configuração padrão para novas Empresas de teste;
+14. `/Produtos/Novo` ainda não consome `MargemPadrao`, exatamente como esperado antes da UC027;
+15. nenhuma migration adicional é necessária para UC027.
 
-## Branch sugerida futura
+Não houve divergência material de schema ou arquitetura.
+
+A UC027 está liberada para implementação.
+
+## Branch sugerida
 
 ~~~text
 feat/uc027-alterar-configuracoes-precificacao
