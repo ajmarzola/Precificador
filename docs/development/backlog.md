@@ -43,7 +43,7 @@ A ordem das linhas define a fila normativa.
 | UC026 — Consultar configurações de precificação da Empresa | UC | Concluído | — | [UC026-consultar-configuracoes-precificacao.md](../use-cases/UC026-consultar-configuracoes-precificacao.md) |
 | UC027 — Alterar configurações de precificação da Empresa | UC | Concluído | — | [UC027-alterar-configuracoes-precificacao.md](../use-cases/UC027-alterar-configuracoes-precificacao.md) |
 | UC018 — Calcular custo atual dos itens do lote | UC | Concluído | — | [UC018-calcular-custo-itens-lote.md](../use-cases/UC018-calcular-custo-itens-lote.md) |
-| UC020 — Calcular custo de mão de obra | UC | Pronto | — | [UC020-calcular-custo-mao-de-obra.md](../use-cases/UC020-calcular-custo-mao-de-obra.md) |
+| UC020 — Calcular custo de mão de obra | UC | Concluído | — | [UC020-calcular-custo-mao-de-obra.md](../use-cases/UC020-calcular-custo-mao-de-obra.md) |
 | UC021 — Calcular custo de energia/equipamentos | UC | Planejado | UC013, UC027; revalidar antes de implementar | Documento a criar |
 | UC019 — Calcular perdas aplicáveis | UC | Planejado | UC018; revalidar antes de implementar | Documento a criar |
 | UC022 — Calcular custo total e custo unitário | UC | Planejado | UC018 a UC021 | Documento a criar |

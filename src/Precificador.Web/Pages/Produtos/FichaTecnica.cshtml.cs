@@ -31,9 +31,17 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public bool CustoBaseItensCompleto { get; private set; }
 
+    public decimal? CustoMaoDeObraLote { get; private set; }
+
+    public bool CustoMaoDeObraCompleto { get; private set; }
+
     public string? CustoBaseItensFormatado => CustoBaseItens is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoBaseItens.Value);
+
+    public string? CustoMaoDeObraLoteFormatado => CustoMaoDeObraLote is null
+        ? null
+        : PrecoInsumoFormatacao.CustoCalculado(CustoMaoDeObraLote.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -43,6 +51,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         }
 
         var ficha = await CarregarEstadoFichaAsync(id);
+        if (PossuiFicha && !await CarregarCustoMaoDeObraAsync(ficha!))
+        {
+            return NotFound();
+        }
         if (ficha is not null)
         {
             Input = new FichaTecnicaInputModel
@@ -65,7 +77,11 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
         var rendimentoInformado = FichaTecnicaFormulario.TentarObterRendimento(ModelState, Input, out var rendimento);
         ValidarTempoAtivo();
-        await CarregarEstadoFichaAsync(id);
+        var fichaPersistida = await CarregarEstadoFichaAsync(id);
+        if (PossuiFicha && !await CarregarCustoMaoDeObraAsync(fichaPersistida!))
+        {
+            return NotFound();
+        }
         if (!rendimentoInformado || !ModelState.IsValid)
         {
             return Page();
@@ -118,6 +134,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
             Itens = [];
             CustoBaseItens = null;
             CustoBaseItensCompleto = false;
+            CustoMaoDeObraLote = null;
+            CustoMaoDeObraCompleto = false;
             return null;
         }
 
@@ -170,6 +188,23 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         return ficha;
     }
 
+    private async Task<bool> CarregarCustoMaoDeObraAsync(FichaResumo ficha)
+    {
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
+            .Select(item => new ConfiguracaoPrecificacaoResumo(item.ValorHoraTrabalho))
+            .SingleOrDefaultAsync();
+
+        if (configuracao is null)
+        {
+            return false;
+        }
+
+        var calculo = CalculadoraCustoMaoDeObra.Calcular(ficha.TempoAtivoMinutos, configuracao.ValorHoraTrabalho);
+        CustoMaoDeObraLote = calculo.CustoMaoDeObraLote;
+        CustoMaoDeObraCompleto = calculo.Completo;
+        return true;
+    }
+
     private void ValidarTempoAtivo()
     {
         if (Input.TempoAtivoMinutos is null)
@@ -192,6 +227,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo);
 
     public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
+
+    private sealed record ConfiguracaoPrecificacaoResumo(decimal? ValorHoraTrabalho);
 
     public sealed record ItemFichaResumo(
         int Id,
