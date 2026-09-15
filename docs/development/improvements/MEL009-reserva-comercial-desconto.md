@@ -403,9 +403,17 @@ Preço de prateleira abaixo do sugerido continua sem Desconto de referência.
 
 ## Estratégia de implementação
 
-Não criar instrução Codex autônoma para MEL009.
+A MEL009 não possui implementação autônoma.
 
-A implementação será distribuída nos UCs que criam os modelos:
+Existe uma instrução Codex transversal em:
+
+~~~text
+docs/codex/MEL009-reserva-comercial-desconto.md
+~~~
+
+Ela funciona como checklist obrigatório de incorporação/revalidação e deve ser lida junto com a instrução específica do UC em execução. Ela não autoriza criar branch, migration ou implementação isolada da MEL009.
+
+A implementação será distribuída nos UCs que criam/consomem os modelos:
 
 ~~~text
 UC026/UC027 -> ConfiguracaoPrecificacaoEmpresa.ReservaComercialDesconto
@@ -413,9 +421,9 @@ UC011       -> RegistroPrecoProduto.ReservaComercialReferencia
 UC012       -> derivação histórica pelo snapshot
 ~~~
 
-Antes de cada um desses UCs ser liberado, sua especificação deve ser revalidada contra esta MEL.
+Antes de cada um desses UCs ser liberado, sua especificação deve ser revalidada contra esta MEL e contra a implementação real dos predecessores.
 
-A MEL009 só será considerada integralmente concluída quando os três blocos estiverem implementados e validados.
+A MEL009 só será considerada integralmente concluída quando os blocos distribuídos estiverem implementados e validados.
 
 ## Fora do escopo
 
