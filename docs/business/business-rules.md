@@ -599,9 +599,21 @@ A margem-alvo deve ser maior ou igual a zero e menor que 100%.
 
 ### RN021 — Arredondamento do preço sugerido
 
-O preço sugerido deve ser arredondado **para cima** para o próximo múltiplo do incremento comercial configurado da Empresa, garantindo que o arredondamento não reduza a margem abaixo da margem-alvo.
+O preço sugerido é o menor múltiplo do incremento comercial configurado da Empresa que seja maior ou igual ao preço teórico, garantindo que o arredondamento não reduza a margem abaixo da margem-alvo.
 
-Exemplo com incremento de R$ 0,50: R$ 25,08 resulta em R$ 25,50.
+Fórmula:
+
+~~~text
+PrecoSugerido = Ceiling(PrecoTeorico / IncrementoComercial) × IncrementoComercial
+~~~
+
+`IncrementoComercial` deve ser maior que zero quando configurado. Se estiver `null`, o Preço teórico pode continuar determinável, mas o Preço sugerido fica indisponível.
+
+Se o Preço teórico já for múltiplo exato do incremento, o Preço sugerido é igual ao Preço teórico; não adicionar um incremento artificial.
+
+Exemplo com incremento de R$ 0,50: R$ 25,08 resulta em R$ 25,50, enquanto R$ 25,00 permanece R$ 25,00.
+
+Aplicar RN026: não arredondar o Preço teórico antes de determinar o múltiplo comercial.
 
 ### RN022 — Margem atual
 
