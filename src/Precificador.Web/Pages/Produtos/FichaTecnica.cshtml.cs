@@ -26,6 +26,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
 
     public bool PossuiFicha { get; private set; }
 
+    public decimal? RendimentoAtual { get; private set; }
+
     public IReadOnlyList<ItemFichaResumo> Itens { get; private set; } = [];
 
     public decimal? CustoBaseItens { get; private set; }
@@ -44,6 +46,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
     public decimal? CustoEnergiaLote { get; private set; }
     public bool CustoEnergiaCompleto { get; private set; }
 
+    public decimal? CustoLote { get; private set; }
+
+    public decimal? CustoUnitarioProduto { get; private set; }
+
+    public bool CustoProdutoCompleto { get; private set; }
+
     public string? CustoBaseItensFormatado => CustoBaseItens is null
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoBaseItens.Value);
@@ -55,6 +63,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoPerdasLote.Value);
     public string? CustoEnergiaLoteFormatado => CustoEnergiaLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoEnergiaLote.Value);
+
+    public string? CustoLoteFormatado => CustoLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoLote.Value);
+
+    public string? CustoUnitarioProdutoFormatado => CustoUnitarioProduto is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoUnitarioProduto.Value);
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -144,6 +156,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         if (ficha is null)
         {
             PossuiFicha = false;
+            RendimentoAtual = null;
             Itens = [];
             CustoBaseItens = null;
             CustoBaseItensCompleto = false;
@@ -154,10 +167,14 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
             UsosEquipamentos = [];
             CustoEnergiaLote = null;
             CustoEnergiaCompleto = false;
+            CustoLote = null;
+            CustoUnitarioProduto = null;
+            CustoProdutoCompleto = false;
             return null;
         }
 
         PossuiFicha = true;
+        RendimentoAtual = ficha.Rendimento;
         var itens = await (
             from item in context.ItensFichaTecnica.AsNoTracking()
             join insumo in context.Insumos.AsNoTracking()
@@ -238,6 +255,15 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, IDataOperac
         UsosEquipamentos = UsosEquipamentos.Select(uso => uso with { ConsumoKwh = energiaPorUso[uso.Id].ConsumoKwh, CustoEnergiaUso = energiaPorUso[uso.Id].CustoEnergiaUso }).ToList();
         CustoEnergiaLote = energia.CustoEnergiaLote;
         CustoEnergiaCompleto = energia.Completo;
+        var custoProduto = CalculadoraCustoProduto.Calcular(
+            CustoBaseItens,
+            CustoPerdasLote,
+            CustoMaoDeObraLote,
+            CustoEnergiaLote,
+            ficha.Rendimento);
+        CustoLote = custoProduto.CustoLote;
+        CustoUnitarioProduto = custoProduto.CustoUnitarioProduto;
+        CustoProdutoCompleto = custoProduto.Completo;
         return true;
     }
 

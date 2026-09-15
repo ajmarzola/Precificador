@@ -46,7 +46,7 @@ A ordem das linhas define a fila normativa.
 | UC020 — Calcular custo de mão de obra | UC | Concluído | — | [UC020-calcular-custo-mao-de-obra.md](../use-cases/UC020-calcular-custo-mao-de-obra.md) |
 | UC021 — Calcular custo de energia/equipamentos | UC | Concluído | — | [UC021-calcular-custo-energia-equipamentos.md](../use-cases/UC021-calcular-custo-energia-equipamentos.md) |
 | UC019 — Calcular perdas aplicáveis | UC | Concluído | — | [UC019-calcular-perdas-aplicaveis.md](../use-cases/UC019-calcular-perdas-aplicaveis.md) |
-| UC022 — Calcular custo total e custo unitário | UC | Pronto | UC018 a UC021 | [UC022-calcular-custo-total-unitario.md](../use-cases/UC022-calcular-custo-total-unitario.md) |
+| UC022 — Calcular custo total e custo unitário | UC | Concluído | UC018 a UC021 | [UC022-calcular-custo-total-unitario.md](../use-cases/UC022-calcular-custo-total-unitario.md) |
 | UC023 — Calcular preço teórico e sugerido | UC | Planejado | UC022, UC027 | Documento a criar |
 | UC011 — Registrar preço de prateleira preservando snapshot de precificação | UC | Planejado | UC023; incorporar MEL009 | Documento a criar |
 | UC012 — Consultar histórico de precificação do Produto | UC | Planejado | UC011; incorporar MEL009 | Documento a criar |
