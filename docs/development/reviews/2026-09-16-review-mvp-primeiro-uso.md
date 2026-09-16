@@ -67,6 +67,67 @@ FT002 implementou a fundação de autenticação/multiempresa, mas deliberadamen
 
 A arquitetura N:N já existe e deve ser preservada.
 
+## Segunda rodada — uso autenticado
+
+### RV005 — Apresentação monetária inconsistente
+
+**Classificação:** UX / consistência de apresentação  
+**Rastreamento:** MEL015
+
+Preços, totais e valores monetários devem ter apresentação padronizada em duas casas decimais e cultura pt-BR.
+
+A regra é apenas de exibição. Cálculos continuam com precisão integral.
+
+Custos unitários técnicos por `g/ml/m` são exceção deliberada e devem manter precisão suficiente para não distorcer valores pequenos.
+
+### RV006 — Entrada decimal brasileira falha no Preço do Insumo
+
+**Classificação:** bug  
+**Rastreamento:** MEL015
+
+`PrecoCompra` usa binding direto para `decimal` e rejeitou valor com vírgula decimal no teste manual.
+
+Como `PrecoPrateleira` possui desenho semelhante, MEL015 deve revalidar todos os inputs financeiros diretos, não apenas a tela em que o problema foi observado.
+
+### RV007 — Vocabulário do preço do Insumo sugere transação em vez de embalagem
+
+**Classificação:** correção conceitual  
+**Rastreamento:** MEL016
+
+Substituir na linguagem do usuário:
+
+~~~text
+Quantidade comprada       -> Quantidade por embalagem
+Preço total da compra     -> Preço por embalagem
+~~~
+
+O cálculo e os dados persistidos permanecem semanticamente os mesmos.
+
+A terminologia deve ser coerente também nas consultas/histórico e documentação.
+
+### RV008 — Data de referência abre vazia no registro de preço
+
+**Classificação:** UX / default funcional  
+**Rastreamento:** MEL016
+
+No caso comum, a Data de referência deve iniciar preenchida com a data operacional atual da Empresa:
+
+~~~text
+IDataOperacionalEmpresa.Hoje
+~~~
+
+O usuário continua podendo alterar a data conforme UC005.
+
+### RV009 — Configurações precisam de ajuda contextual
+
+**Classificação:** UX / explicabilidade  
+**Rastreamento:** MEL017
+
+Adicionar ajuda contextual às configurações de precificação, com atenção especial ao `Incremento comercial de arredondamento`.
+
+A mesma estratégia deve abranger Valor/hora, Tarifa de energia, Margem padrão e Reserva comercial.
+
+
 ## Regra atual de primeiro acesso
 
 O primeiro acesso da **instalação** já possui um bootstrap definido pela FT002:
