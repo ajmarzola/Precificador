@@ -14,8 +14,8 @@ Criar um guia único de preparação e uso do ambiente local.
 - pré-requisitos;
 - `dotnet tool restore`;
 - restore/build;
-- aplicação explícita de migrations;
-- comando `dotnet ef database update` com project/startup-project corretos;
+- política de migrations por ambiente: automática em `Development` e explícita nos demais ambientes;
+- comando `dotnet ef database update` com project/startup-project corretos para cenários em que a aplicação explícita seja necessária;
 - localização/resolução do `precificador.db`;
 - execução da aplicação;
 - uso de `/Setup`;
