@@ -3,7 +3,7 @@
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Classificação:** UX / fluxo de trabalho
 - **Prioridade:** média
-- **Dependência:** UC001, UC007
+- **Dependência:** MEL015, MEL016, UC001, UC007
 - **Estado:** Planejado
 
 ## Problema
