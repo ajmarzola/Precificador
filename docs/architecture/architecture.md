@@ -119,7 +119,9 @@ Roles/permissões granulares não são parte da FT002.
 - Não criar API separada para a interface Razor Pages no MVP.
 - Não usar SPA framework por padrão.
 - Alterações de banco usam migrations.
-- Não executar auto-migration no startup.
+- Em `Development`, aplicar migrations pendentes no startup antes de atender requests, para tornar o primeiro uso local determinístico.
+- Fora de `Development`, migrations permanecem explícitas e não são executadas automaticamente no startup.
+- Não usar `EnsureCreated` na aplicação.
 - Não aceitar `EmpresaId` vindo do formulário como fonte de ownership.
 - `IgnoreQueryFilters` exige justificativa explícita.
 - testes cross-tenant são obrigatórios para entidades tenant-owned.

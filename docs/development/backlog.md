@@ -60,6 +60,7 @@ A ordem das linhas define a fila normativa.
 | MEL005 — Centralizar entrada e validação de Insumo entre Novo e Editar | Concluído | baixa | UC003, UC005 | [MEL005](improvements/MEL005-centralizar-formulario-insumo.md) |
 | MEL007 — Centralizar estado e ordem do backlog | Concluído | média-baixa | — | [MEL007](improvements/MEL007-centralizar-estado-backlog.md) |
 | MEL008 — Infraestrutura Web tenant-aware de testes | Concluído | baixa | — | [MEL008](improvements/MEL008-testes-web-tenant-aware.md) |
-| MEL011 — Tratar primeiro uso com banco local não migrado | Planejado | alta | FT002 | [MEL011](improvements/MEL011-primeiro-uso-banco-local.md) |
+| MEL011 — Tratar primeiro uso com banco local não migrado | Concluído | alta | FT002 | [MEL011](improvements/MEL011-primeiro-uso-banco-local.md) |
 | MEL013 — Documentar execução e teste local | Planejado | média | FT001, FT002 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
 | MEL012 — Adequar navegação para usuário anônimo | Planejado | baixa | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
+| MEL014 — Criar Manual do Usuário | Planejado | média | MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |

@@ -4,36 +4,75 @@
 - **Classificação:** correção de primeiro uso
 - **Prioridade:** alta
 - **Dependência:** FT002
+- **Estado:** Concluído
 
 ## Problema
 
-Ao executar a aplicação contra SQLite ainda não migrado, o Login pode falhar com exceção técnica:
+Ao executar a aplicação contra SQLite ainda não migrado, o Login falhava com exceção técnica:
 
 ~~~text
 SQLite Error 1: 'no such table: AspNetUsers'
 ~~~
 
-A aplicação atualmente não aplica migrations automaticamente por decisão arquitetural.
+O mesmo risco existia para o `/Setup`, porque ambos dependem das tabelas do ASP.NET Core Identity.
 
-## Objetivo
+## Decisão
 
-Tornar o estado de banco não preparado explícito e diagnosticável, evitando que o primeiro contato do usuário/desenvolvedor seja uma exceção de infraestrutura sem orientação.
+A política de migrations passa a depender do ambiente.
 
-## Restrições
+### Development
 
-- não introduzir auto-migration no startup sem decisão arquitetural específica;
-- não criar schema via `EnsureCreated`;
-- não mascarar migration pendente como erro de credencial;
-- considerar o risco do caminho relativo `Data Source=precificador.db`.
+Antes de atender qualquer request:
 
-## A definir na especificação
+~~~text
+PrecificadorDbContext.Database.MigrateAsync()
+~~~
 
-- comportamento em Development e Production;
-- detecção segura de banco/schema não preparado;
-- mensagem/página de orientação;
-- eventual exibição do caminho efetivo do SQLite em Development;
-- testes para banco inexistente, vazio, desatualizado e migrado.
+Consequências:
 
-## Estado
+- banco inexistente é criado pelas migrations;
+- banco local desatualizado recebe migrations pendentes;
+- `/Setup` pode ser usado no primeiro acesso sem comando manual prévio;
+- Login não chega a consultar `AspNetUsers` antes de o schema existir.
 
-Planejado.
+### Outros ambientes
+
+Não executar migrations automaticamente no startup.
+
+Publicação/produção deve aplicar migrations explicitamente como etapa operacional/deploy.
+
+## Restrições preservadas
+
+- não usar `EnsureCreated`;
+- não criar ou alterar migration histórica;
+- não criar credenciais padrão;
+- não mascarar erro de migration em ambientes não Development;
+- o mecanismo usa somente migrations EF existentes.
+
+## Implementação
+
+No startup Web, após `builder.Build()` e antes do pipeline HTTP:
+
+1. verificar `app.Environment.IsDevelopment()`;
+2. criar scope;
+3. resolver `PrecificadorDbContext`;
+4. executar `Database.MigrateAsync()`.
+
+## Teste de regressão
+
+Um teste de integração deve iniciar a aplicação em `Development` apontando para um arquivo SQLite novo e, sem chamar migration manualmente:
+
+- acessar `/Setup` com sucesso;
+- comprovar que não existem migrations pendentes;
+- comprovar que tabelas Identity são consultáveis;
+- comprovar que a Empresa técnica inicial existe.
+
+## Observação sobre o arquivo SQLite
+
+A connection string atual continua:
+
+~~~text
+Data Source=precificador.db
+~~~
+
+O caminho relativo ainda deve ser explicado pelo MEL013, inclusive para evitar confusão sobre qual arquivo está sendo utilizado no ambiente local.

@@ -356,7 +356,12 @@ AddMultiempresaIdentity
 ```
 
 Não usar `EnsureCreated` na aplicação.
-Não adicionar auto-migration ao startup.
+
+Decisão posterior consolidada pela MEL011:
+
+- em `Development`, a aplicação executa `Database.MigrateAsync()` no startup, antes de atender requests;
+- fora de `Development`, migrations permanecem explícitas e não são aplicadas automaticamente no startup;
+- essa exceção existe para impedir que Login/Setup sejam executados contra schema local inexistente ou desatualizado.
 
 ## Fora do escopo
 
