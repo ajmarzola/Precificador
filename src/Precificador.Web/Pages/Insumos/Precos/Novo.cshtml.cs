@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
@@ -10,7 +11,7 @@ using Precificador.Web.Apresentacao;
 namespace Precificador.Web.Pages.Insumos.Precos;
 
 [Authorize]
-public sealed class NovoModel(PrecificadorDbContext context) : PageModel
+public sealed class NovoModel(PrecificadorDbContext context, IDataOperacionalEmpresa dataOperacional) : PageModel
 {
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -23,6 +24,8 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         {
             return NotFound();
         }
+
+        Input.DataReferencia = dataOperacional.Hoje;
 
         return Page();
     }
@@ -38,19 +41,19 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         Insumo = new InsumoResumo(insumo.Nome, insumo.Marca, insumo.UnidadeBase, insumo.Ativo);
         if (!Input.DataReferencia.HasValue)
         {
-            ModelState.AddModelError("Input.DataReferencia", "A data de referência é obrigatória.");
+            ModelState.AddModelError("Input.DataReferencia", "Data de referência é obrigatória.");
         }
 
         var quantidadeValida = DecimalInputParser.TentarParse(Input.QuantidadeCompra, out var quantidadeCompra);
         if (!quantidadeValida)
         {
-            ModelState.AddModelError("Input.QuantidadeCompra", "A quantidade deve ser um número válido.");
+            ModelState.AddModelError("Input.QuantidadeCompra", "A quantidade por embalagem deve ser um número válido.");
         }
 
         var precoValido = DecimalInputParser.TentarParse(Input.PrecoCompra, out var precoCompra);
         if (!precoValido)
         {
-            ModelState.AddModelError("Input.PrecoCompra", "O preço deve ser um número válido.");
+            ModelState.AddModelError("Input.PrecoCompra", "O preço por embalagem deve ser um número válido.");
         }
 
         if (!ModelState.IsValid)
@@ -84,10 +87,10 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
 
     public sealed class InputModel
     {
-        [Display(Name = "Quantidade comprada")]
+        [Display(Name = "Quantidade por embalagem")]
         public string? QuantidadeCompra { get; set; }
 
-        [Display(Name = "Preço total da compra")]
+        [Display(Name = "Preço por embalagem")]
         public string? PrecoCompra { get; set; }
 
         [Display(Name = "Data de referência")]
