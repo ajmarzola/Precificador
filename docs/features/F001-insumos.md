@@ -37,6 +37,8 @@ O cadastro de Insumo atualmente contém:
 
 Todo novo Insumo nasce ativo. Preço não faz parte do cadastro e será tratado separadamente pelo UC005, preservando histórico.
 
+Após MEL018, cadastro bem-sucedido redireciona para `/Insumos/Detalhes/{idCriado}`, onde o usuário pode conferir o registro e continuar para o fluxo de preços.
+
 Com a FT002, todo Insumo possui `EmpresaId` obrigatório, resolvido pelo servidor a partir da Empresa Ativa e não informado pelo usuário.
 
 Após o UC001A, a identidade econômica do Insumo é formada por **Empresa + Nome + Marca**, protegida pelo índice `(EmpresaId, NomeNormalizado, MarcaNormalizada)`.
