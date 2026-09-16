@@ -156,7 +156,7 @@ public sealed class PrecoInsumoPageTests(PrecoInsumoPageTests.Factory fixture) :
 
     [Theory]
     [InlineData("2020-01-01")]
-    [InlineData("2026-09-11")]
+    [InlineData("2030-01-02")]
     [InlineData("2099-01-01")]
     public async Task CA07_Datas_passada_atual_e_futura_sao_aceitas(string data)
     {
@@ -166,7 +166,8 @@ public sealed class PrecoInsumoPageTests(PrecoInsumoPageTests.Factory fixture) :
         var response = await EnviarPrecoAsync(client, id, "1", "10", data);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Single(await ObterPrecosAsync(id, 1));
+        var registro = Assert.Single(await ObterPrecosAsync(id, 1));
+        Assert.Equal(DateOnly.Parse(data, System.Globalization.CultureInfo.InvariantCulture), registro.DataReferencia);
     }
 
     [Fact]
