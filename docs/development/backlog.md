@@ -4,9 +4,9 @@ Este arquivo é a única fonte normativa para estado, gate/dependência operacio
 
 Estados permitidos: Planejado, Especificado, Pronto, Concluído, Descartado. Não registrar `Em andamento`; branch e Pull Request representam atividade transitória.
 
-## Fila principal
+## Histórico concluído
 
-A ordem das linhas define a fila normativa.
+Os itens abaixo permanecem como histórico normativo do que já foi entregue. A ordem futura de execução fica exclusivamente na seção **Fila pendente de execução**.
 
 | Item | Tipo | Estado | Gate / Dependência | Documento |
 |---|---|---|---|---|
@@ -44,15 +44,45 @@ A ordem das linhas define a fila normativa.
 | UC012 — Consultar histórico de precificação do Produto | UC | Concluído | UC011; incorporar MEL009 | [UC012](../use-cases/UC012-consultar-historico-precificacao-produto.md) |
 | UC024 — Calcular margem atual e situação | UC | Concluído | UC012, UC022 | [UC024](../use-cases/UC024-calcular-margem-atual-situacao.md) |
 | UC025 — Consultar detalhamento da precificação | UC | Concluído | UC023, UC024 | [UC025](../use-cases/UC025-consultar-detalhamento-precificacao.md) |
-| UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | UC024 | Documento a criar |
-| UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
-| UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
-| UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
-| UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
-| UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
-| UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
 
-## Melhorias não bloqueantes
+## Fila pendente de execução
+
+Esta é a **única ordem normativa para itens ainda não concluídos**, independentemente de serem UC ou MEL.
+
+Regra operacional:
+
+1. tratar **um item por vez**;
+2. só especificar/liberar o próximo item depois de o anterior estar concluído/mergeado, salvo decisão explícita registrada no backlog;
+3. a coluna **Gate / Dependência** registra dependências reais ou gates operacionais que precisam estar concluídos antes do item;
+4. a posição na fila resolve a prioridade entre itens que não possuem dependência técnica direta.
+
+| Ordem | Item | Tipo | Estado | Gate / Dependência | Documento |
+|---:|---|---|---|---|---|
+| 01 | MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | MEL | Planejado | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
+| 02 | MEL016 — Corrigir semântica e defaults do registro de preço do Insumo | MEL | Planejado | MEL015; UC005, UC006, MEL006 | [MEL016](improvements/MEL016-preco-insumo-vocabulario-defaults.md) |
+| 03 | MEL018 — Redirecionar cadastros para os detalhes da entidade | MEL | Planejado | MEL015, MEL016; UC001, UC007 | [MEL018](improvements/MEL018-redirecionar-cadastros-detalhes.md) |
+| 04 | MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | MEL | Planejado | UC013 | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
+| 05 | MEL017 — Explicar configurações de precificação na interface | MEL | Planejado | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
+| 06 | MEL012 — Adequar navegação para usuário anônimo | MEL | Planejado | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
+| 07 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL015, UC024 | Documento a criar |
+| 08 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
+| 09 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
+| 10 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
+| 11 | UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
+| 12 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
+| 13 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
+| 14 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, UC031 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 15 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+
+### Critério da ordem
+
+- **01–06 — estabilização do MVP atual:** corrigir entrada monetária e fluxos/UX já encontrados no teste manual antes de expandir funcionalidade;
+- **07–09 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
+- **10 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
+- **11–13 — expansão de catálogo:** só então introduzir Categorias estruturadas e Coleções, evitando aumentar o escopo antes de fechar o núcleo do MVP;
+- **14–15 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
+
+## Melhorias concluídas
 
 | Item | Estado | Prioridade | Gate / Dependência | Documento |
 |---|---|---|---|---|
@@ -64,11 +94,3 @@ A ordem das linhas define a fila normativa.
 | MEL007 — Centralizar estado e ordem do backlog | Concluído | média-baixa | — | [MEL007](improvements/MEL007-centralizar-estado-backlog.md) |
 | MEL008 — Infraestrutura Web tenant-aware de testes | Concluído | baixa | — | [MEL008](improvements/MEL008-testes-web-tenant-aware.md) |
 | MEL011 — Tratar primeiro uso com banco local não migrado | Concluído | alta | FT002 | [MEL011](improvements/MEL011-primeiro-uso-banco-local.md) |
-| MEL013 — Documentar execução e teste local | Planejado | média | FT001, FT002 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| MEL012 — Adequar navegação para usuário anônimo | Planejado | baixa | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
-| MEL014 — Criar Manual do Usuário | Planejado | média | MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
-| MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | Planejado | alta | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
-| MEL016 — Corrigir semântica e defaults do registro de preço do Insumo | Planejado | média | UC005, UC006, MEL006 | [MEL016](improvements/MEL016-preco-insumo-vocabulario-defaults.md) |
-| MEL017 — Explicar configurações de precificação na interface | Planejado | baixa | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
-| MEL018 — Redirecionar cadastros para os detalhes da entidade | Planejado | média | UC001, UC007 | [MEL018](improvements/MEL018-redirecionar-cadastros-detalhes.md) |
-| MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | Planejado | baixa | UC013 | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
