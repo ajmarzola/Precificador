@@ -232,6 +232,31 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     }
 
     [Fact]
+    public async Task MEL015_C3_Round_trip_do_incremento_comercial_preserva_alta_precisao()
+    {
+        var empresa = await web.CriarEmpresaAsync("Empresa round trip incremento");
+        await AtualizarConfiguracaoAsync(empresa, 12.34m, 0.98m, 0.075m, 0.500001m, 0.125m);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var get = await client.GetAsync("/Configuracoes/Precificacao/Editar");
+        var html = await WebTestHtml.LerHtmlDecodificadoAsync(get);
+
+        get.EnsureSuccessStatusCode();
+        var valorHora = ValorDoInput(html, "Input.ValorHoraTrabalho");
+        var tarifa = ValorDoInput(html, "Input.TarifaEnergiaKwh");
+        var margem = ValorDoInput(html, "Input.MargemPadraoPercentual");
+        var incremento = ValorDoInput(html, "Input.IncrementoComercial");
+        var reserva = ValorDoInput(html, "Input.ReservaComercialDescontoPercentual");
+        Assert.Equal("0,500001", incremento);
+
+        var post = await EnviarFormularioEdicaoAsync(client, valorHora, tarifa, margem, incremento, reserva);
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        var configuracao = await ObterConfiguracaoAsync(empresa);
+        Assert.Equal(0.500001m, configuracao.IncrementoComercial);
+    }
+
+    [Fact]
     public async Task UC027_W11_Post_invalido_preserva_inputs_e_banco_inalterado()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa invalido preserva");

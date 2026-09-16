@@ -7,6 +7,7 @@ using Precificador.Core.FichasTecnicas;
 using Precificador.Core.Insumos;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Precificacao;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -156,6 +157,41 @@ public sealed class FichaTecnicaCustoPageTests
         Assert.Contains("Observação contextual", html);
         Assert.Contains("Editar", html);
         Assert.Contains("Remover", html);
+    }
+
+    [Fact]
+    public async Task MEL015_E1_E4_Post_web_preserva_valor_e_precificacao_economica_antes_e_depois_da_formatacao()
+    {
+        await using var ambiente = await CriarAmbienteAsync();
+        var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
+        var ficha = await ambiente.CriarFichaAsync(1, produto);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        var item = await ambiente.CriarItemAsync(1, ficha, insumo, 50m);
+        using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
+
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, $"/Insumos/Precos/Novo/{insumo}");
+        var post = await client.PostAsync($"/Insumos/Precos/Novo/{insumo}", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["Input.QuantidadeCompra"] = "200",
+            ["Input.PrecoCompra"] = "20,99",
+            ["Input.DataReferencia"] = "2026-09-11"
+        }));
+
+        Assert.Equal(System.Net.HttpStatusCode.Redirect, post.StatusCode);
+        var preco = await ambiente.ObterPrecoInsumoAsync(1, insumo);
+        Assert.Equal(200m, preco.QuantidadeCompra);
+        Assert.Equal(20.99m, preco.PrecoCompra);
+
+        var precificacaoAtual = await ambiente.CalcularPrecificacaoAtualAsync(produto);
+        Assert.NotNull(precificacaoAtual);
+        var custoItem = Assert.Contains(item, precificacaoAtual!.Itens);
+        Assert.Equal(0.10495m, custoItem.CustoUnitario);
+        Assert.Equal(5.2475m, custoItem.CustoItem);
+
+        var html = await ambiente.ObterFichaAsync(produto);
+        Assert.Contains("R$ 0,10495", html);
+        Assert.Contains("R$ 5,25", html);
     }
 
     [Fact]
@@ -623,6 +659,21 @@ public sealed class FichaTecnicaCustoPageTests
             await using var context = CriarContexto(empresaId);
             context.PrecosInsumos.Add(PrecoInsumo.Criar(empresaId, insumoId, quantidade, preco, data));
             await context.SaveChangesAsync();
+        }
+
+        public async Task<PrecoInsumo> ObterPrecoInsumoAsync(int empresaId, int insumoId)
+        {
+            await using var context = CriarContexto(empresaId);
+            return await context.PrecosInsumos.AsNoTracking()
+                .SingleAsync(preco => preco.InsumoId == insumoId);
+        }
+
+        public async Task<ResultadoPrecificacaoProdutoAtual?> CalcularPrecificacaoAtualAsync(int produtoId)
+        {
+            await using var context = CriarContexto(1);
+            var dataOperacionalEmpresa = scope.ServiceProvider.GetRequiredService<IDataOperacionalEmpresa>();
+            var servico = new PrecificacaoProdutoAtual(context, dataOperacionalEmpresa);
+            return await servico.CalcularAsync(produtoId);
         }
 
         public async Task<string> ObterFichaAsync(int produtoId)
