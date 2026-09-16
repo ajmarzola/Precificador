@@ -218,8 +218,8 @@ Usar `InsumoRotulos` para Unidade base.
 Se houver preço vigente, exibir pelo menos:
 
 - Data de referência;
-- Quantidade comprada com unidade;
-- Preço total;
+- Quantidade por embalagem com unidade;
+- Preço por embalagem;
 - Custo unitário por unidade base.
 
 Se não houver:
@@ -234,8 +234,8 @@ Colunas mínimas:
 
 1. Data;
 2. Status;
-3. Quantidade;
-4. Preço total;
+3. Quantidade por embalagem;
+4. Preço por embalagem;
 5. Custo unitário.
 
 Status possíveis:
@@ -280,8 +280,8 @@ Se houver preço vigente:
 ~~~text
 Preço vigente
 - referência
-- quantidade + unidade
-- preço total
+- quantidade por embalagem + unidade
+- preço por embalagem
 - custo unitário
 ~~~
 
