@@ -14,8 +14,6 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
     [BindProperty]
     public ProdutoInputModel Input { get; set; } = new();
 
-    public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
-
     public async Task<IActionResult> OnGetAsync()
     {
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas
@@ -76,6 +74,6 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
         }
 
         TempData["MensagemSucesso"] = "Produto cadastrado com sucesso.";
-        return RedirectToPage();
+        return RedirectToPage("/Produtos/Detalhes", new { id = produto.Id });
     }
 }

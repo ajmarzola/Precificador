@@ -3,7 +3,7 @@
 - **Tipo:** UX / fluxo de trabalho
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Prioridade:** média
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Ordem na fila pendente:** 03
 - **Dependências:** MEL015, MEL016, UC001, UC007
 - **Bloqueia:** nenhum item por dependência técnica direta; antecede MEL019 pela fila normativa

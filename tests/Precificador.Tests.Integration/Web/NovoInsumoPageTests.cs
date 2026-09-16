@@ -41,15 +41,22 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var response = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        int insumoId;
         using (var scope = factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            Assert.True(await context.Insumos.IgnoreQueryFilters().AnyAsync(insumo => insumo.Nome == nome));
+            var insumo = await context.Insumos.IgnoreQueryFilters().SingleAsync(item => item.Nome == nome);
+            insumoId = insumo.Id;
         }
 
+        Assert.Equal($"/Insumos/Detalhes/{insumoId}", response.Headers.Location!.ToString());
+
         var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
+        Assert.Equal(HttpStatusCode.OK, paginaAposRedirect.StatusCode);
         var conteudo = await paginaAposRedirect.Content.ReadAsStringAsync();
         Assert.Contains("Insumo cadastrado com sucesso.", conteudo);
+        Assert.Contains(nome, conteudo);
+        Assert.Contains("Registrar preço", conteudo);
     }
 
     [Fact]
@@ -186,8 +193,10 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var contextoEmpresaUm = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
         await using var contextoEmpresaDois = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaDois));
-        Assert.Single(await contextoEmpresaUm.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
-        Assert.Single(await contextoEmpresaDois.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
+        var insumoEmpresaUm = await contextoEmpresaUm.Insumos.SingleAsync(insumo => insumo.Nome == nome);
+        var insumoEmpresaDois = await contextoEmpresaDois.Insumos.SingleAsync(insumo => insumo.Nome == nome);
+        Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaUm.Id}", cadastroEmpresaUm.Headers.Location!.ToString());
+        Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaDois.Id}", cadastroEmpresaDois.Headers.Location!.ToString());
     }
 
     [Fact]
