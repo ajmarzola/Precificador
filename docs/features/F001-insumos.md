@@ -110,9 +110,13 @@ O UC005 foi revalidado para introduzir `PrecoInsumo` como histórico append-only
 
 Cada preço registra:
 
-- Quantidade de compra na Unidade base;
-- Preço total da compra;
+- Quantidade por embalagem, expressa na Unidade base;
+- Preço por embalagem;
 - Data de referência.
+
+Os nomes técnicos persistidos permanecem `QuantidadeCompra` e `PrecoCompra`.
+
+“Embalagem” é apenas a referência comercial usada para formar o custo; não existe nesta etapa cadastro de embalagem, quantidade de embalagens compradas ou conversão automática de unidade.
 
 O custo unitário é calculado por RN004 e não é persistido.
 
