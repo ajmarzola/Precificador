@@ -20,12 +20,12 @@ public sealed class PrecoInsumo : Precificador.Core.Empresas.IEntidadeEmpresa
 
         if (quantidadeCompra <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(quantidadeCompra), "A quantidade de compra deve ser maior que zero.");
+            throw new ArgumentOutOfRangeException(nameof(quantidadeCompra), "A quantidade por embalagem deve ser maior que zero.");
         }
 
         if (precoCompra <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(precoCompra), "O preço de compra deve ser maior que zero.");
+            throw new ArgumentOutOfRangeException(nameof(precoCompra), "O preço por embalagem deve ser maior que zero.");
         }
 
         EmpresaId = empresaId;

@@ -11,9 +11,11 @@ using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Tests.Integration.Web;
 
-public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+public sealed class PrecoInsumoPageTests(PrecoInsumoPageTests.Factory fixture) : IClassFixture<PrecoInsumoPageTests.Factory>
 {
-    private readonly WebTestContext web = new(factory);
+    private static readonly DateOnly DataOperacional = new(2030, 1, 2);
+    private readonly CustomWebApplicationFactory factory = fixture.App;
+    private readonly WebTestContext web = new(fixture.App);
     [Fact]
     public async Task CA01_Registrar_preco_exige_autenticacao()
     {
@@ -38,8 +40,23 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         Assert.Contains("Marca metro", conteudo);
         Assert.Contains("Unidade base", conteudo);
         Assert.Contains(">m<", conteudo);
-        Assert.Contains("Quantidade comprada (m)", conteudo);
+        Assert.Contains("Quantidade por embalagem (m)", conteudo);
+        Assert.Contains("Preço por embalagem", conteudo);
+        Assert.DoesNotContain("Quantidade comprada", conteudo);
+        Assert.DoesNotContain("Preço total da compra", conteudo);
         Assert.Contains("Ativo", conteudo);
+    }
+
+    [Fact]
+    public async Task CA05_Get_preenche_data_referencia_com_data_operacional_da_empresa()
+    {
+        var id = await CriarInsumoAsync(1, Nome("Data operacional"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var conteudo = WebUtility.HtmlDecode(await client.GetStringAsync($"/Insumos/Precos/Novo/{id}"));
+
+        Assert.Contains("name=\"Input.DataReferencia\"", conteudo);
+        Assert.Contains("value=\"2030-01-02\"", conteudo);
     }
 
     [Fact]
@@ -106,6 +123,25 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
     }
 
     [Theory]
+    [InlineData("invalido", "10", "A quantidade por embalagem deve ser um número válido.")]
+    [InlineData("10", "invalido", "O preço por embalagem deve ser um número válido.")]
+    public async Task CA10_Parse_invalido_usa_mensagens_com_terminologia_de_embalagem(
+        string quantidade,
+        string preco,
+        string mensagemEsperada)
+    {
+        var id = await CriarInsumoAsync(1, Nome("Parse inválido"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await EnviarPrecoAsync(client, id, quantidade, preco, "2030-01-02");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(mensagemEsperada, conteudo);
+        Assert.Empty(await ObterPrecosAsync(id, 1));
+    }
+
+    [Theory]
     [MemberData(nameof(DadosInvalidosDePreco))]
     public async Task CA05_CA06_CA07_Post_invalido_nao_cria_preco(string quantidade, string preco, string data)
     {
@@ -131,6 +167,20 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Single(await ObterPrecosAsync(id, 1));
+    }
+
+    [Fact]
+    public async Task CA09_Post_sem_data_permanece_invalido_e_nao_recebe_default_silencioso()
+    {
+        var id = await CriarInsumoAsync(1, Nome("Sem data"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await EnviarPrecoAsync(client, id, "1", "10", "");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Data de referência é obrigatória.", conteudo);
+        Assert.Empty(await ObterPrecosAsync(id, 1));
     }
 
     [Fact]
@@ -208,11 +258,14 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
             client,
             id,
             token,
-            "Açúcar adulterado",
-            "Caputo adulterada",
-            "Consumivel",
-            "Metro",
-            "Observação permitida");
+            new Dictionary<string, string>
+            {
+                ["Input.Nome"] = "Açúcar adulterado",
+                ["Input.Marca"] = "Caputo adulterada",
+                ["Input.Categoria"] = "Consumivel",
+                ["Input.UnidadeBase"] = "Metro",
+                ["Input.Observacao"] = "Observação permitida"
+            });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var insumo = await ObterInsumoAsync(id, 1);
@@ -250,7 +303,18 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
 
         var token = await ObterTokenEdicaoAsync(client, id);
         var novoNome = Nome("Alterado");
-        var response = await EnviarEdicaoComTokenAsync(client, id, token, novoNome, "Marca nova", "Embalagem", "Metro", "Livre");
+        var response = await EnviarEdicaoComTokenAsync(
+            client,
+            id,
+            token,
+            new Dictionary<string, string>
+            {
+                ["Input.Nome"] = novoNome,
+                ["Input.Marca"] = "Marca nova",
+                ["Input.Categoria"] = "Embalagem",
+                ["Input.UnidadeBase"] = "Metro",
+                ["Input.Observacao"] = "Livre"
+            });
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var insumo = await ObterInsumoAsync(id, 1);
@@ -269,7 +333,7 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         ["1", "10", "data-invalida"]
     ];
 
-    private async Task<HttpResponseMessage> EnviarPrecoAsync(HttpClient client, int id, string quantidade, string preco, string data) =>
+    private static async Task<HttpResponseMessage> EnviarPrecoAsync(HttpClient client, int id, string quantidade, string preco, string data) =>
         await EnviarPrecoComTokenAsync(client, id, await ObterTokenPrecoAsync(client, id), quantidade, preco, data);
 
     private static Task<HttpResponseMessage> EnviarPrecoComTokenAsync(HttpClient client, int id, string token, string quantidade, string preco, string data) =>
@@ -285,19 +349,15 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         HttpClient client,
         int id,
         string token,
-        string nome,
-        string marca,
-        string categoria,
-        string unidade,
-        string observacao) =>
+        IReadOnlyDictionary<string, string> campos) =>
         client.PostAsync($"/Insumos/Editar/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Nome"] = nome,
-            ["Input.Marca"] = marca,
-            ["Input.Categoria"] = categoria,
-            ["Input.UnidadeBase"] = unidade,
-            ["Input.Observacao"] = observacao
+            ["Input.Nome"] = campos["Input.Nome"],
+            ["Input.Marca"] = campos["Input.Marca"],
+            ["Input.Categoria"] = campos["Input.Categoria"],
+            ["Input.UnidadeBase"] = campos["Input.UnidadeBase"],
+            ["Input.Observacao"] = campos["Input.Observacao"]
         }));
 
     private static async Task<string> ObterTokenPrecoAsync(HttpClient client, int id)
@@ -363,5 +423,12 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         return await context.PrecosInsumos.AsNoTracking().Where(preco => preco.InsumoId == insumoId).ToListAsync();
+    }
+
+    public sealed class Factory : IDisposable
+    {
+        public CustomWebApplicationFactory App { get; } = new(DataOperacional);
+
+        public void Dispose() => App.Dispose();
     }
 }

@@ -18,7 +18,7 @@
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
-        <label asp-for="Input.QuantidadeCompra" class="form-label">Quantidade comprada (@InsumoRotulos.Unidade(insumo.UnidadeBase))</label>
+        <label asp-for="Input.QuantidadeCompra" class="form-label">Quantidade por embalagem (@InsumoRotulos.Unidade(insumo.UnidadeBase))</label>
         <input asp-for="Input.QuantidadeCompra" class="form-control" />
         <span asp-validation-for="Input.QuantidadeCompra" class="text-danger"></span>
     </div>

@@ -23,14 +23,22 @@ public sealed class PrecoInsumoTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void CA05_Quantidade_zero_ou_negativa_e_rejeitada(decimal quantidade) =>
-        Assert.Throws<ArgumentOutOfRangeException>(() => PrecoInsumo.Criar(1, 1, quantidade, 1m, new DateOnly(2026, 1, 1)));
+    public void CA05_Quantidade_zero_ou_negativa_e_rejeitada(decimal quantidade)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => PrecoInsumo.Criar(1, 1, quantidade, 1m, new DateOnly(2026, 1, 1)));
+
+        Assert.Contains("A quantidade por embalagem deve ser maior que zero.", exception.Message);
+    }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void CA06_Preco_zero_ou_negativo_e_rejeitado(decimal preco) =>
-        Assert.Throws<ArgumentOutOfRangeException>(() => PrecoInsumo.Criar(1, 1, 1m, preco, new DateOnly(2026, 1, 1)));
+    public void CA06_Preco_zero_ou_negativo_e_rejeitado(decimal preco)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => PrecoInsumo.Criar(1, 1, 1m, preco, new DateOnly(2026, 1, 1)));
+
+        Assert.Contains("O preço por embalagem deve ser maior que zero.", exception.Message);
+    }
 
     [Theory]
     [InlineData(0, 1)]

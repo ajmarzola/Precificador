@@ -26,8 +26,8 @@
         var preco = Model.PrecoVigente;
         <dl class="row">
             <dt class="col-sm-3">Referência</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Data(preco.DataReferencia)</dd>
-            <dt class="col-sm-3">Quantidade</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Quantidade(preco.QuantidadeCompra) @InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
-            <dt class="col-sm-3">Preço total</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.PrecoTotal(preco.PrecoCompra)</dd>
+            <dt class="col-sm-3">Quantidade por embalagem</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Quantidade(preco.QuantidadeCompra) @InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
+            <dt class="col-sm-3">Preço por embalagem</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.PrecoTotal(preco.PrecoCompra)</dd>
             <dt class="col-sm-3">Custo unitário</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.CustoUnitario(preco.CustoUnitario) por @InsumoRotulos.Unidade(insumo.UnidadeBase)</dd>
         </dl>
     }
@@ -44,8 +44,8 @@ else
             <tr>
                 <th>Data</th>
                 <th>Status</th>
-                <th>Quantidade</th>
-                <th>Preço total</th>
+                <th>Quantidade por embalagem</th>
+                <th>Preço por embalagem</th>
                 <th>Custo unitário</th>
             </tr>
         </thead>

@@ -126,6 +126,10 @@ public sealed class HistoricoPrecoInsumoPageTests(HistoricoPrecoInsumoPageTests.
         Assert.Contains("5,39", conteudo);
         Assert.Contains("1000 g", conteudo);
         Assert.Contains("0,00539", conteudo);
+        Assert.Contains("Quantidade por embalagem", conteudo);
+        Assert.Contains("Preço por embalagem", conteudo);
+        Assert.DoesNotContain("<th>Quantidade</th>", conteudo);
+        Assert.DoesNotContain("<th>Preço total</th>", conteudo);
         Assert.DoesNotContain("0,01", conteudo);
     }
 
@@ -183,6 +187,10 @@ public sealed class HistoricoPrecoInsumoPageTests(HistoricoPrecoInsumoPageTests.
         Assert.Contains("Preço vigente", conteudo);
         Assert.Contains("11/09/2026", conteudo);
         Assert.Contains("R$ 10,00", conteudo);
+        Assert.Contains("Quantidade por embalagem", conteudo);
+        Assert.Contains("Preço por embalagem", conteudo);
+        Assert.DoesNotContain(">Quantidade</dt>", conteudo);
+        Assert.DoesNotContain(">Preço total</dt>", conteudo);
         Assert.DoesNotContain("20/09/2026", conteudo);
     }
 
