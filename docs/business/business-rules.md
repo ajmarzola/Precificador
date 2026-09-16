@@ -17,15 +17,23 @@ Após o UC001B, as unidades previstas para o escopo atual são:
 
 Os valores numéricos existentes do enum foram preservados e `Metro = 4` foi acrescentado como valor funcional pelo UC001B.
 
-### RN002 — Quantidade de compra válida
+### RN002 — Quantidade por embalagem válida
 
-A quantidade informada em um registro de preço deve ser maior que zero e é expressa na Unidade base do Insumo.
+A propriedade técnica `QuantidadeCompra` deve ser maior que zero.
 
-O UC005 não introduz unidade de compra alternativa nem conversões automáticas. Se o Insumo está em `g`, por exemplo, uma compra de 1 kg é registrada como quantidade `1000`.
+Na linguagem funcional, ela representa a **Quantidade por embalagem**: a quantidade de Unidade base contida na embalagem comercial usada como referência do preço.
 
-### RN003 — Preço de compra válido
+O UC005/MEL016 não introduzem unidade de compra alternativa nem conversões automáticas. Se o Insumo está em `g` e a embalagem possui 1 kg, registrar `QuantidadeCompra = 1000`.
 
-O preço pago deve ser maior que zero e representa o valor total correspondente à QuantidadeCompra informada.
+Não registrar quantidade de embalagens compradas nesse campo.
+
+### RN003 — Preço por embalagem válido
+
+A propriedade técnica `PrecoCompra` deve ser maior que zero.
+
+Na linguagem funcional, ela representa o **Preço por embalagem**: o preço correspondente exatamente à `QuantidadeCompra` informada.
+
+Não representa o valor total de várias embalagens, pedido ou estoque.
 
 ### RN004 — Custo unitário do insumo
 
