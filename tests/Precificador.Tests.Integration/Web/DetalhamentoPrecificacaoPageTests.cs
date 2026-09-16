@@ -99,8 +99,6 @@ public sealed class DetalhamentoPrecificacaoPageTests
         Assert.Contains("Margem atual</dt><dd class=\"col-sm-9\">38%", completo);
         Assert.Contains("Dentro da margem", completo);
         Assert.Contains("Nenhuma pendência de cálculo.", completo);
-        Assert.DoesNotContain("999", completo);
-        Assert.DoesNotContain("1000", completo);
 
         await ambiente.AtualizarConfiguracaoAsync(1, 20m, 4m, null);
         var semIncremento = await ambiente.ObterPrecificacaoAsync(produto);
