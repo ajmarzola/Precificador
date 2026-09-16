@@ -146,6 +146,8 @@ Na UI:
 Rendimento do lote (unidades de venda)
 ~~~
 
+Após MEL019, quando o Produto ainda não possui Ficha Técnica, o GET inicial preenche apenas o campo de entrada de Rendimento com `1`. Esse valor é um default visual: não cria Ficha, não define `RendimentoAtual`, não altera `PossuiFicha` e não é reaplicado em POST inválido.
+
 ### TempoAtivoMinutos
 
 Aplicar RN013.

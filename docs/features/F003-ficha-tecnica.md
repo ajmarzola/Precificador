@@ -24,6 +24,8 @@ A UC013 introduz somente os conceitos universais:
 - Rendimento do lote em unidades de venda;
 - Tempo ativo de trabalho do lote em minutos.
 
+Com a MEL019, Produto sem Ficha passa a abrir o formulário com Rendimento `1` como sugestão inicial. O GET continua somente leitura: não cria Ficha, não preenche Tempo ativo e não torna a precificação completa.
+
 Modelo inicial:
 
 ~~~text

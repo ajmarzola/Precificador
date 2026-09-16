@@ -366,7 +366,7 @@ Não há novos testes unitários ou de persistência obrigatórios se não houve
 
 - W1: acesso exige autenticação e Empresa Ativa;
 - W2: Produto inexistente/cross-tenant retorna 404;
-- W3: Produto sem Ficha renderiza superfície de criação, sem `Adicionar insumo`, e GET não cria Ficha;
+- W3: Produto sem Ficha renderiza superfície de criação, sem `Adicionar insumo`, e GET não cria Ficha; após MEL019, o campo de entrada de Rendimento pode vir preenchido com `1` sem alterar esse estado;
 - W4: Ficha existente carrega Rendimento e Tempo ativo persistidos;
 - W5: Item exibe Nome e Marca em campos/colunas distintos;
 - W6: Item exibe Quantidade formatada e Unidade base;
