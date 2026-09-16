@@ -3,7 +3,7 @@
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Classificação:** correção conceitual + UX de formulário
 - **Prioridade:** média
-- **Dependência:** UC005, UC006, MEL006
+- **Dependência:** MEL015, UC005, UC006, MEL006
 - **Estado:** Planejado
 
 ## Problemas observados
