@@ -63,6 +63,7 @@
 
 <a asp-page="/Produtos/Editar" asp-route-id="@produto.Id" class="btn btn-primary">Editar</a>
 <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produto.Id" class="btn btn-outline-primary">Ficha técnica</a>
+<a asp-page="/Produtos/Precificacao" asp-route-id="@produto.Id" class="btn btn-outline-primary">Detalhar precificação</a>
 <a asp-page="/Produtos/Precos/Novo" asp-route-id="@produto.Id" class="btn btn-outline-primary">Registrar preço de prateleira</a>
 <a asp-page="/Produtos/Precos/Historico" asp-route-id="@produto.Id" class="btn btn-outline-secondary">Histórico de precificação</a>
 @if (produto.Ativo)
