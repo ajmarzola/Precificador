@@ -76,8 +76,8 @@ Não é informada pelo usuário neste UC. Todo novo insumo é criado como **ativ
 6. O sistema verifica se já existe outro insumo com o mesmo nome normalizado.
 7. O sistema cria o insumo como ativo.
 8. O sistema persiste o insumo no SQLite.
-9. O sistema redireciona para `GET /Insumos/Novo` usando Post/Redirect/Get.
-10. O formulário é apresentado limpo com mensagem de sucesso: **"Insumo cadastrado com sucesso."**
+9. Após MEL018, o sistema redireciona para `GET /Insumos/Detalhes/{id}` usando o Id da entidade recém-persistida.
+10. A página de Detalhes apresenta o Insumo criado e a mensagem de sucesso: **"Insumo cadastrado com sucesso."**
 
 ## Fluxos alternativos e exceções
 
@@ -280,7 +280,7 @@ Não criar a listagem de insumos antes do UC002.
 **Quando** o usuário cadastrar `Farinha Renata Premium`, categoria Ingrediente e unidade `g`  
 **Então** um único insumo deve ser persistido  
 **E** deve estar ativo  
-**E** a resposta deve usar Post/Redirect/Get  
+**E** a resposta deve usar Post/Redirect/Get para `/Insumos/Detalhes/{idCriado}`  
 **E** após o redirect deve aparecer `Insumo cadastrado com sucesso.`
 
 ### CA03 — Normalização de espaços
