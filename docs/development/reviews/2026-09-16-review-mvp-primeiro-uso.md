@@ -32,9 +32,7 @@ SQLite Error 1: 'no such table: AspNetUsers'
 
 O erro ocorre quando a aplicação é executada contra um arquivo SQLite que ainda não recebeu as migrations do projeto e o fluxo de Login consulta o ASP.NET Core Identity.
 
-A decisão vigente continua sendo **não aplicar migrations automaticamente no startup**.
-
-O problema a resolver é a experiência/diagnóstico do primeiro uso, não necessariamente introduzir auto-migration.
+A MEL011 consolidou uma decisão posterior: **em `Development`, as migrations passam a ser aplicadas automaticamente no startup antes do primeiro request**. Nos demais ambientes, a aplicação continua exigindo migration explícita.
 
 Também deve ser considerado que:
 
@@ -73,7 +71,7 @@ A arquitetura N:N já existe e deve ser preservada.
 
 O primeiro acesso da **instalação** já possui um bootstrap definido pela FT002:
 
-1. banco deve estar com migrations aplicadas;
+1. em `Development`, o startup aplica migrations pendentes automaticamente; nos demais ambientes, o banco deve chegar migrado por processo explícito;
 2. enquanto não houver usuários Identity, `/Setup` fica disponível;
 3. o Setup recebe Nome da Empresa, E-mail, Senha e Confirmação;
 4. cria o primeiro `UsuarioAplicacao`;
