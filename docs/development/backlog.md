@@ -48,6 +48,9 @@ A ordem das linhas define a fila normativa.
 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
+| UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
+| UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
+| UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
 
 ## Melhorias não bloqueantes
 
@@ -67,3 +70,5 @@ A ordem das linhas define a fila normativa.
 | MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | Planejado | alta | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
 | MEL016 — Corrigir semântica e defaults do registro de preço do Insumo | Planejado | média | UC005, UC006, MEL006 | [MEL016](improvements/MEL016-preco-insumo-vocabulario-defaults.md) |
 | MEL017 — Explicar configurações de precificação na interface | Planejado | baixa | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
+| MEL018 — Redirecionar cadastros para os detalhes da entidade | Planejado | média | UC001, UC007 | [MEL018](improvements/MEL018-redirecionar-cadastros-detalhes.md) |
+| MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | Planejado | baixa | UC013 | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
