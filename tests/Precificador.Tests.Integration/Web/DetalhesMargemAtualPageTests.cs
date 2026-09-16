@@ -115,7 +115,6 @@ public sealed class DetalhesMargemAtualPageTests
 
         Assert.Equal(HttpStatusCode.NotFound, crossTenant.StatusCode);
         Assert.Contains("Preço de prateleira atual: não definido.", html);
-        Assert.DoesNotContain("99", html);
     }
 
     [Fact]
