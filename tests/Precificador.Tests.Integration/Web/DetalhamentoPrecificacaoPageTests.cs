@@ -69,10 +69,10 @@ public sealed class DetalhamentoPrecificacaoPageTests
         var fichaVazia = await ambiente.ObterPrecificacaoAsync(vazio);
 
         Assert.Contains("Nenhum insumo adicionado.", fichaVazia);
-        Assert.Contains("Custo de perdas do lote:</strong> 0", fichaVazia);
-        Assert.Contains("Custo de mão de obra do lote</dt><dd class=\"col-sm-9\">0", fichaVazia);
+        Assert.Contains("Custo de perdas do lote:</strong> R$ 0,00", fichaVazia);
+        Assert.Contains("Custo de mão de obra do lote</dt><dd class=\"col-sm-9\">R$ 0,00", fichaVazia);
         Assert.Contains("Nenhum equipamento adicionado.", fichaVazia);
-        Assert.Contains("Custo de energia do lote:</strong> 0", fichaVazia);
+        Assert.Contains("Custo de energia do lote:</strong> R$ 0,00", fichaVazia);
     }
 
     [Fact]
@@ -92,17 +92,17 @@ public sealed class DetalhamentoPrecificacaoPageTests
 
         Assert.Contains("15/09/2026", completo);
         Assert.Contains("10%", completo);
-        Assert.Contains("Custo total do lote</dt><dd class=\"col-sm-9\">18,6", completo);
-        Assert.Contains("Custo unitário do produto</dt><dd class=\"col-sm-9\">9,3", completo);
-        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">11,625", completo);
-        Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">12", completo);
+        Assert.Contains("Custo total do lote</dt><dd class=\"col-sm-9\">R$ 18,60", completo);
+        Assert.Contains("Custo unitário do produto</dt><dd class=\"col-sm-9\">R$ 9,30", completo);
+        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 11,63", completo);
+        Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">R$ 12,00", completo);
         Assert.Contains("Margem atual</dt><dd class=\"col-sm-9\">38%", completo);
         Assert.Contains("Dentro da margem", completo);
         Assert.Contains("Nenhuma pendência de cálculo.", completo);
 
         await ambiente.AtualizarConfiguracaoAsync(1, 20m, 4m, null);
         var semIncremento = await ambiente.ObterPrecificacaoAsync(produto);
-        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">11,625", semIncremento);
+        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 11,63", semIncremento);
         Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">indisponível", semIncremento);
         Assert.Contains("Incremento comercial não configurado.", semIncremento);
     }
@@ -157,7 +157,7 @@ public sealed class DetalhamentoPrecificacaoPageTests
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 20m, Hoje);
         var recalculado = await ambiente.ObterPrecificacaoAsync(produto);
 
-        Assert.Contains("28,5714", recalculado);
+        Assert.Contains("R$ 28,57", recalculado);
         Assert.DoesNotContain("999", recalculado);
     }
 

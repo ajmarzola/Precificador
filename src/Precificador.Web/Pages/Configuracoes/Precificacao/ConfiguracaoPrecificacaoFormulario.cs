@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Precificador.Core.Empresas;
+using Precificador.Web.Apresentacao;
 
 namespace Precificador.Web.Pages.Configuracoes.Precificacao;
 
@@ -121,11 +122,8 @@ public static class ConfiguracaoPrecificacaoFormulario
         return false;
     }
 
-    private static bool TentarParseDecimal(string texto, out decimal valor)
-    {
-        var cultura = texto.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
-        return decimal.TryParse(texto, NumberStyles.Number, cultura, out valor);
-    }
+    private static bool TentarParseDecimal(string texto, out decimal valor) =>
+        DecimalInputParser.TentarParse(texto, out valor);
 
     private static string FormatarDecimal(decimal? valor) =>
         valor?.ToString("0.######", CulturaBrasileira) ?? string.Empty;

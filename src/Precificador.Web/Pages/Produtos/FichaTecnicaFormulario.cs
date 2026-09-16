@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Precificador.Web.Apresentacao;
 
 namespace Precificador.Web.Pages.Produtos;
 
@@ -21,8 +22,7 @@ public static class FichaTecnicaFormulario
             return false;
         }
 
-        var cultura = rendimentoInformado.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
-        if (!decimal.TryParse(rendimentoInformado, NumberStyles.Number, cultura, out rendimento))
+        if (!DecimalInputParser.TentarParse(rendimentoInformado, out rendimento))
         {
             modelState.AddModelError("Input.Rendimento", "O rendimento deve ser um número válido.");
             return false;

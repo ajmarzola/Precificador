@@ -23,7 +23,7 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
         Assert.Equal(HttpStatusCode.Redirect, (await anonimo.GetAsync($"/Produtos/Precos/Novo/{produto}")).StatusCode);
         using var client = await web.CriarClienteAutenticadoAsync();
         var get = await client.GetAsync($"/Produtos/Precos/Novo/{produto}"); var html = await get.Content.ReadAsStringAsync();
-        get.EnsureSuccessStatusCode(); Assert.Contains("Preço de prateleira", html); Assert.Contains("Custo unitário", html); Assert.Contains("Preço teórico", html); Assert.Contains("Preço sugerido", html); Assert.Contains("Inativo", html); Assert.Contains("10", html); Assert.Contains("14,29", html);
+        get.EnsureSuccessStatusCode(); Assert.Contains("Preço de prateleira", html); Assert.Contains("Custo unitário", html); Assert.Contains("Preço teórico", html); Assert.Contains("Preço sugerido", html); Assert.Contains("Inativo", html); Assert.Contains("R$ 10,00", html); Assert.Contains("R$ 14,29", html);
         Assert.Contains("name=\"Input.PrecoPrateleira\"", html); Assert.DoesNotContain("name=\"EmpresaId\"", html); Assert.DoesNotContain("name=\"MargemReferencia\"", html); Assert.DoesNotContain("name=\"DataReferencia\"", html); Assert.DoesNotContain("name=\"PrecoSugerido\"", html);
         Assert.Empty(await RegistrosAsync(produto, 1));
         var token = WebTestHtml.ExtrairTokenAntiforgery(html);
@@ -84,6 +84,41 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
         using var client = await web.CriarClienteAutenticadoAsync(); var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{ativo}")); await client.PostAsync($"/Produtos/Precos/Novo/{ativo}", Form(token, "15"));
         var registro = Assert.Single(await RegistrosAsync(ativo, 1)); Assert.Equal(.1m, registro.ReservaComercialReferencia);
         Assert.Contains("Registrar preço de prateleira", await client.GetStringAsync($"/Produtos/Detalhes/{ativo}")); Assert.Contains("Registrar preço de prateleira", await client.GetStringAsync($"/Produtos/Detalhes/{inativo}"));
+    }
+
+    [Theory]
+    [InlineData("20,99", 20.99)]
+    [InlineData("20.99", 20.99)]
+    public async Task MEL015_Preco_prateleira_aceita_virgula_e_ponto(string informado, decimal esperado)
+    {
+        var produto = await CriarProdutoPrecificavelAsync(1, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
+        var response = await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, informado));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var registro = Assert.Single(await RegistrosAsync(produto, 1));
+        Assert.Equal(esperado, registro.PrecoPrateleira);
+    }
+
+    [Theory]
+    [InlineData("1.234,56")]
+    [InlineData("1,234.56")]
+    [InlineData("20,99,1")]
+    public async Task MEL015_Preco_prateleira_ambiguo_e_rejeitado_preservando_texto(string informado)
+    {
+        var produto = await CriarProdutoPrecificavelAsync(1, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
+        var response = await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, informado));
+        var html = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("O preço de prateleira deve ser um número válido.", html);
+        Assert.Contains($"value=\"{informado}\"", html);
+        Assert.Empty(await RegistrosAsync(produto, 1));
     }
 
     private static FormUrlEncodedContent Form(string token, string preco) => new(new Dictionary<string,string> { ["__RequestVerificationToken"] = token, ["Input.PrecoPrateleira"] = preco });

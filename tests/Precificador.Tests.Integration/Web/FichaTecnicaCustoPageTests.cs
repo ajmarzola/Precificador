@@ -149,10 +149,10 @@ public sealed class FichaTecnicaCustoPageTests
 
         Assert.Contains("Custo unitário", html);
         Assert.Contains("Custo do item", html);
-        Assert.Contains("0,013579", html);
-        Assert.Contains("0,5024", html);
+        Assert.Contains("R$ 0,013579", html);
+        Assert.Contains("R$ 0,50", html);
         Assert.Contains("Custo base dos itens:", html);
-        Assert.Contains("4,5024", html);
+        Assert.Contains("R$ 4,50", html);
         Assert.Contains("Observação contextual", html);
         Assert.Contains("Editar", html);
         Assert.Contains("Remover", html);
@@ -320,7 +320,7 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.CriarFichaAsync(1, vazia);
         var fichaVazia = await ambiente.ObterFichaAsync(vazia);
         AssertExibeCustoProdutoIndisponivel(fichaVazia);
-        Assert.Matches("Custo de perdas do lote:</strong>\\s*0", fichaVazia);
+        Assert.Matches("Custo de perdas do lote:</strong>\\s*R\\$ 0,00", fichaVazia);
     }
 
     [Fact]
@@ -509,6 +509,8 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibeCustoProduto(string html, string lote, string unitario)
     {
+        lote = FormatarMonetarioSeNecessario(lote);
+        unitario = FormatarMonetarioSeNecessario(unitario);
         Assert.Matches($"Custo total do lote:</strong>\\s*{Regex.Escape(lote)}", html);
         Assert.Matches($"Custo unitário do produto:</strong>\\s*{Regex.Escape(unitario)}", html);
     }
@@ -518,6 +520,8 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibePrecoProduto(string html, string margem, string teorico, string sugerido)
     {
+        teorico = FormatarMonetarioSeNecessario(teorico);
+        sugerido = FormatarMonetarioSeNecessario(sugerido);
         Assert.Matches($"Margem-alvo:</strong>\\s*{Regex.Escape(margem)}", html);
         Assert.Matches($"Preço teórico:</strong>\\s*{Regex.Escape(teorico)}", html);
         Assert.Matches($"Preço sugerido:</strong>\\s*{Regex.Escape(sugerido)}", html);
@@ -532,8 +536,26 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibeCustoMaoDeObra(string html, string valor) =>
         Assert.Matches(
-            $"Custo de mão de obra do lote:</strong>\\s*{Regex.Escape(valor)}",
+            $"Custo de mão de obra do lote:</strong>\\s*{Regex.Escape(FormatarMonetarioSeNecessario(valor))}",
             html);
+
+    private static string FormatarMonetarioSeNecessario(string valor)
+    {
+        if (valor == "indisponível")
+        {
+            return valor;
+        }
+
+        if (valor.StartsWith("R$ ", StringComparison.Ordinal))
+        {
+            return valor;
+        }
+
+        var cultura = CultureInfo.GetCultureInfo("pt-BR");
+        var decimalSeparador = valor.Replace('.', ',');
+        var convertido = decimal.Parse(decimalSeparador, NumberStyles.Number, cultura);
+        return convertido.ToString("C2", cultura);
+    }
 
     private sealed class Ambiente(CustomWebApplicationFactory factory) : IAsyncDisposable
     {

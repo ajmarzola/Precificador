@@ -80,9 +80,9 @@ public sealed class HistoricoPrecoInsumoPageTests(HistoricoPrecoInsumoPageTests.
         var linhas = LinhasPreco(conteudo);
 
         AssertLinha(linhas[0], "11/09/2026", "Vigente");
-        Assert.Contains(">12<", linhas[0]);
+        Assert.Contains("R$ 12,00", linhas[0]);
         AssertLinha(linhas[1], "11/09/2026", "Anterior");
-        Assert.Contains(">10<", linhas[1]);
+        Assert.Contains("R$ 10,00", linhas[1]);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public sealed class HistoricoPrecoInsumoPageTests(HistoricoPrecoInsumoPageTests.
 
         Assert.Contains("Preço vigente", conteudo);
         Assert.Contains("11/09/2026", conteudo);
-        Assert.Contains("10", conteudo);
+        Assert.Contains("R$ 10,00", conteudo);
         Assert.DoesNotContain("20/09/2026", conteudo);
     }
 

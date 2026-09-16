@@ -152,11 +152,11 @@ public sealed class DetalhesMargemAtualPageTests
         var detalhes = await ambiente.ObterDetalhesAsync(produto);
 
         Assert.Contains("Custo unitário do produto:", ficha);
-        Assert.Contains("10", ficha);
+        Assert.Contains("R$ 10,00", ficha);
         Assert.Contains("Preço teórico:", ficha);
-        Assert.Contains("14,2857", ficha);
+        Assert.Contains("R$ 14,29", ficha);
         Assert.Contains("Preço sugerido:", ficha);
-        Assert.Contains("14,5", ficha);
+        Assert.Contains("R$ 14,50", ficha);
         Assert.DoesNotContain("Custo base dos itens:", detalhes);
         Assert.DoesNotContain("Custo de perdas do lote:", detalhes);
         Assert.DoesNotContain("Custo de mão de obra do lote:", detalhes);
@@ -174,6 +174,8 @@ public sealed class DetalhesMargemAtualPageTests
         string margemAtual,
         string situacao)
     {
+        custo = FormatarMonetarioSeNecessario(custo);
+        preco = FormatarMonetarioSeNecessario(preco);
         Assert.Matches($"Custo unitário atual</dt>\\s*<dd[^>]*>\\s*{Regex.Escape(custo)}", html);
         Assert.Matches($"Preço de prateleira atual</dt>\\s*<dd[^>]*>\\s*{Regex.Escape(preco)}", html);
         if (data is not null)
@@ -184,6 +186,19 @@ public sealed class DetalhesMargemAtualPageTests
         Assert.Matches($"Margem-alvo</dt>\\s*<dd[^>]*>\\s*{Regex.Escape(margemAlvo)}", html);
         Assert.Matches($"Margem atual</dt>\\s*<dd[^>]*>\\s*{Regex.Escape(margemAtual)}", html);
         Assert.Matches($"Situação</dt>\\s*<dd[^>]*>\\s*{Regex.Escape(situacao)}", html);
+    }
+
+    private static string FormatarMonetarioSeNecessario(string valor)
+    {
+        if (valor is "indisponível" or "não definido.")
+        {
+            return valor;
+        }
+
+        var cultura = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+        var normalizado = valor.Replace('.', ',');
+        var convertido = decimal.Parse(normalizado, System.Globalization.NumberStyles.Number, cultura);
+        return convertido.ToString("C2", cultura);
     }
 
     private static async Task<Ambiente> CriarAmbienteAsync()

@@ -56,9 +56,38 @@ public sealed class StartupMigrationTests
 
     private static void DeleteIfExists(string path)
     {
-        if (File.Exists(path))
+        if (!File.Exists(path))
         {
-            File.Delete(path);
+            return;
+        }
+
+        for (var tentativa = 0; tentativa < 5; tentativa++)
+        {
+            try
+            {
+                File.Delete(path);
+                return;
+            }
+            catch (IOException) when (tentativa < 4)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Thread.Yield();
+            }
+            catch (UnauthorizedAccessException) when (tentativa < 4)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Thread.Yield();
+            }
+            catch (IOException)
+            {
+                return;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return;
+            }
         }
     }
 }

@@ -1187,9 +1187,9 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         await EnviarEdicaoItemAsync(client, produtoId, itemSegundo, "3", null, percentualPerda: "20");
         var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
 
-        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(primeiro, 1)).Nome)}.*?<td>10%</td>.*?<td>2</td>", RegexOptions.Singleline), pagina);
-        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(segundo, 1)).Nome)}.*?<td>20%</td>.*?<td>6</td>", RegexOptions.Singleline), pagina);
-        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*8", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(primeiro, 1)).Nome)}.*?<td>10%</td>.*?<td>R\\$ 2,00</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(segundo, 1)).Nome)}.*?<td>20%</td>.*?<td>R\\$ 6,00</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*R\\$ 8,00", RegexOptions.Singleline), pagina);
     }
 
     [Fact]
@@ -1212,7 +1212,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
 
         Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(conhecido, 1)).Nome)}.*?<td>2</td>", RegexOptions.Singleline), pagina);
-        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(perdaZero, 1)).Nome)}.*?<td>0%</td>.*?<td>0</td>", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(perdaZero, 1)).Nome)}.*?<td>0%</td>.*?<td>R\\$ 0,00</td>", RegexOptions.Singleline), pagina);
         Assert.Matches(new Regex($"{Regex.Escape((await ObterInsumoAsync(perdaSemPreco, 1)).Nome)}.*?<td>10%</td>.*?<td>(?:—|&#x2014;)</td>", RegexOptions.Singleline), pagina);
         Assert.Contains("Há perda(s) sem custo base determinável.", pagina);
     }
@@ -1227,7 +1227,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var pagina = await client.GetStringAsync($"/Produtos/FichaTecnica/{produtoId}");
 
         Assert.Matches(new Regex("Custo base dos itens:</strong>\\s*indisponível", RegexOptions.Singleline), pagina);
-        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*0", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*R\\$ 0,00", RegexOptions.Singleline), pagina);
     }
 
     [Fact]
@@ -1261,7 +1261,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var pagina = await resposta.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
-        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*2", RegexOptions.Singleline), pagina);
+        Assert.Matches(new Regex("Custo de perdas do lote:</strong>\\s*R\\$ 2,00", RegexOptions.Singleline), pagina);
         var item = await ObterItemAsync(itemId, 1);
         Assert.Equal((2m, "persistido", 0.10m), (item.Quantidade, item.Observacao, item.PercentualPerda));
     }

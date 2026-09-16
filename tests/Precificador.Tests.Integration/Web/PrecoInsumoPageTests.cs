@@ -66,6 +66,46 @@ public sealed class PrecoInsumoPageTests(CustomWebApplicationFactory factory) : 
     }
 
     [Theory]
+    [InlineData("200", "20,99", "200", "20.99")]
+    [InlineData("200", "20.99", "200", "20.99")]
+    [InlineData("200,5", "10", "200.5", "10")]
+    [InlineData("200.5", "10", "200.5", "10")]
+    public async Task MEL015_Entrada_decimal_ptbr_e_invariant_persistem_sem_reinterpretar(
+        string quantidade,
+        string preco,
+        string quantidadeEsperada,
+        string precoEsperado)
+    {
+        var id = await CriarInsumoAsync(1, Nome("Insumo decimal"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await EnviarPrecoAsync(client, id, quantidade, preco, "2026-09-11");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var registro = Assert.Single(await ObterPrecosAsync(id, 1));
+        Assert.Equal(decimal.Parse(quantidadeEsperada, System.Globalization.CultureInfo.InvariantCulture), registro.QuantidadeCompra);
+        Assert.Equal(decimal.Parse(precoEsperado, System.Globalization.CultureInfo.InvariantCulture), registro.PrecoCompra);
+    }
+
+    [Theory]
+    [InlineData("1.234,56", "20")]
+    [InlineData("1,234.56", "20")]
+    [InlineData("200", "20,99,1")]
+    public async Task MEL015_Entrada_ambigua_e_rejeitada_sem_persistir_e_preserva_texto(string quantidade, string preco)
+    {
+        var id = await CriarInsumoAsync(1, Nome("Insumo invalido"), null, UnidadeMedida.Grama, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync();
+
+        var response = await EnviarPrecoAsync(client, id, quantidade, preco, "2026-09-11");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(await ObterPrecosAsync(id, 1));
+        Assert.Contains($"value=\"{quantidade}\"", conteudo);
+        Assert.Contains($"value=\"{preco}\"", conteudo);
+    }
+
+    [Theory]
     [MemberData(nameof(DadosInvalidosDePreco))]
     public async Task CA05_CA06_CA07_Post_invalido_nao_cria_preco(string quantidade, string preco, string data)
     {

@@ -8,7 +8,7 @@ public static class ConfiguracaoPrecificacaoFormatacao
     private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("pt-BR");
 
     public static string Monetario(decimal? valor) =>
-        valor.HasValue ? "R$ " + FormatarDecimal(valor.Value) : NaoConfigurado;
+        valor.HasValue ? PrecoInsumoFormatacao.MontanteMonetario(valor.Value) : NaoConfigurado;
 
     public static string Numero(decimal? valor) =>
         valor.HasValue ? FormatarDecimal(valor.Value) : NaoConfigurado;

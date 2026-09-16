@@ -153,7 +153,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Null(configuracao.IncrementoComercial);
         Assert.Equal(0m, configuracao.ReservaComercialDesconto);
         var consulta = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
-        Assert.Contains("R$ 0", consulta);
+        Assert.Contains("R$ 0,00", consulta);
         Assert.Contains("0%", consulta);
     }
 
@@ -382,10 +382,10 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
 
-        Assert.Contains("R$ 12,345678", conteudo);
-        Assert.Contains("R$ 0,987654", conteudo);
+        Assert.Contains("R$ 12,35", conteudo);
+        Assert.Contains("R$ 0,99", conteudo);
         Assert.Contains("7,5%", conteudo);
-        Assert.Contains("R$ 0,500001", conteudo);
+        Assert.Contains("R$ 0,50", conteudo);
         Assert.Contains("12,5%", conteudo);
     }
 

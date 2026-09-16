@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Apresentacao;
 using Precificador.Web.Precificacao;
 
 namespace Precificador.Web.Pages.Produtos.Precos;
@@ -23,12 +24,22 @@ public sealed class NovoModel(PrecificadorDbContext context, IDataOperacionalEmp
     public async Task<IActionResult> OnPostAsync(int id)
     {
         if (!await CarregarAsync(id)) return NotFound();
-        if (Input.PrecoPrateleira <= 0) ModelState.AddModelError("Input.PrecoPrateleira", "O preço de prateleira deve ser maior que zero.");
+
+        decimal precoPrateleira = 0m;
+        if (!DecimalInputParser.TentarParse(Input.PrecoPrateleira, out precoPrateleira))
+        {
+            ModelState.AddModelError("Input.PrecoPrateleira", "O preço de prateleira deve ser um número válido.");
+        }
+        else if (precoPrateleira <= 0)
+        {
+            ModelState.AddModelError("Input.PrecoPrateleira", "O preço de prateleira deve ser maior que zero.");
+        }
+
         if (Precificacao is null || !Precificacao.PrecoProdutoCompleto || Precificacao.CustoUnitarioProduto is null || Precificacao.PrecoSugerido is null || Precificacao.ReservaComercialDesconto is null)
             ModelState.AddModelError(string.Empty, "Precificação incompleta. Não é possível registrar o preço de prateleira.");
         if (!ModelState.IsValid) return Page();
 
-        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(Precificacao!.EmpresaId, Produto!.Id, dataOperacionalEmpresa.Hoje, Precificacao.CustoUnitarioProduto!.Value, Precificacao.MargemAlvo, Precificacao.PrecoSugerido!.Value, Input.PrecoPrateleira, Precificacao.ReservaComercialDesconto!.Value));
+        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(Precificacao!.EmpresaId, Produto!.Id, dataOperacionalEmpresa.Hoje, Precificacao.CustoUnitarioProduto!.Value, Precificacao.MargemAlvo, Precificacao.PrecoSugerido!.Value, precoPrateleira, Precificacao.ReservaComercialDesconto!.Value));
         await context.SaveChangesAsync();
         TempData["MensagemSucesso"] = "Preço de prateleira registrado com sucesso.";
         return RedirectToPage("/Produtos/Detalhes", new { id });
@@ -42,6 +53,6 @@ public sealed class NovoModel(PrecificadorDbContext context, IDataOperacionalEmp
         return Precificacao is not null;
     }
 
-    public sealed class InputModel { public decimal PrecoPrateleira { get; set; } }
+    public sealed class InputModel { public string? PrecoPrateleira { get; set; } }
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo, decimal MargemAlvo);
 }
