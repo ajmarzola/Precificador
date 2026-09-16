@@ -96,10 +96,16 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 
 ## Administração multiempresa
 
+A fundação FT002 mantém `UsuarioAplicacao N:N Empresa` por `UsuarioEmpresa`.
+
 Backlog a detalhar:
 
 - cadastro/consulta de empresas;
-- cadastro de usuários e gestão de vínculos usuário-empresa.
+- **UC031 — Administrar usuários e vínculos com Empresas**;
+- regra de autorização para criação/gestão de usuários;
+- fluxo de primeiro acesso de usuários adicionais.
+
+A review de primeiro uso de 2026-09-16 registra as decisões pendentes antes da especificação do UC031.
 
 ## Pós-MVP identificado
 
