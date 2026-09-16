@@ -3,7 +3,7 @@
 - **Origem:** Review MVP 2026-09-16
 - **Classificação:** Documentação / DX
 - **Prioridade:** média
-- **Dependência:** FT001, FT002
+- **Dependência:** FT001, FT002, MEL011, UC031
 
 ## Objetivo
 
