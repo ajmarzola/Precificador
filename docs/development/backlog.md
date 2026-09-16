@@ -64,3 +64,6 @@ A ordem das linhas define a fila normativa.
 | MEL013 — Documentar execução e teste local | Planejado | média | FT001, FT002 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
 | MEL012 — Adequar navegação para usuário anônimo | Planejado | baixa | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
 | MEL014 — Criar Manual do Usuário | Planejado | média | MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+| MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | Planejado | alta | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
+| MEL016 — Corrigir semântica e defaults do registro de preço do Insumo | Planejado | média | UC005, UC006, MEL006 | [MEL016](improvements/MEL016-preco-insumo-vocabulario-defaults.md) |
+| MEL017 — Explicar configurações de precificação na interface | Planejado | baixa | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
