@@ -58,7 +58,7 @@ Regra operacional:
 
 | Ordem | Item | Tipo | Estado | Gate / Dependência | Documento |
 |---:|---|---|---|---|---|
-| 01 | MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | MEL | Planejado | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
+| 01 | MEL015 — Padronizar apresentação monetária e entrada decimal pt-BR | MEL | Pronto | UC005, UC011, UC018–UC025 | [MEL015](improvements/MEL015-valores-financeiros-ptbr.md) |
 | 02 | MEL016 — Corrigir semântica e defaults do registro de preço do Insumo | MEL | Planejado | MEL015; UC005, UC006, MEL006 | [MEL016](improvements/MEL016-preco-insumo-vocabulario-defaults.md) |
 | 03 | MEL018 — Redirecionar cadastros para os detalhes da entidade | MEL | Planejado | MEL015, MEL016; UC001, UC007 | [MEL018](improvements/MEL018-redirecionar-cadastros-detalhes.md) |
 | 04 | MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | MEL | Planejado | UC013 | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
