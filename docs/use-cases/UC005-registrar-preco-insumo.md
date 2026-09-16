@@ -13,8 +13,8 @@ O UC005 também implementa a consequência operacional da RN040: a partir do pri
 
 1. preço é **histórico append-only**;
 2. registrar preço nunca sobrescreve registro anterior;
-3. quantidade de compra é informada na **Unidade base do Insumo**;
-4. preço de compra representa o valor total pago/cotado para essa quantidade;
+3. `QuantidadeCompra` representa a **Quantidade por embalagem**, expressa na Unidade base do Insumo;
+4. `PrecoCompra` representa o **Preço por embalagem** correspondente exatamente a essa quantidade;
 5. custo unitário é derivado, não persistido;
 6. datas passadas, presentes e futuras são permitidas;
 7. qualquer preço registrado, inclusive futuro, ativa imediatamente a RN040;
@@ -59,23 +59,29 @@ Aplicar RN002:
 QuantidadeCompra > 0
 ~~~
 
-A quantidade é sempre expressa na Unidade base do Insumo.
+Na linguagem funcional, `QuantidadeCompra` é a **Quantidade por embalagem**.
+
+Ela é sempre expressa na Unidade base do Insumo.
 
 Exemplos:
 
 ~~~text
 Insumo em g:
+embalagem de 1 kg
 QuantidadeCompra = 1000
 PrecoCompra = 5,39
-=> compra de 1000 g por R$ 5,39
+=> Quantidade por embalagem = 1000 g
+=> Preço por embalagem = R$ 5,39
 
 Insumo em m:
+rolo de 3,5 m
 QuantidadeCompra = 3,5
 PrecoCompra = 12,00
-=> compra de 3,5 m por R$ 12,00
+=> Quantidade por embalagem = 3,5 m
+=> Preço por embalagem = R$ 12,00
 ~~~
 
-Não adicionar kg, litro, pacote, caixa ou conversões automáticas neste UC.
+Não adicionar kg, litro, pacote, caixa como novas unidades, cadastro de embalagem ou conversões automáticas neste UC/MEL016.
 
 ### PrecoCompra
 
@@ -85,7 +91,9 @@ Aplicar RN003:
 PrecoCompra > 0
 ~~~
 
-Representa o **valor total** correspondente a QuantidadeCompra.
+Na linguagem funcional, `PrecoCompra` é o **Preço por embalagem**, correspondente exatamente à `QuantidadeCompra` informada.
+
+Não representa o total de várias embalagens compradas.
 
 Usar decimal.
 
@@ -271,19 +279,21 @@ Exibir resumo não editável:
 
 Campos:
 
-1. Quantidade comprada;
-2. Preço total da compra;
+1. Quantidade por embalagem;
+2. Preço por embalagem;
 3. Data de referência.
 
 O rótulo de Quantidade deve explicitar a unidade, por exemplo:
 
 ~~~text
-Quantidade comprada (g)
-Quantidade comprada (m)
-Quantidade comprada (un)
+Quantidade por embalagem (g)
+Quantidade por embalagem (m)
+Quantidade por embalagem (un)
 ~~~
 
 Usar InsumoRotulos.
+
+Após MEL016, o GET inicial deve preencher `DataReferencia` com `IDataOperacionalEmpresa.Hoje`. Esse valor é apenas default de formulário: o usuário pode informar data passada/futura, e POST com data vazia continua inválido.
 
 ### POST
 
