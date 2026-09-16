@@ -105,7 +105,7 @@ Backlog a detalhar:
 - regra de autorização para criação/gestão de usuários;
 - fluxo de primeiro acesso de usuários adicionais.
 
-A review de primeiro uso de 2026-09-16 registra as decisões pendentes antes da especificação do UC031.
+A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra as decisões pendentes antes da especificação do UC031.
 
 ## Pós-MVP identificado
 
