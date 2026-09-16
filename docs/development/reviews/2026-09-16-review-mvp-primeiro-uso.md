@@ -128,6 +128,98 @@ Adicionar ajuda contextual às configurações de precificação, com atenção 
 A mesma estratégia deve abranger Valor/hora, Tarifa de energia, Margem padrão e Reserva comercial.
 
 
+## Terceira rodada — custos, catálogo e continuidade do fluxo
+
+### RV010 — Preço vigente/custo calculado contaminados por parsing incorreto
+
+**Classificação:** bug bloqueante de teste  
+**Rastreamento:** MEL015
+
+Cenário observado:
+
+~~~text
+Quantidade por embalagem = 200 g
+Preço informado = 20,99
+Quantidade usada na Ficha = 50 g
+~~~
+
+O valor foi persistido como `2099`, e por isso:
+
+~~~text
+2099 / 200 * 50 = 524,75
+~~~
+
+O cálculo UC018 está matematicamente coerente com o dado persistido. O defeito raiz é a interpretação/persistência do valor monetário pt-BR.
+
+Depois da correção, o mesmo cenário deve usar `20,99` e produzir:
+
+~~~text
+20,99 / 200 * 50 = 5,2475
+~~~
+
+antes da formatação visual.
+
+A tela de Detalhes do Insumo também deve apresentar o preço vigente em formato monetário coerente.
+
+### RV011 — Categorias de Produto precisam ser padronizadas
+
+**Classificação:** funcionalidade faltante  
+**Rastreamento:** UC032 — Administrar categorias de Produto
+
+Hoje `Produto.Categoria` é texto livre opcional.
+
+A evolução desejada é ter cadastro tenant-aware de Categorias e seleção no Produto, evitando variações de grafia e permitindo uso estruturado em filtros/coleções.
+
+A migração do texto livre atual para relacionamento deverá ser especificada antes da implementação.
+
+### RV012 — Coleções precisam representar períodos comerciais
+
+**Classificação:** funcionalidade faltante  
+**Rastreamento:** UC033 — Administrar coleções
+
+Coleção deve permitir ao menos:
+
+- identificação/nome;
+- data de lançamento/início;
+- data de finalização;
+- Categorias de Produto envolvidas;
+- isolamento por Empresa.
+
+Regras de sobreposição, encerramento e obrigatoriedade das datas ficam para especificação.
+
+### RV013 — Produtos devem poder participar de Coleções
+
+**Classificação:** funcionalidade faltante  
+**Rastreamento:** UC034 — Vincular Produtos a Coleções
+
+O relacionamento deve permitir acompanhar os períodos em que um Produto pertence/é destaque em uma Coleção.
+
+A cardinalidade e a eventual vigência específica do vínculo deverão ser especificadas; não assumir 1:1.
+
+### RV014 — Cadastro deve continuar no detalhe da entidade
+
+**Classificação:** UX / fluxo  
+**Rastreamento:** MEL018
+
+Após criar Insumo ou Produto com sucesso, redirecionar para os respectivos Detalhes, permitindo continuidade imediata do processo.
+
+### RV015 — Rendimento inicial da Ficha Técnica
+
+**Classificação:** UX / default  
+**Rastreamento:** MEL019
+
+Produto sem Ficha deve abrir o formulário com `Rendimento = 1`, sem persistir nada no GET.
+
+### RV016 — Valores consolidados devem parecer moeda
+
+**Classificação:** UX / apresentação  
+**Rastreamento:** MEL015
+
+`Custo total do lote`, `Preço teórico` e `Preço sugerido` devem ser exibidos como valores monetários com duas casas decimais.
+
+Isso não altera a precisão interna nem a regra de arredondamento comercial do Preço sugerido.
+
+
 ## Regra atual de primeiro acesso
 
 O primeiro acesso da **instalação** já possui um bootstrap definido pela FT002:

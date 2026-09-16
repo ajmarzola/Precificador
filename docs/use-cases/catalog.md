@@ -54,6 +54,16 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 
 UC011 congela Custo de referência, Margem de referência, Preço sugerido, Preço de prateleira e Reserva comercial de referência. UC012 consulta esse histórico, deriva o registro atual por `DataReferencia DESC, Id DESC` e calcula o Desconto de referência somente a partir dos snapshots, sem reinterpretar registros antigos com configuração vigente.
 
+### Evolução planejada do catálogo de Produtos
+
+A review manual identificou a necessidade de substituir a Categoria livre atual por estrutura cadastrável e introduzir o conceito de Coleção:
+
+- **UC032 — Administrar categorias de Produto:** padronizar Categorias por Empresa e preparar a substituição do texto livre atual;
+- **UC033 — Administrar coleções:** cadastrar Coleções com período de lançamento/finalização e Categorias envolvidas;
+- **UC034 — Vincular Produtos a Coleções:** permitir acompanhar a participação/destaque de Produtos ao longo das Coleções.
+
+Esses itens ainda exigem especificação detalhada de modelo, migração dos dados existentes, cardinalidades e regras de vigência antes de qualquer implementação.
+
 ## Ficha técnica
 
 | UC | Nome | Dependências funcionais |
