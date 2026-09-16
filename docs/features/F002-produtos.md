@@ -21,6 +21,8 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 
 A página `/Produtos/Novo` usa a entidade tenant-owned `Produto`, migration evolutiva e margem-alvo armazenada como fração decimal.
 
+Após MEL018, cadastro bem-sucedido redireciona para `/Produtos/Detalhes/{idCriado}`, preservando a mensagem de sucesso e permitindo continuar para Ficha Técnica e precificação.
+
 O Produto inicial contém:
 
 - Empresa proprietária;

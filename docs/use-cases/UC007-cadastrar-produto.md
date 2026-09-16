@@ -350,8 +350,8 @@ Fluxo:
 4. verificar duplicidade na Empresa Ativa;
 5. criar `Produto` com EmpresaId da sessão/contexto;
 6. persistir;
-7. PRG para `/Produtos/Novo`;
-8. exibir mensagem de sucesso.
+7. após MEL018, PRG para `/Produtos/Detalhes/{id}` usando o Id gerado da entidade persistida;
+8. exibir mensagem de sucesso no Detalhes.
 
 Mensagem:
 
@@ -359,7 +359,7 @@ Mensagem:
 Produto cadastrado com sucesso.
 ~~~
 
-Após PRG, formulário deve aparecer limpo para permitir novo cadastro.
+Após MEL018, o PRG termina em Detalhes do Produto recém-criado; o cadastro de outro Produto continua disponível pela navegação normal.
 
 ## Navegação temporária antes do UC008
 
@@ -461,7 +461,7 @@ Cadastro não exige nem cria preço de venda, Ficha Técnica ou custo.
 
 ### CA16 — PRG
 
-Cadastro válido redireciona para GET de `/Produtos/Novo` e mostra:
+Após MEL018, cadastro válido redireciona para GET de `/Produtos/Detalhes/{idCriado}` e mostra:
 
 ~~~text
 Produto cadastrado com sucesso.
