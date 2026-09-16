@@ -7,6 +7,7 @@ using Precificador.Core.FichasTecnicas;
 using Precificador.Core.Insumos;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Precificacao;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -149,13 +150,48 @@ public sealed class FichaTecnicaCustoPageTests
 
         Assert.Contains("Custo unitário", html);
         Assert.Contains("Custo do item", html);
-        Assert.Contains("0,013579", html);
-        Assert.Contains("0,5024", html);
+        Assert.Contains("R$ 0,013579", html);
+        Assert.Contains("R$ 0,50", html);
         Assert.Contains("Custo base dos itens:", html);
-        Assert.Contains("4,5024", html);
+        Assert.Contains("R$ 4,50", html);
         Assert.Contains("Observação contextual", html);
         Assert.Contains("Editar", html);
         Assert.Contains("Remover", html);
+    }
+
+    [Fact]
+    public async Task MEL015_E1_E4_Post_web_preserva_valor_e_precificacao_economica_antes_e_depois_da_formatacao()
+    {
+        await using var ambiente = await CriarAmbienteAsync();
+        var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
+        var ficha = await ambiente.CriarFichaAsync(1, produto);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        var item = await ambiente.CriarItemAsync(1, ficha, insumo, 50m);
+        using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
+
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, $"/Insumos/Precos/Novo/{insumo}");
+        var post = await client.PostAsync($"/Insumos/Precos/Novo/{insumo}", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["Input.QuantidadeCompra"] = "200",
+            ["Input.PrecoCompra"] = "20,99",
+            ["Input.DataReferencia"] = "2026-09-11"
+        }));
+
+        Assert.Equal(System.Net.HttpStatusCode.Redirect, post.StatusCode);
+        var preco = await ambiente.ObterPrecoInsumoAsync(1, insumo);
+        Assert.Equal(200m, preco.QuantidadeCompra);
+        Assert.Equal(20.99m, preco.PrecoCompra);
+
+        var precificacaoAtual = await ambiente.CalcularPrecificacaoAtualAsync(produto);
+        Assert.NotNull(precificacaoAtual);
+        var custoItem = Assert.Contains(item, precificacaoAtual!.Itens);
+        Assert.Equal(0.10495m, custoItem.CustoUnitario);
+        Assert.Equal(5.2475m, custoItem.CustoItem);
+
+        var html = await ambiente.ObterFichaAsync(produto);
+        Assert.Contains("R$ 0,10495", html);
+        Assert.Contains("R$ 5,25", html);
     }
 
     [Fact]
@@ -320,7 +356,7 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.CriarFichaAsync(1, vazia);
         var fichaVazia = await ambiente.ObterFichaAsync(vazia);
         AssertExibeCustoProdutoIndisponivel(fichaVazia);
-        Assert.Matches("Custo de perdas do lote:</strong>\\s*0", fichaVazia);
+        Assert.Matches("Custo de perdas do lote:</strong>\\s*R\\$ 0,00", fichaVazia);
     }
 
     [Fact]
@@ -509,6 +545,8 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibeCustoProduto(string html, string lote, string unitario)
     {
+        lote = FormatarMonetarioSeNecessario(lote);
+        unitario = FormatarMonetarioSeNecessario(unitario);
         Assert.Matches($"Custo total do lote:</strong>\\s*{Regex.Escape(lote)}", html);
         Assert.Matches($"Custo unitário do produto:</strong>\\s*{Regex.Escape(unitario)}", html);
     }
@@ -518,6 +556,8 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibePrecoProduto(string html, string margem, string teorico, string sugerido)
     {
+        teorico = FormatarMonetarioSeNecessario(teorico);
+        sugerido = FormatarMonetarioSeNecessario(sugerido);
         Assert.Matches($"Margem-alvo:</strong>\\s*{Regex.Escape(margem)}", html);
         Assert.Matches($"Preço teórico:</strong>\\s*{Regex.Escape(teorico)}", html);
         Assert.Matches($"Preço sugerido:</strong>\\s*{Regex.Escape(sugerido)}", html);
@@ -532,8 +572,26 @@ public sealed class FichaTecnicaCustoPageTests
 
     private static void AssertExibeCustoMaoDeObra(string html, string valor) =>
         Assert.Matches(
-            $"Custo de mão de obra do lote:</strong>\\s*{Regex.Escape(valor)}",
+            $"Custo de mão de obra do lote:</strong>\\s*{Regex.Escape(FormatarMonetarioSeNecessario(valor))}",
             html);
+
+    private static string FormatarMonetarioSeNecessario(string valor)
+    {
+        if (valor == "indisponível")
+        {
+            return valor;
+        }
+
+        if (valor.StartsWith("R$ ", StringComparison.Ordinal))
+        {
+            return valor;
+        }
+
+        var cultura = CultureInfo.GetCultureInfo("pt-BR");
+        var decimalSeparador = valor.Replace('.', ',');
+        var convertido = decimal.Parse(decimalSeparador, NumberStyles.Number, cultura);
+        return convertido.ToString("C2", cultura);
+    }
 
     private sealed class Ambiente(CustomWebApplicationFactory factory) : IAsyncDisposable
     {
@@ -601,6 +659,21 @@ public sealed class FichaTecnicaCustoPageTests
             await using var context = CriarContexto(empresaId);
             context.PrecosInsumos.Add(PrecoInsumo.Criar(empresaId, insumoId, quantidade, preco, data));
             await context.SaveChangesAsync();
+        }
+
+        public async Task<PrecoInsumo> ObterPrecoInsumoAsync(int empresaId, int insumoId)
+        {
+            await using var context = CriarContexto(empresaId);
+            return await context.PrecosInsumos.AsNoTracking()
+                .SingleAsync(preco => preco.InsumoId == insumoId);
+        }
+
+        public async Task<ResultadoPrecificacaoProdutoAtual?> CalcularPrecificacaoAtualAsync(int produtoId)
+        {
+            await using var context = CriarContexto(1);
+            var dataOperacionalEmpresa = scope.ServiceProvider.GetRequiredService<IDataOperacionalEmpresa>();
+            var servico = new PrecificacaoProdutoAtual(context, dataOperacionalEmpresa);
+            return await servico.CalcularAsync(produtoId);
         }
 
         public async Task<string> ObterFichaAsync(int produtoId)

@@ -10,9 +10,13 @@ public static class PrecoInsumoFormatacao
 
     public static string Quantidade(decimal quantidade) => quantidade.ToString("0.######", Cultura);
 
-    public static string PrecoTotal(decimal preco) => preco.ToString("0.####", Cultura);
+    public static string MontanteMonetario(decimal valor) => valor.ToString("C2", Cultura);
 
-    public static string CustoUnitario(decimal custo) => custo.ToString("0.######", Cultura);
+    public static string CustoUnitarioTecnico(decimal custo) => "R$ " + custo.ToString("0.00####", Cultura);
 
-    public static string CustoCalculado(decimal custo) => custo.ToString("0.####", Cultura);
+    public static string PrecoTotal(decimal preco) => MontanteMonetario(preco);
+
+    public static string CustoUnitario(decimal custo) => CustoUnitarioTecnico(custo);
+
+    public static string CustoCalculado(decimal custo) => MontanteMonetario(custo);
 }

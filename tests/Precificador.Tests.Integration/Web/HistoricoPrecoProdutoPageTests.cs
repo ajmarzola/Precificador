@@ -46,12 +46,12 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         Assert.Contains("Doces", conteudo);
         Assert.Contains("Ativo", conteudo);
         Assert.Contains("Preço de prateleira atual", conteudo);
-        Assert.Contains("111", conteudo);
+        Assert.Contains("R$ 111,00", conteudo);
         Assert.Contains("15/09/2026", conteudo);
         Assert.Equal(3, linhas.Count);
-        AssertLinha(linhas[0], "15/09/2026", "Atual", "10", "30%", "100", "111", "10%", "1%");
-        AssertLinha(linhas[1], "15/09/2026", "Anterior", "9", "25%", "20", "22", "5%", "5%");
-        AssertLinha(linhas[2], "01/09/2026", "Anterior", "8", "20%", "10", "12", "10%", "10%");
+        AssertLinha(linhas[0], "15/09/2026", "Atual", "R$ 10,00", "30%", "R$ 100,00", "R$ 111,00", "10%", "1%");
+        AssertLinha(linhas[1], "15/09/2026", "Anterior", "R$ 9,00", "25%", "R$ 20,00", "R$ 22,00", "5%", "5%");
+        AssertLinha(linhas[2], "01/09/2026", "Anterior", "R$ 8,00", "20%", "R$ 10,00", "R$ 12,00", "10%", "10%");
         Assert.Contains($"/Produtos/Precos/Novo/{produto}", conteudo);
         Assert.Contains("Registrar novo preço", conteudo);
         Assert.Contains($"/Produtos/Detalhes/{produto}", conteudo);
@@ -114,7 +114,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         Assert.Contains("Histórico de precificação", paginaInativo);
         Assert.Contains("Preço de prateleira atual", paginaAtivo);
         Assert.Contains("15/09/2026", paginaAtivo);
-        Assert.Contains("112", paginaAtivo);
+        Assert.Contains("R$ 112,00", paginaAtivo);
         Assert.DoesNotContain("01/09/2026", paginaAtivo);
         Assert.Contains("Preço de prateleira atual: não definido.", paginaSemRegistro);
         Assert.DoesNotContain("0,00", paginaSemRegistro);
@@ -184,7 +184,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Precos/Historico/{produto}"));
         var linha = Assert.Single(LinhasPreco(conteudo));
 
-        AssertLinha(linha, "12,3456", "30%", "14,29", "20");
+        AssertLinha(linha, "R$ 12,35", "30%", "R$ 14,29", "R$ 20,00");
         Assert.Contains("Atual alterada", conteudo);
         Assert.DoesNotContain("60%", linha);
     }

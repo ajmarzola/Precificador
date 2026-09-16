@@ -153,7 +153,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Null(configuracao.IncrementoComercial);
         Assert.Equal(0m, configuracao.ReservaComercialDesconto);
         var consulta = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
-        Assert.Contains("R$ 0", consulta);
+        Assert.Contains("R$ 0,00", consulta);
         Assert.Contains("0%", consulta);
     }
 
@@ -229,6 +229,31 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Equal(0.105m, configuracao.MargemPadrao);
         Assert.Equal(0.25m, configuracao.IncrementoComercial);
         Assert.Equal(0.075m, configuracao.ReservaComercialDesconto);
+    }
+
+    [Fact]
+    public async Task MEL015_C3_Round_trip_do_incremento_comercial_preserva_alta_precisao()
+    {
+        var empresa = await web.CriarEmpresaAsync("Empresa round trip incremento");
+        await AtualizarConfiguracaoAsync(empresa, 12.34m, 0.98m, 0.075m, 0.500001m, 0.125m);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var get = await client.GetAsync("/Configuracoes/Precificacao/Editar");
+        var html = await WebTestHtml.LerHtmlDecodificadoAsync(get);
+
+        get.EnsureSuccessStatusCode();
+        var valorHora = ValorDoInput(html, "Input.ValorHoraTrabalho");
+        var tarifa = ValorDoInput(html, "Input.TarifaEnergiaKwh");
+        var margem = ValorDoInput(html, "Input.MargemPadraoPercentual");
+        var incremento = ValorDoInput(html, "Input.IncrementoComercial");
+        var reserva = ValorDoInput(html, "Input.ReservaComercialDescontoPercentual");
+        Assert.Equal("0,500001", incremento);
+
+        var post = await EnviarFormularioEdicaoAsync(client, valorHora, tarifa, margem, incremento, reserva);
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        var configuracao = await ObterConfiguracaoAsync(empresa);
+        Assert.Equal(0.500001m, configuracao.IncrementoComercial);
     }
 
     [Fact]
@@ -382,10 +407,10 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
 
-        Assert.Contains("R$ 12,345678", conteudo);
-        Assert.Contains("R$ 0,987654", conteudo);
+        Assert.Contains("R$ 12,35", conteudo);
+        Assert.Contains("R$ 0,99", conteudo);
         Assert.Contains("7,5%", conteudo);
-        Assert.Contains("R$ 0,500001", conteudo);
+        Assert.Contains("R$ 0,50", conteudo);
         Assert.Contains("12,5%", conteudo);
     }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Insumos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Apresentacao;
 
 namespace Precificador.Web.Pages.Insumos.Precos;
 
@@ -40,6 +41,18 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
             ModelState.AddModelError("Input.DataReferencia", "A data de referência é obrigatória.");
         }
 
+        var quantidadeValida = DecimalInputParser.TentarParse(Input.QuantidadeCompra, out var quantidadeCompra);
+        if (!quantidadeValida)
+        {
+            ModelState.AddModelError("Input.QuantidadeCompra", "A quantidade deve ser um número válido.");
+        }
+
+        var precoValido = DecimalInputParser.TentarParse(Input.PrecoCompra, out var precoCompra);
+        if (!precoValido)
+        {
+            ModelState.AddModelError("Input.PrecoCompra", "O preço deve ser um número válido.");
+        }
+
         if (!ModelState.IsValid)
         {
             return Page();
@@ -47,7 +60,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
 
         try
         {
-            context.PrecosInsumos.Add(PrecoInsumo.Criar(insumo.EmpresaId, insumo.Id, Input.QuantidadeCompra, Input.PrecoCompra, Input.DataReferencia!.Value));
+            context.PrecosInsumos.Add(PrecoInsumo.Criar(insumo.EmpresaId, insumo.Id, quantidadeCompra, precoCompra, Input.DataReferencia!.Value));
             insumo.ConsolidarIdentidade();
         }
         catch (ArgumentOutOfRangeException exception)
@@ -72,10 +85,10 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
     public sealed class InputModel
     {
         [Display(Name = "Quantidade comprada")]
-        public decimal QuantidadeCompra { get; set; }
+        public string? QuantidadeCompra { get; set; }
 
         [Display(Name = "Preço total da compra")]
-        public decimal PrecoCompra { get; set; }
+        public string? PrecoCompra { get; set; }
 
         [Display(Name = "Data de referência")]
         [DataType(DataType.Date)]

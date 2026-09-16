@@ -56,11 +56,13 @@ public sealed class UsoEquipamentoFichaPageTests
     }
 
     private static void AssertExibeCustoEnergiaLote(string html, string valor) =>
-        Assert.Matches($"Custo de energia do lote:</strong>\\s*{System.Text.RegularExpressions.Regex.Escape(valor)}", html);
+        Assert.Matches($"Custo de energia do lote:</strong>\\s*{System.Text.RegularExpressions.Regex.Escape(FormatarMonetarioSeNecessario(valor))}", html);
 
     private static void AssertExibeUsoEnergia(string html, string equipamento, string consumo, string custo)
     {
-        var custoEsperado = custo == "3" ? System.Text.RegularExpressions.Regex.Escape(custo) : "\\u2014";
+        var custoEsperado = custo == "3"
+            ? System.Text.RegularExpressions.Regex.Escape(FormatarMonetarioSeNecessario(custo))
+            : "\\u2014";
         Assert.Matches($"<td>{System.Text.RegularExpressions.Regex.Escape(equipamento)}</td>\\s*<td>[^<]*</td>\\s*<td>[^<]*</td>\\s*<td>{System.Text.RegularExpressions.Regex.Escape(consumo)}</td>\\s*<td>{custoEsperado}</td>", html);
     }
 
@@ -75,12 +77,25 @@ public sealed class UsoEquipamentoFichaPageTests
         AssertExibeUsoEnergia(semTarifa, "Forno", "1", "â€”");
         await ambiente.TarifaAsync(1, 0m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
         await ambiente.TarifaAsync(1, 4m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "4");
-        await ambiente.ValorHoraAsync(1, null); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Contains("indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> 4", independente);
+        await ambiente.ValorHoraAsync(1, null); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Contains("indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> R$ 4,00", independente);
         var usosAntesGet = await ambiente.ContarUsosAsync(1); _ = await ambiente.FichaAsync(produto); Assert.Equal(usosAntesGet, await ambiente.ContarUsosAsync(1));
         var antes = await ambiente.EstadoAsync(ficha, 1); using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1); var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
         var invalido = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()), ["Input.Rendimento"] = "0", ["Input.TempoAtivoMinutos"] = "120" }));
         AssertExibeCustoEnergiaLote(await WebTestHtml.LerHtmlDecodificadoAsync(invalido), "4"); Assert.Equal(antes, await ambiente.EstadoAsync(ficha, 1));
         await ambiente.RemoverConfiguracaoAsync(1); Assert.Equal(System.Net.HttpStatusCode.NotFound, (await client.GetAsync($"/Produtos/FichaTecnica/{produto}")).StatusCode); Assert.Equal(0, await ambiente.ContarConfiguracoesAsync(1));
+    }
+
+    private static string FormatarMonetarioSeNecessario(string valor)
+    {
+        if (valor == "indisponível")
+        {
+            return valor;
+        }
+
+        var cultura = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+        var normalizado = valor.Replace('.', ',');
+        var convertido = decimal.Parse(normalizado, System.Globalization.NumberStyles.Number, cultura);
+        return convertido.ToString("C2", cultura);
     }
 
     private sealed class Ambiente(CustomWebApplicationFactory factory) : IAsyncDisposable

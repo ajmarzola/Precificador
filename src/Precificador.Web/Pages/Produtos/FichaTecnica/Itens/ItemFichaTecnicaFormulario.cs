@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Precificador.Web.Apresentacao;
 
 namespace Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
 
@@ -27,8 +28,7 @@ public static class ItemFichaTecnicaFormulario
             return false;
         }
 
-        var cultura = quantidadeInformada.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
-        if (!decimal.TryParse(quantidadeInformada, NumberStyles.Number, cultura, out quantidade))
+        if (!DecimalInputParser.TentarParse(quantidadeInformada, out quantidade))
         {
             modelState.AddModelError("Input.Quantidade", "A quantidade deve ser um número válido.");
             return false;
@@ -58,8 +58,7 @@ public static class ItemFichaTecnicaFormulario
             return true;
         }
 
-        var cultura = percentualInformado.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
-        if (!decimal.TryParse(percentualInformado, NumberStyles.Number, cultura, out var percentual) || percentual < 0 || percentual >= 100)
+        if (!DecimalInputParser.TentarParse(percentualInformado, out var percentual) || percentual < 0 || percentual >= 100)
         {
             modelState.AddModelError("Input.PercentualPerda", "A perda esperada deve ser um percentual maior ou igual a zero e menor que 100.");
             return false;

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Precificador.Web.Apresentacao;
 
 namespace Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos;
 
@@ -12,8 +13,7 @@ public static class UsoEquipamentoFichaFormulario
         potencia = 0;
         informada = informada?.Trim();
         if (string.IsNullOrEmpty(informada)) { modelState.AddModelError("Input.PotenciaKw", "A potência é obrigatória."); return false; }
-        var cultura = informada.Contains(',') ? CulturaBrasileira : CultureInfo.InvariantCulture;
-        if (!decimal.TryParse(informada, NumberStyles.Number, cultura, out potencia)) { modelState.AddModelError("Input.PotenciaKw", "A potência deve ser um número válido."); return false; }
+        if (!DecimalInputParser.TentarParse(informada, out potencia)) { modelState.AddModelError("Input.PotenciaKw", "A potência deve ser um número válido."); return false; }
         if (potencia <= 0) { modelState.AddModelError("Input.PotenciaKw", "A potência deve ser maior que zero."); return false; }
         return true;
     }
