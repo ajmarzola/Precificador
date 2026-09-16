@@ -9,12 +9,16 @@
 ## Problemas observados
 
 1. Campos de valores monetários não apresentam padrão visual consistente de duas casas decimais.
-2. O formulário de preço do Insumo não aceita naturalmente valor brasileiro com vírgula decimal.
-3. Há outros formulários com binding direto para `decimal`, como Preço de prateleira, que devem ser revalidados para o mesmo risco.
+2. O formulário de preço do Insumo não interpreta corretamente valor brasileiro com vírgula decimal.
+3. Caso observado no teste manual: `20,99` foi persistido como `2099`, e a tela de Detalhes exibiu o valor incorreto sem separador decimal.
+4. O valor incorreto persistido contaminou corretamente os cálculos dependentes: embalagem de 200 g registrada como `2099` e uso de 50 g resultou em `524,75` (`2099 / 200 * 50`). Portanto, o defeito está na entrada/persistência do preço, não na fórmula de custo UC018.
+5. Há outros formulários com binding direto para `decimal`, como Preço de prateleira, que devem ser revalidados para o mesmo risco.
 
 ## Objetivo
 
 Padronizar a experiência brasileira de entrada e apresentação de valores financeiros sem reduzir a precisão dos cálculos internos.
+
+Este item é **bloqueante para testes manuais de custo/precificação** enquanto a entrada pt-BR puder persistir valores monetários incorretos.
 
 ## Regra de apresentação
 
@@ -47,6 +51,8 @@ Exibir esse custo como `R$ 0,01` ou `R$ 0,00` seria materialmente enganoso.
 Portanto:
 
 - preços/totais/valores monetários comerciais: duas casas;
+- o resumo de preço vigente do Insumo deve exibir, por exemplo, `20,99` como `20,99` (preferencialmente com convenção monetária consistente), nunca `2099`;
+- `Custo total do lote`, `Preço teórico` e `Preço sugerido` devem ser apresentados em formato monetário com duas casas;
 - custo unitário técnico por unidade-base: manter precisão suficiente já suportada pelo domínio;
 - cálculo interno: precisão integral conforme RN026.
 
@@ -86,6 +92,7 @@ Evitar depender do binding direto de `decimal` quando isso tornar a aceitação 
 
 ## Testes esperados
 
+- cenário de regressão explícito: embalagem de 200 g a `20,99` e item de 50 g deve produzir custo-base de `5,2475` antes de formatação de apresentação;
 - vírgula decimal aceita;
 - ponto decimal continua aceito;
 - valor inválido apresenta erro de validação amigável;
