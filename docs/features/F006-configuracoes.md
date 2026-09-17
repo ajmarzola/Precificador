@@ -32,7 +32,21 @@ A margem padrão, quando configurada, pré-preenche novos Produtos; o usuário p
 
 Os quatro parâmetros opcionais podem ser limpos de volta para **Não configurado**. Parâmetros ausentes não são tratados como zero; o cálculo futuro dependente permanece incompleto.
 
-A reserva comercial não participa do Preço sugerido. Ela será congelada como referência em registros comerciais futuros pelo UC011.
+A reserva comercial não participa do Preço sugerido. Ela é congelada como referência nos registros comerciais de preço, preservando o histórico contra alterações posteriores da configuração.
+
+## Explicabilidade — MEL017
+
+Após MEL017, as telas de consulta e edição exibem ajuda contextual sempre visível para os cinco parâmetros.
+
+A ajuda deve explicar o efeito real de cada configuração sem alterar regra de negócio:
+
+- Valor da hora → custo de mão de obra do lote;
+- Tarifa de energia → custo dos usos de equipamentos;
+- Margem padrão → apenas pré-preenchimento de novos Produtos;
+- Incremento comercial → múltiplo monetário que arredonda o Preço teórico para cima e forma o Preço sugerido;
+- Reserva comercial → parcela reservada antes do cálculo do Desconto de referência, congelada nos novos registros comerciais.
+
+A edição deve associar semanticamente cada input ao respectivo texto de ajuda, sem depender de `title`, hover ou JavaScript.
 
 ## Casos de uso
 
@@ -41,4 +55,4 @@ A reserva comercial não participa do Preço sugerido. Ela será congelada como 
 
 ## Regras relacionadas
 
-RN013, RN014, RN017, RN019, RN021, RN025, RN026, RN039 e RN052.
+RN013, RN014, RN017, RN019, RN021, RN025, RN026, RN039, RN052, RN053 e RN054.
