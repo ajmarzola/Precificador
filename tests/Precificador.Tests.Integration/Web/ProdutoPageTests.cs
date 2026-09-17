@@ -284,7 +284,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     [Fact]
     public async Task CA17_Home_exibe_link_cadastrar_produto()
     {
-        using var client = factory.CreateClient();
+        using var client = await web.CriarClienteAutenticadoAsync();
 
         var response = await client.GetAsync("/");
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);

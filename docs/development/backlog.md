@@ -63,7 +63,7 @@ Regra operacional:
 | 03 | MEL018 — Redirecionar cadastros para os detalhes da entidade | MEL | Concluído | MEL015, MEL016; UC001, UC007 | [MEL018](improvements/MEL018-redirecionar-cadastros-detalhes.md) |
 | 04 | MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | MEL | Concluído | UC013; gate operacional atendido: MEL018 Concluído | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
 | 05 | MEL017 — Explicar configurações de precificação na interface | MEL | Concluído | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
-| 06 | MEL012 — Adequar navegação para usuário anônimo | MEL | Pronto | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
+| 06 | MEL012 — Adequar navegação para usuário anônimo | MEL | Concluído | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
 | 07 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL015, UC024 | Documento a criar |
 | 08 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | 09 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
