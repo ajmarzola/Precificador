@@ -3,7 +3,7 @@
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Classificação:** UX / explicabilidade
 - **Prioridade:** baixa
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Ordem na fila pendente:** 05
 - **Dependências:** UC026, UC027
 - **Alteração de schema:** não

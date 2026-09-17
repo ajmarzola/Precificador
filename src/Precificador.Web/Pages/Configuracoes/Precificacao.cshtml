@@ -16,21 +16,33 @@
 
 <dl class="row">
     <dt class="col-sm-4">Valor da hora de trabalho</dt>
-    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.ValorHoraTrabalho)</dd>
+    <dd class="col-sm-8">
+        @ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.ValorHoraTrabalho)
+        <div class="form-text">@ConfiguracaoPrecificacaoAjuda.ValorHoraTrabalho</div>
+    </dd>
 
     <dt class="col-sm-4">Tarifa de energia (R$/kWh)</dt>
-    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.TarifaEnergiaKwh)</dd>
+    <dd class="col-sm-8">
+        @ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.TarifaEnergiaKwh)
+        <div class="form-text">@ConfiguracaoPrecificacaoAjuda.TarifaEnergiaKwh</div>
+    </dd>
 
     <dt class="col-sm-4">Margem padrão para novos produtos (%)</dt>
-    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Percentual(configuracao.MargemPadrao)</dd>
+    <dd class="col-sm-8">
+        @ConfiguracaoPrecificacaoFormatacao.Percentual(configuracao.MargemPadrao)
+        <div class="form-text">@ConfiguracaoPrecificacaoAjuda.MargemPadrao</div>
+    </dd>
 
     <dt class="col-sm-4">Incremento comercial de arredondamento</dt>
-    <dd class="col-sm-8">@ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.IncrementoComercial)</dd>
+    <dd class="col-sm-8">
+        @ConfiguracaoPrecificacaoFormatacao.Monetario(configuracao.IncrementoComercial)
+        <div class="form-text">@ConfiguracaoPrecificacaoAjuda.IncrementoComercial</div>
+    </dd>
 
     <dt class="col-sm-4">Reserva comercial para desconto (%)</dt>
     <dd class="col-sm-8">
         @ConfiguracaoPrecificacaoFormatacao.Percentual(configuracao.ReservaComercialDesconto)
-        <div class="form-text">Percentual reservado acima do preço sugerido antes de formar o desconto de referência.</div>
+        <div class="form-text">@ConfiguracaoPrecificacaoAjuda.ReservaComercial</div>
     </dd>
 </dl>
 

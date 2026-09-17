@@ -1,5 +1,6 @@
 @page
 @model Precificador.Web.Pages.Configuracoes.Precificacao.EditarModel
+@using Precificador.Web.Apresentacao
 @{
     ViewData["Title"] = "Alterar configurações de precificação";
 }
@@ -10,27 +11,32 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
         <label asp-for="Input.ValorHoraTrabalho" class="form-label"></label>
-        <input asp-for="Input.ValorHoraTrabalho" class="form-control" />
+        <input asp-for="Input.ValorHoraTrabalho" class="form-control" aria-describedby="ajuda-valor-hora-trabalho" />
+        <div id="ajuda-valor-hora-trabalho" class="form-text">@ConfiguracaoPrecificacaoAjuda.ValorHoraTrabalho</div>
         <span asp-validation-for="Input.ValorHoraTrabalho" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.TarifaEnergiaKwh" class="form-label"></label>
-        <input asp-for="Input.TarifaEnergiaKwh" class="form-control" />
+        <input asp-for="Input.TarifaEnergiaKwh" class="form-control" aria-describedby="ajuda-tarifa-energia" />
+        <div id="ajuda-tarifa-energia" class="form-text">@ConfiguracaoPrecificacaoAjuda.TarifaEnergiaKwh</div>
         <span asp-validation-for="Input.TarifaEnergiaKwh" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.MargemPadraoPercentual" class="form-label"></label>
-        <input asp-for="Input.MargemPadraoPercentual" class="form-control" />
+        <input asp-for="Input.MargemPadraoPercentual" class="form-control" aria-describedby="ajuda-margem-padrao" />
+        <div id="ajuda-margem-padrao" class="form-text">@ConfiguracaoPrecificacaoAjuda.MargemPadrao</div>
         <span asp-validation-for="Input.MargemPadraoPercentual" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.IncrementoComercial" class="form-label"></label>
-        <input asp-for="Input.IncrementoComercial" class="form-control" />
+        <input asp-for="Input.IncrementoComercial" class="form-control" aria-describedby="ajuda-incremento-comercial" />
+        <div id="ajuda-incremento-comercial" class="form-text">@ConfiguracaoPrecificacaoAjuda.IncrementoComercial</div>
         <span asp-validation-for="Input.IncrementoComercial" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.ReservaComercialDescontoPercentual" class="form-label"></label>
-        <input asp-for="Input.ReservaComercialDescontoPercentual" class="form-control" />
+        <input asp-for="Input.ReservaComercialDescontoPercentual" class="form-control" aria-describedby="ajuda-reserva-comercial" />
+        <div id="ajuda-reserva-comercial" class="form-text">@ConfiguracaoPrecificacaoAjuda.ReservaComercial</div>
         <span asp-validation-for="Input.ReservaComercialDescontoPercentual" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Salvar</button>

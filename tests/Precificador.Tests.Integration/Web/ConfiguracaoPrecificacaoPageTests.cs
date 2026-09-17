@@ -52,11 +52,28 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Contains("Incremento comercial de arredondamento", conteudo);
         Assert.Contains("Reserva comercial para desconto (%)", conteudo);
         Assert.Contains("10%", conteudo);
-        Assert.Contains("Percentual reservado acima do preço sugerido antes de formar o desconto de referência.", conteudo);
+        AssertAjudasPresentes(conteudo);
         Assert.Contains("Configurações", conteudo);
         Assert.Contains("href=\"/Configuracoes/Precificacao\"", conteudo);
         Assert.Contains("href=\"/Configuracoes/Precificacao/Editar\"", conteudo);
         Assert.Contains("Alterar configurações", conteudo);
+    }
+
+    [Fact]
+    public async Task MEL017_W4_W5_Edicao_exibe_ajudas_e_as_associa_aos_inputs()
+    {
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await client.GetAsync("/Configuracoes/Precificacao/Editar");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        response.EnsureSuccessStatusCode();
+        AssertAjudasPresentes(conteudo);
+        AssertInputDescreveAjuda(conteudo, "Input.ValorHoraTrabalho", "ajuda-valor-hora-trabalho");
+        AssertInputDescreveAjuda(conteudo, "Input.TarifaEnergiaKwh", "ajuda-tarifa-energia");
+        AssertInputDescreveAjuda(conteudo, "Input.MargemPadraoPercentual", "ajuda-margem-padrao");
+        AssertInputDescreveAjuda(conteudo, "Input.IncrementoComercial", "ajuda-incremento-comercial");
+        AssertInputDescreveAjuda(conteudo, "Input.ReservaComercialDescontoPercentual", "ajuda-reserva-comercial");
     }
 
     [Fact]
@@ -272,6 +289,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Equal("33", ValorDoInput(conteudo, "Input.MargemPadraoPercentual"));
         Assert.Equal("0,75", ValorDoInput(conteudo, "Input.IncrementoComercial"));
         Assert.Equal("12", ValorDoInput(conteudo, "Input.ReservaComercialDescontoPercentual"));
+        AssertAjudasPresentes(conteudo);
         var configuracao = await ObterConfiguracaoAsync(empresa);
         Assert.Equal(1m, configuracao.ValorHoraTrabalho);
         Assert.Equal(1m, configuracao.TarifaEnergiaKwh);
@@ -498,6 +516,31 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         var pattern = "<input[^>]+name=\"" + Regex.Escape(nome) + "\"[^>]*value=\"([^\"]*)\"";
         var match = Regex.Match(html, pattern);
         return match.Success ? match.Groups[1].Value : string.Empty;
+    }
+
+    private static void AssertAjudasPresentes(string html)
+    {
+        Assert.Contains("Valor atribuído a uma hora de trabalho ativo.", html);
+        Assert.Contains("Valor pago por 1 kWh de energia.", html);
+        Assert.Contains("somente para pré-preencher a Margem-alvo ao cadastrar um novo Produto", html);
+        Assert.Contains("Produtos já cadastrados não são modificados", html);
+        Assert.Contains("múltiplo monetário usado para arredondar o Preço teórico para cima", html);
+        Assert.Contains("R$ 0,50", html);
+        Assert.Contains("R$ 12,13", html);
+        Assert.Contains("R$ 12,50", html);
+        Assert.Contains("Não é desconto automático", html);
+        Assert.Contains("reserva de 10%", html);
+        Assert.Contains("pelo menos 11% acima do sugerido", html);
+        Assert.Contains("não reinterpretam o histórico existente", html);
+    }
+
+    private static void AssertInputDescreveAjuda(string html, string nome, string idAjuda)
+    {
+        var match = Regex.Match(html, "<input[^>]+name=\"" + Regex.Escape(nome) + "\"[^>]*>");
+
+        Assert.True(match.Success, $"Input '{nome}' não encontrado.");
+        Assert.Contains("aria-describedby=\"" + idAjuda + "\"", match.Value);
+        Assert.Contains("id=\"" + idAjuda + "\"", html);
     }
 
     private async Task AtualizarConfiguracaoAsync(
