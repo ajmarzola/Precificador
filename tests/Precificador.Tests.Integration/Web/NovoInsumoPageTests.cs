@@ -51,7 +51,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
 
         Assert.Equal($"/Insumos/Detalhes/{insumoId}", response.Headers.Location!.ToString());
 
-        var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
+        var paginaAposRedirect = await client.GetAsync(response.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, paginaAposRedirect.StatusCode);
         var conteudo = await paginaAposRedirect.Content.ReadAsStringAsync();
         Assert.Contains("Insumo cadastrado com sucesso.", conteudo);
@@ -114,6 +114,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var response = await EnviarFormularioAsync(client, "   ", "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Equal(quantidadeAntes, await ContarInsumosAsync());
     }
 
@@ -156,6 +157,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var conteudo = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Contains("Já existe um insumo cadastrado com esse nome e marca.", WebUtility.HtmlDecode(conteudo));
         Assert.Equal(1, await ContarInsumosAsync(nome));
     }
@@ -197,6 +199,10 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var insumoEmpresaDois = await contextoEmpresaDois.Insumos.SingleAsync(insumo => insumo.Nome == nome);
         Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaUm.Id}", cadastroEmpresaUm.Headers.Location!.ToString());
         Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaDois.Id}", cadastroEmpresaDois.Headers.Location!.ToString());
+
+        var paginaEmpresaDois = await clienteEmpresaDois.GetAsync(cadastroEmpresaDois.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, paginaEmpresaDois.StatusCode);
+        Assert.Contains(nome, await paginaEmpresaDois.Content.ReadAsStringAsync());
     }
 
     [Fact]

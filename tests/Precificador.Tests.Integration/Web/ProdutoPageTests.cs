@@ -190,7 +190,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
 
         Assert.Equal($"/Produtos/Detalhes/{produtoId}", response.Headers.Location!.ToString());
 
-        var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
+        var paginaAposRedirect = await client.GetAsync(response.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, paginaAposRedirect.StatusCode);
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(paginaAposRedirect);
         Assert.Contains("Produto cadastrado com sucesso.", conteudo);
@@ -214,6 +214,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var response = await EnviarFormularioAsync(client, nome, categoria, margemPercentual);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Equal(quantidadeAntes, await ContarProdutosAsync());
     }
 
@@ -228,6 +229,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Contains("Já existe um produto cadastrado com esse nome.", conteudo);
         Assert.Equal(1, await ContarProdutosAsync(nome));
     }
