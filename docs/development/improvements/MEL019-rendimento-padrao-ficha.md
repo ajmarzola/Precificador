@@ -3,7 +3,7 @@
 - **Tipo:** UX / default de formulário
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Prioridade:** baixa
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Ordem na fila pendente:** 04
 - **Dependência técnica:** UC013
 - **Gate operacional para ficar Pronto:** MEL018 concluída, conforme fila normativa
@@ -478,7 +478,7 @@ Não é necessário alterar regras de negócio porque RN009 continua idêntica.
 - **CA25:** nenhuma fórmula/cálculo é alterado.
 - **CA26:** nenhuma Ficha/Item/equipamento é criado automaticamente.
 - **CA27:** `FichaTecnicaFormulario.FormatarRendimento` é reutilizado ou comportamento equivalente é mantido.
-- **CA28:** MEL020/UCs posteriores não são antecipados.
+- **CA28:** Itens posteriores não são antecipados.
 
 ## Matriz de testes
 
