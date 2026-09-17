@@ -91,7 +91,11 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         {
             return NotFound();
         }
-        if (ficha is not null)
+        if (ficha is null)
+        {
+            Input.Rendimento = FichaTecnicaFormulario.FormatarRendimento(1m);
+        }
+        else
         {
             Input = new FichaTecnicaInputModel
             {

@@ -37,7 +37,7 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     }
 
     [Fact]
-    public async Task CA02_CA20_Get_sem_ficha_exibe_formulario_sem_criar_registro()
+    public async Task CA02_CA20_Get_sem_ficha_exibe_default_sem_criar_registro()
     {
         var nome = NomeUnico("Produto sem ficha");
         var id = await CriarProdutoAsync(1, nome, "Catálogo", 0.30m, ativo: true);
@@ -52,11 +52,17 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         Assert.Contains("Ativo", conteudo);
         Assert.Contains("Rendimento do lote (unidades de venda)", conteudo);
         Assert.Contains("Tempo ativo de trabalho (minutos)", conteudo);
+        Assert.Equal("1", ValorDoInput(conteudo, "Input.Rendimento"));
+        Assert.Equal(string.Empty, ValorDoInput(conteudo, "Input.TempoAtivoMinutos"));
         Assert.DoesNotContain("Adicionar insumo", conteudo);
         Assert.DoesNotContain("EmpresaId", conteudo);
         Assert.DoesNotContain("ProdutoId", conteudo);
         Assert.DoesNotContain("TempoForno", conteudo);
         Assert.DoesNotContain("PotenciaForno", conteudo);
+        Assert.Empty(await ListarFichasAsync(produtoId: id));
+
+        await client.GetAsync($"/Produtos/FichaTecnica/{id}");
+
         Assert.Empty(await ListarFichasAsync(produtoId: id));
     }
 
@@ -78,6 +84,56 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
 
         var paginaAposRedirect = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Ficha técnica salva com sucesso.", paginaAposRedirect);
+    }
+
+    [Fact]
+    public async Task MEL019_Aceitar_default_de_rendimento_cria_ficha_com_valor_um()
+    {
+        var id = await CriarProdutoAsync(1, NomeUnico("Produto aceita default"), null, 0.30m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
+        var response = await client.PostAsync($"/Produtos/FichaTecnica/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
+            ["Input.Rendimento"] = ValorDoInput(pagina, "Input.Rendimento"),
+            ["Input.TempoAtivoMinutos"] = "30"
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var ficha = Assert.Single(await ListarFichasAsync(produtoId: id));
+        Assert.Equal(1m, ficha.Rendimento);
+        Assert.Equal(30, ficha.TempoAtivoMinutos);
+    }
+
+    [Fact]
+    public async Task MEL019_Post_invalido_sem_ficha_preserva_rendimento_informado()
+    {
+        var id = await CriarProdutoAsync(1, NomeUnico("Produto default invalido"), null, 0.30m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFormularioAsync(client, id, "2,5", "-1");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("2,5", ValorDoInput(conteudo, "Input.Rendimento"));
+        Assert.Contains("O tempo ativo não pode ser negativo.", conteudo);
+        Assert.Empty(await ListarFichasAsync(produtoId: id));
+    }
+
+    [Fact]
+    public async Task MEL019_Rendimento_apagado_sem_ficha_permanece_obrigatorio()
+    {
+        var id = await CriarProdutoAsync(1, NomeUnico("Produto rendimento apagado"), null, 0.30m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFormularioAsync(client, id, null, "30");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("O rendimento é obrigatório.", conteudo);
+        Assert.Equal(string.Empty, ValorDoInput(conteudo, "Input.Rendimento"));
+        Assert.Empty(await ListarFichasAsync(produtoId: id));
     }
 
     [Fact]
@@ -224,6 +280,12 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
     {
         var id = await CriarProdutoAsync(1, NomeUnico("Produto inativo ficha"), null, 0.30m, ativo: false);
         using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var paginaInicial = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{id}"));
+        Assert.Equal("1", ValorDoInput(paginaInicial, "Input.Rendimento"));
+        Assert.Equal(string.Empty, ValorDoInput(paginaInicial, "Input.TempoAtivoMinutos"));
+        Assert.Empty(await ListarFichasAsync(produtoId: id));
+        Assert.False((await ObterProdutoAsync(id, 1)).Ativo);
 
         var response = await EnviarFormularioAsync(client, id, "2", "0");
 
