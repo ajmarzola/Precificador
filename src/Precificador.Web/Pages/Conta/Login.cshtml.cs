@@ -13,7 +13,14 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
 {
     [BindProperty] public InputModel Input { get; set; } = new();
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
-    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Index") : Page();
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToPage("/Index");
+        if (!await userManager.Users.AnyAsync()) return RedirectToPage("/Setup");
+        return Page();
+    }
+
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid) return Page();
