@@ -3,7 +3,7 @@
 - **Tipo:** UX / default de formulário
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Prioridade:** baixa
-- **Estado:** Especificado
+- **Estado:** Pronto
 - **Ordem na fila pendente:** 04
 - **Dependência técnica:** UC013
 - **Gate operacional para ficar Pronto:** MEL018 concluída, conforme fila normativa
