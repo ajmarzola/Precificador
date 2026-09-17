@@ -14,8 +14,6 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
     [BindProperty]
     public InsumoInputModel Input { get; set; } = new();
 
-    public string? MensagemSucesso => TempData["MensagemSucesso"] as string;
-
     public void OnGet()
     {
     }
@@ -57,6 +55,6 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
         }
 
         TempData["MensagemSucesso"] = "Insumo cadastrado com sucesso.";
-        return RedirectToPage();
+        return RedirectToPage("/Insumos/Detalhes", new { id = insumo.Id });
     }
 }

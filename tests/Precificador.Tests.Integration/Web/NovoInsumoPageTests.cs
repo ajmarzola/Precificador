@@ -41,15 +41,22 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var response = await EnviarFormularioAsync(client, nome, "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        int insumoId;
         using (var scope = factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            Assert.True(await context.Insumos.IgnoreQueryFilters().AnyAsync(insumo => insumo.Nome == nome));
+            var insumo = await context.Insumos.IgnoreQueryFilters().SingleAsync(item => item.Nome == nome);
+            insumoId = insumo.Id;
         }
 
-        var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
+        Assert.Equal($"/Insumos/Detalhes/{insumoId}", response.Headers.Location!.ToString());
+
+        var paginaAposRedirect = await client.GetAsync(response.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, paginaAposRedirect.StatusCode);
         var conteudo = await paginaAposRedirect.Content.ReadAsStringAsync();
         Assert.Contains("Insumo cadastrado com sucesso.", conteudo);
+        Assert.Contains(nome, conteudo);
+        Assert.Contains("Registrar preço", conteudo);
     }
 
     [Fact]
@@ -107,6 +114,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var response = await EnviarFormularioAsync(client, "   ", "MateriaPrima", "Grama");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Equal(quantidadeAntes, await ContarInsumosAsync());
     }
 
@@ -149,6 +157,7 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var conteudo = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Contains("Já existe um insumo cadastrado com esse nome e marca.", WebUtility.HtmlDecode(conteudo));
         Assert.Equal(1, await ContarInsumosAsync(nome));
     }
@@ -186,8 +195,14 @@ public sealed class NovoInsumoPageTests(CustomWebApplicationFactory factory) : I
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var contextoEmpresaUm = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
         await using var contextoEmpresaDois = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaDois));
-        Assert.Single(await contextoEmpresaUm.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
-        Assert.Single(await contextoEmpresaDois.Insumos.Where(insumo => insumo.Nome == nome).ToListAsync());
+        var insumoEmpresaUm = await contextoEmpresaUm.Insumos.SingleAsync(insumo => insumo.Nome == nome);
+        var insumoEmpresaDois = await contextoEmpresaDois.Insumos.SingleAsync(insumo => insumo.Nome == nome);
+        Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaUm.Id}", cadastroEmpresaUm.Headers.Location!.ToString());
+        Assert.Equal($"/Insumos/Detalhes/{insumoEmpresaDois.Id}", cadastroEmpresaDois.Headers.Location!.ToString());
+
+        var paginaEmpresaDois = await clienteEmpresaDois.GetAsync(cadastroEmpresaDois.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, paginaEmpresaDois.StatusCode);
+        Assert.Contains(nome, await paginaEmpresaDois.Content.ReadAsStringAsync());
     }
 
     [Fact]

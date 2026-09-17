@@ -176,21 +176,27 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var response = await EnviarFormularioAsync(client, nome, "  Planners   2027  ", "30");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal("/Produtos/Novo", response.Headers.Location!.ToString());
+        int produtoId;
         using (var scope = factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
             var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
+            produtoId = produto.Id;
             Assert.Equal(1, produto.EmpresaId);
             Assert.Equal("Planners 2027", produto.Categoria);
             Assert.Equal(0.30m, produto.MargemAlvo);
             Assert.True(produto.Ativo);
         }
 
-        var paginaAposRedirect = await client.GetAsync(response.Headers.Location!);
+        Assert.Equal($"/Produtos/Detalhes/{produtoId}", response.Headers.Location!.ToString());
+
+        var paginaAposRedirect = await client.GetAsync(response.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, paginaAposRedirect.StatusCode);
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(paginaAposRedirect);
         Assert.Contains("Produto cadastrado com sucesso.", conteudo);
-        Assert.DoesNotContain($"value=\"{nome}\"", conteudo);
+        Assert.Contains(nome, conteudo);
+        Assert.Contains("Ficha técnica", conteudo);
+        Assert.Contains("Registrar preço de prateleira", conteudo);
     }
 
     [Theory]
@@ -208,6 +214,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var response = await EnviarFormularioAsync(client, nome, categoria, margemPercentual);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Equal(quantidadeAntes, await ContarProdutosAsync());
     }
 
@@ -222,6 +229,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
         Assert.Contains("Já existe um produto cadastrado com esse nome.", conteudo);
         Assert.Equal(1, await ContarProdutosAsync(nome));
     }
@@ -232,13 +240,22 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var empresaDois = await web.CriarEmpresaAsync();
         var nome = $"Agenda {Guid.NewGuid():N}";
         using var clienteEmpresaDois = await web.CriarClienteAutenticadoAsync(empresaDois);
-        Assert.Equal(HttpStatusCode.Redirect, (await EnviarFormularioAsync(clienteEmpresaDois, nome, null, "30")).StatusCode);
+        var cadastroEmpresaDois = await EnviarFormularioAsync(clienteEmpresaDois, nome, null, "30");
+        Assert.Equal(HttpStatusCode.Redirect, cadastroEmpresaDois.StatusCode);
         using var clienteEmpresaUm = await web.CriarClienteAutenticadoAsync();
 
         var response = await EnviarFormularioAsync(clienteEmpresaUm, $"  {nome.ToUpperInvariant()}  ", null, "25");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal(2, await ContarProdutosNormalizadosAsync(nome.ToUpperInvariant()));
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var contextoEmpresaUm = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        await using var contextoEmpresaDois = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaDois));
+        var produtoEmpresaUm = await contextoEmpresaUm.Produtos.SingleAsync(produto => produto.NomeNormalizado == nome.ToUpperInvariant());
+        var produtoEmpresaDois = await contextoEmpresaDois.Produtos.SingleAsync(produto => produto.Nome == nome);
+        Assert.Equal($"/Produtos/Detalhes/{produtoEmpresaUm.Id}", response.Headers.Location!.ToString());
+        Assert.Equal($"/Produtos/Detalhes/{produtoEmpresaDois.Id}", cadastroEmpresaDois.Headers.Location!.ToString());
     }
 
     [Fact]
