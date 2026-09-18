@@ -27,7 +27,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDataOperacionalEmpresa, DataOperacionalEmpresa>();
 builder.Services.AddScoped<PrecificacaoProdutoAtual>();
 builder.Services.AddDbContext<PrecificadorDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Precificador")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Precificador")));
 builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;

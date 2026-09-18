@@ -1,7 +1,10 @@
 # ADR-002 — SQLite com Entity Framework Core
 
-- **Status:** Aceito
+- **Status:** Substituído (Superseded) pela [MEL020](../../development/improvements/MEL020-sqlserver.md)
 - **Data:** 2026-09-09
+- **Substituído em:** 2026-09-18
+
+> Esta decisão vigorou até a MEL020, que substituiu SQLite por Microsoft SQL Server como provider de persistência (desenvolvimento local via LocalDB/SQL Server e preparação para Azure SQL). O conteúdo abaixo é mantido como registro histórico da decisão original e não reflete o provider atualmente em uso.
 
 ## Contexto
 

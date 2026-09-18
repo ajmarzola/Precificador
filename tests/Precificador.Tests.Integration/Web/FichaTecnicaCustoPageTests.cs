@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
@@ -691,45 +692,55 @@ public sealed class FichaTecnicaCustoPageTests
         public async Task DefinirValorHoraAsync(int empresaId, decimal? valorHora)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE ConfiguracoesPrecificacaoEmpresas
-                SET ValorHoraTrabalho = {valorHora}
-                WHERE EmpresaId = {empresaId}
-                """);
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = @valorHora WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("valorHora", valorHora, precision: 18, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task DefinirTarifaAsync(int empresaId, decimal? tarifa)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE ConfiguracoesPrecificacaoEmpresas
-                SET TarifaEnergiaKwh = {tarifa}
-                WHERE EmpresaId = {empresaId}
-                """);
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET TarifaEnergiaKwh = @tarifa WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("tarifa", tarifa, precision: 18, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task DefinirIncrementoAsync(int empresaId, decimal? incremento)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConfiguracoesPrecificacaoEmpresas SET IncrementoComercial = {incremento} WHERE EmpresaId = {empresaId}");
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET IncrementoComercial = @incremento WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("incremento", incremento, precision: 18, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task DefinirMargemPadraoAsync(int empresaId, decimal? margem)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConfiguracoesPrecificacaoEmpresas SET MargemPadrao = {margem} WHERE EmpresaId = {empresaId}");
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET MargemPadrao = @margem WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("margem", margem, precision: 9, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task DefinirReservaComercialAsync(int empresaId, decimal reserva)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConfiguracoesPrecificacaoEmpresas SET ReservaComercialDesconto = {reserva} WHERE EmpresaId = {empresaId}");
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET ReservaComercialDesconto = @reserva WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("reserva", reserva, precision: 9, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task DefinirMargemAlvoAsync(int empresaId, int produtoId, decimal margem)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE Produtos SET MargemAlvo = {margem} WHERE Id = {produtoId}");
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE Produtos SET MargemAlvo = @margem WHERE Id = @produtoId",
+                SqlDecimalParameter.Criar("margem", margem, precision: 9, scale: 6),
+                new SqlParameter("produtoId", produtoId));
         }
 
         public async Task RemoverConfiguracaoAsync(int empresaId)

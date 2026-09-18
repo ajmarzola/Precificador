@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
@@ -12,9 +11,8 @@ public sealed class ConsultaInsumosTests
     [Fact]
     public async Task Listagem_isola_empresa_ordena_pesquisa_e_nao_rastreia_entidades()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        var opcoes = new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options;
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ConsultaInsumos");
+        var opcoes = new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options;
         await using (var contexto = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1)))
         {
             await contexto.Database.MigrateAsync();
@@ -25,7 +23,7 @@ public sealed class ConsultaInsumosTests
                 Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata"),
                 Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Caputo"));
             await contexto.SaveChangesAsync();
-            await contexto.Database.ExecuteSqlRawAsync("UPDATE Insumos SET Ativo = 0 WHERE Nome = 'Zíper'");
+            await contexto.Database.ExecuteSqlInterpolatedAsync($"UPDATE Insumos SET Ativo = 0 WHERE Nome = {"Zíper"}");
         }
         await using (var contextoEmpresaDois = new PrecificadorDbContext(opcoes, new ContextoEmpresa(2)))
         {
@@ -80,3 +78,4 @@ public sealed class ConsultaInsumosTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

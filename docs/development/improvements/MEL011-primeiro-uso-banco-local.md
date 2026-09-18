@@ -8,11 +8,7 @@
 
 ## Problema
 
-Ao executar a aplicação contra SQLite ainda não migrado, o Login falhava com exceção técnica:
-
-~~~text
-SQLite Error 1: 'no such table: AspNetUsers'
-~~~
+Ao executar a aplicação contra um banco ainda não migrado, o Login falhava com exceção técnica (histórico original em SQLite: `SQLite Error 1: 'no such table: AspNetUsers'`; o mesmo risco se aplica ao SQL Server, provider atual desde a MEL020).
 
 O mesmo risco existia para o `/Setup`, porque ambos dependem das tabelas do ASP.NET Core Identity.
 

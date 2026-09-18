@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
@@ -345,11 +346,10 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        await context.Database.ExecuteSqlInterpolatedAsync($"""
-            UPDATE ConfiguracoesPrecificacaoEmpresas
-            SET MargemPadrao = {margemPadrao}
-            WHERE EmpresaId = {empresaId}
-            """);
+        await context.Database.ExecuteSqlRawAsync(
+            "UPDATE ConfiguracoesPrecificacaoEmpresas SET MargemPadrao = @margemPadrao WHERE EmpresaId = @empresaId",
+            SqlDecimalParameter.Criar("margemPadrao", margemPadrao, precision: 9, scale: 6),
+            new SqlParameter("empresaId", empresaId));
     }
 
     private async Task RemoverConfiguracaoAsync(int empresaId)

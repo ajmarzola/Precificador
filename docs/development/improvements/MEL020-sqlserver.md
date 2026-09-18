@@ -3,7 +3,7 @@
 - **Origem:** evolução de infraestrutura / preparação para publicação em Azure
 - **Classificação:** fundação técnica / persistência
 - **Prioridade:** alta
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Ordem na fila pendente:** 07
 - **Dependências:** FT002, MEL011 e schema funcional atual consolidado
 - **Gate operacional:** executar antes de UC028 e das próximas evoluções funcionais

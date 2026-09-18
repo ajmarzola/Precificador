@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.FichasTecnicas;
@@ -10,45 +9,29 @@ namespace Precificador.Tests.Integration.Infrastructure;
 
 public sealed class ItemFichaTecnicaPersistenceTests
 {
-    private const string MigrationAnteriorItens = "20260913215922_AddFichasTecnicas";
-    private const string MigrationAnteriorPercentualPerda = "20260915134504_AddUsosEquipamentosFicha";
-
     [Fact]
-    public async Task P1_Migration_cria_itens_e_preserva_dados_existentes()
+    public async Task P1_Migration_cria_tabela_itens_e_indice_unico_em_banco_vazio()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
-        await context.Database.MigrateAsync(MigrationAnteriorItens);
-        await context.Database.ExecuteSqlRawAsync(
-            "INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Agenda', 'AGENDA', '0.30', 1)");
-        await context.Database.ExecuteSqlRawAsync(
-            "INSERT INTO Insumos (EmpresaId, Nome, NomeNormalizado, MarcaNormalizada, Categoria, UnidadeBase, Ativo) VALUES (1, 'Papel', 'PAPEL', '', 1, 4, 1)");
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
 
         await context.Database.MigrateAsync();
 
-        var tabelas = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table'").ToListAsync();
-        var indices = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'index'").ToListAsync();
+        var tabelas = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sys.tables").ToListAsync();
+        var indices = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sys.indexes WHERE name IS NOT NULL").ToListAsync();
         Assert.Contains("ItensFichaTecnica", tabelas);
         Assert.Contains("IX_ItensFichaTecnica_EmpresaId_FichaTecnicaId_InsumoId", indices);
-        Assert.Equal("Agenda", (await context.Produtos.SingleAsync()).Nome);
-        Assert.Equal("Papel", (await context.Insumos.SingleAsync()).Nome);
-        Assert.Empty(await context.ItensFichaTecnica.ToListAsync());
     }
 
     [Fact]
-    public async Task UC019_P1_P2_Migration_preserva_item_existente_com_percentual_zero()
+    public async Task UC019_P1_Item_novo_sem_percentual_informado_persiste_com_zero()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
-        await context.Database.MigrateAsync(MigrationAnteriorPercentualPerda);
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Agenda', 'AGENDA', '0.30', 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO Insumos (EmpresaId, Nome, NomeNormalizado, MarcaNormalizada, Categoria, UnidadeBase, Ativo) VALUES (1, 'Papel', 'PAPEL', '', 1, 4, 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '2', 0)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade, Observacao) VALUES (1, 1, 1, '1.25', 'existente')");
-
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
+        var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
+        context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 1.25m, "existente"));
+        await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
         var item = await context.ItensFichaTecnica.SingleAsync();
 
@@ -58,9 +41,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task UC019_P3_Percentual_perda_persiste_com_seis_casas()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, percentualPerda: 0.123456m));
@@ -73,9 +55,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P2_Indice_unico_rejeita_mesmo_insumo_duas_vezes_na_mesma_ficha()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
 
@@ -89,9 +70,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P3_Mesmo_insumo_e_permitido_em_fichas_diferentes()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var insumo = Insumo.Criar(1, "Papel", CategoriaInsumo.MateriaPrima, UnidadeMedida.Metro);
         var produtoUm = Produto.Criar(1, "Agenda A", 0.30m);
@@ -114,9 +94,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P4_Query_filter_isola_itens_por_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using (var context = CriarContexto(connection, 1))
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using (var context = CriarContexto(connectionString, 1))
         {
             await context.Database.MigrateAsync();
             context.Empresas.Add(Empresa.Criar("Empresa dois"));
@@ -126,14 +105,14 @@ public sealed class ItemFichaTecnicaPersistenceTests
             await context.SaveChangesAsync();
         }
 
-        await using (var context = CriarContexto(connection, 2))
+        await using (var context = CriarContexto(connectionString, 2))
         {
             var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 2);
             context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(2, fichaId, insumoId, 2m));
             await context.SaveChangesAsync();
         }
 
-        await using var leituraEmpresaUm = CriarContexto(connection, 1);
+        await using var leituraEmpresaUm = CriarContexto(connectionString, 1);
 
         var item = await leituraEmpresaUm.ItensFichaTecnica.SingleAsync();
         Assert.Equal(1, item.EmpresaId);
@@ -143,18 +122,17 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P5_Guard_rejeita_item_com_ficha_de_outra_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using (var context = CriarContexto(connection, 1))
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using (var context = CriarContexto(connectionString, 1))
         {
             await context.Database.MigrateAsync();
             context.Empresas.Add(Empresa.Criar("Empresa dois"));
             await context.SaveChangesAsync();
         }
 
-        await using var contextoEmpresaDois = CriarContexto(connection, 2);
+        await using var contextoEmpresaDois = CriarContexto(connectionString, 2);
         var (_, fichaEmpresaDois, _) = await CriarFichaEInsumoAsync(contextoEmpresaDois, 2);
-        await using var contextoEmpresaUm = CriarContexto(connection, 1);
+        await using var contextoEmpresaUm = CriarContexto(connectionString, 1);
         var (_, _, insumoEmpresaUm) = await CriarFichaEInsumoAsync(contextoEmpresaUm, 1);
 
         contextoEmpresaUm.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaEmpresaDois, insumoEmpresaUm, 1m));
@@ -165,18 +143,17 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P6_Guard_rejeita_item_com_insumo_de_outra_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using (var context = CriarContexto(connection, 1))
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using (var context = CriarContexto(connectionString, 1))
         {
             await context.Database.MigrateAsync();
             context.Empresas.Add(Empresa.Criar("Empresa dois"));
             await context.SaveChangesAsync();
         }
 
-        await using var contextoEmpresaDois = CriarContexto(connection, 2);
+        await using var contextoEmpresaDois = CriarContexto(connectionString, 2);
         var (_, _, insumoEmpresaDois) = await CriarFichaEInsumoAsync(contextoEmpresaDois, 2);
-        await using var contextoEmpresaUm = CriarContexto(connection, 1);
+        await using var contextoEmpresaUm = CriarContexto(connectionString, 1);
         var (_, fichaEmpresaUm, _) = await CriarFichaEInsumoAsync(contextoEmpresaUm, 1);
 
         contextoEmpresaUm.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaEmpresaUm, insumoEmpresaDois, 1m));
@@ -187,9 +164,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P7_Fks_restrict_preservam_referencias_de_ficha_e_insumo()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m));
@@ -207,9 +183,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P8_UC015_Round_trip_atualiza_quantidade_e_observacao_no_mesmo_item()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, "original");
@@ -231,9 +206,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P9_UC015_Atualizacao_preserva_empresa_ficha_e_insumo()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, null);
@@ -253,9 +227,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P10_UC015_RN049_permanece_intacta_apos_atualizar_item()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m, null);
@@ -271,13 +244,12 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task P11_UC015_Schema_de_item_permanece_sem_campos_novos()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
 
         var colunas = await context.Database
-            .SqlQueryRaw<string>("SELECT name AS Value FROM pragma_table_info('ItensFichaTecnica') ORDER BY cid")
+            .SqlQueryRaw<string>("SELECT COLUMN_NAME AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ItensFichaTecnica' ORDER BY ORDINAL_POSITION")
             .ToListAsync();
 
         Assert.Equal(
@@ -288,9 +260,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task UC016_P1_Remover_item_proprio_persiste_exclusao()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
@@ -306,9 +277,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task UC016_P2_Remover_item_preserva_produto_ficha_e_insumo()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (produtoId, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
@@ -326,9 +296,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task UC016_P3_Guard_rejeita_delete_de_item_de_outra_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using (var contextoInicial = CriarContexto(connection, 1))
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using (var contextoInicial = CriarContexto(connectionString, 1))
         {
             await contextoInicial.Database.MigrateAsync();
             contextoInicial.Empresas.Add(Empresa.Criar("Empresa dois"));
@@ -336,7 +305,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         }
 
         ItemFichaTecnica itemEmpresaDois;
-        await using (var contextoEmpresaDois = CriarContexto(connection, 2))
+        await using (var contextoEmpresaDois = CriarContexto(connectionString, 2))
         {
             var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(contextoEmpresaDois, 2);
             itemEmpresaDois = ItemFichaTecnica.Criar(2, fichaId, insumoId, 1m);
@@ -344,7 +313,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
             await contextoEmpresaDois.SaveChangesAsync();
         }
 
-        await using var contextoEmpresaUm = CriarContexto(connection, 1);
+        await using var contextoEmpresaUm = CriarContexto(connectionString, 1);
         contextoEmpresaUm.ItensFichaTecnica.Remove(itemEmpresaDois);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
@@ -353,9 +322,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
     [Fact]
     public async Task UC016_P4_Remover_item_preserva_identidade_consolidada()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ItemFichaTecnica");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var (_, fichaId, insumoId) = await CriarFichaEInsumoAsync(context, 1);
         var item = ItemFichaTecnica.Criar(1, fichaId, insumoId, 1m);
@@ -382,8 +350,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
         return (produto.Id, ficha.Id, insumo.Id);
     }
 
-    private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) => new(
-        new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options,
+    private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) => new(
+        new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options,
         new ContextoEmpresa(empresaId));
 
     private sealed class ContextoEmpresa(int empresaId) : IEmpresaContext
@@ -393,3 +361,4 @@ public sealed class ItemFichaTecnicaPersistenceTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

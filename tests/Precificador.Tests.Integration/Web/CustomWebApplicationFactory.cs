@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,12 +8,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Tests.Integration.Infrastructure;
 
 namespace Precificador.Tests.Integration.Web;
 
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly DateOnly? dataOperacionalFixa;
 
     public CustomWebApplicationFactory()
@@ -28,6 +27,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var connectionString = SqlServerTestDatabase.CriarConnectionStringAsync("Web").GetAwaiter().GetResult();
+
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices(services =>
         {
@@ -39,8 +40,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.AddScoped<IDataOperacionalEmpresa>(_ => new DataOperacionalEmpresaFixa(dataOperacionalFixa.Value));
             }
 
-            connection.Open();
-            services.AddDbContext<PrecificadorDbContext>(options => options.UseSqlite(connection));
+            services.AddDbContext<PrecificadorDbContext>(options => options.UseSqlServer(connectionString));
         });
     }
 
@@ -52,17 +52,9 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         return host;
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        if (disposing)
-        {
-            connection.Dispose();
-        }
-    }
-
     private sealed class DataOperacionalEmpresaFixa(DateOnly hoje) : IDataOperacionalEmpresa
     {
         public DateOnly Hoje => hoje;
     }
 }
+

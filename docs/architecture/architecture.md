@@ -16,7 +16,7 @@ Regras de domínio
 Entity Framework Core
    |-- isolamento tenant-aware
    |
-SQLite
+SQL Server
 ```
 
 ## Stack
@@ -25,7 +25,7 @@ SQLite
 - ASP.NET Core Razor Pages
 - ASP.NET Core Identity
 - Entity Framework Core
-- SQLite nesta fase
+- SQL Server (local/LocalDB em desenvolvimento; Azure SQL futuramente na publicação) — ver [MEL020](../development/improvements/MEL020-sqlserver.md)
 - Bootstrap
 - JavaScript mínimo
 - xUnit

@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
@@ -11,21 +11,19 @@ public sealed class InsumoEmpresaForeignKeyTests
     [Fact]
     public async Task CA01_EmpresaId_inexistente_e_rejeitado_pela_fk_do_banco()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection, 999);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("InsumoEmpresaFk");
+        await using var context = CriarContexto(connectionString, 999);
         await context.Database.MigrateAsync();
 
         context.Insumos.Add(Insumo.Criar(999, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
 
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
-        var sqliteException = Assert.IsType<SqliteException>(exception.InnerException);
-        Assert.Equal(19, sqliteException.SqliteErrorCode);
-        Assert.Equal(787, sqliteException.SqliteExtendedErrorCode);
+        var sqlException = Assert.IsType<SqlException>(exception.InnerException);
+        Assert.Equal(547, sqlException.Number);
     }
 
-    private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) => new(
-        new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options,
+    private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) => new(
+        new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options,
         new ContextoEmpresa(empresaId));
 
     private sealed class ContextoEmpresa(int empresaId) : IEmpresaContext
@@ -35,3 +33,4 @@ public sealed class InsumoEmpresaForeignKeyTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

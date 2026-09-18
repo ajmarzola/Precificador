@@ -554,15 +554,9 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        await context.Database.ExecuteSqlInterpolatedAsync($"""
-            UPDATE ConfiguracoesPrecificacaoEmpresas
-            SET ValorHoraTrabalho = {valorHoraTrabalho},
-                TarifaEnergiaKwh = {tarifaEnergiaKwh},
-                MargemPadrao = {margemPadrao},
-                IncrementoComercial = {incrementoComercial},
-                ReservaComercialDesconto = {reservaComercialDesconto}
-            WHERE EmpresaId = {empresaId}
-            """);
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync(c => c.EmpresaId == empresaId);
+        configuracao.Atualizar(valorHoraTrabalho, tarifaEnergiaKwh, margemPadrao, incrementoComercial, reservaComercialDesconto);
+        await context.SaveChangesAsync();
     }
 
     private async Task RemoverConfiguracaoAsync(int empresaId)

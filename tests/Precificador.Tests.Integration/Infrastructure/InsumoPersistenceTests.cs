@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Insumos;
 using Precificador.Core.Empresas;
@@ -9,57 +8,31 @@ namespace Precificador.Tests.Integration.Infrastructure;
 public sealed class InsumoPersistenceTests
 {
     [Fact]
-    public async Task Migrations_criam_tabela_e_indice_unico_em_banco_sqlite_vazio()
+    public async Task Migrations_criam_tabela_e_indice_unico_em_banco_vazio()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
 
         await context.Database.MigrateAsync();
 
-        var objetos = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type IN ('table', 'index')").ToListAsync();
+        var objetos = await ObjetosDoSchemaAsync(context);
         Assert.Contains("Insumos", objetos);
         Assert.Contains("IX_Insumos_EmpresaId_NomeNormalizado_MarcaNormalizada", objetos);
     }
 
     [Fact]
-    public async Task MEL010_Migration_faz_backfill_por_preco_ou_item_e_preserva_insumo_sem_uso()
-    {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
-        await context.Database.MigrateAsync("20260913222943_AddItensFichaTecnica");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO Insumos (EmpresaId, Nome, NomeNormalizado, MarcaNormalizada, Categoria, UnidadeBase, Ativo) VALUES (1, 'Com preço', 'COM PREÇO', '', 1, 1, 1), (1, 'Com item', 'COM ITEM', '', 1, 1, 1), (1, 'Sem uso', 'SEM USO', '', 1, 1, 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO PrecosInsumos (EmpresaId, InsumoId, QuantidadeCompra, PrecoCompra, DataReferencia) VALUES (1, 1, '1', '1', '2026-01-01')");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto', 'PRODUTO', '0.3', 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '1', 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, 2, '1')");
-
-        await context.Database.MigrateAsync();
-        context.ChangeTracker.Clear();
-        var insumos = await context.Insumos.OrderBy(insumo => insumo.Id).ToListAsync();
-
-        Assert.True(insumos[0].IdentidadeConsolidada);
-        Assert.True(insumos[1].IdentidadeConsolidada);
-        Assert.False(insumos[2].IdentidadeConsolidada);
-    }
-
-    [Fact]
     public async Task MEL010_Identidade_consolidada_persiste_e_nao_regride_apos_remocao_tecnica_do_item()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var insumo = Insumo.Criar(1, "Papel", CategoriaInsumo.MateriaPrima, UnidadeMedida.Metro);
         context.Insumos.Add(insumo);
         await context.SaveChangesAsync();
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto técnico', 'PRODUTO TÉCNICO', '0.3', 1)");
-        await context.Database.ExecuteSqlRawAsync("INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, '1', 1)");
-        await context.Database.ExecuteSqlAsync($"INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, {insumo.Id}, '1')");
+        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto técnico', 'PRODUTO TÉCNICO', 0.3, 1)");
+        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, 1, 1)");
+        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, {insumo.Id}, 1)");
         insumo.ConsolidarIdentidade();
         await context.SaveChangesAsync();
-        await context.Database.ExecuteSqlAsync($"DELETE FROM ItensFichaTecnica WHERE InsumoId = {insumo.Id}");
+        await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM ItensFichaTecnica WHERE InsumoId = {insumo.Id}");
         context.ChangeTracker.Clear();
 
         Assert.True((await context.Insumos.SingleAsync()).IdentidadeConsolidada);
@@ -68,9 +41,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task Insumo_valido_persiste_e_recupera_todos_os_valores()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
 
         context.Insumos.Add(Insumo.Criar(1, "  Copo   200 ml ", CategoriaInsumo.Embalagem, UnidadeMedida.Unidade));
@@ -88,9 +59,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task Indice_unico_rejeita_nome_normalizado_duplicado()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
 
         context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama));
@@ -103,9 +72,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task Metro_persiste_como_quatro_e_e_recuperado_corretamente()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
 
         context.Insumos.Add(Insumo.Criar(1, "Fita", CategoriaInsumo.MateriaPrima, UnidadeMedida.Metro));
@@ -120,9 +87,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task CA04_Edicao_valida_e_persistida_sem_alterar_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata", "Original");
         context.Insumos.Add(insumo);
@@ -145,9 +110,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task CA07_Indice_unico_rejeita_edicao_para_nome_marca_duplicados_na_mesma_empresa()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         context.Insumos.Add(Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata"));
         var editavel = Insumo.Criar(1, "A\u00e7\u00facar", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Uni\u00e3o");
@@ -160,11 +123,9 @@ public sealed class InsumoPersistenceTests
     }
 
     [Fact]
-    public async Task CA03_CA04_Alteracoes_de_status_persistem_no_sqlite()
+    public async Task CA03_CA04_Alteracoes_de_status_persistem()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama);
         context.Insumos.Add(insumo);
@@ -186,9 +147,7 @@ public sealed class InsumoPersistenceTests
     [Fact]
     public async Task CA10_Insumo_inativo_continua_participando_do_indice_unico()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var context = CriarContexto(connection);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var insumo = Insumo.Criar(1, "Farinha", CategoriaInsumo.MateriaPrima, UnidadeMedida.Grama, "Renata");
         context.Insumos.Add(insumo);
@@ -201,8 +160,20 @@ public sealed class InsumoPersistenceTests
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
-    private static PrecificadorDbContext CriarContexto(SqliteConnection connection) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new EmpresaContextoTeste());
+    private static async Task<List<string>> ObjetosDoSchemaAsync(PrecificadorDbContext context)
+    {
+        var tabelas = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sys.tables").ToListAsync();
+        var indices = await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sys.indexes WHERE name IS NOT NULL").ToListAsync();
+        return [.. tabelas, .. indices];
+    }
+
+    private static async Task<PrecificadorDbContext> CriarContextoAsync(int empresaId)
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("Insumo");
+        return new PrecificadorDbContext(
+            new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options,
+            new EmpresaContextoTeste());
+    }
 
     private sealed class EmpresaContextoTeste : IEmpresaContext
     {
@@ -211,3 +182,4 @@ public sealed class InsumoPersistenceTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+
