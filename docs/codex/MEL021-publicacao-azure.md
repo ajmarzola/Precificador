@@ -1,5 +1,7 @@
 # Codex — MEL021 — Publicação Azure
 
+> **Gate:** esta instrução está especificada, mas não deve ser executada enquanto `docs/development/backlog.md` não marcar MEL021 como `Pronto`. MEL022 e MEL023 devem estar concluídas.
+
 Implemente exclusivamente a MEL021 conforme:
 
 ```text
