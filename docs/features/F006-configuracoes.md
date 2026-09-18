@@ -6,7 +6,7 @@ Centralizar parâmetros compartilhados por vários produtos da mesma Empresa.
 
 ## Configurações mínimas
 
-- valor da hora de trabalho;
+- percentual de mão de obra sobre os insumos;
 - tarifa de energia em R$/kWh;
 - margem padrão para novos produtos;
 - incremento comercial de arredondamento;
@@ -18,7 +18,9 @@ A potência do forno deixa de ser tratada como configuração global. Quando equ
 
 A configuração é uma entidade 1:1 por Empresa.
 
-Os parâmetros `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial` não possuem defaults de negócio aprovados e começam como **Não configurado**.
+`PercentualMaoDeObra` é obrigatório e nasce em `0,10` (10%) conforme MEL022/RN013.
+
+`TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial` não possuem defaults de negócio aprovados e começam como **Não configurado**.
 
 A `ReservaComercialDesconto` nasce em `0,10` (10 p.p.) conforme MEL009/RN052.
 
@@ -30,7 +32,7 @@ Alterar uma configuração deve afetar os cálculos atuais dos produtos dependen
 
 A margem padrão, quando configurada, pré-preenche novos Produtos; o usuário pode alterar o valor antes do cadastro e cada Produto mantém sua Margem-alvo própria depois de criado.
 
-Os quatro parâmetros opcionais podem ser limpos de volta para **Não configurado**. Parâmetros ausentes não são tratados como zero; o cálculo futuro dependente permanece incompleto.
+Os três parâmetros opcionais — Tarifa de energia, Margem padrão e Incremento comercial — podem ser limpos de volta para **Não configurado**. `PercentualMaoDeObra` é obrigatório e não pode ser limpo; zero é um valor explícito válido.
 
 A reserva comercial não participa do Preço sugerido. Ela é congelada como referência nos registros comerciais de preço, preservando o histórico contra alterações posteriores da configuração.
 
@@ -40,7 +42,7 @@ Após MEL017, as telas de consulta e edição exibem ajuda contextual sempre vis
 
 A ajuda deve explicar o efeito real de cada configuração sem alterar regra de negócio:
 
-- Valor da hora → custo de mão de obra do lote;
+- Percentual de mão de obra → percentual aplicado sobre o custo base dos insumos; pode superar 100% quando o trabalho artesanal justificar;
 - Tarifa de energia → custo dos usos de equipamentos;
 - Margem padrão → apenas pré-preenchimento de novos Produtos;
 - Incremento comercial → múltiplo monetário que arredonda o Preço teórico para cima e forma o Preço sugerido;

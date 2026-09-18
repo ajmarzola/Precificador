@@ -394,28 +394,36 @@ Aplicar RN026 sem arredondamento intermediário. Custos de perda são derivados 
 
 ### RN013 — Mão de obra
 
-O tempo ativo é informado para o lote/execução em minutos inteiros.
+A partir da MEL022, o custo de mão de obra do lote é proporcional ao custo base dos insumos:
 
-`TempoAtivoMinutos` é obrigatório na Ficha Técnica e deve ser maior ou igual a zero. Zero é válido quando explicitamente informado para um processo sem trabalho humano ativo; ausência não deve ser convertida silenciosamente em zero.
+```text
+CustoMaoDeObraLote =
+    CustoBaseItens
+    × PercentualMaoDeObraDaEmpresa
+```
 
-O valor da hora de trabalho pertence à configuração tenant-aware da Empresa:
+`PercentualMaoDeObra` pertence à configuração tenant-aware da Empresa, é obrigatório, armazenado como fração decimal e possui default de `0,10` (10%).
 
-`ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho`.
+Validação:
 
-Quando informado, deve ser maior ou igual a zero. `null` significa não configurado; zero configurado é um valor válido e não equivale a `null`.
+```text
+PercentualMaoDeObra >= 0
+```
 
-O cálculo é:
+Não existe teto de 100%: processos artesanais podem possuir mão de obra superior ao custo dos materiais.
 
-`CustoMaoDeObraLote = (TempoAtivoMinutos / 60m) × ValorHoraTrabalhoDaEmpresa`.
+A base é exclusivamente `CustoBaseItens`. Não entram perdas, energia, rendimento, margem ou preços comerciais.
 
-Aplicar as seguintes semânticas:
+Semântica:
 
-- se `TempoAtivoMinutos = 0`, `CustoMaoDeObraLote = 0` e o componente é determinável mesmo que `ValorHoraTrabalho = null`;
-- se `TempoAtivoMinutos > 0` e `ValorHoraTrabalho = null`, o custo de mão de obra fica indisponível e nunca é substituído por zero;
-- se `ValorHoraTrabalho = 0`, o custo resultante é zero e é considerado determinável;
-- aplicar RN026 sem arredondamento intermediário.
+- custo base conhecido + percentual zero => custo de mão de obra zero e determinável;
+- custo base conhecido + percentual positivo => multiplicação decimal sem arredondamento intermediário;
+- custo base indisponível => custo de mão de obra indisponível;
+- nunca substituir custo de Item desconhecido por zero.
 
-O custo de mão de obra é derivado em tempo de consulta e não é persistido na Ficha ou no Produto.
+`TempoAtivoMinutos` e `ValorHoraTrabalho` são removidos do modelo ativo pela MEL022.
+
+O custo de mão de obra é derivado em consulta e não é persistido na Ficha ou no Produto.
 
 ### RN014 — Energia de equipamento
 
@@ -697,30 +705,30 @@ LimiarAplicacao = ReservaComercialReferencia + 0,01
 
 Cada Empresa possui uma configuração de precificação 1:1 contendo, no mínimo:
 
-- `ValorHoraTrabalho`;
+- `PercentualMaoDeObra`;
 - `TarifaEnergiaKwh`;
 - `MargemPadrao`;
 - `IncrementoComercial`;
 - `ReservaComercialDesconto`, conforme RN052.
 
-Não existem defaults de negócio aprovados para `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, esses campos permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+A partir da MEL022, `PercentualMaoDeObra` é obrigatório, armazenado como fração decimal e nasce em `0,10` (10%). Zero é válido e valores maiores que 100% também são válidos; somente valor negativo é rejeitado.
 
-UC027 permite limpar qualquer um desses quatro parâmetros opcionais de volta para `null`. Entrada vazia significa **Não configurado**, enquanto zero é um valor explícito e distinto quando permitido pela regra do campo.
+Não existem defaults de negócio aprovados para `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+
+UC027 permite limpar esses três parâmetros opcionais de volta para `null`. `PercentualMaoDeObra` e `ReservaComercialDesconto` são obrigatórios e não podem ser limpos.
 
 Quando informados:
 
-- `ValorHoraTrabalho >= 0`;
+- `PercentualMaoDeObra >= 0`, sem teto de 100%;
 - `TarifaEnergiaKwh >= 0`;
 - `0 <= MargemPadrao < 1`;
 - `IncrementoComercial > 0`.
 
 A reserva comercial possui default e validação próprios na RN052.
 
-A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
+Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa. Parâmetro opcional necessário e ausente torna o cálculo dependente incompleto conforme RN017.
 
-Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa. Parâmetro obrigatório ausente torna o cálculo dependente incompleto conforme RN017.
-
-A Margem padrão pode futuramente pré-preencher novos Produtos, mas nunca altera silenciosamente a `MargemAlvo` de Produtos já existentes.
+A Margem padrão pode pré-preencher novos Produtos, mas nunca altera silenciosamente a `MargemAlvo` de Produtos já existentes.
 
 ### RN052 — Reserva comercial de desconto por Empresa
 

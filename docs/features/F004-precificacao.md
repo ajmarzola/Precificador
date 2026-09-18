@@ -49,11 +49,21 @@ O componente é derivado em consulta e não persistido.
 
 ## UC020 — Custo de mão de obra
 
-O custo de mão de obra do lote aplica RN013 usando o `TempoAtivoMinutos` persistido na Ficha e o `ValorHoraTrabalho` atual da configuração da Empresa.
+A MEL022 substitui o modelo hora/tempo por percentual sobre o custo base dos insumos.
 
-Tempo ativo zero representa ausência explícita de trabalho humano ativo e resulta em custo zero mesmo se o valor/hora não estiver configurado. Para tempo maior que zero, valor/hora ausente torna apenas esse componente indisponível; zero configurado continua sendo um valor válido.
+Aplicar RN013:
 
-O componente é derivado em tempo de consulta, independente do custo dos Itens e não é persistido. A soma dos componentes pertence ao UC022.
+~~~text
+CustoMaoDeObraLote =
+    CustoBaseItens
+    × PercentualMaoDeObra
+~~~
+
+`PercentualMaoDeObra` pertence à configuração da Empresa, nasce em 10%, aceita zero e pode ser maior que 100%.
+
+A mão de obra passa a depender da disponibilidade de `CustoBaseItens`: se o custo base estiver indisponível, mão de obra também fica indisponível. Não há mais `TempoAtivoMinutos` nem `ValorHoraTrabalho` no modelo ativo.
+
+O componente continua derivado em consulta e não é persistido. A soma dos componentes pertence ao UC022.
 
 ## UC021 — Custo de energia/equipamentos
 

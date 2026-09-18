@@ -17,16 +17,11 @@ A Ficha Técnica concentra composição e parâmetros produtivos atuais usados p
 - equipamentos são genéricos e não devem ser substituídos por campos específicos de forno;
 - mudanças correntes de Ficha não reescrevem snapshots históricos futuros da decisão comercial.
 
-## Base produtiva — UC013
+## Base produtiva — UC013 / MEL022
 
-A UC013 introduz somente os conceitos universais:
+UC013 introduziu Rendimento e Tempo ativo. A MEL022 simplifica a base produtiva e remove `TempoAtivoMinutos`, pois o custo de mão de obra deixa de depender de tempo.
 
-- Rendimento do lote em unidades de venda;
-- Tempo ativo de trabalho do lote em minutos.
-
-Com a MEL019, Produto sem Ficha passa a abrir o formulário com Rendimento `1` como sugestão inicial. O GET continua somente leitura: não cria Ficha, não preenche Tempo ativo e não torna a precificação completa.
-
-Modelo inicial:
+Modelo vigente após MEL022:
 
 ~~~text
 FichaTecnica
@@ -34,18 +29,17 @@ FichaTecnica
 - EmpresaId
 - ProdutoId
 - Rendimento
-- TempoAtivoMinutos
 ~~~
 
 Rendimento é decimal e deve ser maior que zero.
 
-Tempo ativo é inteiro obrigatório e não negativo; zero explicitamente informado é válido.
+Com a MEL019, Produto sem Ficha abre o formulário com Rendimento `1` como sugestão inicial. O GET continua somente leitura e não cria Ficha.
 
 Uma única Ficha é permitida por Empresa + Produto.
 
 Produto ativo ou inativo pode ter a base criada ou alterada; isso não modifica sua situação.
 
-A mesma Ficha é atualizada quando Rendimento/Tempo ativo mudam. UC013 não cria versionamento.
+A mesma Ficha é atualizada quando o Rendimento muda. A Ficha não possui versionamento próprio no MVP.
 
 ## Composição — UC014 a UC017
 
@@ -143,11 +137,12 @@ UC013 não calcula custo.
 Seus dados serão consumidos futuramente:
 
 ~~~text
-TempoAtivoMinutos
-    -> UC020 / custo de mão de obra
-
 Rendimento
     -> UC022 / custo unitário
+
+CustoBaseItens
++ PercentualMaoDeObra da Empresa
+    -> UC020 / custo de mão de obra
 ~~~
 
 Itens da Ficha alimentarão UC018.
