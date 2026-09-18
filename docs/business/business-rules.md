@@ -394,28 +394,36 @@ Aplicar RN026 sem arredondamento intermediário. Custos de perda são derivados 
 
 ### RN013 — Mão de obra
 
-O tempo ativo é informado para o lote/execução em minutos inteiros.
+A partir da MEL022, o custo de mão de obra do lote é proporcional ao custo base dos insumos:
 
-`TempoAtivoMinutos` é obrigatório na Ficha Técnica e deve ser maior ou igual a zero. Zero é válido quando explicitamente informado para um processo sem trabalho humano ativo; ausência não deve ser convertida silenciosamente em zero.
+```text
+CustoMaoDeObraLote =
+    CustoBaseItens
+    × PercentualMaoDeObraDaEmpresa
+```
 
-O valor da hora de trabalho pertence à configuração tenant-aware da Empresa:
+`PercentualMaoDeObra` pertence à configuração tenant-aware da Empresa, é obrigatório, armazenado como fração decimal e possui default de `0,10` (10%).
 
-`ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho`.
+Validação:
 
-Quando informado, deve ser maior ou igual a zero. `null` significa não configurado; zero configurado é um valor válido e não equivale a `null`.
+```text
+PercentualMaoDeObra >= 0
+```
 
-O cálculo é:
+Não existe teto de 100%: processos artesanais podem possuir mão de obra superior ao custo dos materiais.
 
-`CustoMaoDeObraLote = (TempoAtivoMinutos / 60m) × ValorHoraTrabalhoDaEmpresa`.
+A base é exclusivamente `CustoBaseItens`. Não entram perdas, energia, rendimento, margem ou preços comerciais.
 
-Aplicar as seguintes semânticas:
+Semântica:
 
-- se `TempoAtivoMinutos = 0`, `CustoMaoDeObraLote = 0` e o componente é determinável mesmo que `ValorHoraTrabalho = null`;
-- se `TempoAtivoMinutos > 0` e `ValorHoraTrabalho = null`, o custo de mão de obra fica indisponível e nunca é substituído por zero;
-- se `ValorHoraTrabalho = 0`, o custo resultante é zero e é considerado determinável;
-- aplicar RN026 sem arredondamento intermediário.
+- custo base conhecido + percentual zero => custo de mão de obra zero e determinável;
+- custo base conhecido + percentual positivo => multiplicação decimal sem arredondamento intermediário;
+- custo base indisponível => custo de mão de obra indisponível;
+- nunca substituir custo de Item desconhecido por zero.
 
-O custo de mão de obra é derivado em tempo de consulta e não é persistido na Ficha ou no Produto.
+`TempoAtivoMinutos` e `ValorHoraTrabalho` são removidos do modelo ativo pela MEL022.
+
+O custo de mão de obra é derivado em consulta e não é persistido na Ficha ou no Produto.
 
 ### RN014 — Energia de equipamento
 
