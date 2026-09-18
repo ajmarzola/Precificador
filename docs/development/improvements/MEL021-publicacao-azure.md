@@ -3,10 +3,10 @@
 - **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
-- **Ordem na fila pendente:** 08.
-- **Dependências:** MEL020 concluída.
-- **Gate operacional:** executar antes de UC028.
+- **Estado:** Especificado — bloqueado até conclusão de MEL022 e MEL023.
+- **Ordem na fila pendente:** 10.
+- **Dependências:** MEL020 concluída; MEL022 e MEL023 pendentes.
+- **Gate operacional:** só liberar após MEL022 e MEL023; executar antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
