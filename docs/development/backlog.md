@@ -64,25 +64,26 @@ Regra operacional:
 | 04 | MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | MEL | Concluído | UC013; gate operacional atendido: MEL018 Concluído | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
 | 05 | MEL017 — Explicar configurações de precificação na interface | MEL | Concluído | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
 | 06 | MEL012 — Adequar navegação para usuário anônimo | MEL | Concluído | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
-| 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Concluído | FT002, MEL011; antes de UC028 | [MEL020](improvements/MEL020-sqlserver.md) |
-| 08 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL020, MEL015, UC024 | Documento a criar |
-| 09 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
-| 10 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
-| 11 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
-| 12 | UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
-| 13 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
-| 14 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
-| 15 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, UC031 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 16 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Concluído | FT002, MEL011; antes de MEL021 | [MEL020](improvements/MEL020-sqlserver.md) |
+| 08 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Pronto | MEL020; antes de UC028 | [MEL021](improvements/MEL021-publicacao-azure.md) |
+| 09 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
+| 10 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
+| 11 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
+| 12 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
+| 13 | UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
+| 14 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
+| 15 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
+| 16 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 17 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
 - **01–06 — estabilização do MVP atual:** corrigir entrada monetária e fluxos/UX já encontrados no teste manual antes de expandir funcionalidade;
-- **07 — fundação de persistência:** migrar para SQL Server antes de ampliar o escopo funcional e aproximar desenvolvimento/testes do futuro Azure SQL;
-- **08–10 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
-- **11 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
-- **12–14 — expansão de catálogo:** só então introduzir Categorias estruturadas e Coleções, evitando aumentar o escopo antes de fechar o núcleo do MVP;
-- **15–16 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
+- **07–08 — fundação de persistência e publicação:** migrar para SQL Server e publicar no Azure com custo controlado antes de ampliar o escopo funcional;
+- **09–11 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
+- **12 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
+- **13–15 — expansão de catálogo:** só então introduzir Categorias estruturadas e Coleções, evitando aumentar o escopo antes de fechar o núcleo do MVP;
+- **16–17 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
 
 ## Melhorias concluídas
 
