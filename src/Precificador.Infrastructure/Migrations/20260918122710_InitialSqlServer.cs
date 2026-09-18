@@ -431,6 +431,11 @@ namespace Precificador.Infrastructure.Migrations
                 columns: new[] { "Id", "Ativo", "Nome", "NomeNormalizado", "TimeZoneId" },
                 values: new object[] { 1, true, "Empresa inicial", "EMPRESA INICIAL", "America/Sao_Paulo" });
 
+            migrationBuilder.InsertData(
+                table: "ConfiguracoesPrecificacaoEmpresas",
+                columns: new[] { "EmpresaId", "IncrementoComercial", "MargemPadrao", "ReservaComercialDesconto", "TarifaEnergiaKwh", "ValorHoraTrabalho" },
+                values: new object[] { 1, null, null, 0.10m, null, null });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",

@@ -185,6 +185,13 @@ namespace Precificador.Infrastructure.Migrations
                     b.HasKey("EmpresaId");
 
                     b.ToTable("ConfiguracoesPrecificacaoEmpresas", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            EmpresaId = 1,
+                            ReservaComercialDesconto = 0.10m
+                        });
                 });
 
             modelBuilder.Entity("Precificador.Core.Empresas.Empresa", b =>

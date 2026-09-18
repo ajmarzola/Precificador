@@ -12,7 +12,7 @@ using Precificador.Infrastructure.Persistence;
 namespace Precificador.Infrastructure.Migrations
 {
     [DbContext(typeof(PrecificadorDbContext))]
-    [Migration("20260918115028_InitialSqlServer")]
+    [Migration("20260918122710_InitialSqlServer")]
     partial class InitialSqlServer
     {
         /// <inheritdoc />
@@ -188,6 +188,13 @@ namespace Precificador.Infrastructure.Migrations
                     b.HasKey("EmpresaId");
 
                     b.ToTable("ConfiguracoesPrecificacaoEmpresas", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            EmpresaId = 1,
+                            ReservaComercialDesconto = 0.10m
+                        });
                 });
 
             modelBuilder.Entity("Precificador.Core.Empresas.Empresa", b =>

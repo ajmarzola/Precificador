@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.FichasTecnicas;
@@ -99,12 +100,21 @@ public sealed class PrecificacaoProdutoAtualTests
         context.Empresas.Add(Empresa.Criar("Empresa dois"));
         await context.SaveChangesAsync();
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
-        await context.Database.ExecuteSqlInterpolatedAsync($"""
+        await context.Database.ExecuteSqlRawAsync(
+            """
             INSERT INTO RegistrosPrecosProdutos
                 (EmpresaId, ProdutoId, DataReferencia, CustoReferencia, MargemReferencia, PrecoSugerido, PrecoPrateleira, ReservaComercialReferencia)
             VALUES
-                ({2}, {produto.Id}, {Hoje}, {10m}, {0.30m}, {14.29m}, {99m}, {0.10m})
-            """);
+                (@empresaId, @produtoId, @dataReferencia, @custoReferencia, @margemReferencia, @precoSugerido, @precoPrateleira, @reservaComercialReferencia)
+            """,
+            new SqlParameter("empresaId", 2),
+            new SqlParameter("produtoId", produto.Id),
+            new SqlParameter("dataReferencia", System.Data.SqlDbType.Date) { Value = Hoje.ToDateTime(TimeOnly.MinValue) },
+            SqlDecimalParameter.Criar("custoReferencia", 10m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("margemReferencia", 0.30m, precision: 9, scale: 6),
+            SqlDecimalParameter.Criar("precoSugerido", 14.29m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("precoPrateleira", 99m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("reservaComercialReferencia", 0.10m, precision: 9, scale: 6));
         context.ChangeTracker.Clear();
 
         var resultado = await CalcularAsync(context, produto.Id);

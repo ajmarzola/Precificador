@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
@@ -89,15 +90,21 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ConfiguracaoPrecificacao");
         await using var contexto = CriarContexto(connectionString, 1);
         await contexto.Database.MigrateAsync();
-        await contexto.Database.ExecuteSqlInterpolatedAsync($"""
+        await contexto.Database.ExecuteSqlRawAsync(
+            """
             UPDATE ConfiguracoesPrecificacaoEmpresas
-            SET ValorHoraTrabalho = {12.345678m},
+            SET ValorHoraTrabalho = @valorHoraTrabalho,
                 TarifaEnergiaKwh = NULL,
-                MargemPadrao = {0.075m},
-                IncrementoComercial = {0.500001m},
-                ReservaComercialDesconto = {0.125m}
-            WHERE EmpresaId = {1}
-            """);
+                MargemPadrao = @margemPadrao,
+                IncrementoComercial = @incrementoComercial,
+                ReservaComercialDesconto = @reservaComercialDesconto
+            WHERE EmpresaId = @empresaId
+            """,
+            SqlDecimalParameter.Criar("valorHoraTrabalho", 12.345678m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("margemPadrao", 0.075m, precision: 9, scale: 6),
+            SqlDecimalParameter.Criar("incrementoComercial", 0.500001m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("reservaComercialDesconto", 0.125m, precision: 9, scale: 6),
+            new SqlParameter("empresaId", 1));
         contexto.ChangeTracker.Clear();
 
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();

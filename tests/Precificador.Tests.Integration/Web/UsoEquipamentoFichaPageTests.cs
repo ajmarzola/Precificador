@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
@@ -113,8 +114,8 @@ public sealed class UsoEquipamentoFichaPageTests
         public Task<FormUrlEncodedContent> FormularioAsync(HttpResponseMessage pagina, string nome, string potencia, string tempo) => TokenAsync(pagina, new() { ["Input.NomeEquipamento"] = nome, ["Input.PotenciaKw"] = potencia, ["Input.TempoUsoMinutos"] = tempo });
         public Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina) => TokenAsync(pagina, new());
         private async Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina, Dictionary<string, string> dados) { dados["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()); return new FormUrlEncodedContent(dados); }
-        public async Task TarifaAsync(int empresa, decimal? tarifa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConfiguracoesPrecificacaoEmpresas SET TarifaEnergiaKwh = {tarifa} WHERE EmpresaId = {empresa}"); }
-        public async Task ValorHoraAsync(int empresa, decimal? valor) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = {valor} WHERE EmpresaId = {empresa}"); }
+        public async Task TarifaAsync(int empresa, decimal? tarifa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET TarifaEnergiaKwh = @tarifa WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("tarifa", tarifa, precision: 18, scale: 6), new SqlParameter("empresaId", empresa)); }
+        public async Task ValorHoraAsync(int empresa, decimal? valor) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = @valor WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("valor", valor, precision: 18, scale: 6), new SqlParameter("empresaId", empresa)); }
         public async Task RemoverConfiguracaoAsync(int empresa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM ConfiguracoesPrecificacaoEmpresas WHERE EmpresaId = {empresa}"); }
         public async Task<int> ContarConfiguracoesAsync(int empresa) { await using var c = Contexto(empresa); return await c.ConfiguracoesPrecificacaoEmpresas.CountAsync(); }
         public async Task<(decimal, int)> EstadoAsync(int ficha, int empresa) { await using var c = Contexto(empresa); var f = await c.FichasTecnicas.SingleAsync(x => x.Id == ficha); return (f.Rendimento, f.TempoAtivoMinutos); }

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
@@ -276,11 +277,10 @@ public sealed class DetalhesMargemAtualPageTests
             await using var context = CriarContexto(empresaId);
             var ficha = await context.FichasTecnicas.SingleAsync(f => f.ProdutoId == produtoId);
             var insumoId = await context.ItensFichaTecnica.Where(i => i.FichaTecnicaId == ficha.Id).Select(i => i.InsumoId).SingleAsync();
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE PrecosInsumos
-                SET PrecoCompra = {precoCompra}
-                WHERE InsumoId = {insumoId}
-                """);
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE PrecosInsumos SET PrecoCompra = @precoCompra WHERE InsumoId = @insumoId",
+                SqlDecimalParameter.Criar("precoCompra", precoCompra, precision: 18, scale: 4),
+                new SqlParameter("insumoId", insumoId));
         }
 
         public async Task DefinirMargemAlvoAsync(int empresaId, int produtoId, decimal margem)
@@ -294,11 +294,10 @@ public sealed class DetalhesMargemAtualPageTests
         public async Task DefinirIncrementoAsync(int empresaId, decimal? incremento)
         {
             await using var context = CriarContexto(empresaId);
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE ConfiguracoesPrecificacaoEmpresas
-                SET IncrementoComercial = {incremento}
-                WHERE EmpresaId = {empresaId}
-                """);
+            await context.Database.ExecuteSqlRawAsync(
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET IncrementoComercial = @incremento WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("incremento", incremento, precision: 18, scale: 6),
+                new SqlParameter("empresaId", empresaId));
         }
 
         public async Task RemoverConfiguracaoAsync(int empresaId)

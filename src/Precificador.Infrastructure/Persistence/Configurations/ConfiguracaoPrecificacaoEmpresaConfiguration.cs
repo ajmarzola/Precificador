@@ -23,5 +23,6 @@ public sealed class ConfiguracaoPrecificacaoEmpresaConfiguration : IEntityTypeCo
             .WithOne()
             .HasForeignKey<ConfiguracaoPrecificacaoEmpresa>(configuracao => configuracao.EmpresaId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasData(ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1));
     }
 }
