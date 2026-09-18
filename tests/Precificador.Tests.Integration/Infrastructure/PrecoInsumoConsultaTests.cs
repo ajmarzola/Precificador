@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
@@ -13,8 +12,8 @@ public sealed class PrecoInsumoConsultaTests
     [Fact]
     public async Task CA03_CA04_Consulta_ordena_por_data_e_id_e_seleciona_vigente()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecoInsumoConsulta");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var insumo = await CriarInsumoAsync(context, 1);
         var passado = PrecoInsumo.Criar(1, insumo.Id, 1m, 8m, new DateOnly(2026, 9, 1));
@@ -35,8 +34,8 @@ public sealed class PrecoInsumoConsultaTests
     [Fact]
     public async Task CA09_Apenas_precos_futuros_nao_produzem_preco_vigente()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecoInsumoConsulta");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var insumo = await CriarInsumoAsync(context, 1);
         context.PrecosInsumos.Add(PrecoInsumo.Criar(1, insumo.Id, 1m, 15m, new DateOnly(2026, 9, 20)));
@@ -50,13 +49,13 @@ public sealed class PrecoInsumoConsultaTests
     [Fact]
     public async Task CA12_Query_filter_impede_historico_de_outro_tenant()
     {
-        await using var connection = await AbrirAsync();
-        await using var empresaUm = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecoInsumoConsulta");
+        await using var empresaUm = CriarContexto(connectionString, 1);
         await empresaUm.Database.MigrateAsync();
         empresaUm.Empresas.Add(Empresa.Criar("Empresa dois"));
         await empresaUm.SaveChangesAsync();
 
-        await using var empresaDois = CriarContexto(connection, 2);
+        await using var empresaDois = CriarContexto(connectionString, 2);
         var insumoOutroTenant = await CriarInsumoAsync(empresaDois, 2);
         empresaDois.PrecosInsumos.Add(PrecoInsumo.Criar(2, insumoOutroTenant.Id, 1m, 15m, DataOperacional));
         await empresaDois.SaveChangesAsync();
@@ -71,8 +70,8 @@ public sealed class PrecoInsumoConsultaTests
     [Fact]
     public async Task P1_P2_P3_P4_P5_Seleciona_vigentes_em_lote_respeitando_data_e_desempate()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecoInsumoConsulta");
+        await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
         var primeiro = await CriarInsumoAsync(context, 1);
         var segundo = await CriarInsumoAsync(context, 1);
@@ -95,8 +94,8 @@ public sealed class PrecoInsumoConsultaTests
     [Fact]
     public async Task P6_P7_Consulta_em_lote_respeita_tenant_e_retorna_um_preco_por_insumo()
     {
-        await using var connection = await AbrirAsync();
-        await using var empresaUm = CriarContexto(connection, 1);
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecoInsumoConsulta");
+        await using var empresaUm = CriarContexto(connectionString, 1);
         await empresaUm.Database.MigrateAsync();
         empresaUm.Empresas.Add(Empresa.Criar("Empresa dois"));
         await empresaUm.SaveChangesAsync();
@@ -104,7 +103,7 @@ public sealed class PrecoInsumoConsultaTests
         empresaUm.PrecosInsumos.Add(PrecoInsumo.Criar(1, insumoUm.Id, 1m, 10m, DataOperacional));
         await empresaUm.SaveChangesAsync();
 
-        await using var empresaDois = CriarContexto(connection, 2);
+        await using var empresaDois = CriarContexto(connectionString, 2);
         var insumoDois = await CriarInsumoAsync(empresaDois, 2);
         empresaDois.PrecosInsumos.Add(PrecoInsumo.Criar(2, insumoDois.Id, 1m, 20m, DataOperacional));
         await empresaDois.SaveChangesAsync();
@@ -117,15 +116,8 @@ public sealed class PrecoInsumoConsultaTests
         Assert.DoesNotContain(insumoDois.Id, vigentes.Keys);
     }
 
-    private static async Task<SqliteConnection> AbrirAsync()
-    {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        return connection;
-    }
-
-    private static PrecificadorDbContext CriarContexto(SqliteConnection connection, int empresaId) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new ContextoEmpresa(empresaId));
+    private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) =>
+        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options, new ContextoEmpresa(empresaId));
 
     private static async Task<Insumo> CriarInsumoAsync(PrecificadorDbContext context, int empresaId)
     {
@@ -142,3 +134,4 @@ public sealed class PrecoInsumoConsultaTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

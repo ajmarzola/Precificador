@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.FichasTecnicas;
@@ -17,8 +16,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P1_P2_Orquestracao_usa_registro_atual_por_data_e_id()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, new DateOnly(2026, 9, 1), prateleira: 15m));
@@ -38,8 +36,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P3_Preco_atual_retorna_mesmo_sem_ficha()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var produto = Produto.Criar(1, "Produto sem ficha", .30m);
         context.Produtos.Add(produto);
@@ -60,8 +57,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P4_P5_Usa_custo_e_margem_alvo_atuais_em_vez_de_snapshots()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, custoReferencia: 90m, margemReferencia: .90m, prateleira: 20m));
@@ -79,8 +75,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P6_Incremento_null_nao_torna_margem_incompleta()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
@@ -99,8 +94,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P7_Gqf_impede_usar_registro_comercial_de_outra_empresa()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         context.Empresas.Add(Empresa.Criar("Empresa dois"));
         await context.SaveChangesAsync();
@@ -124,8 +118,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task P8_Execucao_nao_persiste_resultado_derivado()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         context.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, Hoje, prateleira: 20m));
@@ -143,8 +136,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task UC025_P1_P2_P3_Resultado_expoe_parametros_da_mesma_fotografia_e_preserva_zero()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
         configuracao.Atualizar(0m, 0m, null, .5m, .1m);
@@ -166,8 +158,7 @@ public sealed class PrecificacaoProdutoAtualTests
     [Fact]
     public async Task UC025_P4_P5_Retorno_incompleto_preserva_apenas_entradas_conhecidas()
     {
-        await using var connection = await AbrirAsync();
-        await using var context = Criar(connection, 1);
+        await using var context = await CriarContextoAsync(1);
         await context.Database.MigrateAsync();
         var semFicha = Produto.Criar(1, "Produto sem ficha UC025", .30m);
         context.Produtos.Add(semFicha);
@@ -223,15 +214,13 @@ public sealed class PrecificacaoProdutoAtualTests
     private static Task<ResultadoPrecificacaoProdutoAtual?> CalcularAsync(PrecificadorDbContext context, int produtoId) =>
         new PrecificacaoProdutoAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync(produtoId);
 
-    private static async Task<SqliteConnection> AbrirAsync()
+    private static async Task<PrecificadorDbContext> CriarContextoAsync(int empresaId)
     {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        return connection;
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("PrecificacaoProdutoAtual");
+        return new PrecificadorDbContext(
+            new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options,
+            new Contexto(empresaId));
     }
-
-    private static PrecificadorDbContext Criar(SqliteConnection connection, int empresaId) =>
-        new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options, new Contexto(empresaId));
 
     private sealed class DataOperacionalFixa(DateOnly hoje) : IDataOperacionalEmpresa
     {
@@ -245,3 +234,4 @@ public sealed class PrecificacaoProdutoAtualTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

@@ -5,6 +5,8 @@
 - **Dependências:** Fundação documental aprovada e mergeada
 - **Próximo incremento:** UC001 — Cadastrar insumo
 
+> **Nota (MEL020):** este documento registra a fundação técnica original, que usava SQLite como provider EF Core. Desde a MEL020, o provider ativo é `Microsoft.EntityFrameworkCore.SqlServer` — ver [MEL020](improvements/MEL020-sqlserver.md). As referências a SQLite abaixo são históricas.
+
 ## Objetivo
 
 Criar a base executável, testável e integrada do Precificador sem introduzir ainda regras ou entidades de negócio.

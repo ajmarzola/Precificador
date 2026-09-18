@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
@@ -12,10 +11,10 @@ public sealed class ConsultaProdutosTests
     [Fact]
     public async Task CA02_CA10_Query_filter_isola_produtos_e_ordena_por_nome_normalizado()
     {
-        await using var contexto = await CriarContextoMigradoAsync(1);
-        await CriarProdutosPadraoAsync(contexto.Opcoes);
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
 
-        await using var leitura = new PrecificadorDbContext(contexto.Opcoes, new ContextoEmpresa(1));
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
         var pagina = new IndexModel(leitura);
         await pagina.OnGetAsync(null);
 
@@ -26,10 +25,10 @@ public sealed class ConsultaProdutosTests
     [Fact]
     public async Task CA06_CA07_Pesquisa_parcial_por_nome_normaliza_caixa_e_whitespace()
     {
-        await using var contexto = await CriarContextoMigradoAsync(1);
-        await CriarProdutosPadraoAsync(contexto.Opcoes);
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
 
-        await using var leitura = new PrecificadorDbContext(contexto.Opcoes, new ContextoEmpresa(1));
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
         var pagina = new IndexModel(leitura);
         await pagina.OnGetAsync("  caLenDÁRIO  2027  ");
 
@@ -43,10 +42,10 @@ public sealed class ConsultaProdutosTests
     [Fact]
     public async Task CA08_Pesquisa_vazia_equivale_a_listagem_completa()
     {
-        await using var contexto = await CriarContextoMigradoAsync(1);
-        await CriarProdutosPadraoAsync(contexto.Opcoes);
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
 
-        await using var leitura = new PrecificadorDbContext(contexto.Opcoes, new ContextoEmpresa(1));
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
         var pagina = new IndexModel(leitura);
         await pagina.OnGetAsync("   ");
 
@@ -57,10 +56,10 @@ public sealed class ConsultaProdutosTests
     [Fact]
     public async Task CA09_Pesquisa_nao_considera_categoria()
     {
-        await using var contexto = await CriarContextoMigradoAsync(1);
-        await CriarProdutosPadraoAsync(contexto.Opcoes);
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
 
-        await using var leitura = new PrecificadorDbContext(contexto.Opcoes, new ContextoEmpresa(1));
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
         var pagina = new IndexModel(leitura);
         await pagina.OnGetAsync("Papelaria");
 
@@ -70,10 +69,10 @@ public sealed class ConsultaProdutosTests
     [Fact]
     public async Task CA13_Pesquisa_sem_resultado_retorna_colecao_vazia_sem_erro()
     {
-        await using var contexto = await CriarContextoMigradoAsync(1);
-        await CriarProdutosPadraoAsync(contexto.Opcoes);
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
 
-        await using var leitura = new PrecificadorDbContext(contexto.Opcoes, new ContextoEmpresa(1));
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
         var pagina = new IndexModel(leitura);
         await pagina.OnGetAsync("naoexiste");
 
@@ -81,16 +80,15 @@ public sealed class ConsultaProdutosTests
         Assert.True(pagina.TemPesquisa);
     }
 
-    private static async Task<ContextoMigrado> CriarContextoMigradoAsync(int empresaId)
+    private static async Task<DbContextOptions<PrecificadorDbContext>> CriarOpcoesMigradasAsync(int empresaId)
     {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        var opcoes = new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlite(connection).Options;
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ConsultaProdutos");
+        var opcoes = new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options;
         await using var context = new PrecificadorDbContext(opcoes, new ContextoEmpresa(empresaId));
         await context.Database.MigrateAsync();
         context.Empresas.Add(Empresa.Criar("Empresa dois"));
         await context.SaveChangesAsync();
-        return new ContextoMigrado(connection, opcoes);
+        return opcoes;
     }
 
     private static async Task CriarProdutosPadraoAsync(DbContextOptions<PrecificadorDbContext> opcoes)
@@ -109,13 +107,6 @@ public sealed class ConsultaProdutosTests
         await empresaDois.SaveChangesAsync();
     }
 
-    private sealed class ContextoMigrado(SqliteConnection connection, DbContextOptions<PrecificadorDbContext> opcoes) : IAsyncDisposable
-    {
-        public DbContextOptions<PrecificadorDbContext> Opcoes => opcoes;
-
-        public async ValueTask DisposeAsync() => await connection.DisposeAsync();
-    }
-
     private sealed class ContextoEmpresa(int? empresaId) : IEmpresaContext
     {
         public int? EmpresaId => empresaId;
@@ -123,3 +114,4 @@ public sealed class ConsultaProdutosTests
         public string? TimeZoneId => Empresa.TimeZoneIdPadrao;
     }
 }
+

@@ -64,7 +64,7 @@ Regra operacional:
 | 04 | MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1 | MEL | Concluído | UC013; gate operacional atendido: MEL018 Concluído | [MEL019](improvements/MEL019-rendimento-padrao-ficha.md) |
 | 05 | MEL017 — Explicar configurações de precificação na interface | MEL | Concluído | UC026, UC027 | [MEL017](improvements/MEL017-ajuda-configuracoes-precificacao.md) |
 | 06 | MEL012 — Adequar navegação para usuário anônimo | MEL | Concluído | FT002 | [MEL012](improvements/MEL012-navegacao-anonima.md) |
-| 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Pronto | FT002, MEL011; antes de UC028 | [MEL020](improvements/MEL020-sqlserver.md) |
+| 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Concluído | FT002, MEL011; antes de UC028 | [MEL020](improvements/MEL020-sqlserver.md) |
 | 08 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL020, MEL015, UC024 | Documento a criar |
 | 09 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | 10 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
