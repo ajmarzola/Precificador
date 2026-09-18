@@ -705,30 +705,30 @@ LimiarAplicacao = ReservaComercialReferencia + 0,01
 
 Cada Empresa possui uma configuração de precificação 1:1 contendo, no mínimo:
 
-- `ValorHoraTrabalho`;
+- `PercentualMaoDeObra`;
 - `TarifaEnergiaKwh`;
 - `MargemPadrao`;
 - `IncrementoComercial`;
 - `ReservaComercialDesconto`, conforme RN052.
 
-Não existem defaults de negócio aprovados para `ValorHoraTrabalho`, `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, esses campos permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+A partir da MEL022, `PercentualMaoDeObra` é obrigatório, armazenado como fração decimal e nasce em `0,10` (10%). Zero é válido e valores maiores que 100% também são válidos; somente valor negativo é rejeitado.
 
-UC027 permite limpar qualquer um desses quatro parâmetros opcionais de volta para `null`. Entrada vazia significa **Não configurado**, enquanto zero é um valor explícito e distinto quando permitido pela regra do campo.
+Não existem defaults de negócio aprovados para `TarifaEnergiaKwh`, `MargemPadrao` e `IncrementoComercial`. Enquanto não configurados, permanecem `null` e devem ser apresentados como **Não configurado**, nunca convertidos silenciosamente em zero.
+
+UC027 permite limpar esses três parâmetros opcionais de volta para `null`. `PercentualMaoDeObra` e `ReservaComercialDesconto` são obrigatórios e não podem ser limpos.
 
 Quando informados:
 
-- `ValorHoraTrabalho >= 0`;
+- `PercentualMaoDeObra >= 0`, sem teto de 100%;
 - `TarifaEnergiaKwh >= 0`;
 - `0 <= MargemPadrao < 1`;
 - `IncrementoComercial > 0`.
 
 A reserva comercial possui default e validação próprios na RN052.
 
-A potência deixa de ser tratada como configuração global de um forno e pertencerá ao Equipamento quando esse domínio for implementado.
+Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa. Parâmetro opcional necessário e ausente torna o cálculo dependente incompleto conforme RN017.
 
-Alterações de configuração afetam imediatamente apenas cálculos atuais dependentes da mesma Empresa. Parâmetro obrigatório ausente torna o cálculo dependente incompleto conforme RN017.
-
-A Margem padrão pode futuramente pré-preencher novos Produtos, mas nunca altera silenciosamente a `MargemAlvo` de Produtos já existentes.
+A Margem padrão pode pré-preencher novos Produtos, mas nunca altera silenciosamente a `MargemAlvo` de Produtos já existentes.
 
 ### RN052 — Reserva comercial de desconto por Empresa
 
