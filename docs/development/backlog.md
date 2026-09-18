@@ -75,8 +75,9 @@ Regra operacional:
 | 15 | UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
 | 16 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
 | 17 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
-| 18 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 19 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 18 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 19 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 20 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -87,7 +88,8 @@ Regra operacional:
 - **11–13 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
 - **14 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
 - **15–17 — expansão de catálogo:** só então introduzir Categorias estruturadas e Coleções, evitando aumentar o escopo antes de fechar o núcleo do MVP;
-- **18–19 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
+- **18 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
+- **19–20 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
 
 ## Melhorias concluídas
 
