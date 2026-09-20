@@ -9,6 +9,8 @@
 
 Registrar na Ficha os equipamentos elétricos usados para produzir um lote e calcular consumo/custo de energia de forma genérica para padaria, papelaria e outros segmentos.
 
+Após MEL023, a interface deve comunicar explicitamente que `UsoEquipamentoFicha` representa somente equipamentos elétricos opcionais usados no cálculo de energia. Ferramentas manuais sem consumo elétrico próprio não são cadastradas e nunca devem ser representadas por potência zero.
+
 Exemplos: forno, impressora, plotter, laminadora, prensa e máquina de corte.
 
 ## Modelo do MVP
@@ -153,7 +155,7 @@ Nunca transformar tarifa ausente em zero.
 Ao carregar Ficha existente, preferir uma única projeção de `ConfiguracaoPrecificacaoEmpresa` com:
 
 ~~~text
-ValorHoraTrabalho
+PercentualMaoDeObra
 TarifaEnergiaKwh
 ~~~
 
@@ -220,7 +222,7 @@ Seguir o padrão das páginas de Itens.
 
 Novo/Editar:
 
-- Nome do equipamento;
+- Nome do equipamento elétrico;
 - Potência (kW);
 - Tempo de uso (minutos).
 
@@ -254,26 +256,26 @@ Duplicidade por nome normalizado deve gerar erro amigável antes de depender da 
 
 ## Web — Ficha
 
-Adicionar seção **Equipamentos**.
+Adicionar seção **Equipamentos elétricos (opcional)**.
 
 Sem usos:
 
 ~~~text
-Nenhum equipamento adicionado.
+Nenhum equipamento elétrico adicionado.
 Custo de energia do lote: 0
 ~~~
 
 Com usos, mostrar:
 
 ~~~text
-Equipamento | Potência (kW) | Tempo (min) | Consumo (kWh) | Custo de energia | Ações
+Equipamento elétrico | Potência (kW) | Tempo (min) | Consumo (kWh) | Custo de energia | Ações
 ~~~
 
 Ações:
 
 - Editar;
 - Remover;
-- Adicionar equipamento.
+- Adicionar equipamento elétrico.
 
 Tarifa configurada: mostrar consumo, custo por uso e total.
 
@@ -305,7 +307,7 @@ Preservar integralmente as telas e comportamentos já existentes de UC018/UC020.
 
 ### POST inválido da base
 
-Se o POST principal de Rendimento/TempoAtivo for inválido:
+Se o POST principal de Rendimento for inválido:
 
 - preservar Input/erros;
 - recarregar usos e energia pelo estado persistido;

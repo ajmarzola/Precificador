@@ -300,7 +300,7 @@ O POST deve:
 4. validar input;
 5. chamar atualização atômica de domínio;
 6. `SaveChangesAsync()` uma única vez;
-7. PRG para `/Configuracoes/Precificacao`;
+7. PRG para `/Configuracoes/Precificacao`, salvo quando houver `returnUrl` local válido conforme MEL023;
 8. exibir mensagem de sucesso.
 
 Mensagem:
@@ -308,6 +308,14 @@ Mensagem:
 ~~~text
 Configurações de precificação atualizadas com sucesso.
 ~~~
+
+### Retorno local opcional — MEL023
+
+A edição pode receber `returnUrl` opcional para voltar à origem após salvar, por exemplo quando a Ficha Técnica direciona o usuário para configurar `TarifaEnergiaKwh`.
+
+O retorno só pode ser preservado e seguido quando for URL local validada por `Url.IsLocalUrl` ou mecanismo equivalente. URLs absolutas externas, protocol-relative externas ou qualquer host recebido do cliente devem ser ignorados e cair no destino padrão `/Configuracoes/Precificacao`.
+
+GET preserva apenas `returnUrl` local e não persiste nada. POST válido com `returnUrl` local salva a configuração e retorna à origem; POST inválido preserva inputs e a origem local sem alterar banco. O comando Cancelar pode voltar à origem local quando ela existir.
 
 ## Request manipulado
 

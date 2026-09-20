@@ -10,8 +10,13 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     [BindProperty]
     public ConfiguracaoPrecificacaoInputModel Input { get; set; } = new();
 
+    [BindProperty(SupportsGet = true)]
+    public string? ReturnUrl { get; set; }
+
     public async Task<IActionResult> OnGetAsync()
     {
+        SanitizarReturnUrl();
+
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas
             .AsNoTracking()
             .SingleOrDefaultAsync();
@@ -27,6 +32,8 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        SanitizarReturnUrl();
+
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleOrDefaultAsync();
         if (configuracao is null)
         {
@@ -55,6 +62,22 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
 
         await context.SaveChangesAsync();
         TempData["MensagemSucesso"] = "Configurações de precificação atualizadas com sucesso.";
-        return RedirectToPage("/Configuracoes/Precificacao");
+        return RedirecionarAposSalvar();
     }
+
+    private string? ObterReturnUrlLocal(string? returnUrl) =>
+        !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : null;
+
+    private void SanitizarReturnUrl()
+    {
+        ReturnUrl = ObterReturnUrlLocal(ReturnUrl);
+        ModelState.Remove(nameof(ReturnUrl));
+    }
+
+    private IActionResult RedirecionarAposSalvar() =>
+        ReturnUrl is null
+            ? RedirectToPage("/Configuracoes/Precificacao")
+            : LocalRedirect(ReturnUrl);
 }

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
+using Precificador.Core.FichasTecnicas;
+using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Tests.Integration.Web;
@@ -132,6 +134,72 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Contains("12,34%", paginaConsulta);
         Assert.Contains("30%", paginaConsulta);
         Assert.Contains("15%", paginaConsulta);
+    }
+
+    [Fact]
+    public async Task MEL023_W16_W17_W18_W19_W23_ReturnUrlLocalRetornaParaFichaERecalculaEnergia()
+    {
+        var empresa = await web.CriarEmpresaAsync("Empresa return local");
+        var produto = await CriarProdutoAsync(empresa);
+        var ficha = await CriarFichaAsync(empresa, produto);
+        await CriarUsoAsync(empresa, ficha, "Forno", 1m, 60);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+        var returnUrl = $"/Produtos/FichaTecnica/{produto}";
+        var editarUrl = "/Configuracoes/Precificacao/Editar?returnUrl=" + Uri.EscapeDataString(returnUrl);
+
+        var get = await client.GetAsync(editarUrl);
+        var conteudoGet = await WebTestHtml.LerHtmlDecodificadoAsync(get);
+
+        get.EnsureSuccessStatusCode();
+        Assert.Equal(returnUrl, ValorDoInput(conteudoGet, "ReturnUrl"));
+        Assert.Contains($"href=\"{returnUrl}\"", conteudoGet);
+
+        var invalido = await EnviarFormularioEdicaoAsync(client, "10", "abc", "30", "0,50", "10", caminhoEdicao: editarUrl);
+        var conteudoInvalido = await WebTestHtml.LerHtmlDecodificadoAsync(invalido);
+
+        Assert.Equal(HttpStatusCode.OK, invalido.StatusCode);
+        Assert.Equal("abc", ValorDoInput(conteudoInvalido, "Input.TarifaEnergiaKwh"));
+        Assert.Equal(returnUrl, ValorDoInput(conteudoInvalido, "ReturnUrl"));
+        Assert.Null((await ObterConfiguracaoAsync(empresa)).TarifaEnergiaKwh);
+
+        var post = await EnviarFormularioEdicaoAsync(client, "10", "2", "30", "0,50", "10", caminhoEdicao: editarUrl);
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal(returnUrl, post.Headers.Location!.ToString());
+        Assert.Equal(2m, (await ObterConfiguracaoAsync(empresa)).TarifaEnergiaKwh);
+
+        var fichaAtualizada = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(post.Headers.Location));
+        Assert.Contains("Custo de energia do lote:</strong> R$ 2,00", fichaAtualizada);
+        Assert.DoesNotContain("Tarifa de energia não configurada.", fichaAtualizada);
+    }
+
+    [Theory]
+    [InlineData("https://exemplo.invalid/retorno")]
+    [InlineData("//exemplo.invalid/retorno")]
+    public async Task MEL023_W21_W22_ReturnUrlExternaNaoEhSeguida(string returnUrl)
+    {
+        var empresa = await web.CriarEmpresaAsync($"Empresa return externo {Guid.NewGuid():N}");
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+        var editarUrl = "/Configuracoes/Precificacao/Editar?returnUrl=" + Uri.EscapeDataString(returnUrl);
+
+        var get = await client.GetAsync(editarUrl);
+        var conteudoGet = await WebTestHtml.LerHtmlDecodificadoAsync(get);
+
+        get.EnsureSuccessStatusCode();
+        Assert.Equal(string.Empty, ValorDoInput(conteudoGet, "ReturnUrl"));
+        Assert.Contains("href=\"/Configuracoes/Precificacao\"", conteudoGet);
+
+        var post = await EnviarFormularioEdicaoAsync(
+            client,
+            "10",
+            "1",
+            "30",
+            "0,50",
+            "10",
+            new Dictionary<string, string> { ["ReturnUrl"] = returnUrl });
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal("/Configuracoes/Precificacao", post.Headers.Location!.ToString());
     }
 
     [Fact]
@@ -493,9 +561,10 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         string margemPadraoPercentual,
         string incrementoComercial,
         string reservaComercialDescontoPercentual,
-        Dictionary<string, string>? camposExtras = null)
+        Dictionary<string, string>? camposExtras = null,
+        string caminhoEdicao = "/Configuracoes/Precificacao/Editar")
     {
-        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Configuracoes/Precificacao/Editar");
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, caminhoEdicao);
         var dados = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
@@ -514,7 +583,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
             }
         }
 
-        return await client.PostAsync("/Configuracoes/Precificacao/Editar", new FormUrlEncodedContent(dados));
+        return await client.PostAsync(caminhoEdicao, new FormUrlEncodedContent(dados));
     }
 
     private async Task<ConfiguracaoPrecificacaoEmpresa> ObterConfiguracaoAsync(int empresaId)
@@ -590,5 +659,36 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         return await context.ConfiguracoesPrecificacaoEmpresas.CountAsync();
+    }
+
+    private async Task<int> CriarProdutoAsync(int empresaId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", 0.30m);
+        context.Produtos.Add(produto);
+        await context.SaveChangesAsync();
+        return produto.Id;
+    }
+
+    private async Task<int> CriarFichaAsync(int empresaId, int produtoId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        var ficha = FichaTecnica.Criar(empresaId, produtoId, 1m);
+        context.FichasTecnicas.Add(ficha);
+        await context.SaveChangesAsync();
+        return ficha.Id;
+    }
+
+    private async Task CriarUsoAsync(int empresaId, int fichaId, string nome, decimal potenciaKw, int tempoUsoMinutos)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        context.UsosEquipamentosFicha.Add(UsoEquipamentoFicha.Criar(empresaId, fichaId, nome, potenciaKw, tempoUsoMinutos));
+        await context.SaveChangesAsync();
     }
 }

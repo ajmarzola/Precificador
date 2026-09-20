@@ -52,6 +52,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
     public IReadOnlyList<UsoEquipamentoResumo> UsosEquipamentos { get; private set; } = [];
     public decimal? CustoEnergiaLote { get; private set; }
     public bool CustoEnergiaCompleto { get; private set; }
+    public bool DeveConfigurarTarifaEnergia => PossuiFicha && UsosEquipamentos.Count > 0 && !CustoEnergiaCompleto;
 
     public decimal? CustoLote { get; private set; }
 
@@ -114,6 +115,24 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
 
     public async Task<IActionResult> OnPostAsync()
     {
+        return await SalvarFichaAsync(id =>
+        {
+            TempData["MensagemSucesso"] = "Ficha técnica salva com sucesso.";
+            return RedirectToPage(new { id });
+        });
+    }
+
+    public async Task<IActionResult> OnPostConfigurarTarifaAsync()
+    {
+        return await SalvarFichaAsync(id =>
+        {
+            var returnUrl = Url.Page("/Produtos/FichaTecnica", new { id });
+            return RedirectToPage("/Configuracoes/Precificacao/Editar", new { returnUrl });
+        });
+    }
+
+    private async Task<IActionResult> SalvarFichaAsync(Func<int, IActionResult> aoSalvar)
+    {
         var id = ProdutoIdDaRota();
         if (!await CarregarProdutoAsync(id))
         {
@@ -143,8 +162,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         }
 
         await context.SaveChangesAsync();
-        TempData["MensagemSucesso"] = "Ficha técnica salva com sucesso.";
-        return RedirectToPage(new { id });
+        return aoSalvar(id);
     }
 
     private int ProdutoIdDaRota() =>

@@ -61,10 +61,85 @@ public sealed class UsoEquipamentoFichaPageTests
 
     private static void AssertExibeUsoEnergia(string html, string equipamento, string consumo, string custo)
     {
-        var custoEsperado = custo == "3"
-            ? System.Text.RegularExpressions.Regex.Escape(FormatarMonetarioSeNecessario(custo))
-            : "\\u2014";
+        var custoEsperado = custo == "indisponível"
+            ? "\\u2014"
+            : System.Text.RegularExpressions.Regex.Escape(FormatarMonetarioSeNecessario(custo));
         Assert.Matches($"<td>{System.Text.RegularExpressions.Regex.Escape(equipamento)}</td>\\s*<td>[^<]*</td>\\s*<td>[^<]*</td>\\s*<td>{System.Text.RegularExpressions.Regex.Escape(consumo)}</td>\\s*<td>{custoEsperado}</td>", html);
+    }
+
+    [Fact]
+    public async Task MEL023_W1_W2_W3_W4_W5_W7_W8_W9_W10_SemanticaEletricaEOpcionalidadeDaTarifa()
+    {
+        await using var ambiente = await Ambiente.CriarAsync();
+        var produto = await ambiente.CriarProdutoAsync(1, true);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, 2m);
+        await ambiente.TarifaAsync(1, null);
+
+        var semUso = await ambiente.FichaAsync(produto);
+
+        Assert.Contains("Equipamentos elétricos (opcional)", semUso);
+        Assert.Contains("Adicionar equipamento elétrico", semUso);
+        Assert.Contains("Nenhum equipamento elétrico adicionado.", semUso);
+        Assert.Contains("não é necessário cadastrar nenhum", semUso);
+        AssertExibeCustoEnergiaLote(semUso, "0");
+        Assert.DoesNotContain("Configurar tarifa de energia", semUso);
+        Assert.DoesNotContain("Tarifa de energia não configurada.", semUso);
+
+        await ambiente.CriarUsoAsync(1, ficha, "Forno", 2m, 30);
+        var semTarifa = await ambiente.FichaAsync(produto);
+
+        Assert.Contains("Configurar tarifa de energia", semTarifa);
+        Assert.Contains("Tarifa de energia não configurada.", semTarifa);
+        AssertExibeUsoEnergia(semTarifa, "Forno", "1", "indisponível");
+        AssertExibeCustoEnergiaLote(semTarifa, "indisponível");
+
+        await ambiente.TarifaAsync(1, 0m);
+        var tarifaZero = await ambiente.FichaAsync(produto);
+
+        AssertExibeUsoEnergia(tarifaZero, "Forno", "1", "0");
+        AssertExibeCustoEnergiaLote(tarifaZero, "0");
+        Assert.DoesNotContain("Configurar tarifa de energia", tarifaZero);
+        Assert.DoesNotContain("Tarifa de energia não configurada.", tarifaZero);
+    }
+
+    [Fact]
+    public async Task MEL023_W11_W12_W13_W14_W15_ConfigurarTarifaSalvaRendimentoValidoERejeitaInvalido()
+    {
+        await using var ambiente = await Ambiente.CriarAsync();
+        var produto = await ambiente.CriarProdutoAsync(1, false);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, 2m);
+        await ambiente.CriarUsoAsync(1, ficha, "Forno", 1m, 60);
+        await ambiente.TarifaAsync(1, null);
+        using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
+
+        var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
+        var post = await client.PostAsync(
+            $"/Produtos/FichaTecnica/{produto}?handler=ConfigurarTarifa",
+            await ambiente.FormularioFichaAsync(pagina, "3"));
+
+        Assert.Equal(System.Net.HttpStatusCode.Redirect, post.StatusCode);
+        Assert.StartsWith("/Configuracoes/Precificacao/Editar", post.Headers.Location!.ToString());
+        Assert.Contains(Uri.EscapeDataString($"/Produtos/FichaTecnica/{produto}"), post.Headers.Location!.ToString());
+        Assert.Equal(3m, await ambiente.EstadoAsync(ficha, 1));
+        Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
+
+        var paginaInvalida = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
+        var invalido = await client.PostAsync(
+            $"/Produtos/FichaTecnica/{produto}?handler=ConfigurarTarifa",
+            await ambiente.FormularioFichaAsync(paginaInvalida, "0"));
+        var htmlInvalido = await WebTestHtml.LerHtmlDecodificadoAsync(invalido);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, invalido.StatusCode);
+        Assert.Contains("O rendimento deve ser maior que zero.", htmlInvalido);
+        Assert.Contains("Configurar tarifa de energia", htmlInvalido);
+        Assert.Equal(3m, await ambiente.EstadoAsync(ficha, 1));
+
+        var semToken = await client.PostAsync(
+            $"/Produtos/FichaTecnica/{produto}?handler=ConfigurarTarifa",
+            new FormUrlEncodedContent(new Dictionary<string, string> { ["Input.Rendimento"] = "4" }));
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, semToken.StatusCode);
+        Assert.Equal(3m, await ambiente.EstadoAsync(ficha, 1));
     }
 
     [Fact]
@@ -75,7 +150,7 @@ public sealed class UsoEquipamentoFichaPageTests
         await ambiente.CriarUsoAsync(1, ficha, "Forno", 2m, 30); await ambiente.TarifaAsync(1, 3m);
         var configurada = await ambiente.FichaAsync(produto); AssertExibeUsoEnergia(configurada, "Forno", "1", "3"); AssertExibeCustoEnergiaLote(configurada, "3");
         await ambiente.TarifaAsync(1, null); var semTarifa = await ambiente.FichaAsync(produto); Assert.Contains("indisponível", semTarifa); Assert.Contains("Tarifa de energia não configurada.", semTarifa);
-        AssertExibeUsoEnergia(semTarifa, "Forno", "1", "â€”");
+        AssertExibeUsoEnergia(semTarifa, "Forno", "1", "indisponível");
         await ambiente.TarifaAsync(1, 0m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
         await ambiente.TarifaAsync(1, 4m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "4");
         await ambiente.PercentualMaoDeObraAsync(1, 0m); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Matches("Custo de mão de obra do lote:</strong>\\s*indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> R$ 4,00", independente);
@@ -112,6 +187,7 @@ public sealed class UsoEquipamentoFichaPageTests
         public async Task<bool> ProdutoAtivoAsync(int produto, int empresa) { await using var c = Contexto(empresa); return (await c.Produtos.SingleAsync(x => x.Id == produto)).Ativo; }
         public async Task<string> FichaAsync(int produto) { using var client = await Web.CriarClienteAutenticadoAsync(1); return await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/FichaTecnica/{produto}")); }
         public Task<FormUrlEncodedContent> FormularioAsync(HttpResponseMessage pagina, string nome, string potencia, string tempo) => TokenAsync(pagina, new() { ["Input.NomeEquipamento"] = nome, ["Input.PotenciaKw"] = potencia, ["Input.TempoUsoMinutos"] = tempo });
+        public Task<FormUrlEncodedContent> FormularioFichaAsync(HttpResponseMessage pagina, string rendimento) => TokenAsync(pagina, new() { ["Input.Rendimento"] = rendimento });
         public Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina) => TokenAsync(pagina, new());
         private async Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina, Dictionary<string, string> dados) { dados["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()); return new FormUrlEncodedContent(dados); }
         public async Task TarifaAsync(int empresa, decimal? tarifa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET TarifaEnergiaKwh = @tarifa WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("tarifa", tarifa, precision: 18, scale: 6), new SqlParameter("empresaId", empresa)); }
