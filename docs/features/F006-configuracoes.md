@@ -43,7 +43,7 @@ Após MEL017, as telas de consulta e edição exibem ajuda contextual sempre vis
 A ajuda deve explicar o efeito real de cada configuração sem alterar regra de negócio:
 
 - Percentual de mão de obra → percentual aplicado sobre o custo base dos insumos; pode superar 100% quando o trabalho artesanal justificar;
-- Tarifa de energia → custo dos usos de equipamentos;
+- Tarifa de energia → custo dos usos de equipamentos elétricos; só é necessária quando a Ficha possui uso elétrico cadastrado;
 - Margem padrão → apenas pré-preenchimento de novos Produtos;
 - Incremento comercial → múltiplo monetário que arredonda o Preço teórico para cima e forma o Preço sugerido;
 - Reserva comercial → parcela reservada antes do cálculo do Desconto de referência, congelada nos novos registros comerciais.

@@ -9,6 +9,7 @@
 
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="ReturnUrl" />
     <div class="mb-3">
         <label asp-for="Input.PercentualMaoDeObra" class="form-label"></label>
         <input asp-for="Input.PercentualMaoDeObra" class="form-control" aria-describedby="ajuda-percentual-mao-de-obra" />
@@ -40,7 +41,14 @@
         <span asp-validation-for="Input.ReservaComercialDescontoPercentual" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Salvar</button>
-    <a class="btn btn-secondary" asp-page="/Configuracoes/Precificacao">Cancelar</a>
+    @if (Model.ReturnUrl is null)
+    {
+        <a class="btn btn-secondary" asp-page="/Configuracoes/Precificacao">Cancelar</a>
+    }
+    else
+    {
+        <a class="btn btn-secondary" href="@Model.ReturnUrl">Cancelar</a>
+    }
 </form>
 
 @section Scripts {

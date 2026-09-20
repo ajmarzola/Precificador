@@ -9,6 +9,8 @@
 
 Registrar na Ficha os equipamentos elétricos usados para produzir um lote e calcular consumo/custo de energia de forma genérica para padaria, papelaria e outros segmentos.
 
+Após MEL023, a interface deve comunicar explicitamente que `UsoEquipamentoFicha` representa somente equipamentos elétricos opcionais usados no cálculo de energia. Ferramentas manuais sem consumo elétrico próprio não são cadastradas e nunca devem ser representadas por potência zero.
+
 Exemplos: forno, impressora, plotter, laminadora, prensa e máquina de corte.
 
 ## Modelo do MVP
@@ -259,7 +261,7 @@ Adicionar seção **Equipamentos**.
 Sem usos:
 
 ~~~text
-Nenhum equipamento adicionado.
+Nenhum equipamento elétrico adicionado.
 Custo de energia do lote: 0
 ~~~
 

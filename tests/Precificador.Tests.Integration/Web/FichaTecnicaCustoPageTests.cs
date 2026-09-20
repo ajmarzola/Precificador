@@ -352,7 +352,7 @@ public sealed class FichaTecnicaCustoPageTests
         Assert.Contains("Há item(ns) sem preço vigente.", html);
         Assert.Contains("Há perda(s) sem custo base determinável.", html);
         Assert.DoesNotContain("Valor da hora de trabalho", html);
-        Assert.Matches("<td>2</td><td>30</td><td>1</td><td>—</td>", html);
+        Assert.Matches("<td>2</td>\\s*<td>30</td>\\s*<td>1</td>\\s*<td>—</td>", html);
         Assert.Matches("Custo de energia do lote:</strong>\\s*indisponível", html);
         Assert.Contains("Tarifa de energia não configurada.", html);
         Assert.Contains("Precificação incompleta.", html);

@@ -1,5 +1,11 @@
 @page "/Produtos/FichaTecnica/{produtoId:int}/Equipamentos/Remover/{usoId:int}"
 @model Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos.RemoverModel
 @{ var produtoId = RouteData.Values["produtoId"]; }
-<h1>Remover equipamento</h1><p>Confirma a remoção de <strong>@Model.NomeEquipamento</strong>?</p>
-<form method="post"><button class="btn btn-danger" type="submit">Remover</button> <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produtoId" class="btn btn-secondary">Cancelar</a></form>
+
+<h1>Remover equipamento elétrico</h1>
+<p>Confirma a remoção do equipamento elétrico <strong>@Model.NomeEquipamento</strong>?</p>
+
+<form method="post">
+    <button class="btn btn-danger" type="submit">Remover</button>
+    <a asp-page="/Produtos/FichaTecnica" asp-route-id="@produtoId" class="btn btn-secondary">Cancelar</a>
+</form>

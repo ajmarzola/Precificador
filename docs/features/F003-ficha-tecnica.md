@@ -107,9 +107,9 @@ Perdas que reduzam unidades finais vendáveis devem ser refletidas no Rendimento
 
 O custo da perda é derivado em consulta pelo UC019 e não é persistido.
 
-## Equipamentos e recursos — UC021
+## Equipamentos elétricos opcionais — UC021
 
-UC021 mantém o domínio genérico sem criar campos específicos de forno e sem introduzir um cadastro patrimonial global.
+UC021 mantém o domínio genérico sem criar campos específicos de forno e sem introduzir um cadastro patrimonial global. Após MEL023, a Ficha apresenta essa seção como **Equipamentos elétricos (opcional)** para deixar claro que o cadastro existe somente quando há consumo elétrico próprio participando do custo de energia.
 
 Modelo:
 
@@ -124,7 +124,9 @@ UsoEquipamentoFicha
 - TempoUsoMinutos
 ~~~
 
-O registro representa o uso total do equipamento naquela execução/lote. Forno, impressora, plotter, laminadora e equipamentos equivalentes usam o mesmo modelo.
+O registro representa o uso total do equipamento elétrico naquela execução/lote. Forno, impressora, plotter, laminadora e equipamentos equivalentes usam o mesmo modelo.
+
+Ferramentas manuais como agulha, tesoura, régua, espátula, forma ou panela sem consumo elétrico próprio não pertencem a `UsoEquipamentoFicha`; zero usos é um estado completo para energia e não exige tarifa.
 
 Um mesmo nome normalizado aparece no máximo uma vez por Ficha. Se houver dois equipamentos físicos distintos, usar nomes distintos.
 

@@ -20,18 +20,18 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
         var produtoId = IdRota();
         if (!await CarregarAsync(produtoId)) return NotFoundOuRedirect(produtoId);
         var potenciaValida = UsoEquipamentoFichaFormulario.TentarObterPotencia(ModelState, Input.PotenciaKw, out var potencia);
-        if (string.IsNullOrWhiteSpace(Input.NomeEquipamento)) ModelState.AddModelError("Input.NomeEquipamento", "O nome do equipamento é obrigatório.");
+        if (string.IsNullOrWhiteSpace(Input.NomeEquipamento)) ModelState.AddModelError("Input.NomeEquipamento", "O nome do equipamento elétrico é obrigatório.");
         if (Input.TempoUsoMinutos is null || Input.TempoUsoMinutos <= 0) ModelState.AddModelError("Input.TempoUsoMinutos", "O tempo de uso deve ser maior que zero.");
         if (!potenciaValida || !ModelState.IsValid) return Page();
         var nomeNormalizado = Normalizar(Input.NomeEquipamento);
         if (await context.UsosEquipamentosFicha.AnyAsync(uso => uso.FichaTecnicaId == fichaId && uso.NomeEquipamentoNormalizado == nomeNormalizado.ToUpperInvariant()))
-        { ModelState.AddModelError("Input.NomeEquipamento", "Este equipamento já foi adicionado à ficha técnica."); return Page(); }
+        { ModelState.AddModelError("Input.NomeEquipamento", "Este equipamento elétrico já foi adicionado à ficha técnica."); return Page(); }
         var tempoUsoMinutos = Input.TempoUsoMinutos;
         if (tempoUsoMinutos is null) return Page();
         try { context.UsosEquipamentosFicha.Add(UsoEquipamentoFicha.Criar(empresaId, fichaId, Input.NomeEquipamento!, potencia, tempoUsoMinutos.Value)); }
         catch (ArgumentException exception) { ModelState.AddModelError("Input.NomeEquipamento", exception.Message); return Page(); }
         await context.SaveChangesAsync();
-        TempData["MensagemSucesso"] = "Equipamento adicionado à ficha técnica com sucesso.";
+        TempData["MensagemSucesso"] = "Equipamento elétrico adicionado à ficha técnica com sucesso.";
         return RedirectToPage("/Produtos/FichaTecnica", new { id = produtoId });
     }
     private async Task<bool> CarregarAsync(int produtoId)
@@ -45,7 +45,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
     }
     private IActionResult NotFoundOuRedirect(int produtoId)
     {
-        if (ProdutoNome is not null) { TempData["MensagemAviso"] = "Defina a base da ficha técnica antes de adicionar equipamentos."; return RedirectToPage("/Produtos/FichaTecnica", new { id = produtoId }); }
+        if (ProdutoNome is not null) { TempData["MensagemAviso"] = "Defina a base da ficha técnica antes de adicionar equipamentos elétricos."; return RedirectToPage("/Produtos/FichaTecnica", new { id = produtoId }); }
         return NotFound();
     }
     private int IdRota() => Convert.ToInt32(RouteData.Values["produtoId"], CultureInfo.InvariantCulture);

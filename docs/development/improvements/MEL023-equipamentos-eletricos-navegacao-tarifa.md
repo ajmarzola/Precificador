@@ -3,7 +3,7 @@
 - **Origem:** segunda rodada de testes manuais.
 - **Classificação:** UX / semântica de energia / navegação.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
+- **Estado:** Concluído.
 - **Ordem na fila pendente:** 09.
 - **Dependências:** MEL022 concluída; UC021 e UC027 concluídos.
 - **Gate operacional:** antes da MEL021.
