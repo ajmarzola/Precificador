@@ -29,6 +29,8 @@ Publicar o Precificador em Azure App Service F1 com Azure SQL Free, mantendo cus
 - nunca criar fallback pago;
 - App Service -> Azure SQL por **Managed Identity**, sem senha;
 - Azure SQL logical server com **Microsoft Entra-only + Entra administrator explícito**;
+- se Entra-only não puder ser configurado, parar; não habilitar SQL password como fallback;
+- App Service e Azure SQL obrigatoriamente na mesma região;
 - runtime da Web App somente `db_datareader` + `db_datawriter`;
 - `ConnectionStrings__Precificador` é a configuração do Azure;
 - Production não executa `Database.MigrateAsync()` automaticamente;
@@ -61,7 +63,7 @@ Deve:
 
 1. validar login/subscription;
 2. criar/usar Resource Group;
-3. validar disponibilidade regional e limites vigentes dos tiers gratuitos;
+3. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
 4. validar runtime Linux .NET 10;
 5. obter por parâmetro o Entra admin (nome + Object ID/SID);
 6. criar App Service Plan F1 Linux;
@@ -151,8 +153,8 @@ Não alterar documentos históricos além do necessário para marcar contexto hi
 1. `dotnet restore Precificador.slnx`;
 2. `dotnet build Precificador.slnx --configuration Release --no-restore`;
 3. `dotnet test Precificador.slnx --configuration Release --no-build`;
-4. App Service F1 confirmado;
-5. App Service F1 e limites atuais confirmados;
+4. App Service F1 e limites atuais confirmados;
+5. Web App e Azure SQL confirmados na mesma região;
 6. SQL Free + AutoPause e franquia atual confirmados;
 7. Entra-only + Entra admin confirmados;
 8. Managed Identity confirmada com apenas reader/writer;
