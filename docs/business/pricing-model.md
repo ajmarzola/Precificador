@@ -38,8 +38,10 @@ Quando a perda do processo reduz unidades finais vendáveis, ela deve ser reflet
 ### 3. Mão de obra
 
 ```text
-custo_mão_de_obra_lote = tempo_ativo_em_horas × valor_hora_da_empresa
+custo_mão_de_obra_lote = custo_base_itens × percentual_mão_de_obra_da_empresa
 ```
+
+A base é exclusivamente o custo base dos Itens calculado a partir dos insumos. Perdas, energia, rendimento e preços comerciais não entram na base da mão de obra.
 
 ### 4. Equipamentos e energia
 
@@ -225,7 +227,7 @@ A mesma execução da orquestração deve fornecer:
 - Preço de prateleira atual;
 - Margem atual e Situação;
 - impedimentos conhecidos;
-- parâmetros correntes usados, como Rendimento, Tempo ativo, Valor/hora, Tarifa de energia e Incremento comercial.
+- parâmetros correntes usados, como Rendimento, Percentual de mão de obra, Tarifa de energia e Incremento comercial.
 
 Metadados de Item/equipamento podem ser consultados separadamente apenas para rotulagem e devem ser associados aos resultados calculados por seus Ids.
 

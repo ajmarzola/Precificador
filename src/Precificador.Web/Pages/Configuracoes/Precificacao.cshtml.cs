@@ -18,7 +18,7 @@ public sealed class PrecificacaoModel(PrecificadorDbContext context, EmpresaCont
     {
         Configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
             .Select(configuracao => new ConfiguracaoPrecificacaoDetalhes(
-                configuracao.ValorHoraTrabalho,
+                configuracao.PercentualMaoDeObra,
                 configuracao.TarifaEnergiaKwh,
                 configuracao.MargemPadrao,
                 configuracao.IncrementoComercial,
@@ -29,7 +29,7 @@ public sealed class PrecificacaoModel(PrecificadorDbContext context, EmpresaCont
     }
 
     public sealed record ConfiguracaoPrecificacaoDetalhes(
-        decimal? ValorHoraTrabalho,
+        decimal PercentualMaoDeObra,
         decimal? TarifaEnergiaKwh,
         decimal? MargemPadrao,
         decimal? IncrementoComercial,

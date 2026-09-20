@@ -68,7 +68,7 @@ Esses itens ainda exigem especificação detalhada de modelo, migração dos dad
 
 | UC | Nome | Dependências funcionais |
 |---|---|---|
-| [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento e tempo ativo da Ficha Técnica | UC007, FT002 |
+| [UC013](UC013-definir-base-ficha-tecnica.md) | Definir rendimento da Ficha Técnica | UC007, FT002 |
 | [UC014](UC014-adicionar-insumo-ficha.md) | Adicionar Insumo à Ficha Técnica | UC013, UC001A–UC006 |
 | [UC015](UC015-alterar-item-ficha.md) | Alterar item da Ficha Técnica | UC014 |
 | [UC016](UC016-remover-item-ficha.md) | Remover item da ficha técnica | UC014, UC015, MEL010 |
@@ -88,7 +88,7 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | UC | Nome | Dependências funcionais |
 |---|---|---|
 | [UC018](UC018-calcular-custo-itens-lote.md) | Calcular custo atual dos itens do lote | UC005, UC006, UC014, UC017 |
-| [UC020](UC020-calcular-custo-mao-de-obra.md) | Calcular custo de mão de obra | UC013, UC027 |
+| [UC020](UC020-calcular-custo-mao-de-obra.md) | Calcular custo de mão de obra | UC018, UC026, UC027 |
 | [UC021](UC021-calcular-custo-energia-equipamentos.md) | Calcular custo de energia/equipamentos | UC013, UC027 |
 | [UC019](UC019-calcular-perdas-aplicaveis.md) | Calcular perdas aplicáveis | UC018 |
 | [UC022](UC022-calcular-custo-total-unitario.md) | Calcular custo total e custo unitário | UC018–UC021 |

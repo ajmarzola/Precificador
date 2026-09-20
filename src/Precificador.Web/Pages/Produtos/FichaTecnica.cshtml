@@ -29,11 +29,6 @@
         <input asp-for="Input.Rendimento" class="form-control" />
         <span asp-validation-for="Input.Rendimento" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Input.TempoAtivoMinutos" class="form-label">Tempo ativo de trabalho (minutos)</label>
-        <input asp-for="Input.TempoAtivoMinutos" class="form-control" />
-        <span asp-validation-for="Input.TempoAtivoMinutos" class="text-danger"></span>
-    </div>
     <button type="submit" class="btn btn-primary">Salvar</button>
     @if (Model.PossuiFicha)
     {
@@ -143,10 +138,7 @@
             <text>indisponível</text>
         }
     </p>
-    @if (!Model.CustoMaoDeObraCompleto)
-    {
-        <p>Valor da hora de trabalho não configurado.</p>
-    }
+    <p><strong>Mão de obra sobre os insumos:</strong> @Model.PercentualMaoDeObraFormatado</p>
 
     <h2 class="h4 mt-4">Equipamentos</h2>
     @if (Model.UsosEquipamentos.Count == 0) { <p>Nenhum equipamento adicionado.</p> }

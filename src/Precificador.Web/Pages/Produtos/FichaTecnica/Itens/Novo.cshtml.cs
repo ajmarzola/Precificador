@@ -130,8 +130,7 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
             .Select(ficha => new FichaResumo(
                 ficha.Id,
                 ficha.EmpresaId,
-                ficha.Rendimento,
-                ficha.TempoAtivoMinutos))
+                ficha.Rendimento))
             .SingleOrDefaultAsync();
 
         return Ficha is not null;
@@ -182,5 +181,5 @@ public sealed class NovoModel(PrecificadorDbContext context) : PageModel
 
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, bool Ativo);
 
-    public sealed record FichaResumo(int Id, int EmpresaId, decimal Rendimento, int TempoAtivoMinutos);
+    public sealed record FichaResumo(int Id, int EmpresaId, decimal Rendimento);
 }

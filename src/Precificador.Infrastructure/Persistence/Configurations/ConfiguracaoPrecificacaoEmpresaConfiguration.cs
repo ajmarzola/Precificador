@@ -11,7 +11,10 @@ public sealed class ConfiguracaoPrecificacaoEmpresaConfiguration : IEntityTypeCo
         builder.ToTable("ConfiguracoesPrecificacaoEmpresas");
         builder.HasKey(configuracao => configuracao.EmpresaId);
         builder.Property(configuracao => configuracao.EmpresaId).IsRequired();
-        builder.Property(configuracao => configuracao.ValorHoraTrabalho).HasPrecision(18, 6);
+        builder.Property(configuracao => configuracao.PercentualMaoDeObra)
+            .HasPrecision(9, 6)
+            .HasDefaultValue(ConfiguracaoPrecificacaoEmpresa.PercentualMaoDeObraPadrao)
+            .IsRequired();
         builder.Property(configuracao => configuracao.TarifaEnergiaKwh).HasPrecision(18, 6);
         builder.Property(configuracao => configuracao.MargemPadrao).HasPrecision(9, 6);
         builder.Property(configuracao => configuracao.IncrementoComercial).HasPrecision(18, 6);

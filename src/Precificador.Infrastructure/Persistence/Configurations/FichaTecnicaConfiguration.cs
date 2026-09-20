@@ -14,7 +14,6 @@ public sealed class FichaTecnicaConfiguration : IEntityTypeConfiguration<FichaTe
         builder.Property(ficha => ficha.EmpresaId).IsRequired();
         builder.Property(ficha => ficha.ProdutoId).IsRequired();
         builder.Property(ficha => ficha.Rendimento).HasPrecision(18, 6).IsRequired();
-        builder.Property(ficha => ficha.TempoAtivoMinutos).IsRequired();
         builder.HasIndex(ficha => new { ficha.EmpresaId, ficha.ProdutoId }).IsUnique();
         builder.HasOne<Precificador.Core.Empresas.Empresa>()
             .WithMany()

@@ -1,5 +1,7 @@
 # UC027 — Alterar configurações de precificação da Empresa
 
+> **Nota MEL022:** referências a `ValorHoraTrabalho` neste documento são históricas. O modelo ativo edita `PercentualMaoDeObra` obrigatório como percentual humano ("Mão de obra sobre os insumos (%)"), aceita zero e valores acima de 100%, e rejeita apenas valores negativos/vazios.
+
 - **Funcionalidade:** F006 — Configurações de Precificação
 - **Dependências funcionais:** UC026 e MEL009
 - **Alteração de schema:** não prevista
@@ -25,7 +27,7 @@ A implementação parte do modelo definido pela UC026:
 ~~~text
 ConfiguracaoPrecificacaoEmpresa
 - EmpresaId : int PK/FK
-- ValorHoraTrabalho : decimal?
+- PercentualMaoDeObra : decimal
 - TarifaEnergiaKwh : decimal?
 - MargemPadrao : decimal?
 - IncrementoComercial : decimal?
@@ -67,7 +69,7 @@ apontando para a rota de edição.
 
 A tela deve permitir alterar:
 
-1. Valor da hora de trabalho;
+1. Mão de obra sobre os insumos (%);
 2. Tarifa de energia (R$/kWh);
 3. Margem padrão para novos produtos (%);
 4. Incremento comercial de arredondamento;
@@ -79,12 +81,13 @@ Não editar `EmpresaId`.
 
 Os campos:
 
-- ValorHoraTrabalho;
 - TarifaEnergiaKwh;
 - MargemPadrao;
 - IncrementoComercial
 
 são opcionais.
+
+`PercentualMaoDeObra` é obrigatório. Input vazio/whitespace para esse campo é inválido.
 
 Input vazio/whitespace significa:
 
@@ -98,7 +101,7 @@ Zero é diferente de vazio.
 
 Zero é válido para:
 
-- ValorHoraTrabalho;
+- PercentualMaoDeObra;
 - TarifaEnergiaKwh;
 - MargemPadrao.
 
@@ -106,28 +109,36 @@ Zero é inválido para:
 
 - IncrementoComercial.
 
-`ReservaComercialDesconto` é obrigatória e não pode ser apagada para `null`.
+`PercentualMaoDeObra` e `ReservaComercialDesconto` são obrigatórios e não podem ser apagados para `null`.
 
 ## Validações
 
-### ValorHoraTrabalho
+### PercentualMaoDeObra
 
-Quando informado:
+Valor informado em percentual humano. Exemplos:
 
 ~~~text
-ValorHoraTrabalho >= 0
+10  => 0,10
+150 => 1,50
+250 => 2,50
+~~~
+
+Validação:
+
+~~~text
+PercentualMaoDeObra >= 0
 ~~~
 
 Mensagem de domínio recomendada:
 
 ~~~text
-O valor da hora de trabalho não pode ser negativo.
+O percentual de mão de obra não pode ser negativo.
 ~~~
 
 Input não numérico:
 
 ~~~text
-O valor da hora de trabalho deve ser um número válido.
+O percentual de mão de obra deve ser um número válido.
 ~~~
 
 ### TarifaEnergiaKwh

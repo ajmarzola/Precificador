@@ -65,7 +65,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         var empresaDois = await web.CriarEmpresaAsync();
         var produtoSemFicha = await CriarProdutoAsync(1, Nome("Produto sem acao item"), ativo: true);
         var produtoId = await CriarProdutoAsync(1, Nome("Produto com acao item"), ativo: true);
-        await CriarFichaAsync(1, produtoId, 2.5m, 45);
+        await CriarFichaAsync(1, produtoId, 2.5m);
         var ativoComMarca = await CriarInsumoAsync(1, Nome("Papel ativo"), "Marca metro", UnidadeMedida.Metro, ativo: true);
         var ativoSemMarca = await CriarInsumoAsync(1, Nome("Cola ativa"), null, UnidadeMedida.Unidade, ativo: true);
         var inativo = await CriarInsumoAsync(1, Nome("Papel inativo"), "Fora", UnidadeMedida.Grama, ativo: false);
@@ -783,7 +783,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     public async Task UC017_W14_Get_da_ficha_nao_muta_produto_ficha_item_ou_insumo()
     {
         var produtoId = await CriarProdutoAsync(1, Nome("Produto GET imutavel UC017"), ativo: true);
-        var fichaId = await CriarFichaAsync(1, produtoId, 2.5m, 45);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2.5m);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo GET imutavel UC017"), "Marca original", UnidadeMedida.Metro, true, observacao: "Global original");
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1.25m, "Contextual original");
         var produtoAntes = await ObterProdutoAsync(produtoId, 1);
@@ -809,7 +809,6 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(fichaAntes.EmpresaId, fichaDepois.EmpresaId);
         Assert.Equal(fichaAntes.ProdutoId, fichaDepois.ProdutoId);
         Assert.Equal(fichaAntes.Rendimento, fichaDepois.Rendimento);
-        Assert.Equal(fichaAntes.TempoAtivoMinutos, fichaDepois.TempoAtivoMinutos);
         Assert.Equal(itemAntes.Id, itemDepois.Id);
         Assert.Equal(itemAntes.EmpresaId, itemDepois.EmpresaId);
         Assert.Equal(itemAntes.FichaTecnicaId, itemDepois.FichaTecnicaId);
@@ -831,11 +830,11 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     public async Task UC017_W15_Post_invalido_da_base_preserva_composicao_completa()
     {
         var produtoId = await CriarProdutoAsync(1, Nome("Produto base invalida UC017"), ativo: true);
-        var fichaId = await CriarFichaAsync(1, produtoId, 2m, 30);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2m);
         var itemId = await CriarItemAsync(1, fichaId, await CriarInsumoAsync(1, Nome("Insumo base UC017"), "Marca preservada", UnidadeMedida.Grama, true), 1m, "Observação preservada");
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var response = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var response = await EnviarFichaBaseAsync(client, produtoId, "0");
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -845,19 +844,18 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Remover/{itemId}", pagina);
         var ficha = await ObterFichaAsync(fichaId, 1);
         Assert.Equal(2m, ficha.Rendimento);
-        Assert.Equal(30, ficha.TempoAtivoMinutos);
     }
 
     [Fact]
     public async Task UC015_W16_Post_invalido_da_base_preserva_navegacao_de_itens()
     {
         var produtoId = await CriarProdutoAsync(1, Nome("Produto base invalida itens"), ativo: true);
-        var fichaId = await CriarFichaAsync(1, produtoId, 2m, 30);
+        var fichaId = await CriarFichaAsync(1, produtoId, 2m);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo base invalida itens"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var response = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var response = await EnviarFichaBaseAsync(client, produtoId, "0");
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -867,7 +865,6 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Contains($"/Produtos/FichaTecnica/{produtoId}/Itens/Editar/{itemId}", pagina);
         var ficha = await ObterFichaAsync(fichaId, 1);
         Assert.Equal(2m, ficha.Rendimento);
-        Assert.Equal(30, ficha.TempoAtivoMinutos);
     }
 
     [Fact]
@@ -990,7 +987,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     public async Task UC016_W6_Remover_ultimo_item_mantem_ficha_vazia()
     {
         var produtoId = await CriarProdutoAsync(1, Nome("Produto ultimo item"), ativo: true);
-        var fichaId = await CriarFichaAsync(1, produtoId, 3m, 45);
+        var fichaId = await CriarFichaAsync(1, produtoId, 3m);
         var insumoId = await CriarInsumoAsync(1, Nome("Insumo ultimo item"), null, UnidadeMedida.Grama, ativo: true);
         var itemId = await CriarItemAsync(1, fichaId, insumoId, 1m, null);
         using var client = await web.CriarClienteAutenticadoAsync(1);
@@ -1001,7 +998,6 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
 
         Assert.Empty(await ListarItensAsync(produtoId));
         Assert.Equal(3m, ficha.Rendimento);
-        Assert.Equal(45, ficha.TempoAtivoMinutos);
         Assert.Contains("Nenhum insumo adicionado.", pagina);
     }
 
@@ -1257,7 +1253,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         using var client = await web.CriarClienteAutenticadoAsync(1);
         await EnviarEdicaoItemAsync(client, produtoId, itemId, "2", "persistido", percentualPerda: "10");
 
-        var resposta = await EnviarFichaBaseAsync(client, produtoId, "0", "30");
+        var resposta = await EnviarFichaBaseAsync(client, produtoId, "0");
         var pagina = await resposta.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
@@ -1393,8 +1389,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
     private static async Task<HttpResponseMessage> EnviarFichaBaseAsync(
         HttpClient client,
         int produtoId,
-        string? rendimento,
-        string? tempoAtivo)
+        string? rendimento)
     {
         var respostaPagina = await client.GetAsync($"/Produtos/FichaTecnica/{produtoId}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
@@ -1407,11 +1402,6 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         if (rendimento is not null)
         {
             dados["Input.Rendimento"] = rendimento;
-        }
-
-        if (tempoAtivo is not null)
-        {
-            dados["Input.TempoAtivoMinutos"] = tempoAtivo;
         }
 
         return await client.PostAsync($"/Produtos/FichaTecnica/{produtoId}", new FormUrlEncodedContent(dados));
@@ -1454,12 +1444,12 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         return produto.Id;
     }
 
-    private async Task<int> CriarFichaAsync(int empresaId, int produtoId, decimal rendimento = 2m, int tempoAtivoMinutos = 30)
+    private async Task<int> CriarFichaAsync(int empresaId, int produtoId, decimal rendimento = 2m)
     {
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var ficha = Precificador.Core.FichasTecnicas.FichaTecnica.Criar(empresaId, produtoId, rendimento, tempoAtivoMinutos);
+        var ficha = Precificador.Core.FichasTecnicas.FichaTecnica.Criar(empresaId, produtoId, rendimento);
         context.FichasTecnicas.Add(ficha);
         await context.SaveChangesAsync();
         return ficha.Id;

@@ -2,6 +2,7 @@ namespace Precificador.Core.Empresas;
 
 public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
 {
+    public const decimal PercentualMaoDeObraPadrao = 0.10m;
     public const decimal ReservaComercialDescontoPadrao = 0.10m;
 
     private ConfiguracaoPrecificacaoEmpresa()
@@ -11,13 +12,14 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     private ConfiguracaoPrecificacaoEmpresa(int empresaId)
     {
         DefinirEmpresa(empresaId);
+        PercentualMaoDeObra = PercentualMaoDeObraPadrao;
         ReservaComercialDesconto = ReservaComercialDescontoPadrao;
         Validar();
     }
 
     public int EmpresaId { get; private set; }
 
-    public decimal? ValorHoraTrabalho { get; private set; }
+    public decimal PercentualMaoDeObra { get; private set; }
 
     public decimal? TarifaEnergiaKwh { get; private set; }
 
@@ -30,19 +32,19 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     public static ConfiguracaoPrecificacaoEmpresa CriarPadrao(int empresaId) => new(empresaId);
 
     public void Atualizar(
-        decimal? valorHoraTrabalho,
+        decimal percentualMaoDeObra,
         decimal? tarifaEnergiaKwh,
         decimal? margemPadrao,
         decimal? incrementoComercial,
         decimal reservaComercialDesconto)
     {
-        ValidarValorNaoNegativo(valorHoraTrabalho, nameof(ValorHoraTrabalho));
+        ValidarPercentualMaoDeObra(percentualMaoDeObra);
         ValidarValorNaoNegativo(tarifaEnergiaKwh, nameof(TarifaEnergiaKwh));
         ValidarFracaoMenorQueUm(margemPadrao, nameof(MargemPadrao));
         ValidarIncremento(incrementoComercial);
         ValidarReservaComercialDesconto(reservaComercialDesconto);
 
-        ValorHoraTrabalho = valorHoraTrabalho;
+        PercentualMaoDeObra = percentualMaoDeObra;
         TarifaEnergiaKwh = tarifaEnergiaKwh;
         MargemPadrao = margemPadrao;
         IncrementoComercial = incrementoComercial;
@@ -66,7 +68,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
 
     private void Validar()
     {
-        ValidarValorNaoNegativo(ValorHoraTrabalho, nameof(ValorHoraTrabalho));
+        ValidarPercentualMaoDeObra(PercentualMaoDeObra);
         ValidarValorNaoNegativo(TarifaEnergiaKwh, nameof(TarifaEnergiaKwh));
         ValidarFracaoMenorQueUm(MargemPadrao, nameof(MargemPadrao));
         ValidarIncremento(IncrementoComercial);
@@ -77,10 +79,15 @@ public sealed class ConfiguracaoPrecificacaoEmpresa : IEntidadeEmpresa
     {
         if (valor < 0)
         {
-            var mensagem = nomeParametro == nameof(ValorHoraTrabalho)
-                ? "O valor da hora de trabalho não pode ser negativo."
-                : "A tarifa de energia não pode ser negativa.";
-            throw new ArgumentOutOfRangeException(nomeParametro, mensagem);
+            throw new ArgumentOutOfRangeException(nomeParametro, "A tarifa de energia não pode ser negativa.");
+        }
+    }
+
+    private static void ValidarPercentualMaoDeObra(decimal percentualMaoDeObra)
+    {
+        if (percentualMaoDeObra < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(PercentualMaoDeObra), "O percentual de mão de obra não pode ser negativo.");
         }
     }
 

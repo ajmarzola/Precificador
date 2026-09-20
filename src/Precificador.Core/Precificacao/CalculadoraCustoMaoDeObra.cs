@@ -2,30 +2,25 @@ namespace Precificador.Core.Precificacao;
 
 public static class CalculadoraCustoMaoDeObra
 {
-    public static ResultadoCalculoCustoMaoDeObra Calcular(int tempoAtivoMinutos, decimal? valorHoraTrabalho)
+    public static ResultadoCalculoCustoMaoDeObra Calcular(decimal? custoBaseItens, decimal percentualMaoDeObra)
     {
-        if (tempoAtivoMinutos < 0)
+        if (custoBaseItens < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(tempoAtivoMinutos));
+            throw new ArgumentOutOfRangeException(nameof(custoBaseItens));
         }
 
-        if (valorHoraTrabalho < 0)
+        if (percentualMaoDeObra < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(valorHoraTrabalho));
+            throw new ArgumentOutOfRangeException(nameof(percentualMaoDeObra));
         }
 
-        if (tempoAtivoMinutos == 0)
-        {
-            return new ResultadoCalculoCustoMaoDeObra(0m, true);
-        }
-
-        if (valorHoraTrabalho is null)
+        if (custoBaseItens is null)
         {
             return new ResultadoCalculoCustoMaoDeObra(null, false);
         }
 
         return new ResultadoCalculoCustoMaoDeObra(
-            (tempoAtivoMinutos / 60m) * valorHoraTrabalho.Value,
+            custoBaseItens.Value * percentualMaoDeObra,
             true);
     }
 }

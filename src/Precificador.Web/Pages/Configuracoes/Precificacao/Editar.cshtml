@@ -10,10 +10,10 @@
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
-        <label asp-for="Input.ValorHoraTrabalho" class="form-label"></label>
-        <input asp-for="Input.ValorHoraTrabalho" class="form-control" aria-describedby="ajuda-valor-hora-trabalho" />
-        <div id="ajuda-valor-hora-trabalho" class="form-text">@ConfiguracaoPrecificacaoAjuda.ValorHoraTrabalho</div>
-        <span asp-validation-for="Input.ValorHoraTrabalho" class="text-danger"></span>
+        <label asp-for="Input.PercentualMaoDeObra" class="form-label"></label>
+        <input asp-for="Input.PercentualMaoDeObra" class="form-control" aria-describedby="ajuda-percentual-mao-de-obra" />
+        <div id="ajuda-percentual-mao-de-obra" class="form-text">@ConfiguracaoPrecificacaoAjuda.PercentualMaoDeObra</div>
+        <span asp-validation-for="Input.PercentualMaoDeObra" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.TarifaEnergiaKwh" class="form-label"></label>

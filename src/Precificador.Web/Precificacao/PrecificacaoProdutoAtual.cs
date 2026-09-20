@@ -20,7 +20,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         var dataReferenciaPrecoAtual = registroAtual?.DataReferencia;
 
         var ficha = await context.FichasTecnicas.AsNoTracking().Where(f => f.ProdutoId == produtoId)
-            .Select(f => new FichaCarregada(f.Id, f.Rendimento, f.TempoAtivoMinutos)).SingleOrDefaultAsync();
+            .Select(f => new FichaCarregada(f.Id, f.Rendimento)).SingleOrDefaultAsync();
         if (ficha is null)
         {
             return ResultadoIncompleto(
@@ -35,7 +35,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         }
 
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(c => new ConfiguracaoCarregada(c.ValorHoraTrabalho, c.TarifaEnergiaKwh, c.IncrementoComercial, c.ReservaComercialDesconto))
+            .Select(c => new ConfiguracaoCarregada(c.PercentualMaoDeObra, c.TarifaEnergiaKwh, c.IncrementoComercial, c.ReservaComercialDesconto))
             .SingleOrDefaultAsync();
         if (configuracao is null)
         {
@@ -47,7 +47,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
                 ["As configurações de precificação não foram encontradas."],
                 ["As configurações de precificação não foram encontradas."],
                 ficha.Rendimento,
-                ficha.TempoAtivoMinutos);
+                null);
         }
 
         var itens = await context.ItensFichaTecnica.AsNoTracking().Where(i => i.FichaTecnicaId == ficha.Id)
@@ -56,7 +56,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         var itensCalculados = CalculadoraCustoItens.Calcular(itens.Select(i => new ItemCustoEntrada(i.Id, i.Quantidade, vigentes.GetValueOrDefault(i.InsumoId)?.CustoUnitario)));
         var custos = itensCalculados.Itens.ToDictionary(i => i.ItemId);
         var perdas = CalculadoraCustoPerdas.Calcular(itens.Select(i => new ItemCustoPerdaEntrada(i.Id, i.PercentualPerda, custos[i.Id].CustoItem)));
-        var maoDeObra = CalculadoraCustoMaoDeObra.Calcular(ficha.TempoAtivoMinutos, configuracao.ValorHoraTrabalho);
+        var maoDeObra = CalculadoraCustoMaoDeObra.Calcular(itensCalculados.CustoBaseItens, configuracao.PercentualMaoDeObra);
         var usos = await context.UsosEquipamentosFicha.AsNoTracking().Where(u => u.FichaTecnicaId == ficha.Id)
             .Select(u => new UsoEquipamentoCustoEntrada(u.Id, u.PotenciaKw, u.TempoUsoMinutos)).ToListAsync();
         var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh, usos);
@@ -75,12 +75,6 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             impedimentos.Add("Há item(ns) sem preço vigente.");
             impedimentosCusto.Add("Há item(ns) sem preço vigente.");
-        }
-
-        if (!maoDeObra.Completo)
-        {
-            impedimentos.Add("Valor da hora de trabalho não configurado.");
-            impedimentosCusto.Add("Valor da hora de trabalho não configurado.");
         }
 
         if (!energia.Completo)
@@ -114,8 +108,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             DataOperacional = dataOperacionalEmpresa.Hoje,
             Rendimento = ficha.Rendimento,
-            TempoAtivoMinutos = ficha.TempoAtivoMinutos,
-            ValorHoraTrabalho = configuracao.ValorHoraTrabalho,
+            PercentualMaoDeObra = configuracao.PercentualMaoDeObra,
             TarifaEnergiaKwh = configuracao.TarifaEnergiaKwh,
             IncrementoComercial = configuracao.IncrementoComercial,
             Itens = itensCalculados.Itens.ToDictionary(i => i.ItemId, i => new ItemPrecificacaoAtual(i.CustoUnitario, i.CustoItem, perdas.Itens.Single(p => p.ItemId == i.ItemId).CustoPerdaItem)),
@@ -131,7 +124,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         IReadOnlyList<string> impedimentos,
         IReadOnlyList<string> impedimentosCusto,
         decimal? rendimento,
-        int? tempoAtivoMinutos)
+        decimal? percentualMaoDeObra)
     {
         var margemAtual = CalculadoraMargemAtual.Calcular(null, precoPrateleiraAtual, produto.MargemAlvo);
         return new ResultadoPrecificacaoProdutoAtual(
@@ -157,7 +150,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             DataOperacional = dataOperacional,
             Rendimento = rendimento,
-            TempoAtivoMinutos = tempoAtivoMinutos
+            PercentualMaoDeObra = percentualMaoDeObra
         };
     }
 
@@ -170,9 +163,9 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
     }
 
     private sealed record ProdutoCarregado(int Id, int EmpresaId, decimal MargemAlvo);
-    private sealed record FichaCarregada(int Id, decimal Rendimento, int TempoAtivoMinutos);
+    private sealed record FichaCarregada(int Id, decimal Rendimento);
     private sealed record ItemCarregado(int Id, int InsumoId, decimal Quantidade, decimal PercentualPerda);
-    private sealed record ConfiguracaoCarregada(decimal? ValorHoraTrabalho, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial, decimal ReservaComercialDesconto);
+    private sealed record ConfiguracaoCarregada(decimal PercentualMaoDeObra, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial, decimal ReservaComercialDesconto);
 }
 
 public sealed record ResultadoPrecificacaoProdutoAtual(
@@ -198,8 +191,7 @@ public sealed record ResultadoPrecificacaoProdutoAtual(
 {
     public DateOnly DataOperacional { get; init; }
     public decimal? Rendimento { get; init; }
-    public int? TempoAtivoMinutos { get; init; }
-    public decimal? ValorHoraTrabalho { get; init; }
+    public decimal? PercentualMaoDeObra { get; init; }
     public decimal? TarifaEnergiaKwh { get; init; }
     public decimal? IncrementoComercial { get; init; }
     public IReadOnlyDictionary<int, ItemPrecificacaoAtual> Itens { get; init; } = new Dictionary<int, ItemPrecificacaoAtual>();

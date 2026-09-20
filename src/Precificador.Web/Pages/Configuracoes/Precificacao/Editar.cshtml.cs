@@ -41,7 +41,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
         try
         {
             configuracao.Atualizar(
-                valores.ValorHoraTrabalho,
+                valores.PercentualMaoDeObra,
                 valores.TarifaEnergiaKwh,
                 valores.MargemPadrao,
                 valores.IncrementoComercial,

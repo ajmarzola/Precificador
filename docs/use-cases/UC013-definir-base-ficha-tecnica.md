@@ -1,5 +1,7 @@
 # UC013 — Definir rendimento e tempo ativo da Ficha Técnica
 
+> **Nota MEL022:** este caso de uso é histórico. A MEL022 removeu `TempoAtivoMinutos` do modelo ativo; a base vigente da Ficha Técnica é apenas `Rendimento`. Trechos abaixo que mencionam tempo ativo permanecem como registro do UC original e estão superados pela MEL022.
+
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC007 a UC010 implementados; FT002 implementada
 - **Alteração de schema:** sim — introduz FichaTecnica

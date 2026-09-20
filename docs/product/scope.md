@@ -19,7 +19,7 @@ O MVP contempla:
 - composição por insumos;
 - custos de matérias-primas, embalagens e consumíveis;
 - perdas de material/processo quando aplicáveis;
-- custo de mão de obra a partir de tempo ativo e valor/hora;
+- custo de mão de obra a partir de percentual sobre o custo base dos insumos;
 - custo de energia/recursos a partir de uso de equipamentos quando aplicável;
 - cálculo do custo total por lote e por unidade;
 - margem-alvo por produto;

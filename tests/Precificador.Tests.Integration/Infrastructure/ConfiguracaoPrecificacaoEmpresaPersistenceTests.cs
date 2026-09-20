@@ -1,5 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
@@ -8,6 +10,47 @@ namespace Precificador.Tests.Integration.Infrastructure;
 
 public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
 {
+    [Fact]
+    public async Task MEL022_P1_P5_P10_Migra_dados_existentes_da_MEL020_sem_colunas_legadas()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("MaoDeObraPercentual");
+        await using var contexto = CriarContexto(connectionString, 1);
+        await contexto.GetService<IMigrator>().MigrateAsync("20260918122710_InitialSqlServer");
+
+        await contexto.Database.ExecuteSqlRawAsync(
+            "UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = 87.5 WHERE EmpresaId = 1");
+        await contexto.Database.ExecuteSqlRawAsync(
+            "INSERT INTO Empresas (Ativo, Nome, NomeNormalizado, TimeZoneId) VALUES (1, 'Empresa legada', 'EMPRESA LEGADA', 'America/Sao_Paulo')");
+        var empresaLegadaId = await contexto.Database.SqlQueryRaw<int>(
+            "SELECT Id AS Value FROM Empresas WHERE Nome = 'Empresa legada'").SingleAsync();
+        await contexto.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO ConfiguracoesPrecificacaoEmpresas (EmpresaId, ValorHoraTrabalho) VALUES ({empresaLegadaId}, 125.25)");
+        await contexto.Database.ExecuteSqlRawAsync(
+            "INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto legado', 'PRODUTO LEGADO', 0.2, 1)");
+        var produtoLegadoId = await contexto.Database.SqlQueryRaw<int>(
+            "SELECT Id AS Value FROM Produtos WHERE Nome = 'Produto legado'").SingleAsync();
+        await contexto.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, {produtoLegadoId}, 3, 95)");
+
+        Assert.Single(await contexto.Database.GetPendingMigrationsAsync());
+        await contexto.Database.MigrateAsync();
+
+        var percentualSeed = await contexto.Database.SqlQueryRaw<decimal>(
+            "SELECT PercentualMaoDeObra AS Value FROM ConfiguracoesPrecificacaoEmpresas WHERE EmpresaId = 1").SingleAsync();
+        var percentualLegado = await contexto.Database.SqlQueryRaw<decimal>(
+            "SELECT PercentualMaoDeObra AS Value FROM ConfiguracoesPrecificacaoEmpresas WHERE EmpresaId = {0}", empresaLegadaId).SingleAsync();
+        Assert.Equal(.10m, percentualSeed);
+        Assert.Equal(.10m, percentualLegado);
+
+        var colunasAntigas = await contexto.Database.SqlQueryRaw<string>(
+            "SELECT COLUMN_NAME AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE (TABLE_NAME = 'ConfiguracoesPrecificacaoEmpresas' AND COLUMN_NAME = 'ValorHoraTrabalho') OR (TABLE_NAME = 'FichasTecnicas' AND COLUMN_NAME = 'TempoAtivoMinutos')").ToListAsync();
+        Assert.Empty(colunasAntigas);
+        var definicaoPercentual = await contexto.Database.SqlQueryRaw<string>(
+            "SELECT CONCAT(DATA_TYPE, '(', NUMERIC_PRECISION, ',', NUMERIC_SCALE, ')/', IS_NULLABLE) AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ConfiguracoesPrecificacaoEmpresas' AND COLUMN_NAME = 'PercentualMaoDeObra'").SingleAsync();
+        Assert.Equal("decimal(9,6)/NO", definicaoPercentual);
+        Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());
+    }
+
     [Fact]
     public async Task P1_Migration_em_banco_vazio_cria_tabela_e_configuracao_da_empresa_tecnica()
     {
@@ -22,6 +65,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
         Assert.Contains("ConfiguracoesPrecificacaoEmpresas", tabelas);
         Assert.Equal(1, configuracao.EmpresaId);
+        Assert.Equal(0.10m, configuracao.PercentualMaoDeObra);
     }
 
     [Fact]
@@ -93,14 +137,14 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await contexto.Database.ExecuteSqlRawAsync(
             """
             UPDATE ConfiguracoesPrecificacaoEmpresas
-            SET ValorHoraTrabalho = @valorHoraTrabalho,
+            SET PercentualMaoDeObra = @percentualMaoDeObra,
                 TarifaEnergiaKwh = NULL,
                 MargemPadrao = @margemPadrao,
                 IncrementoComercial = @incrementoComercial,
                 ReservaComercialDesconto = @reservaComercialDesconto
             WHERE EmpresaId = @empresaId
             """,
-            SqlDecimalParameter.Criar("valorHoraTrabalho", 12.345678m, precision: 18, scale: 6),
+            SqlDecimalParameter.Criar("percentualMaoDeObra", 1.234567m, precision: 9, scale: 6),
             SqlDecimalParameter.Criar("margemPadrao", 0.075m, precision: 9, scale: 6),
             SqlDecimalParameter.Criar("incrementoComercial", 0.500001m, precision: 18, scale: 6),
             SqlDecimalParameter.Criar("reservaComercialDesconto", 0.125m, precision: 9, scale: 6),
@@ -109,7 +153,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
 
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
 
-        Assert.Equal(12.345678m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(1.234567m, configuracao.PercentualMaoDeObra);
         Assert.Null(configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.075m, configuracao.MargemPadrao);
         Assert.Equal(0.500001m, configuracao.IncrementoComercial);
@@ -124,12 +168,12 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await contexto.Database.MigrateAsync();
 
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        configuracao.Atualizar(12.345678m, null, 0.075m, 0.500001m, 0.125m);
+        configuracao.Atualizar(1.234567m, null, 0.075m, 0.500001m, 0.125m);
         await contexto.SaveChangesAsync();
         contexto.ChangeTracker.Clear();
 
         var atualizada = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        Assert.Equal(12.345678m, atualizada.ValorHoraTrabalho);
+        Assert.Equal(1.234567m, atualizada.PercentualMaoDeObra);
         Assert.Null(atualizada.TarifaEnergiaKwh);
         Assert.Equal(0.075m, atualizada.MargemPadrao);
         Assert.Equal(0.500001m, atualizada.IncrementoComercial);
@@ -154,13 +198,13 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await using (var contextoEmpresaUm = CriarContexto(connectionString, 1))
         {
             var configuracao = await contextoEmpresaUm.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-            configuracao.Atualizar(10m, 1m, 0.20m, 0.50m, 0.15m);
+            configuracao.Atualizar(0.10m, 1m, 0.20m, 0.50m, 0.15m);
             await contextoEmpresaUm.SaveChangesAsync();
         }
 
         await using var contextoEmpresaDoisConsulta = CriarContexto(connectionString, 2);
         var configuracaoEmpresaDois = await contextoEmpresaDoisConsulta.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        Assert.Null(configuracaoEmpresaDois.ValorHoraTrabalho);
+        Assert.Equal(0.10m, configuracaoEmpresaDois.PercentualMaoDeObra);
         Assert.Null(configuracaoEmpresaDois.TarifaEnergiaKwh);
         Assert.Null(configuracaoEmpresaDois.MargemPadrao);
         Assert.Null(configuracaoEmpresaDois.IncrementoComercial);
@@ -185,7 +229,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await using (var contextoEmpresaDois = CriarContexto(connectionString, 2))
         {
             var configuracao = await contextoEmpresaDois.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-            configuracao.Atualizar(77m, 7m, 0.70m, 7m, 0.17m);
+            configuracao.Atualizar(0.77m, 7m, 0.70m, 7m, 0.17m);
             await contextoEmpresaDois.SaveChangesAsync();
         }
 
@@ -194,7 +238,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
             var configuracaoDeOutraEmpresa = await contextoEmpresaUm.ConfiguracoesPrecificacaoEmpresas
                 .IgnoreQueryFilters()
                 .SingleAsync(configuracao => configuracao.EmpresaId == 2);
-            configuracaoDeOutraEmpresa.Atualizar(11m, 1m, 0.10m, 1m, 0.05m);
+            configuracaoDeOutraEmpresa.Atualizar(0.11m, 1m, 0.10m, 1m, 0.05m);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
         }
@@ -203,7 +247,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         var configuracaoPreservada = await consultaEmpresaDois.ConfiguracoesPrecificacaoEmpresas
             .AsNoTracking()
             .SingleAsync();
-        Assert.Equal(77m, configuracaoPreservada.ValorHoraTrabalho);
+        Assert.Equal(0.77m, configuracaoPreservada.PercentualMaoDeObra);
         Assert.Equal(7m, configuracaoPreservada.TarifaEnergiaKwh);
         Assert.Equal(0.70m, configuracaoPreservada.MargemPadrao);
         Assert.Equal(7m, configuracaoPreservada.IncrementoComercial);
@@ -219,7 +263,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         var quantidadeAntes = await contexto.ConfiguracoesPrecificacaoEmpresas.CountAsync();
 
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        configuracao.Atualizar(10m, 1m, 0.20m, 0.50m, 0.15m);
+        configuracao.Atualizar(0.10m, 1m, 0.20m, 0.50m, 0.15m);
         await contexto.SaveChangesAsync();
 
         Assert.Equal(quantidadeAntes, await contexto.ConfiguracoesPrecificacaoEmpresas.CountAsync());
@@ -236,7 +280,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await contexto.SaveChangesAsync();
 
         var configuracao = await contexto.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        configuracao.Atualizar(null, null, 0.10m, null, 0.10m);
+        configuracao.Atualizar(0.10m, null, 0.10m, null, 0.10m);
         await contexto.SaveChangesAsync();
         contexto.ChangeTracker.Clear();
 

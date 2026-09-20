@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Precificador.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using Precificador.Infrastructure.Persistence;
 namespace Precificador.Infrastructure.Migrations
 {
     [DbContext(typeof(PrecificadorDbContext))]
-    partial class PrecificadorDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260920172653_ReplaceHourlyLaborWithPercentage")]
+    partial class ReplaceHourlyLaborWithPercentage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

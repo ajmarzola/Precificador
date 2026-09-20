@@ -1,5 +1,7 @@
 # UC017 — Consultar Ficha Técnica e composição
 
+> **Nota MEL022:** referências a Tempo ativo neste documento são históricas. No modelo ativo, a Ficha Técnica exibe/edita Rendimento na base e não possui `TempoAtivoMinutos`.
+
 - **Funcionalidade:** F003 — Ficha Técnica
 - **Dependências materiais:** UC013, UC014, UC015 e UC016 implementados
 - **Alteração de schema:** não

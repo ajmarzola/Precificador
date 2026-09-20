@@ -56,7 +56,7 @@ Texto livre opcional usado para organização do catálogo de Produtos dentro de
 
 ## Ficha técnica
 
-Definição produtiva atual de um lote/execução de Produto. A base introduzida pela UC013 contém Rendimento e Tempo ativo; composição por Insumos e demais recursos são acrescentados em UCs posteriores. No MVP existe no máximo uma Ficha Técnica atual por Produto.
+Definição produtiva atual de um lote/execução de Produto. Após a MEL022, a base vigente contém Rendimento; composição por Insumos e demais recursos são acrescentados em UCs posteriores. No MVP existe no máximo uma Ficha Técnica atual por Produto.
 
 ## Lote
 
@@ -72,7 +72,7 @@ Percentual adicional configurado em um Item da Ficha para representar desperdíc
 
 ## Tempo ativo
 
-Tempo de trabalho humano ativo necessário para executar o lote, informado em minutos inteiros. Pode ser zero quando explicitamente não houver trabalho ativo.
+Conceito histórico removido do modelo ativo pela MEL022. A mão de obra vigente é calculada por percentual sobre o custo base dos insumos.
 
 ## Custo do lote
 

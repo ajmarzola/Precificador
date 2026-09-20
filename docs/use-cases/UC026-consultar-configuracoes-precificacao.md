@@ -1,5 +1,7 @@
 # UC026 — Consultar configurações de precificação da Empresa
 
+> **Nota MEL022:** referências a `ValorHoraTrabalho` neste documento são históricas. O modelo ativo usa `PercentualMaoDeObra` obrigatório, armazenado como fração, com default `0,10`, sem teto de 100%.
+
 - **Funcionalidade:** F006 — Configurações de Precificação
 - **Dependências funcionais:** FT002 e MEL009
 - **Alteração de schema:** sim
@@ -22,7 +24,7 @@ Criar entidade 1:1 separada:
 ~~~text
 ConfiguracaoPrecificacaoEmpresa
 - EmpresaId : int
-- ValorHoraTrabalho : decimal?
+- PercentualMaoDeObra : decimal
 - TarifaEnergiaKwh : decimal?
 - MargemPadrao : decimal?
 - IncrementoComercial : decimal?
@@ -55,9 +57,16 @@ A separação:
 
 ## Valores inicialmente configurados
 
+Após a MEL022, `PercentualMaoDeObra` possui default normativo:
+
+~~~text
+PercentualMaoDeObra = 0,10
+~~~
+
+equivalente a 10%.
+
 Não existem defaults de negócio aprovados para:
 
-- ValorHoraTrabalho;
 - TarifaEnergiaKwh;
 - MargemPadrao;
 - IncrementoComercial.
@@ -82,17 +91,17 @@ equivalente a 10 pontos percentuais.
 
 ## Semântica dos campos
 
-### ValorHoraTrabalho
+### PercentualMaoDeObra
 
-Valor em moeda por hora usado futuramente pelo UC020.
+Percentual aplicado sobre `CustoBaseItens` para calcular a mão de obra do lote no UC020/RN013.
 
-Validação quando informado:
+Validação:
 
 ~~~text
-ValorHoraTrabalho >= 0
+PercentualMaoDeObra >= 0
 ~~~
 
-Zero explicitamente configurado é válido. `null` é diferente de zero.
+Zero explicitamente configurado é válido. Valores acima de 100% também são válidos. O campo é obrigatório e não pode ser `null` no modelo ativo.
 
 ### TarifaEnergiaKwh
 

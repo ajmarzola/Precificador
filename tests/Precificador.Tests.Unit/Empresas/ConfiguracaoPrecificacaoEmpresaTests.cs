@@ -12,11 +12,11 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     }
 
     [Fact]
-    public void U2_CriarPadrao_deixa_parametros_opcionais_nulos()
+    public void U2_CriarPadrao_define_percentual_de_mao_de_obra_e_deixa_demais_parametros_opcionais_nulos()
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
-        Assert.Null(configuracao.ValorHoraTrabalho);
+        Assert.Equal(0.10m, configuracao.PercentualMaoDeObra);
         Assert.Null(configuracao.TarifaEnergiaKwh);
         Assert.Null(configuracao.MargemPadrao);
         Assert.Null(configuracao.IncrementoComercial);
@@ -44,9 +44,9 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
-        configuracao.Atualizar(12.34m, 0.98m, 0.30m, 0.50m, 0.10m);
+        configuracao.Atualizar(1.50m, 0.98m, 0.30m, 0.50m, 0.10m);
 
-        Assert.Equal(12.34m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(1.50m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0.98m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.30m, configuracao.MargemPadrao);
         Assert.Equal(0.50m, configuracao.IncrementoComercial);
@@ -54,13 +54,13 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     }
 
     [Fact]
-    public void UC027_U2_Atualizar_aceita_null_nos_quatro_campos_opcionais()
+    public void UC027_U2_Atualizar_aceita_null_nos_campos_opcionais()
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
-        configuracao.Atualizar(null, null, null, null, 0.10m);
+        configuracao.Atualizar(0.10m, null, null, null, 0.10m);
 
-        Assert.Null(configuracao.ValorHoraTrabalho);
+        Assert.Equal(0.10m, configuracao.PercentualMaoDeObra);
         Assert.Null(configuracao.TarifaEnergiaKwh);
         Assert.Null(configuracao.MargemPadrao);
         Assert.Null(configuracao.IncrementoComercial);
@@ -68,13 +68,13 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     }
 
     [Fact]
-    public void UC027_U3_Atualizar_aceita_zero_em_hora_tarifa_margem_e_reserva()
+    public void UC027_U3_Atualizar_aceita_zero_em_percentual_tarifa_margem_e_reserva()
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
         configuracao.Atualizar(0m, 0m, 0m, 0.01m, 0m);
 
-        Assert.Equal(0m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(0m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0m, configuracao.MargemPadrao);
         Assert.Equal(0.01m, configuracao.IncrementoComercial);
@@ -82,7 +82,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     }
 
     [Fact]
-    public void UC027_U4_Atualizar_rejeita_hora_negativa()
+    public void UC027_U4_Atualizar_rejeita_percentual_negativo()
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
@@ -94,7 +94,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => configuracao.Atualizar(null, -0.01m, null, null, 0.10m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => configuracao.Atualizar(0.10m, -0.01m, null, null, 0.10m));
     }
 
     [Theory]
@@ -106,7 +106,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             configuracao.Atualizar(
-                null,
+                0.10m,
                 null,
                 decimal.Parse(margem, System.Globalization.CultureInfo.InvariantCulture),
                 null,
@@ -122,7 +122,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             configuracao.Atualizar(
-                null,
+                0.10m,
                 null,
                 null,
                 decimal.Parse(incremento, System.Globalization.CultureInfo.InvariantCulture),
@@ -138,7 +138,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             configuracao.Atualizar(
-                null,
+                0.10m,
                 null,
                 null,
                 null,
@@ -149,11 +149,11 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     public void UC027_U9_Atualizar_invalido_preserva_estado_anterior_integralmente()
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
-        configuracao.Atualizar(12.34m, 0.98m, 0.30m, 0.50m, 0.10m);
+        configuracao.Atualizar(1.25m, 0.98m, 0.30m, 0.50m, 0.10m);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => configuracao.Atualizar(20m, 2m, 0.20m, 0m, 0.15m));
 
-        Assert.Equal(12.34m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(1.25m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0.98m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.30m, configuracao.MargemPadrao);
         Assert.Equal(0.50m, configuracao.IncrementoComercial);
@@ -165,7 +165,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaTests
     {
         var configuracao = ConfiguracaoPrecificacaoEmpresa.CriarPadrao(1);
 
-        configuracao.Atualizar(12.34m, 0.98m, 0.30m, 0.50m, 0.10m);
+        configuracao.Atualizar(1.50m, 0.98m, 0.30m, 0.50m, 0.10m);
 
         Assert.Equal(1, configuracao.EmpresaId);
     }

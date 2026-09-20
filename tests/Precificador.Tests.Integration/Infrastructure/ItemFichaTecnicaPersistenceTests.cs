@@ -79,8 +79,8 @@ public sealed class ItemFichaTecnicaPersistenceTests
         context.Insumos.Add(insumo);
         context.Produtos.AddRange(produtoUm, produtoDois);
         await context.SaveChangesAsync();
-        var fichaUm = FichaTecnica.Criar(1, produtoUm.Id, 2m, 30);
-        var fichaDois = FichaTecnica.Criar(1, produtoDois.Id, 3m, 40);
+        var fichaUm = FichaTecnica.Criar(1, produtoUm.Id, 2m);
+        var fichaDois = FichaTecnica.Criar(1, produtoDois.Id, 3m);
         context.FichasTecnicas.AddRange(fichaUm, fichaDois);
         await context.SaveChangesAsync();
 
@@ -344,7 +344,7 @@ public sealed class ItemFichaTecnicaPersistenceTests
         context.Produtos.Add(produto);
         context.Insumos.Add(insumo);
         await context.SaveChangesAsync();
-        var ficha = FichaTecnica.Criar(empresaId, produto.Id, 2m, 30);
+        var ficha = FichaTecnica.Criar(empresaId, produto.Id, 2m);
         context.FichasTecnicas.Add(ficha);
         await context.SaveChangesAsync();
         return (produto.Id, ficha.Id, insumo.Id);

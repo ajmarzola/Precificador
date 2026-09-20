@@ -230,11 +230,13 @@ public sealed class DetalhesMargemAtualPageTests
         public async Task<int> CriarProdutoPrecificavelAsync(int empresaId, bool ativo, decimal margemAlvo, decimal custo, decimal? precoPrateleira)
         {
             await using var context = CriarContexto(empresaId);
+            var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+            configuracao.Atualizar(0m, configuracao.TarifaEnergiaKwh, configuracao.MargemPadrao, configuracao.IncrementoComercial, configuracao.ReservaComercialDesconto);
             var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", margemAlvo);
             if (!ativo) produto.Desativar();
             context.Produtos.Add(produto);
             await context.SaveChangesAsync();
-            var ficha = FichaTecnica.Criar(empresaId, produto.Id, 1m, 0);
+            var ficha = FichaTecnica.Criar(empresaId, produto.Id, 1m);
             var insumo = Insumo.Criar(empresaId, $"Insumo {Guid.NewGuid():N}", CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade);
             context.FichasTecnicas.Add(ficha);
             context.Insumos.Add(insumo);

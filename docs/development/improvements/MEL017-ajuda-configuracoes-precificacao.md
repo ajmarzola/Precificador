@@ -1,5 +1,7 @@
 # MEL017 — Explicar configurações de precificação na interface
 
+> **Nota MEL022:** as referências históricas a Valor da hora/`ValorHoraTrabalho` foram substituídas no modelo ativo por `PercentualMaoDeObra`, exibido como "Mão de obra sobre os insumos (%)" e explicado como percentual aplicado sobre `CustoBaseItens`.
+
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Classificação:** UX / explicabilidade
 - **Prioridade:** baixa
