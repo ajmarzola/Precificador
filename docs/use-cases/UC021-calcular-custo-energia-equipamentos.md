@@ -155,7 +155,7 @@ Nunca transformar tarifa ausente em zero.
 Ao carregar Ficha existente, preferir uma única projeção de `ConfiguracaoPrecificacaoEmpresa` com:
 
 ~~~text
-ValorHoraTrabalho
+PercentualMaoDeObra
 TarifaEnergiaKwh
 ~~~
 
@@ -222,7 +222,7 @@ Seguir o padrão das páginas de Itens.
 
 Novo/Editar:
 
-- Nome do equipamento;
+- Nome do equipamento elétrico;
 - Potência (kW);
 - Tempo de uso (minutos).
 
@@ -256,7 +256,7 @@ Duplicidade por nome normalizado deve gerar erro amigável antes de depender da 
 
 ## Web — Ficha
 
-Adicionar seção **Equipamentos**.
+Adicionar seção **Equipamentos elétricos (opcional)**.
 
 Sem usos:
 
@@ -268,14 +268,14 @@ Custo de energia do lote: 0
 Com usos, mostrar:
 
 ~~~text
-Equipamento | Potência (kW) | Tempo (min) | Consumo (kWh) | Custo de energia | Ações
+Equipamento elétrico | Potência (kW) | Tempo (min) | Consumo (kWh) | Custo de energia | Ações
 ~~~
 
 Ações:
 
 - Editar;
 - Remover;
-- Adicionar equipamento.
+- Adicionar equipamento elétrico.
 
 Tarifa configurada: mostrar consumo, custo por uso e total.
 
@@ -307,7 +307,7 @@ Preservar integralmente as telas e comportamentos já existentes de UC018/UC020.
 
 ### POST inválido da base
 
-Se o POST principal de Rendimento/TempoAtivo for inválido:
+Se o POST principal de Rendimento for inválido:
 
 - preservar Input/erros;
 - recarregar usos e energia pelo estado persistido;
