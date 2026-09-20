@@ -37,7 +37,7 @@ Situação revalidada em 20/09/2026 contra documentação oficial da Microsoft:
 - **Azure App Service F1 / Linux** permanece gratuito, com compute compartilhado, **60 minutos de CPU por dia**, **1 GB de RAM** e **1 GB de armazenamento** por aplicativo;
 - F1 não possui SLA e a Microsoft declara que a camada Free é destinada a avaliação/experimentação/aprendizado e **não é suportada para workloads de produção**;
 - F1 permite somente o subdomínio padrão `*.azurewebsites.net`; domínio personalizado fica fora desta MEL;
-- **Azure SQL Database Free offer** permanece sem prazo de expiração, com franquia mensal por banco de **100.000 vCore-seconds**, **32 GB de dados** e **32 GB de backup**;
+- **Azure SQL Database Free offer** permanece sem prazo de expiração, com franquia mensal por banco de **100.000 vCore-seconds**, **32 GB de dados** e **32 GB de backup**; a oferta gratuita também não possui SLA e é recomendada principalmente para desenvolvimento/PoC;
 - a oferta gratuita do Azure SQL permite até 10 bancos por assinatura, mas o Precificador usará apenas 1;
 - o comportamento **AutoPause** ao atingir o limite gratuito interrompe o banco até o início do próximo mês e evita cobrança de excedente;
 - App Service suporta System Assigned Managed Identity para conexão passwordless com Azure SQL;
@@ -139,11 +139,13 @@ Limites atuais aceitos:
 
 Se o limite gratuito de compute ou armazenamento for atingido com AutoPause, o banco pode ficar indisponível até o início do próximo mês. Esse comportamento é preferível a qualquer cobrança automática.
 
+Esse `AutoPause` é o **comportamento ao esgotar a franquia gratuita**. Ele não deve ser confundido com a pausa automática por inatividade do compute serverless. A configuração serverless deve continuar permitindo pausa por inatividade quando suportado pela oferta; não desabilitá-la apenas para reduzir cold start.
+
 Ferramentas como SSMS/Visual Studio/SQL tooling devem ser desconectadas quando não estiverem em uso, pois conexões abertas podem impedir auto-pause e consumir a franquia de vCore.
 
 Criar logical server dedicado ao Precificador.
 
-Usar autenticação **Microsoft Entra-only** sempre que a assinatura/tenant permitir.
+Usar autenticação **Microsoft Entra-only** como caminho normativo. Se a assinatura/tenant não permitir configurar o Entra admin necessário, interromper o provisionamento e informar o bloqueio; não habilitar senha SQL automaticamente.
 
 O logical server deve possuir um **Microsoft Entra administrator** explícito para bootstrap operacional. Esse administrador deve ser parametrizado pelo script (nome + Object ID/SID) e nunca hardcoded no repositório.
 
@@ -162,9 +164,11 @@ Não criar ou versionar login/senha SQL como caminho normal.
 
 Região é parâmetro.
 
-Preferir Brazil South somente se App Service F1 e Azure SQL Free estiverem disponíveis. Caso contrário, selecionar manualmente outra região compatível.
+App Service e Azure SQL devem ficar **na mesma região**.
 
-Nunca trocar automaticamente para SKU paga.
+Preferir Brazil South somente se App Service F1, runtime .NET 10 e Azure SQL Free estiverem disponíveis. Caso contrário, selecionar manualmente outra região compatível para ambos os recursos.
+
+Nunca separar Web App e banco entre regiões apenas para contornar disponibilidade e nunca trocar automaticamente para SKU paga.
 
 ## App Service -> Azure SQL
 
@@ -452,6 +456,8 @@ Referências históricas podem permanecer se identificadas como históricas.
 - **CA35:** `EnableRetryOnFailure` ou equivalente está habilitado para o provider SQL Server.
 - **CA36:** atingir o limite gratuito do Azure SQL não pode produzir cobrança automática.
 - **CA37:** scripts falham em vez de trocar automaticamente para tier pago ou runtime incompatível.
+- **CA38:** App Service e Azure SQL são provisionados na mesma região.
+- **CA39:** pausa serverless por inatividade não é deliberadamente desabilitada para eliminar cold start.
 
 ## Matriz mínima
 
