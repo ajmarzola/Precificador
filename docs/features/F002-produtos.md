@@ -87,7 +87,6 @@ Ficam fora do UC007:
 
 - rendimento;
 - insumos e quantidades;
-- rendimento;
 - perdas;
 - equipamentos/recursos;
 - custo do lote;

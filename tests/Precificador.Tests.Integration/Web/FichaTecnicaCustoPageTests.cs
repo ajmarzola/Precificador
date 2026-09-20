@@ -26,10 +26,14 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.CriarItemAsync(1, fichaNormal, insumoNormal, 2m);
         await ambiente.CriarPrecoAsync(1, insumoNormal, 1m, 6m, Hoje);
 
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "1,2");
+        var padrao = await ambiente.ObterFichaAsync(normal);
+        AssertExibeCustoMaoDeObra(padrao, "1,2");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 10%", padrao);
 
         await ambiente.DefinirPercentualMaoDeObraAsync(1, 0m);
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "0");
+        var zerado = await ambiente.ObterFichaAsync(normal);
+        AssertExibeCustoMaoDeObra(zerado, "0");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 0%", zerado);
 
         var semPreco = await ambiente.CriarProdutoAsync(1, ativo: true);
         var fichaSemPreco = await ambiente.CriarFichaAsync(1, semPreco);
@@ -37,11 +41,14 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.CriarItemAsync(1, fichaSemPreco, insumoSemPreco, 1m);
         var indisponivel = await ambiente.ObterFichaAsync(semPreco);
         AssertExibeCustoMaoDeObra(indisponivel, "indisponível");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 0%", indisponivel);
         Assert.Contains("Há item(ns) sem preço vigente.", indisponivel);
         Assert.DoesNotContain("Valor da hora de trabalho", indisponivel);
 
         await ambiente.DefinirPercentualMaoDeObraAsync(1, 2.5m);
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "30");
+        var alto = await ambiente.ObterFichaAsync(normal);
+        AssertExibeCustoMaoDeObra(alto, "30");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 250%", alto);
     }
 
     [Fact]
@@ -56,12 +63,15 @@ public sealed class FichaTecnicaCustoPageTests
 
         var primeira = await ambiente.ObterFichaAsync(produto);
         AssertExibeCustoMaoDeObra(primeira, "5");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 10%", primeira);
         Assert.Contains("Custo base dos itens:", primeira);
         Assert.Contains("indisponível", primeira);
         Assert.Contains("Inativo", primeira);
 
         await ambiente.DefinirPercentualMaoDeObraAsync(1, .12m);
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(produto), "6");
+        var atualizada = await ambiente.ObterFichaAsync(produto);
+        AssertExibeCustoMaoDeObra(atualizada, "6");
+        Assert.Contains("Mão de obra sobre os insumos:</strong> 12%", atualizada);
         Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
     }
 

@@ -3,8 +3,8 @@
 - **Origem:** segunda rodada de testes manuais.
 - **Classificação:** regra de precificação / configuração por Empresa / simplificação da Ficha Técnica.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
-- **Ordem na fila pendente:** 08.
+- **Estado:** Concluído.
+- **Ordem de implementação:** 08.
 - **Dependências:** MEL020 concluída.
 - **Gate operacional:** antes de MEL023 e MEL021.
 - **Alteração de regra de negócio:** sim.

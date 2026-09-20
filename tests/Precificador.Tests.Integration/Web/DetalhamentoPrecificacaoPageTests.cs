@@ -134,6 +134,10 @@ public sealed class DetalhamentoPrecificacaoPageTests
         var semConfiguracao = await ambiente.ObterPrecificacaoAsync(produto);
         Assert.Contains("As configurações de precificação não foram encontradas.", semConfiguracao);
         Assert.Contains("Rendimento</dt><dd class=\"col-sm-9\">1", semConfiguracao);
+        Assert.Contains("Mão de obra sobre os insumos</dt><dd class=\"col-sm-9\">indisponível", semConfiguracao);
+        Assert.Contains("Percentual de mão de obra</dt><dd class=\"col-sm-9\">indisponível", semConfiguracao);
+        Assert.DoesNotContain("Mão de obra sobre os insumos</dt><dd class=\"col-sm-9\">0%", semConfiguracao);
+        Assert.DoesNotContain("Percentual de mão de obra</dt><dd class=\"col-sm-9\">0%", semConfiguracao);
         Assert.Equal(0, await ambiente.ContarConfiguracoesAsync(1));
     }
 

@@ -43,6 +43,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
 
     public bool CustoMaoDeObraCompleto { get; private set; }
 
+    public decimal? PercentualMaoDeObra { get; private set; }
+
+    public string PercentualMaoDeObraFormatado => PercentualMaoDeObra.HasValue
+        ? ProdutoFormatacao.MargemAlvo(PercentualMaoDeObra.Value)
+        : "indisponível";
+
     public IReadOnlyList<UsoEquipamentoResumo> UsosEquipamentos { get; private set; } = [];
     public decimal? CustoEnergiaLote { get; private set; }
     public bool CustoEnergiaCompleto { get; private set; }
@@ -178,6 +184,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
             CustoPerdasCompleto = false;
             CustoMaoDeObraLote = null;
             CustoMaoDeObraCompleto = false;
+            PercentualMaoDeObra = null;
             UsosEquipamentos = [];
             CustoEnergiaLote = null;
             CustoEnergiaCompleto = false;
@@ -234,6 +241,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         CustoPerdasCompleto = atual.CustoPerdasLote is not null;
         CustoMaoDeObraLote = atual.CustoMaoDeObraLote;
         CustoMaoDeObraCompleto = atual.CustoMaoDeObraLote is not null;
+        PercentualMaoDeObra = atual.PercentualMaoDeObra;
         CustoEnergiaLote = atual.CustoEnergiaLote;
         CustoEnergiaCompleto = atual.CustoEnergiaLote is not null;
         Itens = Itens.Select(item => atual.Itens.TryGetValue(item.Id, out var custo) ? item with { CustoUnitario = custo.CustoUnitario, CustoItem = custo.CustoItem, CustoPerdaItem = custo.CustoPerdaItem } : item).ToList();
