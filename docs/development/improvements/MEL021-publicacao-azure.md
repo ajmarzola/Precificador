@@ -3,9 +3,9 @@
 - **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Especificado — bloqueado até conclusão de MEL022 e MEL023.
+- **Estado:** Especificado — bloqueado até conclusão de MEL023.
 - **Ordem na fila pendente:** 10.
-- **Dependências:** MEL020 concluída; MEL022 e MEL023 pendentes.
+- **Dependências:** MEL020 e MEL022 concluídas; MEL023 pendente.
 - **Gate operacional:** só liberar após MEL022 e MEL023; executar antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
