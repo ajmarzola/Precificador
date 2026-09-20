@@ -99,8 +99,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         {
             Input = new FichaTecnicaInputModel
             {
-                Rendimento = FichaTecnicaFormulario.FormatarRendimento(ficha.Rendimento),
-                TempoAtivoMinutos = ficha.TempoAtivoMinutos
+                Rendimento = FichaTecnicaFormulario.FormatarRendimento(ficha.Rendimento)
             };
         }
 
@@ -116,7 +115,6 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         }
 
         var rendimentoInformado = FichaTecnicaFormulario.TentarObterRendimento(ModelState, Input, out var rendimento);
-        ValidarTempoAtivo();
         var fichaPersistida = await CarregarEstadoFichaAsync(id);
         if (PossuiFicha && !await CarregarCustosConfiguracaoAsync(fichaPersistida!))
         {
@@ -130,12 +128,12 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         var ficha = await context.FichasTecnicas.SingleOrDefaultAsync(item => item.ProdutoId == id);
         if (ficha is null)
         {
-            ficha = FichaTecnicaDominio.Criar(Produto!.EmpresaId, Produto.Id, rendimento, Input.TempoAtivoMinutos!.Value);
+            ficha = FichaTecnicaDominio.Criar(Produto!.EmpresaId, Produto.Id, rendimento);
             context.FichasTecnicas.Add(ficha);
         }
         else
         {
-            ficha.AtualizarBase(rendimento, Input.TempoAtivoMinutos!.Value);
+            ficha.AtualizarBase(rendimento);
         }
 
         await context.SaveChangesAsync();
@@ -166,7 +164,7 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
     {
         var ficha = await context.FichasTecnicas.AsNoTracking()
             .Where(item => item.ProdutoId == produtoId)
-            .Select(item => new FichaResumo(item.Id, item.Rendimento, item.TempoAtivoMinutos))
+            .Select(item => new FichaResumo(item.Id, item.Rendimento))
             .SingleOrDefaultAsync();
 
         if (ficha is null)
@@ -249,28 +247,14 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         return true;
     }
 
-    private void ValidarTempoAtivo()
-    {
-        if (Input.TempoAtivoMinutos is null)
-        {
-            ModelState.AddModelError("Input.TempoAtivoMinutos", "O tempo ativo é obrigatório.");
-        }
-        else if (Input.TempoAtivoMinutos < 0)
-        {
-            ModelState.AddModelError("Input.TempoAtivoMinutos", "O tempo ativo não pode ser negativo.");
-        }
-    }
-
     public sealed class FichaTecnicaInputModel
     {
         public string? Rendimento { get; set; }
-
-        public int? TempoAtivoMinutos { get; set; }
     }
 
     public sealed record ProdutoResumo(int Id, int EmpresaId, string Nome, string? Categoria, bool Ativo, decimal MargemAlvo);
 
-    public sealed record FichaResumo(int Id, decimal Rendimento, int TempoAtivoMinutos);
+    public sealed record FichaResumo(int Id, decimal Rendimento);
 
     public sealed record UsoEquipamentoResumo(int Id, string NomeEquipamento, decimal PotenciaKw, int TempoUsoMinutos, decimal ConsumoKwh, decimal? CustoEnergiaUso)
     {

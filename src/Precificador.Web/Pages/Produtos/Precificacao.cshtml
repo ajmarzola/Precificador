@@ -12,7 +12,6 @@
     string Percentual(decimal? valor) => valor.HasValue ? ProdutoFormatacao.MargemAlvo(valor.Value) : "indisponível";
     string Data(DateOnly? valor) => valor.HasValue ? PrecoInsumoFormatacao.Data(valor.Value) : "não definida";
     string Rendimento(decimal? valor) => valor.HasValue ? FichaTecnicaFormulario.FormatarRendimento(valor.Value) : "Não disponível";
-    string Tempo(int? valor) => valor.HasValue ? $"{valor.Value} min" : "Não disponível";
 }
 <h1>Detalhamento da precificação</h1>
 
@@ -36,8 +35,7 @@
 <section class="mb-4"><h2 class="h4">Parâmetros usados</h2><dl class="row">
     <dt class="col-sm-3">Data operacional</dt><dd class="col-sm-9">@PrecoInsumoFormatacao.Data(resultado.DataOperacional)</dd>
     <dt class="col-sm-3">Rendimento</dt><dd class="col-sm-9">@Rendimento(resultado.Rendimento)</dd>
-    <dt class="col-sm-3">Tempo ativo</dt><dd class="col-sm-9">@Tempo(resultado.TempoAtivoMinutos)</dd>
-    <dt class="col-sm-3">Valor da hora de trabalho</dt><dd class="col-sm-9">@Configuracao(resultado.ValorHoraTrabalho)</dd>
+    <dt class="col-sm-3">Mão de obra sobre os insumos</dt><dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(resultado.PercentualMaoDeObra ?? 0m)</dd>
     <dt class="col-sm-3">Tarifa de energia</dt><dd class="col-sm-9">@Configuracao(resultado.TarifaEnergiaKwh)</dd>
     <dt class="col-sm-3">Incremento comercial</dt><dd class="col-sm-9">@Configuracao(resultado.IncrementoComercial)</dd>
     <dt class="col-sm-3">Margem-alvo</dt><dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(resultado.MargemAlvo)</dd>
@@ -48,7 +46,7 @@
 <p><strong>Custo base dos itens:</strong> @Valor(resultado.CustoBaseItens)</p><p><strong>Custo de perdas do lote:</strong> @Valor(resultado.CustoPerdasLote)</p>
 </section>
 
-<section class="mb-4"><h2 class="h4">Mão de obra</h2><dl class="row"><dt class="col-sm-3">Tempo ativo</dt><dd class="col-sm-9">@Tempo(resultado.TempoAtivoMinutos)</dd><dt class="col-sm-3">Valor da hora</dt><dd class="col-sm-9">@Configuracao(resultado.ValorHoraTrabalho)</dd><dt class="col-sm-3">Custo de mão de obra do lote</dt><dd class="col-sm-9">@Valor(resultado.CustoMaoDeObraLote)</dd></dl></section>
+<section class="mb-4"><h2 class="h4">Mão de obra</h2><dl class="row"><dt class="col-sm-3">Base da mão de obra</dt><dd class="col-sm-9">@Valor(resultado.CustoBaseItens)</dd><dt class="col-sm-3">Percentual de mão de obra</dt><dd class="col-sm-9">@ProdutoFormatacao.MargemAlvo(resultado.PercentualMaoDeObra ?? 0m)</dd><dt class="col-sm-3">Custo de mão de obra do lote</dt><dd class="col-sm-9">@Valor(resultado.CustoMaoDeObraLote)</dd></dl></section>
 
 <section class="mb-4"><h2 class="h4">Equipamentos e energia</h2>
 @if (!Model.PossuiFicha || Model.Usos.Count == 0) { <p>Nenhum equipamento adicionado.</p> } else { <table class="table"><thead><tr><th>Equipamento</th><th>Potência (kW)</th><th>Tempo de uso (min)</th><th>Consumo (kWh)</th><th>Custo de energia</th></tr></thead><tbody>@foreach (var uso in Model.Usos) { <tr><td>@uso.NomeEquipamento</td><td>@UsoEquipamentoFichaFormulario.FormatarPotencia(uso.PotenciaKw)</td><td>@uso.TempoUsoMinutos</td><td>@(uso.ConsumoKwh is decimal consumo ? UsoEquipamentoFichaFormulario.FormatarConsumo(consumo) : "indisponível")</td><td>@Valor(uso.CustoEnergiaUso)</td></tr> }</tbody></table> }

@@ -17,31 +17,31 @@ public sealed class FichaTecnicaCustoPageTests
     private static readonly DateOnly Hoje = new(2026, 9, 11);
 
     [Fact]
-    public async Task UC020_W1_W2_W3_W4_W5_Exibe_mao_de_obra_com_semantica_null_zero_e_fracao()
+    public async Task UC020_W1_W2_W3_W4_W5_Exibe_mao_de_obra_sobre_custo_base_com_zero_e_percentual_alto()
     {
         await using var ambiente = await CriarAmbienteAsync();
-        await ambiente.DefinirValorHoraAsync(1, 40m);
         var normal = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, normal, tempo: 60);
-        var fracao = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, fracao, tempo: 30);
+        var fichaNormal = await ambiente.CriarFichaAsync(1, normal);
+        var insumoNormal = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, fichaNormal, insumoNormal, 2m);
+        await ambiente.CriarPrecoAsync(1, insumoNormal, 1m, 6m, Hoje);
 
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "40");
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(fracao), "20");
+        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "1,2");
 
-        await ambiente.DefinirValorHoraAsync(1, null);
-        var semTempo = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, semTempo, tempo: 0);
-        var semConfiguracao = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, semConfiguracao, tempo: 1);
+        await ambiente.DefinirPercentualMaoDeObraAsync(1, 0m);
+        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "0");
 
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(semTempo), "0");
-        var indisponivel = await ambiente.ObterFichaAsync(semConfiguracao);
+        var semPreco = await ambiente.CriarProdutoAsync(1, ativo: true);
+        var fichaSemPreco = await ambiente.CriarFichaAsync(1, semPreco);
+        var insumoSemPreco = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, fichaSemPreco, insumoSemPreco, 1m);
+        var indisponivel = await ambiente.ObterFichaAsync(semPreco);
         AssertExibeCustoMaoDeObra(indisponivel, "indisponível");
-        Assert.Contains("Valor da hora de trabalho não configurado.", indisponivel);
+        Assert.Contains("Há item(ns) sem preço vigente.", indisponivel);
+        Assert.DoesNotContain("Valor da hora de trabalho", indisponivel);
 
-        await ambiente.DefinirValorHoraAsync(1, 0m);
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(semConfiguracao), "0");
+        await ambiente.DefinirPercentualMaoDeObraAsync(1, 2.5m);
+        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(normal), "30");
     }
 
     [Fact]
@@ -49,8 +49,10 @@ public sealed class FichaTecnicaCustoPageTests
     {
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: false);
-        await ambiente.CriarFichaAsync(1, produto, tempo: 30);
-        await ambiente.DefinirValorHoraAsync(1, 10m);
+        var ficha = await ambiente.CriarFichaAsync(1, produto);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, ficha, insumo, 5m);
+        await ambiente.CriarPrecoAsync(1, insumo, 1m, 10m, Hoje);
 
         var primeira = await ambiente.ObterFichaAsync(produto);
         AssertExibeCustoMaoDeObra(primeira, "5");
@@ -58,7 +60,7 @@ public sealed class FichaTecnicaCustoPageTests
         Assert.Contains("indisponível", primeira);
         Assert.Contains("Inativo", primeira);
 
-        await ambiente.DefinirValorHoraAsync(1, 12m);
+        await ambiente.DefinirPercentualMaoDeObraAsync(1, .12m);
         AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(produto), "6");
         Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
     }
@@ -68,10 +70,12 @@ public sealed class FichaTecnicaCustoPageTests
     {
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, produto, tempo: 60);
-        await ambiente.DefinirValorHoraAsync(1, 10m);
+        var ficha = await ambiente.CriarFichaAsync(1, produto);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, ficha, insumo, 10m);
+        await ambiente.CriarPrecoAsync(1, insumo, 1m, 10m, Hoje);
         var empresaDois = await ambiente.CriarEmpresaAsync();
-        await ambiente.DefinirValorHoraAsync(empresaDois, 99m);
+        await ambiente.DefinirPercentualMaoDeObraAsync(empresaDois, 99m);
 
         AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(produto), "10");
 
@@ -82,12 +86,14 @@ public sealed class FichaTecnicaCustoPageTests
     }
 
     [Fact]
-    public async Task UC020_W11_W12_Get_nao_persiste_custo_e_post_invalido_usa_tempo_persistido()
+    public async Task UC020_W11_W12_Get_nao_persiste_custo_e_post_invalido_usa_estado_persistido()
     {
         await using var ambiente = await CriarAmbienteAsync();
-        await ambiente.DefinirValorHoraAsync(1, 60m);
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, ficha, insumo, 30m);
+        await ambiente.CriarPrecoAsync(1, insumo, 1m, 10m, Hoje);
         var antes = await ambiente.ObterEstadoFichaAsync(ficha, 1);
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
 
@@ -96,13 +102,12 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "0",
-            ["Input.TempoAtivoMinutos"] = "120"
+            ["Input.Rendimento"] = "0"
         }));
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(post);
 
         AssertExibeCustoMaoDeObra(html, "30");
-        Assert.Contains("value=\"120\"", html);
+        Assert.DoesNotContain("Input.TempoAtivoMinutos", html);
         Assert.Equal(antes, await ambiente.ObterEstadoFichaAsync(ficha, 1));
     }
 
@@ -110,10 +115,12 @@ public sealed class FichaTecnicaCustoPageTests
     public async Task UC020_W13_W14_W15_Post_valido_faz_prg_recalcula_e_formatacao_nao_perde_precisao()
     {
         await using var ambiente = await CriarAmbienteAsync();
-        await ambiente.DefinirValorHoraAsync(1, 10m);
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
         var semFicha = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 1);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
+        var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
+        await ambiente.CriarItemAsync(1, ficha, insumo, 5m);
+        await ambiente.CriarPrecoAsync(1, insumo, 1m, 10m, Hoje);
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
 
         var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
@@ -121,17 +128,12 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "2",
-            ["Input.TempoAtivoMinutos"] = "30"
+            ["Input.Rendimento"] = "2"
         }));
 
         Assert.Equal(System.Net.HttpStatusCode.Redirect, post.StatusCode);
         AssertExibeCustoMaoDeObra(await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(post.Headers.Location!)), "5");
         Assert.DoesNotContain("Custo de mão de obra do lote", await ambiente.ObterFichaAsync(semFicha));
-
-        var umMinuto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, umMinuto, tempo: 1);
-        AssertExibeCustoMaoDeObra(await ambiente.ObterFichaAsync(umMinuto), "0,1667");
     }
 
     [Fact]
@@ -266,7 +268,7 @@ public sealed class FichaTecnicaCustoPageTests
     {
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 5m, Hoje);
@@ -280,8 +282,7 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "0",
-            ["Input.TempoAtivoMinutos"] = "30"
+            ["Input.Rendimento"] = "0"
         }));
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(post);
 
@@ -295,24 +296,23 @@ public sealed class FichaTecnicaCustoPageTests
     public async Task UC022_W1_W2_W3_W11_W12_W13_W14_W15_W16_Compoe_e_recalcula_componentes_conhecidos()
     {
         await using var ambiente = await CriarAmbienteAsync();
-        await ambiente.DefinirValorHoraAsync(1, 20m);
         await ambiente.DefinirTarifaAsync(1, 4m);
         var produto = await ambiente.CriarProdutoAsync(1, ativo: false);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
         var item = await ambiente.CriarItemAsync(1, ficha, insumo, 2m, percentualPerda: 0.1m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 3m, Hoje);
         await ambiente.CriarUsoAsync(1, ficha, 1m, 30);
 
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "18,6", "9,3");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "9,2", "4,6");
 
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 5m, Hoje);
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "23", "11,5");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "14", "7");
 
         await ambiente.DefinirPercentualPerdaAsync(1, item, 0.2m);
-        await ambiente.DefinirValorHoraAsync(1, 40m);
+        await ambiente.DefinirPercentualMaoDeObraAsync(1, .4m);
         await ambiente.DefinirTarifaAsync(1, 2m);
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "33", "16,5");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "17", "8,5");
 
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
         var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
@@ -320,11 +320,10 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "3",
-            ["Input.TempoAtivoMinutos"] = "30"
+            ["Input.Rendimento"] = "3"
         }));
         Assert.Equal(System.Net.HttpStatusCode.Redirect, post.StatusCode);
-        AssertExibeCustoProduto(await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(post.Headers.Location!)), "33", "11");
+        AssertExibeCustoProduto(await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(post.Headers.Location!)), "17", "5,67");
         Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
     }
 
@@ -333,7 +332,7 @@ public sealed class FichaTecnicaCustoPageTests
     {
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto);
         var semPreco = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, semPreco, 2m, percentualPerda: 0.1m);
         await ambiente.CriarUsoAsync(1, ficha, 2m, 30);
@@ -342,16 +341,15 @@ public sealed class FichaTecnicaCustoPageTests
         AssertExibeCustoProdutoIndisponivel(html);
         Assert.Contains("Há item(ns) sem preço vigente.", html);
         Assert.Contains("Há perda(s) sem custo base determinável.", html);
-        Assert.Contains("Valor da hora de trabalho não configurado.", html);
+        Assert.DoesNotContain("Valor da hora de trabalho", html);
         Assert.Matches("<td>2</td><td>30</td><td>1</td><td>—</td>", html);
         Assert.Matches("Custo de energia do lote:</strong>\\s*indisponível", html);
         Assert.Contains("Tarifa de energia não configurada.", html);
         Assert.Contains("Precificação incompleta.", html);
 
         await ambiente.CriarPrecoAsync(1, semPreco, 1m, 3m, Hoje);
-        await ambiente.DefinirValorHoraAsync(1, 0m);
         await ambiente.DefinirTarifaAsync(1, 0m);
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "6,6", "6,6");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "7,2", "7,2");
 
         var vazia = await ambiente.CriarProdutoAsync(1, ativo: true);
         await ambiente.CriarFichaAsync(1, vazia);
@@ -364,9 +362,8 @@ public sealed class FichaTecnicaCustoPageTests
     public async Task UC022_W17_W18_W19_W20_Sem_ficha_post_invalido_e_tenant_preservam_estado()
     {
         await using var ambiente = await CriarAmbienteAsync();
-        await ambiente.DefinirValorHoraAsync(1, 60m);
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 5m, Hoje);
@@ -376,7 +373,7 @@ public sealed class FichaTecnicaCustoPageTests
 
         Assert.DoesNotContain("Custo total do lote", await ambiente.ObterFichaAsync(semFicha));
         Assert.Equal(fichasAntes, await ambiente.ContarFichasAsync(1));
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "40", "20");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "11", "5,5");
 
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
         var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
@@ -385,18 +382,17 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "0",
-            ["Input.TempoAtivoMinutos"] = "120"
+            ["Input.Rendimento"] = "0"
         }));
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(post);
-        AssertExibeCustoProduto(html, "40", "20");
-        Assert.Contains("value=\"120\"", html);
-        Assert.Equal((2m, 30), await ambiente.ObterEstadoFichaAsync(ficha, 1));
+        AssertExibeCustoProduto(html, "11", "5,5");
+        Assert.DoesNotContain("Input.TempoAtivoMinutos", html);
+        Assert.Equal(2m, await ambiente.ObterEstadoFichaAsync(ficha, 1));
 
         var empresaDois = await ambiente.CriarEmpresaAsync();
         var externo = await ambiente.CriarInsumoAsync(empresaDois, ativo: true);
         await ambiente.CriarPrecoAsync(empresaDois, externo, 1m, 999m, Hoje);
-        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "40", "20");
+        AssertExibeCustoProduto(await ambiente.ObterFichaAsync(produto), "11", "5,5");
     }
 
     [Fact]
@@ -410,20 +406,20 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 20m, Hoje);
         await ambiente.DefinirIncrementoAsync(1, .5m);
 
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "25", "25");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "27,5", "27,5");
 
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 20.2m, Hoje);
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "25,25", "25,5");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "27,78", "28");
 
         await ambiente.DefinirIncrementoAsync(1, .25m);
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "25,25", "25,25");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "20%", "27,78", "28");
 
         await ambiente.DefinirMargemAlvoAsync(1, produto, 0m);
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "0%", "20,2", "20,25");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "0%", "22,22", "22,25");
 
         await ambiente.DefinirMargemPadraoAsync(1, .9m);
         await ambiente.DefinirReservaComercialAsync(1, .2m);
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "0%", "20,2", "20,25");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "0%", "22,22", "22,25");
         Assert.False(await ambiente.ProdutoAtivoAsync(produto, 1));
     }
 
@@ -439,19 +435,19 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.DefinirIncrementoAsync(1, null);
 
         var semIncremento = await ambiente.ObterFichaAsync(completo);
-        AssertExibePrecoProduto(semIncremento, "30%", "14,2857", "indisponível");
+        AssertExibePrecoProduto(semIncremento, "30%", "15,71", "indisponível");
         Assert.Contains("Incremento comercial não configurado.", semIncremento);
         Assert.Contains("Precificação incompleta.", semIncremento);
 
         var incompleto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var fichaIncompleta = await ambiente.CriarFichaAsync(1, incompleto, tempo: 1);
+        var fichaIncompleta = await ambiente.CriarFichaAsync(1, incompleto);
         var semPreco = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, fichaIncompleta, semPreco, 1m);
         await ambiente.CriarUsoAsync(1, fichaIncompleta, 1m, 1);
         var html = await ambiente.ObterFichaAsync(incompleto);
         AssertExibePrecoProduto(html, "30%", "indisponível", "indisponível");
         Assert.Contains("Há item(ns) sem preço vigente.", html);
-        Assert.Contains("Valor da hora de trabalho não configurado.", html);
+        Assert.DoesNotContain("Valor da hora de trabalho", html);
         Assert.Contains("Tarifa de energia não configurada.", html);
 
         var vazia = await ambiente.CriarProdutoAsync(1, ativo: true);
@@ -470,7 +466,7 @@ public sealed class FichaTecnicaCustoPageTests
         Assert.Equal(fichasAntes, await ambiente.ContarFichasAsync(1));
 
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 0);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 5m, Hoje);
@@ -482,11 +478,10 @@ public sealed class FichaTecnicaCustoPageTests
         var post = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Rendimento"] = "0",
-            ["Input.TempoAtivoMinutos"] = "120"
+            ["Input.Rendimento"] = "0"
         }));
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(post);
-        AssertExibePrecoProduto(html, "30%", "7,1429", "7,5");
+        AssertExibePrecoProduto(html, "30%", "7,86", "8");
         Assert.Equal(antes, await ambiente.ObterEstadoFichaAsync(ficha, 1));
     }
 
@@ -502,7 +497,7 @@ public sealed class FichaTecnicaCustoPageTests
         await ambiente.DefinirIncrementoAsync(1, .5m);
         var empresaDois = await ambiente.CriarEmpresaAsync();
         await ambiente.DefinirIncrementoAsync(empresaDois, 100m);
-        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "30%", "14,2857", "14,5");
+        AssertExibePrecoProduto(await ambiente.ObterFichaAsync(produto), "30%", "15,71", "16");
 
         await ambiente.RemoverConfiguracaoAsync(1);
         using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1);
@@ -515,12 +510,12 @@ public sealed class FichaTecnicaCustoPageTests
     {
         await using var ambiente = await CriarAmbienteAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: false, margemAlvo: .2m);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1, ativo: true);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m, percentualPerda: .1m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 3m, Hoje);
         await ambiente.CriarUsoAsync(1, ficha, 1m, 30);
-        await ambiente.DefinirValorHoraAsync(1, 20m);
+        await ambiente.DefinirPercentualMaoDeObraAsync(1, .10m);
         await ambiente.DefinirTarifaAsync(1, 4m);
         await ambiente.DefinirIncrementoAsync(1, .5m);
         var empresaDois = await ambiente.CriarEmpresaAsync();
@@ -615,7 +610,7 @@ public sealed class FichaTecnicaCustoPageTests
         public async Task<int> CriarFichaAsync(int empresaId, int produtoId, decimal rendimento = 1m, int tempo = 0)
         {
             await using var context = CriarContexto(empresaId);
-            var ficha = FichaTecnica.Criar(empresaId, produtoId, rendimento, tempo);
+            var ficha = FichaTecnica.Criar(empresaId, produtoId, rendimento);
             context.FichasTecnicas.Add(ficha);
             await context.SaveChangesAsync();
             return ficha.Id;
@@ -689,12 +684,12 @@ public sealed class FichaTecnicaCustoPageTests
             return await context.FichasTecnicas.CountAsync();
         }
 
-        public async Task DefinirValorHoraAsync(int empresaId, decimal? valorHora)
+        public async Task DefinirPercentualMaoDeObraAsync(int empresaId, decimal percentualMaoDeObra)
         {
             await using var context = CriarContexto(empresaId);
             await context.Database.ExecuteSqlRawAsync(
-                "UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = @valorHora WHERE EmpresaId = @empresaId",
-                SqlDecimalParameter.Criar("valorHora", valorHora, precision: 18, scale: 6),
+                "UPDATE ConfiguracoesPrecificacaoEmpresas SET PercentualMaoDeObra = @percentualMaoDeObra WHERE EmpresaId = @empresaId",
+                SqlDecimalParameter.Criar("percentualMaoDeObra", percentualMaoDeObra, precision: 9, scale: 6),
                 new SqlParameter("empresaId", empresaId));
         }
 
@@ -758,11 +753,11 @@ public sealed class FichaTecnicaCustoPageTests
             return await context.ConfiguracoesPrecificacaoEmpresas.CountAsync();
         }
 
-        public async Task<(decimal Rendimento, int Tempo)> ObterEstadoFichaAsync(int fichaId, int empresaId)
+        public async Task<decimal> ObterEstadoFichaAsync(int fichaId, int empresaId)
         {
             await using var context = CriarContexto(empresaId);
             var ficha = await context.FichasTecnicas.SingleAsync(item => item.Id == fichaId);
-            return (ficha.Rendimento, ficha.TempoAtivoMinutos);
+            return ficha.Rendimento;
         }
 
         public async Task<bool> ProdutoAtivoAsync(int produtoId, int empresaId)

@@ -14,11 +14,11 @@ Entidades tenant-owned previstas incluem Insumo, histórico de preço, Produto, 
 
 A Ficha Técnica deve representar composição e recursos necessários para uma execução/lote de um produto, e não especificamente uma receita de panificação.
 
-Conceitos comuns permanecem: rendimento, insumos/quantidades, observação contextual por item e tempo ativo de trabalho.
+Conceitos comuns permanecem: rendimento, insumos/quantidades, observação contextual por item e usos de equipamentos quando relevantes.
 
 Perdas devem ser modeladas como conceito de material/processo quando aplicável, sem obrigar produtos que não possuem essa característica.
 
-`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais. A UC013 fecha a base comum da Ficha Técnica em **Rendimento + TempoAtivoMinutos**. Uso de equipamento permanece separado e será modelado de forma genérica — forno, impressora, laminadora ou outro recurso — no UC021, com potência/tempo quando isso for relevante ao custo.
+`TempoForno` e `PotenciaFornoKw` não devem ser conceitos universais. A MEL022 simplifica a base comum da Ficha Técnica para **Rendimento**. Uso de equipamento permanece separado e é modelado de forma genérica — forno, impressora, laminadora ou outro recurso — no UC021, com potência/tempo quando isso for relevante ao custo.
 
 ## Insumos
 

@@ -2,7 +2,7 @@ namespace Precificador.Web.Apresentacao;
 
 public static class ConfiguracaoPrecificacaoAjuda
 {
-    public const string ValorHoraTrabalho = "Valor atribuído a uma hora de trabalho ativo. O sistema usa o tempo ativo da Ficha Técnica, convertido em horas, para calcular o custo de mão de obra do lote. Se houver tempo ativo e este valor não estiver configurado, o custo de mão de obra fica indisponível.";
+    public const string PercentualMaoDeObra = "Percentual aplicado sobre o custo base dos insumos para compor o custo de mão de obra do lote. Ex.: insumos de R$ 12,00 e percentual de 10% geram R$ 1,20 de mão de obra. O percentual pode ser maior que 100% quando o trabalho artesanal tiver peso maior que os materiais.";
 
     public const string TarifaEnergiaKwh = "Valor pago por 1 kWh de energia. O sistema aplica essa tarifa ao consumo calculado a partir da potência e do tempo de uso dos equipamentos da Ficha Técnica. Se houver uso de equipamento e a tarifa não estiver configurada, o custo de energia fica indisponível.";
 

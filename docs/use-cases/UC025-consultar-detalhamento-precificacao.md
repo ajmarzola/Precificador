@@ -1,5 +1,7 @@
 # UC025 — Consultar detalhamento da precificação atual
 
+> **Nota MEL022:** referências históricas a Tempo ativo/Valor da hora neste documento foram substituídas no modelo ativo por Percentual de mão de obra e Base da mão de obra = `CustoBaseItens`.
+
 - **Funcionalidade:** F004 — Precificação
 - **Dependências funcionais:** UC023 e UC024
 - **Base de revalidação:** UC017 a UC024 concluídas
@@ -106,8 +108,7 @@ Para que a tela explique os resultados sem realizar consultas paralelas de confi
 ~~~text
 DataOperacional
 Rendimento
-TempoAtivoMinutos
-ValorHoraTrabalho
+PercentualMaoDeObra
 TarifaEnergiaKwh
 IncrementoComercial
 ~~~
@@ -118,8 +119,7 @@ IncrementoComercial
 
 - `DataOperacional`: data usada para selecionar preços vigentes dos Insumos;
 - `Rendimento`: rendimento atual da Ficha;
-- `TempoAtivoMinutos`: tempo ativo atual;
-- `ValorHoraTrabalho`: configuração corrente usada por UC020;
+- `PercentualMaoDeObra`: configuração corrente usada por UC020;
 - `TarifaEnergiaKwh`: configuração corrente usada por UC021;
 - `IncrementoComercial`: configuração corrente usada por UC023.
 
@@ -235,8 +235,7 @@ Exibir:
 
 - Data operacional;
 - Rendimento;
-- Tempo ativo;
-- Valor da hora de trabalho;
+- Percentual de mão de obra;
 - Tarifa de energia;
 - Incremento comercial;
 - Margem-alvo.
@@ -299,24 +298,23 @@ Após tabela, exibir:
 
 Exibir:
 
-- Tempo ativo;
-- Valor da hora;
+- Base da mão de obra = Custo base dos Itens;
+- Percentual de mão de obra;
 - Custo de mão de obra do lote.
 
-Se TempoAtivoMinutos > 0 e ValorHoraTrabalho = null:
+Se `CustoBaseItens` estiver indisponível:
 
 ~~~text
-Valor da hora: Não configurado
-Custo de mão de obra: indisponível
+Custo de mão de obra do lote: indisponível
 ~~~
 
-Se TempoAtivoMinutos = 0:
+Se `CustoBaseItens` for conhecido e `PercentualMaoDeObra = 0`:
 
 ~~~text
 Custo de mão de obra = 0
 ~~~
 
-mesmo se ValorHoraTrabalho estiver ausente, conforme UC020.
+Percentuais maiores que 100% são válidos conforme UC020/RN013.
 
 ### 6. Energia/equipamentos
 
@@ -419,7 +417,6 @@ Quando `Impedimentos.Count > 0`, listar todos os impedimentos gerais já forneci
 - A ficha técnica não foi cadastrada.
 - A ficha não possui itens.
 - Há item(ns) sem preço vigente.
-- Valor da hora de trabalho não configurado.
 - Tarifa de energia não configurada.
 - Incremento comercial não configurado.
 
@@ -578,8 +575,7 @@ Como a página usa `PrecificacaoProdutoAtual`, o próximo GET deve refletir alte
 - Quantidade;
 - PercentualPerda;
 - Rendimento;
-- TempoAtivoMinutos;
-- ValorHoraTrabalho;
+- PercentualMaoDeObra;
 - equipamentos;
 - PotenciaKw;
 - TempoUsoMinutos;
@@ -684,7 +680,7 @@ Não persistir:
 - **CA08:** Item associa metadados estruturais aos resultados numéricos pelo ItemId.
 - **CA09:** Item sem preço vigente é evidenciado sem virar custo zero.
 - **CA10:** CustoBaseItens e CustoPerdasLote seguem os resultados da orquestração.
-- **CA11:** mão de obra exibe TempoAtivo, ValorHora e custo.
+- **CA11:** mão de obra exibe base, percentual e custo.
 - **CA12:** equipamento associa metadados aos resultados por UsoId.
 - **CA13:** energia exibe tarifa, consumos e custos conhecidos.
 - **CA14:** consolidação não apresenta soma parcial como CustoLote.
@@ -733,9 +729,9 @@ UC025 não introduz fórmula de domínio nova; não é necessária uma nova calc
 - **W7:** tabela de Itens exibe Nome/Marca/Quantidade/Unidade/perda e resultados UC018/019.
 - **W8:** Item sem preço mostra Sem preço vigente e não inventa custo.
 - **W9:** Ficha vazia exibe estado vazio e custo incompleto.
-- **W10:** mão de obra completa exibe valor/hora e custo.
-- **W11:** valor/hora null + tempo > 0 exibe Não configurado/indisponível.
-- **W12:** tempo zero preserva custo zero.
+- **W10:** mão de obra completa exibe base, percentual e custo.
+- **W11:** custo base indisponível torna mão de obra indisponível.
+- **W12:** percentual zero com custo base conhecido preserva custo zero.
 - **W13:** tabela de equipamentos exibe potência/tempo/consumo/custo.
 - **W14:** tarifa null mantém consumo conhecido e custo indisponível.
 - **W15:** zero equipamentos preserva energia zero.

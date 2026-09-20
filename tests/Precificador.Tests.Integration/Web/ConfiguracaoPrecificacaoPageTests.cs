@@ -45,8 +45,8 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
-        Assert.Equal(4, Regex.Matches(conteudo, "Não configurado").Count);
-        Assert.Contains("Valor da hora de trabalho", conteudo);
+        Assert.Equal(3, Regex.Matches(conteudo, "Não configurado").Count);
+        Assert.Contains("Mão de obra sobre os insumos (%)", conteudo);
         Assert.Contains("Tarifa de energia (R$/kWh)", conteudo);
         Assert.Contains("Margem padrão para novos produtos (%)", conteudo);
         Assert.Contains("Incremento comercial de arredondamento", conteudo);
@@ -69,7 +69,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         response.EnsureSuccessStatusCode();
         AssertAjudasPresentes(conteudo);
-        AssertInputDescreveAjuda(conteudo, "Input.ValorHoraTrabalho", "ajuda-valor-hora-trabalho");
+        AssertInputDescreveAjuda(conteudo, "Input.PercentualMaoDeObra", "ajuda-percentual-mao-de-obra");
         AssertInputDescreveAjuda(conteudo, "Input.TarifaEnergiaKwh", "ajuda-tarifa-energia");
         AssertInputDescreveAjuda(conteudo, "Input.MargemPadraoPercentual", "ajuda-margem-padrao");
         AssertInputDescreveAjuda(conteudo, "Input.IncrementoComercial", "ajuda-incremento-comercial");
@@ -80,14 +80,14 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task UC027_W2_W3_Get_edicao_carrega_valores_atuais_nulls_vazios_e_percentuais_convertidos()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa edicao get");
-        await AtualizarConfiguracaoAsync(empresa, 12.34m, null, 0.075m, 0.500001m, 0.125m);
+        await AtualizarConfiguracaoAsync(empresa, 0.1234m, null, 0.075m, 0.500001m, 0.125m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await client.GetAsync("/Configuracoes/Precificacao/Editar");
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         response.EnsureSuccessStatusCode();
-        Assert.Equal("12,34", ValorDoInput(conteudo, "Input.ValorHoraTrabalho"));
+        Assert.Equal("12,34", ValorDoInput(conteudo, "Input.PercentualMaoDeObra"));
         Assert.Equal(string.Empty, ValorDoInput(conteudo, "Input.TarifaEnergiaKwh"));
         Assert.Equal("7,5", ValorDoInput(conteudo, "Input.MargemPadraoPercentual"));
         Assert.Equal("0,500001", ValorDoInput(conteudo, "Input.IncrementoComercial"));
@@ -121,7 +121,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal("/Configuracoes/Precificacao", response.Headers.Location!.ToString());
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Equal(12.34m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(0.1234m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0.98m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.30m, configuracao.MargemPadrao);
         Assert.Equal(0.50m, configuracao.IncrementoComercial);
@@ -129,29 +129,29 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         var paginaConsulta = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Configurações de precificação atualizadas com sucesso.", paginaConsulta);
-        Assert.Contains("R$ 12,34", paginaConsulta);
+        Assert.Contains("12,34%", paginaConsulta);
         Assert.Contains("30%", paginaConsulta);
         Assert.Contains("15%", paginaConsulta);
     }
 
     [Fact]
-    public async Task UC027_W5_Campos_opcionais_vazios_limpam_para_null()
+    public async Task MEL022_Percentual_vazio_e_invalido_e_preserva_configuracao()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa limpa nulls");
-        await AtualizarConfiguracaoAsync(empresa, 12.34m, 0.98m, 0.30m, 0.50m, 0.15m);
+        await AtualizarConfiguracaoAsync(empresa, 0.1234m, 0.98m, 0.30m, 0.50m, 0.15m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await EnviarFormularioEdicaoAsync(client, "", "  ", "", "", "10");
 
-        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+        Assert.Contains("O percentual de mão de obra é obrigatório.", conteudo);
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Null(configuracao.ValorHoraTrabalho);
-        Assert.Null(configuracao.TarifaEnergiaKwh);
-        Assert.Null(configuracao.MargemPadrao);
-        Assert.Null(configuracao.IncrementoComercial);
-        Assert.Equal(0.10m, configuracao.ReservaComercialDesconto);
-        var consulta = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
-        Assert.Equal(4, Regex.Matches(consulta, "Não configurado").Count);
+        Assert.Equal(0.1234m, configuracao.PercentualMaoDeObra);
+        Assert.Equal(0.98m, configuracao.TarifaEnergiaKwh);
+        Assert.Equal(0.30m, configuracao.MargemPadrao);
+        Assert.Equal(0.50m, configuracao.IncrementoComercial);
+        Assert.Equal(0.15m, configuracao.ReservaComercialDesconto);
     }
 
     [Fact]
@@ -164,14 +164,28 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Equal(0m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(0m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0m, configuracao.MargemPadrao);
         Assert.Null(configuracao.IncrementoComercial);
         Assert.Equal(0m, configuracao.ReservaComercialDesconto);
         var consulta = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
-        Assert.Contains("R$ 0,00", consulta);
         Assert.Contains("0%", consulta);
+    }
+
+    [Fact]
+    public async Task MEL022_Percentual_negativo_e_rejeitado_sem_mutar_configuracao()
+    {
+        var empresa = await web.CriarEmpresaAsync("Empresa percentual negativo");
+        await AtualizarConfiguracaoAsync(empresa, 0.10m, 1m, 0.10m, 0.50m, 0.10m);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var response = await EnviarFormularioEdicaoAsync(client, "-1", "1", "10", "0,5", "10");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("O percentual de mão de obra não pode ser negativo.", conteudo);
+        Assert.Equal(0.10m, (await ObterConfiguracaoAsync(empresa)).PercentualMaoDeObra);
     }
 
     [Theory]
@@ -180,7 +194,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task UC027_W7_Incremento_zero_ou_negativo_e_rejeitado(string incremento)
     {
         var empresa = await web.CriarEmpresaAsync($"Empresa incremento invalido {Guid.NewGuid():N}");
-        await AtualizarConfiguracaoAsync(empresa, 1m, 1m, 0.10m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresa, 0.01m, 1m, 0.10m, 0.50m, 0.10m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await EnviarFormularioEdicaoAsync(client, "2", "2", "20", incremento, "15");
@@ -198,7 +212,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task UC027_W8_Margem_invalida_e_rejeitada(string margem)
     {
         var empresa = await web.CriarEmpresaAsync($"Empresa margem invalida {Guid.NewGuid():N}");
-        await AtualizarConfiguracaoAsync(empresa, 1m, 1m, 0.10m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresa, 0.01m, 1m, 0.10m, 0.50m, 0.10m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await EnviarFormularioEdicaoAsync(client, "2", "2", margem, "1", "15");
@@ -217,7 +231,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task UC027_W9_Reserva_vazia_negativa_ou_maior_igual_100_e_rejeitada(string reserva)
     {
         var empresa = await web.CriarEmpresaAsync($"Empresa reserva invalida {Guid.NewGuid():N}");
-        await AtualizarConfiguracaoAsync(empresa, 1m, 1m, 0.10m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresa, 0.01m, 1m, 0.10m, 0.50m, 0.10m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await EnviarFormularioEdicaoAsync(client, "2", "2", "20", "1", reserva);
@@ -232,16 +246,16 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     }
 
     [Fact]
-    public async Task UC027_W10_Virgula_decimal_pt_BR_e_aceita()
+    public async Task MEL022_Percentual_aceita_virgula_ponto_e_valor_acima_de_cem_porcento()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa virgula");
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
-        var response = await EnviarFormularioEdicaoAsync(client, "123,45", "0,75", "10,5", "0,25", "7,5");
+        var response = await EnviarFormularioEdicaoAsync(client, "150,5", "0,75", "10,5", "0,25", "7,5");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Equal(123.45m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(1.505m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0.75m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.105m, configuracao.MargemPadrao);
         Assert.Equal(0.25m, configuracao.IncrementoComercial);
@@ -252,21 +266,21 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task MEL015_C3_Round_trip_do_incremento_comercial_preserva_alta_precisao()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa round trip incremento");
-        await AtualizarConfiguracaoAsync(empresa, 12.34m, 0.98m, 0.075m, 0.500001m, 0.125m);
+        await AtualizarConfiguracaoAsync(empresa, 0.1234m, 0.98m, 0.075m, 0.500001m, 0.125m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var get = await client.GetAsync("/Configuracoes/Precificacao/Editar");
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(get);
 
         get.EnsureSuccessStatusCode();
-        var valorHora = ValorDoInput(html, "Input.ValorHoraTrabalho");
+        var percentualMaoDeObra = ValorDoInput(html, "Input.PercentualMaoDeObra");
         var tarifa = ValorDoInput(html, "Input.TarifaEnergiaKwh");
         var margem = ValorDoInput(html, "Input.MargemPadraoPercentual");
         var incremento = ValorDoInput(html, "Input.IncrementoComercial");
         var reserva = ValorDoInput(html, "Input.ReservaComercialDescontoPercentual");
         Assert.Equal("0,500001", incremento);
 
-        var post = await EnviarFormularioEdicaoAsync(client, valorHora, tarifa, margem, incremento, reserva);
+        var post = await EnviarFormularioEdicaoAsync(client, percentualMaoDeObra, tarifa, margem, incremento, reserva);
 
         Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
         var configuracao = await ObterConfiguracaoAsync(empresa);
@@ -277,21 +291,21 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task UC027_W11_Post_invalido_preserva_inputs_e_banco_inalterado()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa invalido preserva");
-        await AtualizarConfiguracaoAsync(empresa, 1m, 1m, 0.10m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresa, 0.01m, 1m, 0.10m, 0.50m, 0.10m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await EnviarFormularioEdicaoAsync(client, "22", "abc", "33", "0,75", "12");
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("22", ValorDoInput(conteudo, "Input.ValorHoraTrabalho"));
+        Assert.Equal("22", ValorDoInput(conteudo, "Input.PercentualMaoDeObra"));
         Assert.Equal("abc", ValorDoInput(conteudo, "Input.TarifaEnergiaKwh"));
         Assert.Equal("33", ValorDoInput(conteudo, "Input.MargemPadraoPercentual"));
         Assert.Equal("0,75", ValorDoInput(conteudo, "Input.IncrementoComercial"));
         Assert.Equal("12", ValorDoInput(conteudo, "Input.ReservaComercialDescontoPercentual"));
         AssertAjudasPresentes(conteudo);
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Equal(1m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(0.01m, configuracao.PercentualMaoDeObra);
         Assert.Equal(1m, configuracao.TarifaEnergiaKwh);
         Assert.Equal(0.10m, configuracao.MargemPadrao);
         Assert.Equal(0.50m, configuracao.IncrementoComercial);
@@ -303,7 +317,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     {
         var empresaUm = await web.CriarEmpresaAsync("Empresa manipulada um");
         var empresaDois = await web.CriarEmpresaAsync("Empresa manipulada dois");
-        await AtualizarConfiguracaoAsync(empresaDois, 77m, 7m, 0.70m, 7m, 0.17m);
+        await AtualizarConfiguracaoAsync(empresaDois, 0.77m, 7m, 0.70m, 7m, 0.17m);
         using var client = await web.CriarClienteAutenticadoAsync(empresaUm);
 
         var response = await EnviarFormularioEdicaoAsync(client, "11", "1", "10", "0,25", "5", new Dictionary<string, string>
@@ -317,8 +331,8 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var configuracaoUm = await ObterConfiguracaoAsync(empresaUm);
         var configuracaoDois = await ObterConfiguracaoAsync(empresaDois);
-        Assert.Equal(11m, configuracaoUm.ValorHoraTrabalho);
-        Assert.Equal(77m, configuracaoDois.ValorHoraTrabalho);
+        Assert.Equal(0.11m, configuracaoUm.PercentualMaoDeObra);
+        Assert.Equal(0.77m, configuracaoDois.PercentualMaoDeObra);
         Assert.Equal(0.70m, configuracaoDois.MargemPadrao);
     }
 
@@ -336,20 +350,20 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         await SelecionarEmpresaAsync(client, empresaDois);
         Assert.Equal(HttpStatusCode.Redirect, await StatusDoPostEdicaoAsync(client, "20", "", "", "", "10"));
 
-        Assert.Equal(10m, (await ObterConfiguracaoAsync(empresaUm)).ValorHoraTrabalho);
-        Assert.Equal(20m, (await ObterConfiguracaoAsync(empresaDois)).ValorHoraTrabalho);
+        Assert.Equal(0.10m, (await ObterConfiguracaoAsync(empresaUm)).PercentualMaoDeObra);
+        Assert.Equal(0.20m, (await ObterConfiguracaoAsync(empresaDois)).PercentualMaoDeObra);
     }
 
     [Fact]
     public async Task UC027_W15_Post_sem_antiforgery_retorna_400_sem_mutacao()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa sem antiforgery");
-        await AtualizarConfiguracaoAsync(empresa, 1m, 1m, 0.10m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresa, 0.01m, 1m, 0.10m, 0.50m, 0.10m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var response = await client.PostAsync("/Configuracoes/Precificacao/Editar", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Input.ValorHoraTrabalho"] = "99",
+            ["Input.PercentualMaoDeObra"] = "99",
             ["Input.TarifaEnergiaKwh"] = "9",
             ["Input.MargemPadraoPercentual"] = "90",
             ["Input.IncrementoComercial"] = "9",
@@ -358,7 +372,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var configuracao = await ObterConfiguracaoAsync(empresa);
-        Assert.Equal(1m, configuracao.ValorHoraTrabalho);
+        Assert.Equal(0.01m, configuracao.PercentualMaoDeObra);
         Assert.Equal(0.10m, configuracao.MargemPadrao);
     }
 
@@ -367,8 +381,8 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     {
         var empresaUm = await web.CriarEmpresaAsync("Empresa config um");
         var empresaDois = await web.CriarEmpresaAsync("Empresa config dois");
-        await AtualizarConfiguracaoAsync(empresaUm, 12.34m, null, 0.075m, 0.50m, 0.10m);
-        await AtualizarConfiguracaoAsync(empresaDois, 98.76m, null, 0.125m, 1.25m, 0.20m);
+        await AtualizarConfiguracaoAsync(empresaUm, 0.1234m, null, 0.075m, 0.50m, 0.10m);
+        await AtualizarConfiguracaoAsync(empresaDois, 0.9876m, null, 0.125m, 1.25m, 0.20m);
         var usuario = await web.CriarUsuarioAsync(empresaUm, empresaDois);
         using var client = web.CriarCliente();
         var login = await web.LoginAsync(client, usuario.Email, usuario.Senha);
@@ -379,19 +393,19 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         await SelecionarEmpresaAsync(client, empresaDois);
         var empresaDoisHtml = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
 
-        Assert.Contains("R$ 12,34", empresaUmHtml);
+        Assert.Contains("12,34%", empresaUmHtml);
         Assert.Contains("7,5%", empresaUmHtml);
-        Assert.DoesNotContain("R$ 98,76", empresaUmHtml);
-        Assert.Contains("R$ 98,76", empresaDoisHtml);
+        Assert.DoesNotContain("98,76%", empresaUmHtml);
+        Assert.Contains("98,76%", empresaDoisHtml);
         Assert.Contains("12,5%", empresaDoisHtml);
-        Assert.DoesNotContain("R$ 12,34", empresaDoisHtml);
+        Assert.DoesNotContain("12,34%", empresaDoisHtml);
     }
 
     [Fact]
     public async Task W6_Empresa_ativa_nao_exibe_valores_preparados_para_outra_empresa()
     {
         var empresaDois = await web.CriarEmpresaAsync("Empresa config isolada");
-        await AtualizarConfiguracaoAsync(empresaDois, 77.77m, 66.66m, 0.333m, 5.55m, 0.44m);
+        await AtualizarConfiguracaoAsync(empresaDois, 0.7777m, 66.66m, 0.333m, 5.55m, 0.44m);
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
@@ -420,12 +434,12 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     public async Task W10_Percentuais_e_numeros_usam_pt_BR_deterministico()
     {
         var empresa = await web.CriarEmpresaAsync("Empresa formatacao");
-        await AtualizarConfiguracaoAsync(empresa, 12.345678m, 0.987654m, 0.075m, 0.500001m, 0.125m);
+        await AtualizarConfiguracaoAsync(empresa, 0.123456m, 0.987654m, 0.075m, 0.500001m, 0.125m);
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Configuracoes/Precificacao"));
 
-        Assert.Contains("R$ 12,35", conteudo);
+        Assert.Contains("12,3456%", conteudo);
         Assert.Contains("R$ 0,99", conteudo);
         Assert.Contains("7,5%", conteudo);
         Assert.Contains("R$ 0,50", conteudo);
@@ -456,7 +470,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
     private static async Task<HttpStatusCode> StatusDoPostEdicaoAsync(
         HttpClient client,
-        string valorHoraTrabalho,
+        string percentualMaoDeObra,
         string tarifaEnergiaKwh,
         string margemPadraoPercentual,
         string incrementoComercial,
@@ -464,7 +478,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
     {
         var response = await EnviarFormularioEdicaoAsync(
             client,
-            valorHoraTrabalho,
+            percentualMaoDeObra,
             tarifaEnergiaKwh,
             margemPadraoPercentual,
             incrementoComercial,
@@ -474,7 +488,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
     private static async Task<HttpResponseMessage> EnviarFormularioEdicaoAsync(
         HttpClient client,
-        string valorHoraTrabalho,
+        string percentualMaoDeObra,
         string tarifaEnergiaKwh,
         string margemPadraoPercentual,
         string incrementoComercial,
@@ -485,7 +499,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         var dados = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.ValorHoraTrabalho"] = valorHoraTrabalho,
+            ["Input.PercentualMaoDeObra"] = percentualMaoDeObra,
             ["Input.TarifaEnergiaKwh"] = tarifaEnergiaKwh,
             ["Input.MargemPadraoPercentual"] = margemPadraoPercentual,
             ["Input.IncrementoComercial"] = incrementoComercial,
@@ -520,7 +534,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
     private static void AssertAjudasPresentes(string html)
     {
-        Assert.Contains("Valor atribuído a uma hora de trabalho ativo.", html);
+        Assert.Contains("custo base dos insumos", html);
         Assert.Contains("Valor pago por 1 kWh de energia.", html);
         Assert.Contains("somente para pré-preencher a Margem-alvo ao cadastrar um novo Produto", html);
         Assert.Contains("Produtos já cadastrados não são modificados", html);
@@ -545,7 +559,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
 
     private async Task AtualizarConfiguracaoAsync(
         int empresaId,
-        decimal? valorHoraTrabalho,
+        decimal percentualMaoDeObra,
         decimal? tarifaEnergiaKwh,
         decimal? margemPadrao,
         decimal? incrementoComercial,
@@ -555,7 +569,7 @@ public sealed class ConfiguracaoPrecificacaoPageTests(CustomWebApplicationFactor
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync(c => c.EmpresaId == empresaId);
-        configuracao.Atualizar(valorHoraTrabalho, tarifaEnergiaKwh, margemPadrao, incrementoComercial, reservaComercialDesconto);
+        configuracao.Atualizar(percentualMaoDeObra, tarifaEnergiaKwh, margemPadrao, incrementoComercial, reservaComercialDesconto);
         await context.SaveChangesAsync();
     }
 

@@ -17,7 +17,7 @@ public static class ConfiguracaoPrecificacaoFormulario
         valores = default;
         var valido = true;
 
-        valido &= TentarObterOpcional(modelState, "Input.ValorHoraTrabalho", input.ValorHoraTrabalho, "O valor da hora de trabalho deve ser um número válido.", out var valorHoraTrabalho);
+        valido &= TentarObterPercentualObrigatorio(modelState, "Input.PercentualMaoDeObra", input.PercentualMaoDeObra, "O percentual de mão de obra é obrigatório.", "O percentual de mão de obra deve ser um número válido.", out var percentualMaoDeObra);
         valido &= TentarObterOpcional(modelState, "Input.TarifaEnergiaKwh", input.TarifaEnergiaKwh, "A tarifa de energia deve ser um número válido.", out var tarifaEnergiaKwh);
         valido &= TentarObterPercentualOpcional(modelState, "Input.MargemPadraoPercentual", input.MargemPadraoPercentual, "A margem padrão deve ser um número válido.", out var margemPadrao);
         valido &= TentarObterOpcional(modelState, "Input.IncrementoComercial", input.IncrementoComercial, "O incremento comercial deve ser um número válido.", out var incrementoComercial);
@@ -35,7 +35,7 @@ public static class ConfiguracaoPrecificacaoFormulario
         }
 
         valores = new ValoresConfiguracaoPrecificacao(
-            valorHoraTrabalho,
+            percentualMaoDeObra,
             tarifaEnergiaKwh,
             margemPadrao,
             incrementoComercial,
@@ -45,7 +45,7 @@ public static class ConfiguracaoPrecificacaoFormulario
 
     public static ConfiguracaoPrecificacaoInputModel CriarInput(ConfiguracaoPrecificacaoEmpresa configuracao) => new()
     {
-        ValorHoraTrabalho = FormatarDecimal(configuracao.ValorHoraTrabalho),
+        PercentualMaoDeObra = FormatarPercentual(configuracao.PercentualMaoDeObra),
         TarifaEnergiaKwh = FormatarDecimal(configuracao.TarifaEnergiaKwh),
         MargemPadraoPercentual = FormatarPercentual(configuracao.MargemPadrao),
         IncrementoComercial = FormatarDecimal(configuracao.IncrementoComercial),
@@ -136,7 +136,7 @@ public static class ConfiguracaoPrecificacaoFormulario
 
     private static string CampoPara(string? nomeParametro) => nomeParametro switch
     {
-        nameof(ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho) => "Input.ValorHoraTrabalho",
+        nameof(ConfiguracaoPrecificacaoEmpresa.PercentualMaoDeObra) => "Input.PercentualMaoDeObra",
         nameof(ConfiguracaoPrecificacaoEmpresa.TarifaEnergiaKwh) => "Input.TarifaEnergiaKwh",
         nameof(ConfiguracaoPrecificacaoEmpresa.MargemPadrao) => "Input.MargemPadraoPercentual",
         nameof(ConfiguracaoPrecificacaoEmpresa.IncrementoComercial) => "Input.IncrementoComercial",
@@ -146,7 +146,7 @@ public static class ConfiguracaoPrecificacaoFormulario
 
     private static string MensagemPara(string? nomeParametro) => nomeParametro switch
     {
-        nameof(ConfiguracaoPrecificacaoEmpresa.ValorHoraTrabalho) => "O valor da hora de trabalho não pode ser negativo.",
+        nameof(ConfiguracaoPrecificacaoEmpresa.PercentualMaoDeObra) => "O percentual de mão de obra não pode ser negativo.",
         nameof(ConfiguracaoPrecificacaoEmpresa.TarifaEnergiaKwh) => "A tarifa de energia não pode ser negativa.",
         nameof(ConfiguracaoPrecificacaoEmpresa.MargemPadrao) => "A margem padrão deve ser maior ou igual a 0% e menor que 100%.",
         nameof(ConfiguracaoPrecificacaoEmpresa.IncrementoComercial) => "O incremento comercial deve ser maior que zero.",
@@ -155,7 +155,7 @@ public static class ConfiguracaoPrecificacaoFormulario
     };
 
     public readonly record struct ValoresConfiguracaoPrecificacao(
-        decimal? ValorHoraTrabalho,
+        decimal PercentualMaoDeObra,
         decimal? TarifaEnergiaKwh,
         decimal? MargemPadrao,
         decimal? IncrementoComercial,

@@ -186,7 +186,7 @@ FichaTecnica é tenant-owned:
 
 ## Casos de uso
 
-- [UC013 — Definir rendimento e tempo ativo da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md);
+- [UC013 — Definir rendimento da Ficha Técnica](../use-cases/UC013-definir-base-ficha-tecnica.md);
 - [UC014 — Adicionar Insumo à Ficha Técnica](../use-cases/UC014-adicionar-insumo-ficha.md);
 - [UC015 — Alterar item da Ficha Técnica](../use-cases/UC015-alterar-item-ficha.md);
 - [UC016 — Remover item da Ficha Técnica](../use-cases/UC016-remover-item-ficha.md);

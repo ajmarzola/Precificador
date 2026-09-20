@@ -70,7 +70,7 @@ public sealed class UsoEquipamentoFichaPageTests
     [Fact]
     public async Task W9_W10_W11_W12_W13_W14_W15_W16_W17_W18_EnergiaMantemSemanticaEEstadoPersistido()
     {
-        await using var ambiente = await Ambiente.CriarAsync(); var produto = await ambiente.CriarProdutoAsync(1, true); var ficha = await ambiente.CriarFichaAsync(1, produto, 2m, 30);
+        await using var ambiente = await Ambiente.CriarAsync(); var produto = await ambiente.CriarProdutoAsync(1, true); var ficha = await ambiente.CriarFichaAsync(1, produto, 2m);
         AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
         await ambiente.CriarUsoAsync(1, ficha, "Forno", 2m, 30); await ambiente.TarifaAsync(1, 3m);
         var configurada = await ambiente.FichaAsync(produto); AssertExibeUsoEnergia(configurada, "Forno", "1", "3"); AssertExibeCustoEnergiaLote(configurada, "3");
@@ -78,10 +78,10 @@ public sealed class UsoEquipamentoFichaPageTests
         AssertExibeUsoEnergia(semTarifa, "Forno", "1", "â€”");
         await ambiente.TarifaAsync(1, 0m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "0");
         await ambiente.TarifaAsync(1, 4m); AssertExibeCustoEnergiaLote(await ambiente.FichaAsync(produto), "4");
-        await ambiente.ValorHoraAsync(1, null); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Contains("indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> R$ 4,00", independente);
+        await ambiente.PercentualMaoDeObraAsync(1, 0m); var independente = await ambiente.FichaAsync(produto); Assert.Contains("Custo base dos itens:</strong>", independente); Assert.Matches("Custo de mão de obra do lote:</strong>\\s*indisponível", independente); Assert.Contains("Custo de energia do lote:</strong> R$ 4,00", independente);
         var usosAntesGet = await ambiente.ContarUsosAsync(1); _ = await ambiente.FichaAsync(produto); Assert.Equal(usosAntesGet, await ambiente.ContarUsosAsync(1));
         var antes = await ambiente.EstadoAsync(ficha, 1); using var client = await ambiente.Web.CriarClienteAutenticadoAsync(1); var pagina = await client.GetAsync($"/Produtos/FichaTecnica/{produto}");
-        var invalido = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()), ["Input.Rendimento"] = "0", ["Input.TempoAtivoMinutos"] = "120" }));
+        var invalido = await client.PostAsync($"/Produtos/FichaTecnica/{produto}", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()), ["Input.Rendimento"] = "0" }));
         AssertExibeCustoEnergiaLote(await WebTestHtml.LerHtmlDecodificadoAsync(invalido), "4"); Assert.Equal(antes, await ambiente.EstadoAsync(ficha, 1));
         await ambiente.RemoverConfiguracaoAsync(1); Assert.Equal(System.Net.HttpStatusCode.NotFound, (await client.GetAsync($"/Produtos/FichaTecnica/{produto}")).StatusCode); Assert.Equal(0, await ambiente.ContarConfiguracoesAsync(1));
     }
@@ -104,7 +104,7 @@ public sealed class UsoEquipamentoFichaPageTests
         private readonly IServiceScope scope = factory.Services.CreateScope(); public WebTestContext Web { get; } = new(factory);
         public static async Task<Ambiente> CriarAsync() { var factory = new CustomWebApplicationFactory(new DateOnly(2026, 9, 15)); _ = factory.Services; return await Task.FromResult(new Ambiente(factory)); }
         public async Task<int> CriarProdutoAsync(int empresa, bool ativo) { await using var c = Contexto(empresa); var p = Produto.Criar(empresa, Guid.NewGuid().ToString(), .3m); if (!ativo) p.Desativar(); c.Produtos.Add(p); await c.SaveChangesAsync(); return p.Id; }
-        public async Task<int> CriarFichaAsync(int empresa, int produto, decimal rendimento = 1m, int tempo = 0) { await using var c = Contexto(empresa); var f = FichaTecnica.Criar(empresa, produto, rendimento, tempo); c.FichasTecnicas.Add(f); await c.SaveChangesAsync(); return f.Id; }
+        public async Task<int> CriarFichaAsync(int empresa, int produto, decimal rendimento = 1m) { await using var c = Contexto(empresa); var f = FichaTecnica.Criar(empresa, produto, rendimento); c.FichasTecnicas.Add(f); await c.SaveChangesAsync(); return f.Id; }
         public async Task<int> CriarUsoAsync(int empresa, int ficha, string nome, decimal potencia, int tempo) { await using var c = Contexto(empresa); var u = UsoEquipamentoFicha.Criar(empresa, ficha, nome, potencia, tempo); c.UsosEquipamentosFicha.Add(u); await c.SaveChangesAsync(); return u.Id; }
         public async Task<int> ContarUsosAsync(int empresa) { await using var c = Contexto(empresa); return await c.UsosEquipamentosFicha.CountAsync(); }
         public async Task<(int, int)> OwnershipAsync(int uso, int empresa) { await using var c = Contexto(empresa); var u = await c.UsosEquipamentosFicha.SingleAsync(x => x.Id == uso); return (u.EmpresaId, u.FichaTecnicaId); }
@@ -115,10 +115,10 @@ public sealed class UsoEquipamentoFichaPageTests
         public Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina) => TokenAsync(pagina, new());
         private async Task<FormUrlEncodedContent> TokenAsync(HttpResponseMessage pagina, Dictionary<string, string> dados) { dados["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await pagina.Content.ReadAsStringAsync()); return new FormUrlEncodedContent(dados); }
         public async Task TarifaAsync(int empresa, decimal? tarifa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET TarifaEnergiaKwh = @tarifa WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("tarifa", tarifa, precision: 18, scale: 6), new SqlParameter("empresaId", empresa)); }
-        public async Task ValorHoraAsync(int empresa, decimal? valor) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET ValorHoraTrabalho = @valor WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("valor", valor, precision: 18, scale: 6), new SqlParameter("empresaId", empresa)); }
+        public async Task PercentualMaoDeObraAsync(int empresa, decimal percentual) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlRawAsync("UPDATE ConfiguracoesPrecificacaoEmpresas SET PercentualMaoDeObra = @percentual WHERE EmpresaId = @empresaId", SqlDecimalParameter.Criar("percentual", percentual, precision: 9, scale: 6), new SqlParameter("empresaId", empresa)); }
         public async Task RemoverConfiguracaoAsync(int empresa) { await using var c = Contexto(empresa); await c.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM ConfiguracoesPrecificacaoEmpresas WHERE EmpresaId = {empresa}"); }
         public async Task<int> ContarConfiguracoesAsync(int empresa) { await using var c = Contexto(empresa); return await c.ConfiguracoesPrecificacaoEmpresas.CountAsync(); }
-        public async Task<(decimal, int)> EstadoAsync(int ficha, int empresa) { await using var c = Contexto(empresa); var f = await c.FichasTecnicas.SingleAsync(x => x.Id == ficha); return (f.Rendimento, f.TempoAtivoMinutos); }
+        public async Task<decimal> EstadoAsync(int ficha, int empresa) { await using var c = Contexto(empresa); return (await c.FichasTecnicas.SingleAsync(x => x.Id == ficha)).Rendimento; }
         private PrecificadorDbContext Contexto(int empresa) => new(scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(), new ContextoEmpresa(empresa));
         public ValueTask DisposeAsync() { scope.Dispose(); factory.Dispose(); return ValueTask.CompletedTask; }
     }

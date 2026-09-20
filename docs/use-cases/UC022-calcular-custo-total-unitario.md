@@ -1,5 +1,7 @@
 # UC022 — Calcular custo total e custo unitário
 
+> **Nota MEL022:** referências históricas a `TempoAtivoMinutos` e `ValorHoraTrabalho` foram substituídas por `PercentualMaoDeObra` aplicado sobre `CustoBaseItens` no UC020/RN013 vigente.
+
 - **Funcionalidade:** F004 — Precificação
 - **Dependências funcionais:** UC018, UC019, UC020 e UC021
 - **Base de revalidação:** UC018–UC021 concluídas
@@ -242,7 +244,7 @@ Precificação incompleta.
 
 A apresentação deve informar quais componentes impedem a composição, sem esconder os componentes conhecidos.
 
-As mensagens específicas já fornecidas pelos UCs anteriores continuam válidas, como ausência de preço vigente, valor/hora ou tarifa.
+As mensagens específicas já fornecidas pelos UCs anteriores continuam válidas, como ausência de preço vigente, custo base de mão de obra indisponível ou tarifa.
 
 UC022 apenas consolida a situação.
 

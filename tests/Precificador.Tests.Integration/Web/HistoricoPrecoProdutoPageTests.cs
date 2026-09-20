@@ -241,7 +241,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        configuracao.Atualizar(null, null, null, .01m, reserva);
+        configuracao.Atualizar(.10m, null, null, .01m, reserva);
         await context.SaveChangesAsync();
     }
 

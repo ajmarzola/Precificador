@@ -8,15 +8,14 @@ public sealed class FichaTecnica : IEntidadeEmpresa
     {
     }
 
-    private FichaTecnica(int empresaId, int produtoId, decimal rendimento, int tempoAtivoMinutos)
+    private FichaTecnica(int empresaId, int produtoId, decimal rendimento)
     {
         ValidarIds(empresaId, produtoId);
-        ValidarBase(rendimento, tempoAtivoMinutos);
+        ValidarBase(rendimento);
 
         EmpresaId = empresaId;
         ProdutoId = produtoId;
         Rendimento = rendimento;
-        TempoAtivoMinutos = tempoAtivoMinutos;
     }
 
     public int Id { get; private set; }
@@ -27,10 +26,8 @@ public sealed class FichaTecnica : IEntidadeEmpresa
 
     public decimal Rendimento { get; private set; }
 
-    public int TempoAtivoMinutos { get; private set; }
-
-    public static FichaTecnica Criar(int empresaId, int produtoId, decimal rendimento, int tempoAtivoMinutos) =>
-        new(empresaId, produtoId, rendimento, tempoAtivoMinutos);
+    public static FichaTecnica Criar(int empresaId, int produtoId, decimal rendimento) =>
+        new(empresaId, produtoId, rendimento);
 
     public void DefinirEmpresa(int empresaId)
     {
@@ -47,12 +44,11 @@ public sealed class FichaTecnica : IEntidadeEmpresa
         EmpresaId = empresaId;
     }
 
-    public void AtualizarBase(decimal rendimento, int tempoAtivoMinutos)
+    public void AtualizarBase(decimal rendimento)
     {
-        ValidarBase(rendimento, tempoAtivoMinutos);
+        ValidarBase(rendimento);
 
         Rendimento = rendimento;
-        TempoAtivoMinutos = tempoAtivoMinutos;
     }
 
     private static void ValidarIds(int empresaId, int produtoId)
@@ -68,16 +64,12 @@ public sealed class FichaTecnica : IEntidadeEmpresa
         }
     }
 
-    private static void ValidarBase(decimal rendimento, int tempoAtivoMinutos)
+    private static void ValidarBase(decimal rendimento)
     {
         if (rendimento <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(rendimento), "O rendimento deve ser maior que zero.");
         }
 
-        if (tempoAtivoMinutos < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(tempoAtivoMinutos), "O tempo ativo não pode ser negativo.");
-        }
     }
 }

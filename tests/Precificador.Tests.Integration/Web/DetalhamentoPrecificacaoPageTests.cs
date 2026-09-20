@@ -50,7 +50,7 @@ public sealed class DetalhamentoPrecificacaoPageTests
     {
         await using var ambiente = await Ambiente.CriarAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m, .1m);
         await ambiente.CriarUsoAsync(1, ficha, 2m, 30);
@@ -59,18 +59,19 @@ public sealed class DetalhamentoPrecificacaoPageTests
         Assert.Contains("Sem preço vigente", semPreco);
         Assert.Contains("Custo base dos itens:</strong> indisponível", semPreco);
         Assert.Contains("Custo de perdas do lote:</strong> indisponível", semPreco);
-        Assert.Contains("Valor da hora</dt><dd class=\"col-sm-9\">Não configurado", semPreco);
+        Assert.DoesNotContain("Valor da hora", semPreco);
+        Assert.Contains("Percentual de mão de obra</dt><dd class=\"col-sm-9\">10%", semPreco);
         Assert.Contains("Custo de mão de obra do lote</dt><dd class=\"col-sm-9\">indisponível", semPreco);
         Assert.Contains("Consumo (kWh)", semPreco);
         Assert.Contains("Custo de energia do lote:</strong> indisponível", semPreco);
 
         var vazio = await ambiente.CriarProdutoAsync(1, ativo: true);
-        await ambiente.CriarFichaAsync(1, vazio, tempo: 0);
+        await ambiente.CriarFichaAsync(1, vazio);
         var fichaVazia = await ambiente.ObterPrecificacaoAsync(vazio);
 
         Assert.Contains("Nenhum insumo adicionado.", fichaVazia);
         Assert.Contains("Custo de perdas do lote:</strong> R$ 0,00", fichaVazia);
-        Assert.Contains("Custo de mão de obra do lote</dt><dd class=\"col-sm-9\">R$ 0,00", fichaVazia);
+        Assert.Contains("Custo de mão de obra do lote</dt><dd class=\"col-sm-9\">indisponível", fichaVazia);
         Assert.Contains("Nenhum equipamento adicionado.", fichaVazia);
         Assert.Contains("Custo de energia do lote:</strong> R$ 0,00", fichaVazia);
     }
@@ -80,29 +81,29 @@ public sealed class DetalhamentoPrecificacaoPageTests
     {
         await using var ambiente = await Ambiente.CriarAsync();
         var produto = await ambiente.CriarProdutoAsync(1, ativo: true, margemAlvo: .2m);
-        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m, tempo: 30);
+        var ficha = await ambiente.CriarFichaAsync(1, produto, rendimento: 2m);
         var insumo = await ambiente.CriarInsumoAsync(1);
         await ambiente.CriarItemAsync(1, ficha, insumo, 2m, .1m);
         await ambiente.CriarPrecoAsync(1, insumo, 1m, 3m, Hoje);
         await ambiente.CriarUsoAsync(1, ficha, 1m, 30);
-        await ambiente.AtualizarConfiguracaoAsync(1, 20m, 4m, .5m);
+        await ambiente.AtualizarConfiguracaoAsync(1, .10m, 4m, .5m);
         await ambiente.CriarRegistroPrecoProdutoAsync(1, produto, Hoje, 999m, .9m, 1000m, 15m);
 
         var completo = await ambiente.ObterPrecificacaoAsync(produto);
 
         Assert.Contains("15/09/2026", completo);
         Assert.Contains("10%", completo);
-        Assert.Contains("Custo total do lote</dt><dd class=\"col-sm-9\">R$ 18,60", completo);
-        Assert.Contains("Custo unitário do produto</dt><dd class=\"col-sm-9\">R$ 9,30", completo);
-        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 11,63", completo);
-        Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">R$ 12,00", completo);
-        Assert.Contains("Margem atual</dt><dd class=\"col-sm-9\">38%", completo);
+        Assert.Contains("Custo total do lote</dt><dd class=\"col-sm-9\">R$ 9,20", completo);
+        Assert.Contains("Custo unitário do produto</dt><dd class=\"col-sm-9\">R$ 4,60", completo);
+        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 5,75", completo);
+        Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">R$ 6,00", completo);
+        Assert.Contains("Margem atual</dt><dd class=\"col-sm-9\">69,33%", completo);
         Assert.Contains("Dentro da margem", completo);
         Assert.Contains("Nenhuma pendência de cálculo.", completo);
 
-        await ambiente.AtualizarConfiguracaoAsync(1, 20m, 4m, null);
+        await ambiente.AtualizarConfiguracaoAsync(1, .10m, 4m, null);
         var semIncremento = await ambiente.ObterPrecificacaoAsync(produto);
-        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 11,63", semIncremento);
+        Assert.Contains("Preço teórico</dt><dd class=\"col-sm-9\">R$ 5,75", semIncremento);
         Assert.Contains("Preço sugerido</dt><dd class=\"col-sm-9\">indisponível", semIncremento);
         Assert.Contains("Incremento comercial não configurado.", semIncremento);
     }
@@ -198,7 +199,7 @@ public sealed class DetalhamentoPrecificacaoPageTests
         public async Task<int> CriarFichaAsync(int empresaId, int produtoId, decimal rendimento = 1m, int tempo = 0)
         {
             await using var context = CriarContexto(empresaId);
-            var ficha = FichaTecnica.Criar(empresaId, produtoId, rendimento, tempo);
+            var ficha = FichaTecnica.Criar(empresaId, produtoId, rendimento);
             context.FichasTecnicas.Add(ficha);
             await context.SaveChangesAsync();
             return ficha.Id;
@@ -241,11 +242,11 @@ public sealed class DetalhamentoPrecificacaoPageTests
             await context.SaveChangesAsync();
         }
 
-        public async Task AtualizarConfiguracaoAsync(int empresaId, decimal? valorHora, decimal? tarifa, decimal? incremento)
+        public async Task AtualizarConfiguracaoAsync(int empresaId, decimal percentualMaoDeObra, decimal? tarifa, decimal? incremento)
         {
             await using var context = CriarContexto(empresaId);
             var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-            configuracao.Atualizar(valorHora, tarifa, null, incremento, .1m);
+            configuracao.Atualizar(percentualMaoDeObra, tarifa, null, incremento, .1m);
             await context.SaveChangesAsync();
         }
 

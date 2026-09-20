@@ -1,5 +1,7 @@
 # MEL019 — Preencher Rendimento da Ficha Técnica com padrão 1
 
+> **Nota MEL022:** a MEL019 continua vigente apenas para o default visual de `Rendimento = 1` no GET de Produto sem Ficha. Referências deste documento a `TempoAtivoMinutos`/tempo ativo são históricas e foram superadas pela MEL022.
+
 - **Tipo:** UX / default de formulário
 - **Origem:** Review MVP 2026-09-16 — teste autenticado
 - **Prioridade:** baixa

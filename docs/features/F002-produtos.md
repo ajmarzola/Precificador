@@ -87,7 +87,7 @@ Ficam fora do UC007:
 
 - rendimento;
 - insumos e quantidades;
-- tempo ativo;
+- rendimento;
 - perdas;
 - equipamentos/recursos;
 - custo do lote;
@@ -95,7 +95,7 @@ Ficam fora do UC007:
 
 Esses conceitos pertencem à [F003 — Ficha Técnica](F003-ficha-tecnica.md) e aos UCs de precificação.
 
-A UC013 inaugura a Ficha Técnica com uma única base atual por Produto, contendo Rendimento e TempoAtivoMinutos. Itens, perdas e equipamentos permanecem em incrementos posteriores.
+A UC013 inaugura a Ficha Técnica com uma única base atual por Produto. Após a MEL022, essa base vigente contém Rendimento; Itens, perdas e equipamentos permanecem em incrementos próprios.
 
 O percentual de perda deixa de ser dado cadastral obrigatório do Produto. Perdas serão revalidadas como conceito de material/processo antes dos UCs correspondentes.
 

@@ -85,7 +85,7 @@ public sealed class RegistroPrecoProdutoConsultaTests
         await context.SaveChangesAsync();
 
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
-        configuracao.Atualizar(null, null, null, .50m, .90m);
+        configuracao.Atualizar(.10m, null, null, .50m, .90m);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 

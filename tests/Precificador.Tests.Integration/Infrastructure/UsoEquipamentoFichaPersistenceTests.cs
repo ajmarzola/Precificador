@@ -46,7 +46,7 @@ public sealed class UsoEquipamentoFichaPersistenceTests
         context.Empresas.Remove(await context.Empresas.SingleAsync()); await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
-    private static async Task<int> CriarFichaAsync(PrecificadorDbContext context, int empresaId) { var produto = Produto.Criar(empresaId, Guid.NewGuid().ToString(), .3m); context.Produtos.Add(produto); await context.SaveChangesAsync(); var ficha = FichaTecnica.Criar(empresaId, produto.Id, 1m, 0); context.FichasTecnicas.Add(ficha); await context.SaveChangesAsync(); return ficha.Id; }
+    private static async Task<int> CriarFichaAsync(PrecificadorDbContext context, int empresaId) { var produto = Produto.Criar(empresaId, Guid.NewGuid().ToString(), .3m); context.Produtos.Add(produto); await context.SaveChangesAsync(); var ficha = FichaTecnica.Criar(empresaId, produto.Id, 1m); context.FichasTecnicas.Add(ficha); await context.SaveChangesAsync(); return ficha.Id; }
     private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) => new(new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options, new ContextoEmpresa(empresaId));
     private sealed class ContextoEmpresa(int id) : IEmpresaContext { public int? EmpresaId => id; public int EmpresaIdOuSentinela => id; public string? TimeZoneId => Empresa.TimeZoneIdPadrao; }
 }

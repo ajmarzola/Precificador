@@ -152,15 +152,14 @@ public sealed class PrecificacaoProdutoAtualTests
         configuracao.Atualizar(0m, 0m, null, .5m, .1m);
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         var ficha = await context.FichasTecnicas.SingleAsync(f => f.ProdutoId == produto.Id);
-        ficha.AtualizarBase(2m, 30);
+        ficha.AtualizarBase(2m);
         await context.SaveChangesAsync();
 
         var resultado = await CalcularAsync(context, produto.Id);
 
         Assert.Equal(Hoje, resultado!.DataOperacional);
         Assert.Equal(2m, resultado.Rendimento);
-        Assert.Equal(30, resultado.TempoAtivoMinutos);
-        Assert.Equal(0m, resultado.ValorHoraTrabalho);
+        Assert.Equal(0m, resultado.PercentualMaoDeObra);
         Assert.Equal(0m, resultado.TarifaEnergiaKwh);
         Assert.Equal(.5m, resultado.IncrementoComercial);
     }
@@ -177,7 +176,7 @@ public sealed class PrecificacaoProdutoAtualTests
 
         Assert.Equal(Hoje, resultadoSemFicha!.DataOperacional);
         Assert.Null(resultadoSemFicha.Rendimento);
-        Assert.Null(resultadoSemFicha.TempoAtivoMinutos);
+        Assert.Null(resultadoSemFicha.PercentualMaoDeObra);
 
         var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
         context.ConfiguracoesPrecificacaoEmpresas.RemoveRange(context.ConfiguracoesPrecificacaoEmpresas);
@@ -186,8 +185,7 @@ public sealed class PrecificacaoProdutoAtualTests
 
         Assert.Equal(Hoje, resultadoSemConfiguracao!.DataOperacional);
         Assert.Equal(1m, resultadoSemConfiguracao.Rendimento);
-        Assert.Equal(0, resultadoSemConfiguracao.TempoAtivoMinutos);
-        Assert.Null(resultadoSemConfiguracao.ValorHoraTrabalho);
+        Assert.Null(resultadoSemConfiguracao.PercentualMaoDeObra);
         Assert.Null(resultadoSemConfiguracao.TarifaEnergiaKwh);
         Assert.Null(resultadoSemConfiguracao.IncrementoComercial);
         Assert.Equal(0, await context.ConfiguracoesPrecificacaoEmpresas.CountAsync());
@@ -198,10 +196,12 @@ public sealed class PrecificacaoProdutoAtualTests
         decimal margemAlvo,
         decimal custoInsumo)
     {
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(0m, configuracao.TarifaEnergiaKwh, configuracao.MargemPadrao, configuracao.IncrementoComercial, configuracao.ReservaComercialDesconto);
         var produto = Produto.Criar(1, $"Produto {Guid.NewGuid():N}", margemAlvo);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
-        var ficha = FichaTecnica.Criar(1, produto.Id, 1m, 0);
+        var ficha = FichaTecnica.Criar(1, produto.Id, 1m);
         var insumo = Insumo.Criar(1, $"Insumo {Guid.NewGuid():N}", CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade);
         context.FichasTecnicas.Add(ficha);
         context.Insumos.Add(insumo);

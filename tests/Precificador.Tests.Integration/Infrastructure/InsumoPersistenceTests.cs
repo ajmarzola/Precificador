@@ -28,7 +28,7 @@ public sealed class InsumoPersistenceTests
         context.Insumos.Add(insumo);
         await context.SaveChangesAsync();
         await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO Produtos (EmpresaId, Nome, NomeNormalizado, MargemAlvo, Ativo) VALUES (1, 'Produto técnico', 'PRODUTO TÉCNICO', 0.3, 1)");
-        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, 1, 1, 1)");
+        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento) VALUES (1, 1, 1)");
         await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO ItensFichaTecnica (EmpresaId, FichaTecnicaId, InsumoId, Quantidade) VALUES (1, 1, {insumo.Id}, 1)");
         insumo.ConsolidarIdentidade();
         await context.SaveChangesAsync();

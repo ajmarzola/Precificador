@@ -32,9 +32,9 @@ public sealed class FichaTecnicaPersistenceTests
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
 
-        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m, 30));
+        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m));
         await context.SaveChangesAsync();
-        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 3m, 40));
+        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 3m));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
@@ -52,7 +52,7 @@ public sealed class FichaTecnicaPersistenceTests
             context.Produtos.Add(produto);
             await context.SaveChangesAsync();
             produtoEmpresaUm = produto.Id;
-            context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m, 30));
+            context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m));
             await context.SaveChangesAsync();
         }
 
@@ -61,7 +61,7 @@ public sealed class FichaTecnicaPersistenceTests
             var produto = Produto.Criar(2, "Agenda B", 0.30m);
             context.Produtos.Add(produto);
             await context.SaveChangesAsync();
-            context.FichasTecnicas.Add(FichaTecnica.Criar(2, produto.Id, 4m, 60));
+            context.FichasTecnicas.Add(FichaTecnica.Criar(2, produto.Id, 4m));
             await context.SaveChangesAsync();
         }
 
@@ -93,7 +93,7 @@ public sealed class FichaTecnicaPersistenceTests
         }
 
         await using var contextoEmpresaUm = CriarContexto(connectionString, 1);
-        contextoEmpresaUm.FichasTecnicas.Add(FichaTecnica.Criar(1, produtoEmpresaDois, 2m, 30));
+        contextoEmpresaUm.FichasTecnicas.Add(FichaTecnica.Criar(1, produtoEmpresaDois, 2m));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
     }
@@ -107,7 +107,7 @@ public sealed class FichaTecnicaPersistenceTests
         var produto = Produto.Criar(1, "Agenda", 0.30m);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
-        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m, 30));
+        context.FichasTecnicas.Add(FichaTecnica.Criar(1, produto.Id, 2m));
         await context.SaveChangesAsync();
 
         context.ChangeTracker.Clear();
@@ -126,14 +126,14 @@ public sealed class FichaTecnicaPersistenceTests
         var produto = Produto.Criar(1, "Agenda", 0.30m);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
-        var ficha = FichaTecnica.Criar(1, produto.Id, 2m, 30);
+        var ficha = FichaTecnica.Criar(1, produto.Id, 2m);
         context.FichasTecnicas.Add(ficha);
         await context.SaveChangesAsync();
         var fichaId = ficha.Id;
         context.ChangeTracker.Clear();
 
         var existente = await context.FichasTecnicas.SingleAsync();
-        existente.AtualizarBase(2.5m, 45);
+        existente.AtualizarBase(2.5m);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
@@ -142,7 +142,6 @@ public sealed class FichaTecnicaPersistenceTests
         Assert.Equal(1, atualizada.EmpresaId);
         Assert.Equal(produto.Id, atualizada.ProdutoId);
         Assert.Equal(2.5m, atualizada.Rendimento);
-        Assert.Equal(45, atualizada.TempoAtivoMinutos);
     }
 
     private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) => new(
