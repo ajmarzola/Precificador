@@ -3,10 +3,10 @@
 - **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Especificado — bloqueado até conclusão de MEL023.
+- **Estado:** Pronto.
 - **Ordem na fila pendente:** 10.
-- **Dependências:** MEL020 e MEL022 concluídas; MEL023 pendente.
-- **Gate operacional:** só liberar após MEL022 e MEL023; executar antes de UC028.
+- **Dependências:** MEL020, MEL022 e MEL023 concluídas.
+- **Gate operacional:** liberado; executar antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
@@ -32,14 +32,28 @@ A MEL021 materializa a publicação preparada pela MEL020 e não cria funcionali
 
 ## Referências de plataforma
 
-Situação verificada em 18/09/2026:
+Situação revalidada em 20/09/2026 contra documentação oficial da Microsoft:
 
-- App Service F1 é camada gratuita, compartilhada, sem SLA e adequada a experimentação/uso leve;
-- Azure SQL Free oferece franquia mensal gratuita e permite pausar ao atingir a franquia;
-- App Service suporta Managed Identity para acesso passwordless ao Azure SQL;
-- o domínio padrão `*.azurewebsites.net` possui HTTPS.
+- **Azure App Service F1 / Linux** permanece gratuito, com compute compartilhado, **60 minutos de CPU por dia**, **1 GB de RAM** e **1 GB de armazenamento** por aplicativo;
+- F1 não possui SLA e a Microsoft declara que a camada Free é destinada a avaliação/experimentação/aprendizado e **não é suportada para workloads de produção**;
+- F1 permite somente o subdomínio padrão `*.azurewebsites.net`; domínio personalizado fica fora desta MEL;
+- **Azure SQL Database Free offer** permanece sem prazo de expiração, com franquia mensal por banco de **100.000 vCore-seconds**, **32 GB de dados** e **32 GB de backup**;
+- a oferta gratuita do Azure SQL permite até 10 bancos por assinatura, mas o Precificador usará apenas 1;
+- o comportamento **AutoPause** ao atingir o limite gratuito interrompe o banco até o início do próximo mês e evita cobrança de excedente;
+- App Service suporta System Assigned Managed Identity para conexão passwordless com Azure SQL;
+- o projeto já está em .NET 10 / SQL Server e Production não executa migrations automaticamente.
 
-A implementação deve revalidar a disponibilidade das ofertas gratuitas antes de provisionar.
+Referências oficiais:
+
+- https://azure.microsoft.com/pricing/details/app-service/linux/
+- https://learn.microsoft.com/azure/azure-resource-manager/management/azure-subscription-service-limits
+- https://learn.microsoft.com/azure/azure-sql/database/free-offer
+- https://learn.microsoft.com/azure/azure-sql/database/free-offer-faq
+- https://learn.microsoft.com/cli/azure/sql/db
+- https://learn.microsoft.com/azure/app-service/tutorial-connect-msi-sql-database
+- https://learn.microsoft.com/ef/core/providers/sql-server
+
+A implementação deve revalidar disponibilidade regional e os parâmetros da oferta gratuita imediatamente antes do provisionamento.
 
 ## Regra de custo
 
@@ -78,23 +92,32 @@ Não configurar domínio próprio nesta MEL.
 
 Habilitar HTTPS Only.
 
-### Limitações aceitas
+### Limitações e risco aceitos
 
-São aceitas:
+O Precificador será um **ambiente hospedado pessoal/familiar de baixo uso**, não uma oferta comercial com SLA.
+
+É decisão consciente usar F1 mesmo com a advertência da Microsoft de que a camada Free não é suportada para workloads de produção.
+
+Aceitamos:
 
 - ausência de SLA;
 - compute compartilhado;
+- 60 minutos de CPU/dia por aplicativo;
+- 1 GB de RAM;
+- 1 GB de armazenamento;
 - cold start;
 - ausência de Always On;
 - ausência de deployment slots;
-- ausência de custom domain;
-- limites de CPU/memória/armazenamento da camada Free.
+- somente `*.azurewebsites.net`;
+- eventual indisponibilidade ao atingir cotas do F1.
+
+`ASPNETCORE_ENVIRONMENT=Production` continua obrigatório no Azure por segurança/comportamento da aplicação. Isso **não significa** que o tier F1 tenha suporte/SLA de produção.
 
 Não implementar ping artificial para manter a aplicação acordada.
 
 ## Azure SQL Database
 
-Criar:
+Criar exatamente dentro da oferta gratuita:
 
 ```text
 Edition: GeneralPurpose
@@ -103,13 +126,37 @@ Use free limit: true
 Free limit exhaustion behavior: AutoPause
 ```
 
+Limites atuais aceitos:
+
+```text
+100.000 vCore-seconds / mês
+32 GB dados
+32 GB backup
+1 banco para o Precificador
+```
+
 `BillOverUsage` é proibido.
+
+Se o limite gratuito de compute ou armazenamento for atingido com AutoPause, o banco pode ficar indisponível até o início do próximo mês. Esse comportamento é preferível a qualquer cobrança automática.
+
+Ferramentas como SSMS/Visual Studio/SQL tooling devem ser desconectadas quando não estiverem em uso, pois conexões abertas podem impedir auto-pause e consumir a franquia de vCore.
 
 Criar logical server dedicado ao Precificador.
 
-Preferir autenticação **Microsoft Entra-only**.
+Usar autenticação **Microsoft Entra-only** sempre que a assinatura/tenant permitir.
 
-Não versionar login/senha de SQL Server.
+O logical server deve possuir um **Microsoft Entra administrator** explícito para bootstrap operacional. Esse administrador deve ser parametrizado pelo script (nome + Object ID/SID) e nunca hardcoded no repositório.
+
+É aceitável criar o logical server diretamente com:
+
+```text
+--enable-ad-only-auth
+--external-admin-principal-type User|Group
+--external-admin-name <parametro>
+--external-admin-sid <parametro>
+```
+
+Não criar ou versionar login/senha SQL como caminho normal.
 
 ### Região
 
@@ -146,6 +193,8 @@ ConnectionStrings__Precificador
 
 Não mudar o contrato `ConnectionStrings:Precificador`.
 
+Depois de habilitar a System Assigned Managed Identity da Web App, o operador conectado como Microsoft Entra admin deve criar o principal da aplicação no banco.
+
 A identidade runtime recebe somente leitura/escrita necessárias. Referência:
 
 ```sql
@@ -155,6 +204,8 @@ ALTER ROLE db_datawriter ADD MEMBER [<webapp>];
 ```
 
 Não conceder `db_owner` ou `db_ddladmin` à Web App.
+
+Se `CREATE USER ... FROM EXTERNAL PROVIDER` não conseguir resolver o principal pelo Microsoft Entra/Graph, usar a alternativa oficial baseada em SID/Object ID; **não** contornar o problema habilitando senha SQL ou dando permissão ampla.
 
 Service Connector passwordless é aceitável se resultar no mesmo contrato e não persistir segredo.
 
@@ -174,6 +225,22 @@ Provisionamento deve:
 2. criar regras do SQL para esses IPs;
 3. adicionar IP do operador temporariamente apenas para migration/bootstrap;
 4. remover o IP temporário ao final.
+
+## Resiliência de conexão
+
+Como o runtime atual usa `UseSqlServer`, a MEL021 deve habilitar resiliência para falhas transitórias do Azure SQL:
+
+```csharp
+options.UseSqlServer(
+    connectionString,
+    sql => sql.EnableRetryOnFailure());
+```
+
+ou configuração equivalente suportada pelo EF Core 10.
+
+A mesma configuração pode permanecer ativa no SQL Server local; não criar seleção de provider por ambiente.
+
+Não alterar regras de transação/negócio apenas por causa do retry.
 
 ## Migrations em Azure
 
@@ -220,11 +287,15 @@ Responsabilidades:
 
 - validar login/subscription;
 - criar/obter Resource Group;
+- validar disponibilidade regional do F1 e Azure SQL Free;
+- validar que o runtime Linux .NET 10 está disponível;
+- resolver/receber os parâmetros do Microsoft Entra administrator;
 - criar App Service Plan F1;
 - criar Web App .NET 10;
 - habilitar HTTPS Only e Managed Identity;
-- criar Azure SQL Server;
+- criar Azure SQL logical server com Entra-only e admin explícito;
 - criar Azure SQL Database com Free Limit + AutoPause;
+- criar/conceder principal da Managed Identity no banco com `db_datareader` + `db_datawriter`;
 - configurar conexão passwordless;
 - configurar firewall;
 - imprimir apenas outputs não sensíveis;
@@ -320,9 +391,12 @@ Após deploy:
 
 Antes de concluir:
 
-- App Service Plan = F1;
+- App Service Plan = F1 / custo $0;
+- confirmar limites F1 vigentes no momento do provisionamento;
 - Azure SQL = Free Limit;
 - `freeLimitExhaustionBehavior = AutoPause`;
+- confirmar franquia gratuita vigente do Azure SQL;
+- confirmar que nenhum recurso auxiliar pago foi criado;
 - nenhum App Service pago;
 - nenhum recurso faturável adicional criado pela MEL021;
 - nenhum fallback pago habilitado.
@@ -371,6 +445,13 @@ Referências históricas podem permanecer se identificadas como históricas.
 - **CA28:** documentação atual reflete SQL Server/Azure SQL e modo hospedado.
 - **CA29:** MEL021 passa a `Concluído`.
 - **CA30:** UC028 permanece sem implementação.
+- **CA31:** limites gratuitos de App Service e Azure SQL são revalidados no momento do provisionamento.
+- **CA32:** risco/limitação do F1 para uso pessoal sem SLA está documentado.
+- **CA33:** logical server possui Microsoft Entra admin explícito e não depende de senha SQL.
+- **CA34:** Web App usa apenas `db_datareader` + `db_datawriter` em runtime.
+- **CA35:** `EnableRetryOnFailure` ou equivalente está habilitado para o provider SQL Server.
+- **CA36:** atingir o limite gratuito do Azure SQL não pode produzir cobrança automática.
+- **CA37:** scripts falham em vez de trocar automaticamente para tier pago ou runtime incompatível.
 
 ## Matriz mínima
 
@@ -412,7 +493,33 @@ Criar/consultar Insumo e Produto.
 
 Reexecutar deploy sem recriar recurso pago nem corromper schema.
 
-### W9 — regressão
+### W9 — resiliência
+
+Confirmar que `UseSqlServer` está configurado com retry para falhas transitórias do Azure SQL.
+
+### W10 — Entra bootstrap
+
+Confirmar:
+
+```text
+logical server -> Entra-only
+Entra admin -> configurado
+Web App MI -> usuário no banco
+roles runtime -> db_datareader + db_datawriter
+sem db_owner/db_ddladmin
+```
+
+### W11 — quotas gratuitas
+
+Registrar os valores detectados/confirmados no momento do deploy e comprovar:
+
+```text
+App Service = F1
+SQL = Free Limit
+exhaustion = AutoPause
+```
+
+### W12 — regressão
 
 ```text
 dotnet build Precificador.slnx --configuration Release
@@ -441,7 +548,11 @@ MEL021 concluída quando:
 
 - App Service F1 e Azure SQL Free estão criados;
 - SQL Free está em AutoPause;
+- limites gratuitos atuais foram revalidados e registrados;
 - conexão é passwordless por Managed Identity;
+- logical server usa Entra admin explícito sem credencial SQL versionada;
+- runtime da Web App possui somente leitura/escrita no banco;
+- retry de conexão Azure SQL está habilitado;
 - migrations foram aplicadas explicitamente;
 - app roda em Production;
 - smoke real passou;
