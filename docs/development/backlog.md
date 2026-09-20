@@ -67,7 +67,7 @@ Regra operacional:
 | 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Concluído | FT002, MEL011; antes da nova estabilização | [MEL020](improvements/MEL020-sqlserver.md) |
 | 08 | MEL022 — Substituir custo de mão de obra por percentual sobre os insumos | MEL | Concluído | MEL020; antes de MEL023 e MEL021 | [MEL022](improvements/MEL022-mao-de-obra-percentual.md) |
 | 09 | MEL023 — Refinar equipamentos elétricos e navegação de tarifa na Ficha Técnica | MEL | Concluído | MEL022 concluída; antes de MEL021 | [MEL023](improvements/MEL023-equipamentos-eletricos-navegacao-tarifa.md) |
-| 10 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | MEL020, MEL022, MEL023; gate bloqueado até estabilização | [MEL021](improvements/MEL021-publicacao-azure.md) |
+| 10 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Pronto | MEL020, MEL022, MEL023 concluídas; gate liberado | [MEL021](improvements/MEL021-publicacao-azure.md) |
 | 11 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
 | 12 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | 13 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
