@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** esta instrução está especificada, mas não deve ser executada enquanto `docs/development/backlog.md` não marcar MEL021 como `Pronto`. MEL022 e MEL023 devem estar concluídas.
+> **Gate:** liberado. MEL020, MEL022 e MEL023 estão concluídas e o backlog deve marcar MEL021 como `Pronto`.
 
 Implemente exclusivamente a MEL021 conforme:
 
@@ -24,8 +24,12 @@ Publicar o Precificador em Azure App Service F1 com Azure SQL Free, mantendo cus
 
 - App Service: **F1/Free**;
 - Azure SQL: **Free Limit + AutoPause**;
+- confirmar no provisionamento a franquia gratuita vigente (atualmente 100.000 vCore-seconds/mês, 32 GB dados, 32 GB backup);
+- App Service F1 é aceito conscientemente para uso pessoal/familiar, sem SLA e sem suporte Microsoft para workload de produção;
 - nunca criar fallback pago;
 - App Service -> Azure SQL por **Managed Identity**, sem senha;
+- Azure SQL logical server com **Microsoft Entra-only + Entra administrator explícito**;
+- runtime da Web App somente `db_datareader` + `db_datawriter`;
 - `ConnectionStrings__Precificador` é a configuração do Azure;
 - Production não executa `Database.MigrateAsync()` automaticamente;
 - migrations são etapa explícita de deploy;
@@ -33,7 +37,8 @@ Publicar o Precificador em Azure App Service F1 com Azure SQL Free, mantendo cus
 - sem custom domain;
 - sem App Insights, Key Vault, VNet, Private Endpoint, ACR ou container;
 - não migrar dados locais;
-- UC028 não entra no diff.
+- UC028 não entra no diff;
+- `UseSqlServer` deve usar `EnableRetryOnFailure()` ou equivalente para Azure SQL.
 
 ## Infraestrutura
 
@@ -56,21 +61,31 @@ Deve:
 
 1. validar login/subscription;
 2. criar/usar Resource Group;
-3. validar que o plano escolhido é gratuito;
-4. criar App Service Plan F1 Linux;
-5. criar Web App .NET 10;
-6. habilitar HTTPS Only;
-7. habilitar System Assigned Managed Identity;
-8. criar Azure SQL logical server;
-9. criar banco GeneralPurpose Serverless com `--use-free-limit`;
-10. usar `--free-limit-exhaustion-behavior AutoPause`;
-11. configurar conexão passwordless;
-12. configurar firewall com outbound IPs da Web App;
-13. falhar se qualquer etapa exigir tier pago.
+3. validar disponibilidade regional e limites vigentes dos tiers gratuitos;
+4. validar runtime Linux .NET 10;
+5. obter por parâmetro o Entra admin (nome + Object ID/SID);
+6. criar App Service Plan F1 Linux;
+7. criar Web App .NET 10;
+8. habilitar HTTPS Only;
+9. habilitar System Assigned Managed Identity;
+10. criar Azure SQL logical server com Entra-only e Entra admin explícito;
+11. criar banco GeneralPurpose Serverless com `--use-free-limit`;
+12. usar `--free-limit-exhaustion-behavior AutoPause`;
+13. criar usuário da Managed Identity no banco;
+14. conceder somente `db_datareader` + `db_datawriter`;
+15. configurar conexão passwordless;
+16. configurar firewall com outbound IPs da Web App;
+17. falhar se qualquer etapa exigir tier pago.
 
-Preferir Microsoft Entra-only no SQL.
+Microsoft Entra-only é o caminho normativo. Não criar senha SQL como fallback automático.
 
 Service Connector passwordless é aceitável se o resultado final respeitar o contrato da MEL021.
+
+## Resiliência
+
+Como a aplicação usa `UseSqlServer`, habilitar `EnableRetryOnFailure()` ou equivalente suportado pelo EF Core 10.
+
+Não trocar provider entre desenvolvimento e Azure.
 
 ## Migrations
 
@@ -137,10 +152,13 @@ Não alterar documentos históricos além do necessário para marcar contexto hi
 2. `dotnet build Precificador.slnx --configuration Release --no-restore`;
 3. `dotnet test Precificador.slnx --configuration Release --no-build`;
 4. App Service F1 confirmado;
-5. SQL Free + AutoPause confirmado;
-6. Managed Identity confirmada;
-7. Production sem auto-migrate;
-8. smoke Azure concluído;
-9. scripts sem segredo;
-10. MEL021 -> Concluído;
-11. UC028 permanece Planejado.
+5. App Service F1 e limites atuais confirmados;
+6. SQL Free + AutoPause e franquia atual confirmados;
+7. Entra-only + Entra admin confirmados;
+8. Managed Identity confirmada com apenas reader/writer;
+9. `EnableRetryOnFailure` confirmado;
+10. Production sem auto-migrate;
+11. smoke Azure concluído;
+12. scripts sem segredo;
+13. MEL021 -> Concluído;
+14. UC028 permanece Planejado.
