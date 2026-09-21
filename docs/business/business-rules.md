@@ -536,19 +536,25 @@ A integridade deve ser protegida por validação funcional e índice único no b
 
 ### RN043 — Categoria opcional do produto
 
-Categoria é um texto livre opcional usado apenas para organização do catálogo.
+Categoria de Produto é uma entidade estruturada e tenant-aware (`CategoriaProduto`), administrável pela Empresa Ativa (ver UC032), e não mais um texto livre.
 
-A Categoria:
+O vínculo do Produto com a Categoria:
+
+- é opcional (`CategoriaProdutoId : int?`);
+- referencia obrigatoriamente uma `CategoriaProduto` da mesma Empresa (cross-tenant é rejeitado);
+- não participa da unicidade do Produto;
+- não altera regras de cálculo.
+
+O nome da `CategoriaProduto` segue a mesma semântica de normalização histórica:
 
 - possui no máximo 80 caracteres após normalização;
 - remove whitespace externo;
 - reduz sequências internas de whitespace a um único espaço;
 - preserva capitalização de exibição;
-- se vazia ou composta apenas por whitespace, é armazenada como `null`;
-- não participa da unicidade;
-- não altera regras de cálculo.
+- identidade funcional é `EmpresaId + NomeNormalizado` (índice único), impedindo duplicidade case-insensitive na mesma Empresa.
 
-Não existe enum ou cadastro global de Categoria de Produto no UC007.
+Desativar uma `CategoriaProduto` não remove nem altera Produtos já vinculados; apenas deixa de ser opção para novo vínculo ou nova atribuição em edição.
+
 
 ### RN044 — Situação inicial do produto
 

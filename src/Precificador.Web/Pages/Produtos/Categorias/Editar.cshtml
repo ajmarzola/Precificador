@@ -1,0 +1,22 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.Categorias.EditarModel
+@{
+    ViewData["Title"] = "Editar categoria de produto";
+}
+
+<h1>Editar categoria de produto</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.Nome" class="form-label"></label>
+        <input asp-for="Input.Nome" class="form-control" />
+        <span asp-validation-for="Input.Nome" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a asp-page="/Produtos/Categorias/Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

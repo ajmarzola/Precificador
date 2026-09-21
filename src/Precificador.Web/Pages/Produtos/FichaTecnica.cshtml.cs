@@ -176,7 +176,9 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
                 produto.Id,
                 produto.EmpresaId,
                 produto.Nome,
-                produto.Categoria,
+                produto.CategoriaProdutoId == null
+                    ? null
+                    : context.CategoriasProdutos.Where(categoria => categoria.Id == produto.CategoriaProdutoId).Select(categoria => categoria.Nome).FirstOrDefault(),
                 produto.Ativo,
                 produto.MargemAlvo))
             .SingleOrDefaultAsync();

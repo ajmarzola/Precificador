@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
@@ -13,6 +14,8 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 {
     [BindProperty]
     public ProdutoInputModel Input { get; set; } = new();
+
+    public IReadOnlyList<SelectListItem> CategoriasDisponiveis { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -30,14 +33,17 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
             Input.MargemAlvoPercentual = ProdutoFormulario.FormatarMargemAlvoPercentual(configuracao.MargemPadrao.Value);
         }
 
+        CategoriasDisponiveis = await CategoriaProdutoSelecao.ListarAsync(context, null);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         var margemInformada = ProdutoFormulario.TentarObterMargemAlvo(ModelState, Input, out var margemAlvo);
-        if (!margemInformada || !ModelState.IsValid)
+        var categoriaValida = await CategoriaProdutoSelecao.ValidarAsync(context, ModelState, Input.CategoriaProdutoId, null);
+        if (!margemInformada || !categoriaValida || !ModelState.IsValid)
         {
+            CategoriasDisponiveis = await CategoriaProdutoSelecao.ListarAsync(context, null);
             return Page();
         }
 
@@ -48,17 +54,19 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
                 empresaContext.EmpresaId!.Value,
                 Input.Nome!,
                 margemAlvo,
-                Input.Categoria);
+                Input.CategoriaProdutoId);
         }
         catch (ArgumentException exception)
         {
             ProdutoFormulario.AdicionarErroDominio(ModelState, exception);
+            CategoriasDisponiveis = await CategoriaProdutoSelecao.ListarAsync(context, null);
             return Page();
         }
 
         if (await context.Produtos.AnyAsync(item => item.NomeNormalizado == produto.NomeNormalizado))
         {
             ModelState.AddModelError("Input.Nome", ProdutoFormulario.MensagemDuplicidade);
+            CategoriasDisponiveis = await CategoriaProdutoSelecao.ListarAsync(context, null);
             return Page();
         }
 
@@ -77,3 +85,4 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
         return RedirectToPage("/Produtos/Detalhes", new { id = produto.Id });
     }
 }
+

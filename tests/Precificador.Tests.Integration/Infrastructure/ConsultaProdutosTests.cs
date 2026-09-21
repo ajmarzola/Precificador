@@ -96,14 +96,14 @@ public sealed class ConsultaProdutosTests
         await using (var empresaUm = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1)))
         {
             empresaUm.Produtos.AddRange(
-                Produto.Criar(1, "Planner", 0.30m, "Papelaria"),
-                Produto.Criar(1, "Calendário 2027", 0.255m, "Datas"),
+                Produto.Criar(1, "Planner", 0.30m),
+                Produto.Criar(1, "Calendário 2027", 0.255m),
                 Produto.Criar(1, "Agenda", 0m));
             await empresaUm.SaveChangesAsync();
         }
 
         await using var empresaDois = new PrecificadorDbContext(opcoes, new ContextoEmpresa(2));
-        empresaDois.Produtos.Add(Produto.Criar(2, "Bloco externo", 0.20m, "Papelaria"));
+        empresaDois.Produtos.Add(Produto.Criar(2, "Bloco externo", 0.20m));
         await empresaDois.SaveChangesAsync();
     }
 

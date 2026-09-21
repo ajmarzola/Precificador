@@ -19,7 +19,13 @@ public sealed class PrecificacaoModel(PrecificadorDbContext context, Precificaca
     public async Task<IActionResult> OnGetAsync(int id)
     {
         Produto = await context.Produtos.AsNoTracking().Where(produto => produto.Id == id)
-            .Select(produto => new ProdutoResumo(produto.Id, produto.Nome, produto.Categoria, produto.Ativo))
+            .Select(produto => new ProdutoResumo(
+                produto.Id,
+                produto.Nome,
+                produto.CategoriaProdutoId == null
+                    ? null
+                    : context.CategoriasProdutos.Where(categoria => categoria.Id == produto.CategoriaProdutoId).Select(categoria => categoria.Nome).FirstOrDefault(),
+                produto.Ativo))
             .SingleOrDefaultAsync();
         if (Produto is null) return NotFound();
 

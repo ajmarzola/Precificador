@@ -39,7 +39,7 @@ public static class ProdutoFormulario
 
     private static string CampoPara(string? nomeParametro) => nomeParametro switch
     {
-        "categoria" => "Input.Categoria",
+        "categoriaProdutoId" => "Input.CategoriaProdutoId",
         "margemAlvo" => "Input.MargemAlvoPercentual",
         _ => "Input.Nome"
     };

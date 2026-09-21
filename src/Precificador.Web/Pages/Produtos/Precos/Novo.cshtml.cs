@@ -47,7 +47,17 @@ public sealed class NovoModel(PrecificadorDbContext context, IDataOperacionalEmp
 
     private async Task<bool> CarregarAsync(int id)
     {
-        Produto = await context.Produtos.AsNoTracking().Where(p => p.Id == id).Select(p => new ProdutoResumo(p.Id, p.EmpresaId, p.Nome, p.Categoria, p.Ativo, p.MargemAlvo)).SingleOrDefaultAsync();
+        Produto = await context.Produtos.AsNoTracking().Where(p => p.Id == id)
+            .Select(p => new ProdutoResumo(
+                p.Id,
+                p.EmpresaId,
+                p.Nome,
+                p.CategoriaProdutoId == null
+                    ? null
+                    : context.CategoriasProdutos.Where(categoria => categoria.Id == p.CategoriaProdutoId).Select(categoria => categoria.Nome).FirstOrDefault(),
+                p.Ativo,
+                p.MargemAlvo))
+            .SingleOrDefaultAsync();
         if (Produto is null) return false;
         Precificacao = await precificacaoAtual.CalcularAsync(id);
         return Precificacao is not null;

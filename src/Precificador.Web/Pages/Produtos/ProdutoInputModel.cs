@@ -8,7 +8,7 @@ public sealed class ProdutoInputModel
     public string? Nome { get; set; }
 
     [Display(Name = "Categoria")]
-    public string? Categoria { get; set; }
+    public int? CategoriaProdutoId { get; set; }
 
     [Display(Name = "Margem-alvo (%)")]
     public string? MargemAlvoPercentual { get; set; }

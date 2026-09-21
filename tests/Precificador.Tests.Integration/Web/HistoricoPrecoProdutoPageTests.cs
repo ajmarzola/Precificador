@@ -207,7 +207,16 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", .30m, categoria);
+        int? categoriaId = null;
+        if (categoria is not null)
+        {
+            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria);
+            context.CategoriasProdutos.Add(categoriaEntidade);
+            await context.SaveChangesAsync();
+            categoriaId = categoriaEntidade.Id;
+        }
+
+        var produto = Produto.Criar(empresaId, $"Produto {Guid.NewGuid():N}", .30m, categoriaId);
         if (!ativo)
         {
             produto.Desativar();
@@ -259,8 +268,17 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
+        int? categoriaId = null;
+        if (categoria is not null)
+        {
+            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria);
+            context.CategoriasProdutos.Add(categoriaEntidade);
+            await context.SaveChangesAsync();
+            categoriaId = categoriaEntidade.Id;
+        }
+
         var produto = await context.Produtos.SingleAsync(produto => produto.Id == produtoId);
-        produto.AtualizarDados(produto.Nome, margem, categoria);
+        produto.AtualizarDados(produto.Nome, margem, categoriaId);
         await context.SaveChangesAsync();
     }
 

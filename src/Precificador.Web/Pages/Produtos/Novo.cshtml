@@ -14,9 +14,9 @@
         <span asp-validation-for="Input.Nome" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <label asp-for="Input.Categoria" class="form-label"></label>
-        <input asp-for="Input.Categoria" class="form-control" />
-        <span asp-validation-for="Input.Categoria" class="text-danger"></span>
+        <label asp-for="Input.CategoriaProdutoId" class="form-label"></label>
+        <select asp-for="Input.CategoriaProdutoId" asp-items="Model.CategoriasDisponiveis" class="form-select"></select>
+        <span asp-validation-for="Input.CategoriaProdutoId" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Input.MargemAlvoPercentual" class="form-label"></label>

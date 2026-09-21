@@ -29,14 +29,18 @@ public sealed class ProdutoPersistenceTests
         await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
 
-        context.Produtos.Add(Produto.Criar(1, "  Agenda   2027 ", 0.30m, "  Planners  "));
+        var categoria = CategoriaProduto.Criar(1, "Planners");
+        context.CategoriasProdutos.Add(categoria);
+        await context.SaveChangesAsync();
+
+        context.Produtos.Add(Produto.Criar(1, "  Agenda   2027 ", 0.30m, categoria.Id));
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
         var produto = await context.Produtos.SingleAsync();
         Assert.Equal("Agenda 2027", produto.Nome);
         Assert.Equal("AGENDA 2027", produto.NomeNormalizado);
-        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(categoria.Id, produto.CategoriaProdutoId);
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }
@@ -50,7 +54,7 @@ public sealed class ProdutoPersistenceTests
 
         context.Produtos.Add(Produto.Criar(1, "Agenda", 0.30m));
         await context.SaveChangesAsync();
-        context.Produtos.Add(Produto.Criar(1, " agenda ", 0.25m, "Outra categoria"));
+        context.Produtos.Add(Produto.Criar(1, " agenda ", 0.25m));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
@@ -130,12 +134,17 @@ public sealed class ProdutoPersistenceTests
         await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
 
-        var produto = Produto.Criar(1, "Agenda", 0.30m, "Planners");
+        var categoriaOriginal = CategoriaProduto.Criar(1, "Planners");
+        var categoriaNova = CategoriaProduto.Criar(1, "Datas");
+        context.CategoriasProdutos.AddRange(categoriaOriginal, categoriaNova);
+        await context.SaveChangesAsync();
+
+        var produto = Produto.Criar(1, "Agenda", 0.30m, categoriaOriginal.Id);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
         var id = produto.Id;
 
-        produto.AtualizarDados("  Calendário   2027  ", 0.255m, "  Datas ");
+        produto.AtualizarDados("  Calendário   2027  ", 0.255m, categoriaNova.Id);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
@@ -144,7 +153,7 @@ public sealed class ProdutoPersistenceTests
         Assert.Equal(1, atualizado.EmpresaId);
         Assert.Equal("Calendário 2027", atualizado.Nome);
         Assert.Equal("CALENDÁRIO 2027", atualizado.NomeNormalizado);
-        Assert.Equal("Datas", atualizado.Categoria);
+        Assert.Equal(categoriaNova.Id, atualizado.CategoriaProdutoId);
         Assert.Equal(0.255m, atualizado.MargemAlvo);
         Assert.True(atualizado.Ativo);
     }

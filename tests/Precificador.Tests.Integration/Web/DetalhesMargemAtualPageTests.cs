@@ -289,7 +289,7 @@ public sealed class DetalhesMargemAtualPageTests
         {
             await using var context = CriarContexto(empresaId);
             var produto = await context.Produtos.SingleAsync(p => p.Id == produtoId);
-            produto.AtualizarDados(produto.Nome, margem, produto.Categoria);
+            produto.AtualizarDados(produto.Nome, margem, produto.CategoriaProdutoId);
             await context.SaveChangesAsync();
         }
 

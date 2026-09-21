@@ -47,7 +47,8 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         Assert.Contains("Nome", conteudo);
         Assert.Contains($"value=\"{nomeProduto}\"", conteudo);
         Assert.Contains("Categoria", conteudo);
-        Assert.Contains("value=\"Catálogo\"", conteudo);
+        Assert.Contains("Catálogo", conteudo);
+        Assert.Contains("selected", conteudo);
         Assert.Contains("Margem-alvo (%)", conteudo);
         Assert.Equal(25.5m, DecimalInformado(ValorDoInput(conteudo, "Input.MargemAlvoPercentual")));
         Assert.DoesNotContain("EmpresaId", conteudo);
@@ -76,7 +77,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
             Assert.Equal(1, produto.EmpresaId);
             Assert.Equal(novoNome, produto.Nome);
             Assert.Equal(novoNome.ToUpperInvariant(), produto.NomeNormalizado);
-            Assert.Equal("Datas 2027", produto.Categoria);
+            Assert.Equal("Datas 2027", (await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == produto.CategoriaProdutoId)).Nome);
             Assert.Equal(0.255m, produto.MargemAlvo);
             Assert.True(produto.Ativo);
         }
@@ -87,23 +88,37 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
     }
 
     [Theory]
-    [InlineData("   ", "Categoria", "30")]
-    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Categoria", "30")]
-    [InlineData("Agenda", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "30")]
-    [InlineData("Agenda", "Categoria", null)]
-    [InlineData("Agenda", "Categoria", "-1")]
-    [InlineData("Agenda", "Categoria", "100")]
-    [InlineData("Agenda", "Categoria", "101")]
+    [InlineData("   ", "30")]
+    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "30")]
+    [InlineData("Agenda", null)]
+    [InlineData("Agenda", "-1")]
+    [InlineData("Agenda", "100")]
+    [InlineData("Agenda", "101")]
     public async Task CA05_CA06_CA07_Post_invalido_nao_persiste_alteracoes(
         string nome,
-        string categoria,
         string? margemPercentual)
     {
         var nomeOriginal = NomeUnico("Produto preservado");
         var id = await CriarProdutoAsync(1, nomeOriginal, "Original", 0.30m);
         using var client = await web.CriarClienteAutenticadoAsync(1);
 
-        var response = await EnviarFormularioAsync(client, id, nome, categoria, margemPercentual);
+        var response = await EnviarFormularioAsync(client, id, nome, "Original", margemPercentual);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await AssertProdutoAsync(id, nomeOriginal, "Original", 0.30m, 1, true);
+    }
+
+    [Fact]
+    public async Task CA06_Post_com_categoria_inexistente_e_invalido_e_nao_persiste_alteracoes()
+    {
+        var nomeOriginal = NomeUnico("Produto categoria invalida");
+        var id = await CriarProdutoAsync(1, nomeOriginal, "Original", 0.30m);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var response = await EnviarFormularioAsync(client, id, nomeOriginal, null, "30", new Dictionary<string, string>
+        {
+            ["Input.CategoriaProdutoId"] = "999999"
+        });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await AssertProdutoAsync(id, nomeOriginal, "Original", 0.30m, 1, true);
@@ -228,7 +243,7 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         Assert.Contains("Salvar", edicao);
     }
 
-    private static async Task<HttpResponseMessage> EnviarFormularioAsync(
+    private async Task<HttpResponseMessage> EnviarFormularioAsync(
         HttpClient client,
         int id,
         string nome,
@@ -240,11 +255,12 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         var respostaPagina = await client.GetAsync($"/Produtos/Editar/{tokenProdutoId ?? id}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
+        var categoriaId = categoria is null ? (int?)null : await ObterOuCriarCategoriaIdAsync(categoria);
         var dados = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.Nome"] = nome,
-            ["Input.Categoria"] = categoria ?? string.Empty
+            ["Input.CategoriaProdutoId"] = categoriaId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
         };
 
         if (margemPercentual is not null)
@@ -263,12 +279,32 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         return await client.PostAsync($"/Produtos/Editar/{id}", new FormUrlEncodedContent(dados));
     }
 
-    private async Task<int> CriarProdutoAsync(int empresaId, string nome, string? categoria, decimal margemAlvo)
+    private async Task<int?> ObterOuCriarCategoriaIdAsync(string nome, int empresaIdFallback = 1)
     {
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaIdFallback));
+        var nomeNormalizado = nome.Trim().ToUpperInvariant();
+        var existente = await context.CategoriasProdutos.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(categoria => categoria.NomeNormalizado == nomeNormalizado);
+        if (existente is not null)
+        {
+            return existente.Id;
+        }
+
+        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome);
+        context.CategoriasProdutos.Add(categoriaNova);
+        await context.SaveChangesAsync();
+        return categoriaNova.Id;
+    }
+
+    private async Task<int> CriarProdutoAsync(int empresaId, string nome, string? categoria, decimal margemAlvo)
+    {
+        var categoriaId = categoria is null ? (int?)null : await ObterOuCriarCategoriaIdAsync(categoria, empresaId);
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoria);
+        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoriaId);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
         return produto.Id;
@@ -297,7 +333,16 @@ public sealed class EditarProdutoPageTests(CustomWebApplicationFactory factory) 
         var produto = await context.Produtos.IgnoreQueryFilters().AsNoTracking().SingleAsync(produto => produto.Id == id);
         Assert.Equal(nome, produto.Nome);
         Assert.Equal(nome.ToUpperInvariant(), produto.NomeNormalizado);
-        Assert.Equal(categoria, produto.Categoria);
+        if (categoria is null)
+        {
+            Assert.Null(produto.CategoriaProdutoId);
+        }
+        else
+        {
+            var categoriaPersistida = await context.CategoriasProdutos.IgnoreQueryFilters()
+                .SingleAsync(item => item.Id == produto.CategoriaProdutoId);
+            Assert.Equal(categoria, categoriaPersistida.Nome);
+        }
         Assert.Equal(margemAlvo, produto.MargemAlvo);
         Assert.Equal(empresaId, produto.EmpresaId);
         Assert.Equal(ativo, produto.Ativo);

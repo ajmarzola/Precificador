@@ -19,7 +19,14 @@ public sealed class DetalhesModel(PrecificadorDbContext context, PrecificacaoPro
     {
         Produto = await context.Produtos.AsNoTracking()
             .Where(produto => produto.Id == id)
-            .Select(produto => new ProdutoDetalhes(produto.Id, produto.Nome, produto.Categoria, produto.MargemAlvo, produto.Ativo))
+            .Select(produto => new ProdutoDetalhes(
+                produto.Id,
+                produto.Nome,
+                produto.CategoriaProdutoId == null
+                    ? null
+                    : context.CategoriasProdutos.Where(categoria => categoria.Id == produto.CategoriaProdutoId).Select(categoria => categoria.Nome).FirstOrDefault(),
+                produto.MargemAlvo,
+                produto.Ativo))
             .SingleOrDefaultAsync();
 
         if (Produto is null)

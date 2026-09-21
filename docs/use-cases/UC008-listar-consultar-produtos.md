@@ -135,6 +135,8 @@ A pesquisa procura correspondência parcial **somente em Nome**.
 
 ### Justificativa
 
+> **Atualização (UC032):** Categoria passou a ser a entidade estruturada `CategoriaProduto` (com `NomeNormalizado` próprio), mas a decisão de não pesquisar por Categoria permanece válida — a pesquisa de `/Produtos` continua restrita a Nome.
+
 Categoria é texto livre opcional e, no UC007, não possui `CategoriaNormalizada`.
 
 O UC008 não deve criar schema adicional nem introduzir normalização técnica de Categoria apenas para pesquisa.
