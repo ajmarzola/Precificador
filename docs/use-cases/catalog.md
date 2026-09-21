@@ -51,6 +51,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | [UC010](UC010-desativar-reativar-produto.md) | Desativar e reativar produto | UC007, UC009 |
 | [UC011](UC011-registrar-preco-prateleira-snapshot.md) | Registrar preço de prateleira preservando snapshot de precificação | UC023; incorporar snapshot `ReservaComercialReferencia` conforme MEL009 |
 | [UC012](UC012-consultar-historico-precificacao-produto.md) | Consultar histórico de precificação do produto | UC011; derivar desconto histórico pela reserva congelada conforme MEL009 |
+| [UC032](UC032-administrar-categorias-produto.md) | Administrar categorias de Produto | UC007–UC010 |
 
 UC011 congela Custo de referência, Margem de referência, Preço sugerido, Preço de prateleira e Reserva comercial de referência. UC012 consulta esse histórico, deriva o registro atual por `DataReferencia DESC, Id DESC` e calcula o Desconto de referência somente a partir dos snapshots, sem reinterpretar registros antigos com configuração vigente.
 
@@ -58,11 +59,11 @@ UC011 congela Custo de referência, Margem de referência, Preço sugerido, Pre�
 
 A review manual identificou a necessidade de substituir a Categoria livre atual por estrutura cadastrável e introduzir o conceito de Coleção:
 
-- **UC032 — Administrar categorias de Produto:** padronizar Categorias por Empresa e preparar a substituição do texto livre atual;
+- **[UC032](UC032-administrar-categorias-produto.md) — Administrar categorias de Produto:** substituir o texto livre por `CategoriaProduto` tenant-aware, migrar os dados existentes e administrar cadastro/situação;
 - **UC033 — Administrar coleções:** cadastrar Coleções com período de lançamento/finalização e Categorias envolvidas;
 - **UC034 — Vincular Produtos a Coleções:** permitir acompanhar a participação/destaque de Produtos ao longo das Coleções.
 
-Esses itens ainda exigem especificação detalhada de modelo, migração dos dados existentes, cardinalidades e regras de vigência antes de qualquer implementação.
+UC032 está especificada e foi antecipada na fila. UC033/UC034 permanecem para especificação posterior.
 
 ## Ficha técnica
 
@@ -95,6 +96,21 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | [UC023](UC023-calcular-preco-teorico-sugerido.md) | Calcular preço teórico e sugerido | UC022, UC027 |
 | [UC024](UC024-calcular-margem-atual-situacao.md) | Calcular margem atual e situação | UC012, UC022 |
 | [UC025](UC025-consultar-detalhamento-precificacao.md) | Consultar detalhamento da precificação | UC023, UC024 |
+| UC036 | Configurar custo de desgaste de equipamentos por Categoria | UC032, UC018, UC022 |
+
+### Evolução planejada — desgaste de equipamentos
+
+Após a UC032, a **UC036 — Configurar custo de desgaste de equipamentos por Categoria** introduzirá um novo componente de custo antes da MEL021.
+
+Decisões já fechadas para futura especificação:
+
+- configuração pertence à Categoria;
+- formas: valor fixo por lote ou percentual sobre `CustoBaseItens`;
+- valor fixo é do lote, não por unidade;
+- percentual usa exclusivamente o total dos insumos como base;
+- energia elétrica e desgaste permanecem componentes distintos.
+
+A UC036 ainda será especificada separadamente e não deve ser antecipada na UC032.
 
 ## Dashboard
 
