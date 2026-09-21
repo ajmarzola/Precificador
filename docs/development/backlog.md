@@ -67,29 +67,31 @@ Regra operacional:
 | 07 | MEL020 — Migrar persistência de SQLite para SQL Server | MEL | Concluído | FT002, MEL011; antes da nova estabilização | [MEL020](improvements/MEL020-sqlserver.md) |
 | 08 | MEL022 — Substituir custo de mão de obra por percentual sobre os insumos | MEL | Concluído | MEL020; antes de MEL023 e MEL021 | [MEL022](improvements/MEL022-mao-de-obra-percentual.md) |
 | 09 | MEL023 — Refinar equipamentos elétricos e navegação de tarifa na Ficha Técnica | MEL | Concluído | MEL022 concluída; antes de MEL021 | [MEL023](improvements/MEL023-equipamentos-eletricos-navegacao-tarifa.md) |
-| 10 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Pronto | MEL020, MEL022, MEL023 concluídas; gate liberado | [MEL021](improvements/MEL021-publicacao-azure.md) |
-| 11 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
-| 12 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
-| 13 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
-| 14 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
-| 15 | UC032 — Administrar categorias de Produto | UC | Planejado | UC007–UC010 | Documento a criar |
-| 16 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
-| 17 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
-| 18 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 19 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 20 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 10 | UC032 — Administrar categorias de Produto | UC | Pronto | UC007–UC010 | [UC032](../use-cases/UC032-administrar-categorias-produto.md) |
+| 11 | UC036 — Configurar custo de desgaste de equipamentos por Categoria | UC | Planejado | UC032, UC018, UC022; antes da MEL021 | Documento a criar |
+| 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | UC032 e UC036; bloqueio externo: conta Azure sem assinatura utilizável | [MEL021](improvements/MEL021-publicacao-azure.md) |
+| 13 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
+| 14 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
+| 15 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
+| 16 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
+| 17 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
+| 18 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
+| 19 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 20 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 21 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
 - **01–06 — estabilização do MVP atual:** corrigir entrada monetária e fluxos/UX já encontrados no teste manual antes de expandir funcionalidade;
 - **07 — fundação de persistência:** SQL Server concluído e usado como base da nova rodada;
 - **08–09 — segunda estabilização manual:** corrigir o modelo de mão de obra e tornar explícita a opcionalidade dos equipamentos elétricos antes de publicar;
-- **10 — publicação:** disponibilizar o sistema no Azure somente depois de o modelo funcional estabilizado estar consolidado;
-- **11–13 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
-- **14 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
-- **15–17 — expansão de catálogo:** só então introduzir Categorias estruturadas e Coleções, evitando aumentar o escopo antes de fechar o núcleo do MVP;
-- **18 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
-- **19–20 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
+- **10–11 — Categoria estruturada e desgaste:** antecipar Categorias de Produto e, em seguida, o custo de desgaste de equipamentos por Categoria antes da primeira publicação;
+- **12 — publicação:** disponibilizar o sistema no Azure somente após UC032/UC036 e quando o bloqueio externo da conta Azure estiver resolvido;
+- **13–15 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
+- **16 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
+- **17–18 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
+- **19 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
+- **20–21 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
 
 ## Melhorias concluídas
 
