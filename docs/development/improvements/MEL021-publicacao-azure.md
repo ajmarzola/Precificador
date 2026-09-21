@@ -4,7 +4,7 @@
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
 - **Estado:** Especificado — bloqueado por UC032/UC036 e pela indisponibilidade externa da conta Azure.
-- **Ordem na fila pendente:** 10.
+- **Ordem na fila pendente:** 12.
 - **Dependências:** MEL020, MEL022 e MEL023 concluídas; UC032 e UC036 pendentes.
 - **Gate operacional:** executar somente após UC032 e UC036; bloqueio externo adicional até existir assinatura Azure utilizável; ainda antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
