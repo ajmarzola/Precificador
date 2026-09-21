@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** liberado. MEL020, MEL022 e MEL023 estão concluídas e o backlog deve marcar MEL021 como `Pronto`.
+> **Gate:** BLOQUEADO. MEL020, MEL022 e MEL023 estão concluídas, porém UC032 e UC036 devem ser concluídas antes desta implementação. Há também bloqueio externo da conta Azure. Só executar quando `docs/development/backlog.md` voltar a marcar MEL021 como `Pronto`.
 
 Implemente exclusivamente a MEL021 conforme:
 
@@ -19,6 +19,16 @@ Nunca editar `master` diretamente.
 ## Objetivo
 
 Publicar o Precificador em Azure App Service F1 com Azure SQL Free, mantendo custo alvo zero e sem implementar UC028.
+
+Não executar provisionamento, scripts contra Azure ou mudanças de runtime enquanto o gate estiver bloqueado.
+
+A ordem obrigatória é:
+
+```text
+UC032 -> UC036 -> MEL021
+```
+
+Além das dependências de código, é necessário que a conta Azure possua uma assinatura utilizável.
 
 ## Invariantes
 
