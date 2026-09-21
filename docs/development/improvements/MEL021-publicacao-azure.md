@@ -3,10 +3,10 @@
 - **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
+- **Estado:** Especificado — bloqueado por UC032/UC036 e pela indisponibilidade externa da conta Azure.
 - **Ordem na fila pendente:** 10.
-- **Dependências:** MEL020, MEL022 e MEL023 concluídas.
-- **Gate operacional:** liberado; executar antes de UC028.
+- **Dependências:** MEL020, MEL022 e MEL023 concluídas; UC032 e UC036 pendentes.
+- **Gate operacional:** executar somente após UC032 e UC036; bloqueio externo adicional até existir assinatura Azure utilizável; ainda antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
@@ -29,6 +29,35 @@ Azure SQL Database Free offer / General Purpose Serverless
 ```
 
 A MEL021 materializa a publicação preparada pela MEL020 e não cria funcionalidade de negócio.
+
+## Gate adicional — UC032 / UC036
+
+Após a especificação original da publicação, foi decidido antecipar:
+
+```text
+UC032 — Categorias estruturadas de Produto
+UC036 — Custo de desgaste de equipamentos por Categoria
+```
+
+A ordem normativa passou a ser:
+
+```text
+UC032
+-> UC036
+-> MEL021
+```
+
+Motivo: o desgaste altera o custo atual do Produto e deve estar consolidado antes da primeira publicação hospedada.
+
+Além disso, a conta Azure encontra-se atualmente bloqueada para criação/uso de assinatura, com solicitação de suporte aberta. Esse bloqueio é externo ao código.
+
+Portanto, não iniciar o provisionamento enquanto qualquer um destes gates estiver pendente:
+
+- UC032 não concluída;
+- UC036 não concluída;
+- conta Azure sem assinatura utilizável.
+
+A especificação técnica desta MEL permanece válida e não deve ser descartada.
 
 ## Referências de plataforma
 
