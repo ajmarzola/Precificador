@@ -96,11 +96,11 @@ UC026/UC027 existem porque UC020, UC021 e UC023 dependem de configurações da E
 | [UC023](UC023-calcular-preco-teorico-sugerido.md) | Calcular preço teórico e sugerido | UC022, UC027 |
 | [UC024](UC024-calcular-margem-atual-situacao.md) | Calcular margem atual e situação | UC012, UC022 |
 | [UC025](UC025-consultar-detalhamento-precificacao.md) | Consultar detalhamento da precificação | UC023, UC024 |
-| UC036 | Configurar custo de desgaste de equipamentos por Categoria | UC032, UC018, UC022 |
+| [UC036](UC036-configurar-calcular-desgaste-equipamentos-categoria.md) | Configurar e calcular custo de desgaste de equipamentos por Categoria | UC032, UC018, UC022 |
 
 ### Evolução planejada — desgaste de equipamentos
 
-Após a UC032, a **UC036 — Configurar custo de desgaste de equipamentos por Categoria** introduzirá um novo componente de custo antes da MEL021.
+Após a UC032, a **[UC036](UC036-configurar-calcular-desgaste-equipamentos-categoria.md) — Configurar e calcular custo de desgaste de equipamentos por Categoria** introduz um novo componente de custo antes da MEL021.
 
 Decisões já fechadas para futura especificação:
 
@@ -110,7 +110,7 @@ Decisões já fechadas para futura especificação:
 - percentual usa exclusivamente o total dos insumos como base;
 - energia elétrica e desgaste permanecem componentes distintos.
 
-A UC036 ainda será especificada separadamente e não deve ser antecipada na UC032.
+A UC036 está especificada e pronta para implementação. Ela não altera energia elétrica; adiciona um componente próprio de desgaste ao custo do lote.
 
 ## Dashboard
 
