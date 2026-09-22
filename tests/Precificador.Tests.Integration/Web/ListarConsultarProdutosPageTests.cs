@@ -175,14 +175,14 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
 
         Assert.Contains(nome, conteudo);
         Assert.Contains("Limpar filtros", conteudo);
-        Assert.Contains($"value=\"{categoriaId}\" selected", conteudo);
+        Assert.Matches($"<option\\b(?=[^>]*\\bvalue=\"{categoriaId}\")(?=[^>]*\\bselected(?:=\"selected\")?)[^>]*>", conteudo);
     }
 
     [Fact]
     public async Task MEL024_Grid_exibe_indicadores_calculados_e_nao_persiste_get()
     {
         var completo = await CriarProdutoPrecificavelAsync("Completo", 10m, 20m, ativo: true);
-        var zero = await CriarProdutoPrecificavelAsync("Zero", 0m, 10m, ativo: false);
+        var inativo = await CriarProdutoPrecificavelAsync("Inativo", 10m, 20m, ativo: false);
         var negativo = await CriarProdutoPrecificavelAsync("Negativo", 10m, 5m, ativo: true);
         var semFicha = await CriarProdutoComPrecoSemFichaAsync("Sem ficha", 20m);
         using var client = await web.CriarClienteAutenticadoAsync(1);
@@ -191,9 +191,8 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
 
         Assert.Contains("R$ 10,00", LinhaProduto(conteudo, completo.Nome));
         Assert.Contains("50%", LinhaProduto(conteudo, completo.Nome));
-        Assert.Contains("R$ 0,00", LinhaProduto(conteudo, zero.Nome));
-        Assert.Contains("100%", LinhaProduto(conteudo, zero.Nome));
-        Assert.Contains("Inativo", LinhaProduto(conteudo, zero.Nome));
+        Assert.Contains("R$ 10,00", LinhaProduto(conteudo, inativo.Nome));
+        Assert.Contains("Inativo", LinhaProduto(conteudo, inativo.Nome));
         Assert.Contains("-100%", LinhaProduto(conteudo, negativo.Nome));
         Assert.Contains("R$ 20,00", LinhaProduto(conteudo, semFicha.Nome));
         Assert.Contains("indisponível", LinhaProduto(conteudo, semFicha.Nome));

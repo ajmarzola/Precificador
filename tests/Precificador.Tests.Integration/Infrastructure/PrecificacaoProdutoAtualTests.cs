@@ -310,6 +310,46 @@ public sealed class PrecificacaoProdutoAtualTests
         Assert.Null(lote[semFicha.Id].CustoUnitarioProduto);
     }
 
+    [Fact]
+    public async Task MEL024_Resumo_em_lote_tem_paridade_para_desgaste_fixo_percentual_e_categoria_inativa()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var fixa = CategoriaProduto.Criar(1, "Fixa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 2m);
+        var percentual = CategoriaProduto.Criar(1, "Percentual", FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .10m);
+        var inativa = CategoriaProduto.Criar(1, "Inativa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 3m);
+        inativa.Desativar();
+        context.CategoriasProdutos.AddRange(fixa, percentual, inativa);
+        await context.SaveChangesAsync();
+        var produtoFixo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var produtoPercentual = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var produtoInativo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        produtoFixo.AtualizarDados(produtoFixo.Nome, produtoFixo.MargemAlvo, fixa.Id);
+        produtoPercentual.AtualizarDados(produtoPercentual.Nome, produtoPercentual.MargemAlvo, percentual.Id);
+        produtoInativo.AtualizarDados(produtoInativo.Nome, produtoInativo.MargemAlvo, inativa.Id);
+        context.RegistrosPrecosProdutos.AddRange(
+            Registro(1, produtoFixo.Id, Hoje, 20m),
+            Registro(1, produtoPercentual.Id, Hoje, 20m),
+            Registro(1, produtoInativo.Id, Hoje, 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var ids = new[] { produtoFixo.Id, produtoPercentual.Id, produtoInativo.Id };
+        var lote = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync(ids);
+
+        foreach (var id in ids)
+        {
+            var individual = await CalcularAsync(context, id);
+            Assert.Equal(individual!.CustoUnitarioProduto, lote[id].CustoUnitarioProduto);
+            Assert.Equal(individual.MargemAtual, lote[id].MargemAtual);
+            Assert.Equal(individual.SituacaoMargem, lote[id].SituacaoMargem);
+        }
+
+        Assert.Equal(12m, lote[produtoFixo.Id].CustoUnitarioProduto);
+        Assert.Equal(11m, lote[produtoPercentual.Id].CustoUnitarioProduto);
+        Assert.Equal(13m, lote[produtoInativo.Id].CustoUnitarioProduto);
+    }
+
     private static async Task<Produto> CriarProdutoPrecificavelAsync(
         PrecificadorDbContext context,
         decimal margemAlvo,

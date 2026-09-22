@@ -124,7 +124,7 @@ Como Nome é único por Empresa pela RN042, a ordenação é determinística no 
 
 ## Pesquisa
 
-A listagem possui um único campo por query string:
+A listagem possui um único campo de **pesquisa textual** por query string:
 
 ~~~text
 q
@@ -136,7 +136,7 @@ A pesquisa procura correspondência parcial **somente em Nome**.
 
 > **Atualização (UC032):** Categoria passou a ser a entidade estruturada `CategoriaProduto` (com `NomeNormalizado` próprio), mas a decisão de não pesquisar por Categoria permanece válida — a pesquisa de `/Produtos` continua restrita a Nome.
 
-Categoria é texto livre opcional e, no UC007, não possui `CategoriaNormalizada`.
+Categoria é uma `CategoriaProduto` estruturada, tenant-aware e dotada de `NomeNormalizado`. Isso não altera a pesquisa textual: `q` continua restrito ao Nome do Produto. A MEL024 usa o filtro estruturado `categoria` por Id, sem pesquisar textualmente o nome da Categoria.
 
 O UC008 não deve criar schema adicional nem introduzir normalização técnica de Categoria apenas para pesquisa.
 
