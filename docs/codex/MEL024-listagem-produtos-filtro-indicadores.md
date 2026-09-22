@@ -9,9 +9,9 @@ docs/development/improvements/MEL024-listagem-produtos-filtro-indicadores.md
 
 ## Gate
 
-A MEL024 está Especificada, mas sua implementação permanece pausada enquanto a fila estiver bloqueada na MEL021, salvo alteração explícita no backlog.
+A MEL024 está **Pronto** por decisão explícita e sua implementação está liberada imediatamente, mesmo com a MEL021 bloqueada externamente.
 
-Só iniciar quando backlog marcar MEL024 como Pronto.
+Esta liberação é específica da MEL024. Não interpretar como liberação de UC028 ou de qualquer item seguinte.
 
 Branch:
 
