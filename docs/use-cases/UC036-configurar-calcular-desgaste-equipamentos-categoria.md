@@ -257,6 +257,10 @@ por check constraints ou mecanismo equivalente do SQL Server.
 
 Atualizar ModelSnapshot.
 
+Os valores `Valor fixo por lote = 0` são regra de **backfill**, não um fallback permanente de persistência.
+
+A migration pode usar estratégia temporária de default para viabilizar a alteração de schema, mas o modelo final não deve depender de default SQL para criar Categorias futuras. Após UC036, toda criação funcional deve fornecer Forma + Valor explicitamente pelo domínio.
+
 ## Produto sem Categoria
 
 A Categoria continua opcional conforme UC032.
