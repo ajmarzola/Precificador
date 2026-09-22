@@ -226,6 +226,8 @@ public sealed class PrecificacaoProdutoAtualTests
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
         configuracao.Atualizar(.10m, 0m, null, .5m, .1m);
         var produto = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(.10m, 0m, null, .5m, .1m);
         var categoria = CategoriaProduto.Criar(1, "Percentual", FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .05m);
         categoria.Desativar();
         context.CategoriasProdutos.Add(categoria);

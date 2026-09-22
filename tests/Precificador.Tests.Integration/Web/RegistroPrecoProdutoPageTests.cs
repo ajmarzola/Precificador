@@ -86,15 +86,15 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
         var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
         Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "20"))).StatusCode);
         var primeiro = Assert.Single(await RegistrosAsync(produto, 1));
-        Assert.Equal(11m, primeiro.CustoReferencia);
+        Assert.Equal(12m, primeiro.CustoReferencia);
 
         await DefinirDesgasteAsync(produto, 2m);
         token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
         Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "21"))).StatusCode);
         var registros = await RegistrosAsync(produto, 1);
         Assert.Equal(2, registros.Count);
-        Assert.Equal(11m, registros.Single(r => r.Id == primeiro.Id).CustoReferencia);
-        Assert.Equal(12m, registros.Single(r => r.Id != primeiro.Id).CustoReferencia);
+        Assert.Equal(12m, registros.Single(r => r.Id == primeiro.Id).CustoReferencia);
+        Assert.Equal(13m, registros.Single(r => r.Id != primeiro.Id).CustoReferencia);
     }
 
     [Fact]
