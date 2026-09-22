@@ -219,21 +219,36 @@ public sealed class CategoriaProdutoPersistenceTests
     public async Task P12_FK_Restrict_impede_exclusao_fisica_de_categoria_referenciada_por_produto()
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
-        await using var contexto = CriarContexto(connectionString, 1);
-        await contexto.Database.MigrateAsync();
+        int categoriaId;
+        int produtoId;
+        await using (var contexto = CriarContexto(connectionString, 1))
+        {
+            await contexto.Database.MigrateAsync();
 
-        var categoria = CategoriaProduto.Criar(1, "Papelaria");
-        contexto.CategoriasProdutos.Add(categoria);
-        await contexto.SaveChangesAsync();
-        var produto = Produto.Criar(1, "Agenda", 0.30m, categoria.Id);
-        contexto.Produtos.Add(produto);
-        await contexto.SaveChangesAsync();
+            var categoria = CategoriaProduto.Criar(1, "Papelaria");
+            contexto.CategoriasProdutos.Add(categoria);
+            await contexto.SaveChangesAsync();
+            categoriaId = categoria.Id;
 
-        contexto.CategoriasProdutos.Remove(categoria);
+            var produto = Produto.Criar(1, "Agenda", 0.30m, categoriaId);
+            contexto.Produtos.Add(produto);
+            await contexto.SaveChangesAsync();
+            produtoId = produto.Id;
+        }
 
-        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => contexto.SaveChangesAsync());
-        var sqlException = Assert.IsType<SqlException>(exception.InnerException);
-        Assert.Equal(547, sqlException.Number);
+        await using (var contextoExclusao = CriarContexto(connectionString, 1))
+        {
+            var categoria = await contextoExclusao.CategoriasProdutos.SingleAsync(item => item.Id == categoriaId);
+            contextoExclusao.CategoriasProdutos.Remove(categoria);
+
+            var exception = await Assert.ThrowsAsync<DbUpdateException>(() => contextoExclusao.SaveChangesAsync());
+            var sqlException = Assert.IsType<SqlException>(exception.InnerException);
+            Assert.Equal(547, sqlException.Number);
+        }
+
+        await using var contextoVerificacao = CriarContexto(connectionString, 1);
+        Assert.NotNull(await contextoVerificacao.CategoriasProdutos.SingleOrDefaultAsync(item => item.Id == categoriaId));
+        Assert.Equal(categoriaId, (await contextoVerificacao.Produtos.SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
     [Fact]

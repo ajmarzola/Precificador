@@ -83,15 +83,14 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
     public async Task W4_Cadastro_invalido_preserva_input_e_nao_persiste()
     {
         using var client = await web.CriarClienteAutenticadoAsync(1);
+        var quantidadeAntes = await ContarCategoriasFisicasAsync();
 
         var response = await EnviarNovoAsync(client, "   ");
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(response.Headers.Location);
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(0, await context.CategoriasProdutos.IgnoreQueryFilters().CountAsync());
+        Assert.Equal(quantidadeAntes, await ContarCategoriasFisicasAsync());
     }
 
     [Fact]
@@ -357,6 +356,13 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
         return (await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == categoriaId)).Nome;
+    }
+
+    private async Task<int> ContarCategoriasFisicasAsync()
+    {
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        return await context.CategoriasProdutos.IgnoreQueryFilters().CountAsync();
     }
 
     private static string OpcaoDoValor(string conteudo, int id)
