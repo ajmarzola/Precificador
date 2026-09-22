@@ -94,6 +94,15 @@ Em regra, melhorias não bloqueiam histórias principais, salvo quando uma reval
 - **Decisão:** primeiro uso econômico/produtivo consolida permanentemente a identidade; remover referências futuras não desbloqueia o cadastro.
 - **Prioridade:** bloqueante antes da especificação/implementação do UC016.
 
+### MEL024 — Enriquecer listagem de Produtos com filtro por Categoria e indicadores atuais
+
+- **Origem:** testes manuais e adaptação do usuário que hoje trabalha com planilha.
+- **Objetivo:** transformar /Produtos em visão operacional com filtro por Categoria, Custo unitário atual, Preço de prateleira vigente e Margem atual, preservando as regras existentes e evitando N+1.
+- **Especificação:** [MEL024 — Listagem de Produtos com filtro e indicadores atuais](improvements/MEL024-listagem-produtos-filtro-indicadores.md)
+- **Instrução Codex:** [MEL024 — implementação](../codex/MEL024-listagem-produtos-filtro-indicadores.md)
+- **Decisão:** valores permanecem derivados; criar consulta/orquestração em lote com paridade frente a PrecificacaoProdutoAtual; nenhuma migration.
+- **Prioridade:** alta; especificada, porém implementação permanece pausada conforme a fila normativa.
+
 ## Regra de uso
 
 Ao surgir uma ideia útil que não seja blocker da história em revisão, registrar aqui antes de seguir adiante. Não transformar automaticamente uma melhoria em requisito de uma história já aprovada sem reavaliar escopo, dependências e prioridade. Se a melhoria alterar estado, gate ou ordem, atualizar `backlog.md`.
