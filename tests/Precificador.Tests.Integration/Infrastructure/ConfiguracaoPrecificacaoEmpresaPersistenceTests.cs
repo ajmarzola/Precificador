@@ -10,6 +10,8 @@ namespace Precificador.Tests.Integration.Infrastructure;
 
 public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
 {
+    private const string MigracaoMel022 = "20260920172653_ReplaceHourlyLaborWithPercentage";
+
     [Fact]
     public async Task MEL022_P1_P5_P10_Migra_dados_existentes_da_MEL020_sem_colunas_legadas()
     {
@@ -32,8 +34,10 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         await contexto.Database.ExecuteSqlInterpolatedAsync(
             $"INSERT INTO FichasTecnicas (EmpresaId, ProdutoId, Rendimento, TempoAtivoMinutos) VALUES (1, {produtoLegadoId}, 3, 95)");
 
-        Assert.Single(await contexto.Database.GetPendingMigrationsAsync());
-        await contexto.Database.MigrateAsync();
+        // A partir da MEL020 pode haver outras migrations pendentes além da MEL022 (ex.: UC032); o teste
+        // migra explicitamente até a MEL022 para validar o contrato dela sem assumir que é a última do projeto.
+        Assert.Contains(MigracaoMel022, await contexto.Database.GetPendingMigrationsAsync());
+        await contexto.GetService<IMigrator>().MigrateAsync(MigracaoMel022);
 
         var percentualSeed = await contexto.Database.SqlQueryRaw<decimal>(
             "SELECT PercentualMaoDeObra AS Value FROM ConfiguracoesPrecificacaoEmpresas WHERE EmpresaId = 1").SingleAsync();
@@ -48,7 +52,7 @@ public sealed class ConfiguracaoPrecificacaoEmpresaPersistenceTests
         var definicaoPercentual = await contexto.Database.SqlQueryRaw<string>(
             "SELECT CONCAT(DATA_TYPE, '(', NUMERIC_PRECISION, ',', NUMERIC_SCALE, ')/', IS_NULLABLE) AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ConfiguracoesPrecificacaoEmpresas' AND COLUMN_NAME = 'PercentualMaoDeObra'").SingleAsync();
         Assert.Equal("decimal(9,6)/NO", definicaoPercentual);
-        Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());
+        Assert.DoesNotContain(MigracaoMel022, await contexto.Database.GetPendingMigrationsAsync());
     }
 
     [Fact]

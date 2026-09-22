@@ -36,7 +36,7 @@ Aplicar e completar RN018:
 - Produto inativo continua participando da identidade/unicidade;
 - Produto inativo continua editável nos campos cadastrais permitidos pelo UC009;
 - reativar devolve o Produto ao estado operacional ativo;
-- desativar/reativar não altera Nome, Categoria, Margem-alvo, Empresa ou Id;
+- desativar/reativar não altera Nome, CategoriaProdutoId, Margem-alvo, Empresa ou Id;
 - regras futuras de uso de Produto inativo em preço de venda, Ficha Técnica, cálculo ou outros fluxos devem ser definidas pelos respectivos UCs, não por esta entrega.
 
 ## Edição de Produto inativo
@@ -65,7 +65,7 @@ A UC009 foi implementada, revisada e mergeada antes desta liberação. A revalid
 - Detalhes mantém o link **Editar** sem condicionar a ação ao valor de `Ativo`;
 - GET de edição consulta `context.Produtos` com Global Query Filter e sem filtro por situação;
 - POST de edição consulta `context.Produtos` com Global Query Filter e sem filtro por situação;
-- `Produto.AtualizarDados(...)` altera somente Nome, NomeNormalizado, Categoria e MargemAlvo, preservando `Ativo`;
+- `Produto.AtualizarDados(...)` altera somente Nome, NomeNormalizado, CategoriaProdutoId e MargemAlvo, preservando `Ativo`;
 - o POST válido da UC009 usa `TempData["MensagemSucesso"]` e PRG para `/Produtos/Detalhes/{id}`;
 - os testes Web reais da UC009 já possuem infraestrutura para GET/POST, antiforgery, tenant e validação de persistência;
 - após UC010 adicionar `Produto.Desativar()`, W6 pode preparar um Produto inativo pelo próprio domínio e persistência normal, sem SQL direto, reflection, setter artificial ou outro bypass técnico.
@@ -370,7 +370,7 @@ Ao desativar:
 - EmpresaId preservado;
 - Nome preservado;
 - NomeNormalizado preservado;
-- Categoria preservada;
+- CategoriaProdutoId preservado (e, por consequência, a Categoria estruturada preservada);
 - MargemAlvo preservada.
 
 ### CA04 — Reativação altera somente situação

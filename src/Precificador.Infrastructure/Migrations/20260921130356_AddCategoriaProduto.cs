@@ -38,18 +38,42 @@ namespace Precificador.Infrastructure.Migrations
                 type: "int",
                 nullable: true);
 
+            // Função auxiliar temporária: reproduz a normalização de CategoriaProduto (Trim + colapso de
+            // whitespace interno) para que o backfill produza o mesmo NomeNormalizado que o domínio geraria.
+            migrationBuilder.Sql(
+                """
+                CREATE OR ALTER FUNCTION dbo.UC032_NormalizarNomeCategoria(@texto NVARCHAR(4000))
+                RETURNS NVARCHAR(4000)
+                AS
+                BEGIN
+                    -- Regex \s do domínio também reconhece os separadores Unicode, não apenas espaço ASCII.
+                    SET @texto = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@texto, CHAR(9), ' '), CHAR(10), ' '), CHAR(11), ' '), CHAR(12), ' '), CHAR(13), ' ');
+                    SET @texto = REPLACE(REPLACE(@texto, NCHAR(0x0085), ' '), NCHAR(0x00A0), ' ');
+                    SET @texto = REPLACE(REPLACE(@texto, NCHAR(0x1680), ' '), NCHAR(0x2028), ' ');
+                    SET @texto = REPLACE(REPLACE(REPLACE(REPLACE(@texto, NCHAR(0x2029), ' '), NCHAR(0x202F), ' '), NCHAR(0x205F), ' '), NCHAR(0x3000), ' ');
+                    SET @texto = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@texto, NCHAR(0x2000), ' '), NCHAR(0x2001), ' '), NCHAR(0x2002), ' '), NCHAR(0x2003), ' '), NCHAR(0x2004), ' '), NCHAR(0x2005), ' '), NCHAR(0x2006), ' '), NCHAR(0x2007), ' '), NCHAR(0x2008), ' '), NCHAR(0x2009), ' '), NCHAR(0x200A), ' ');
+                    SET @texto = LTRIM(RTRIM(@texto));
+                    WHILE CHARINDEX('  ', @texto) > 0
+                        SET @texto = REPLACE(@texto, '  ', ' ');
+                    RETURN @texto;
+                END
+                """);
+
             // Backfill: uma Categoria distinta por Empresa + texto normalizado (case-insensitive); o
             // texto de exibição é preservado a partir do Produto de menor Id dentro de cada grupo.
             migrationBuilder.Sql(
                 """
                 INSERT INTO CategoriasProdutos (EmpresaId, Nome, NomeNormalizado, Ativo)
-                SELECT rep.EmpresaId, LTRIM(RTRIM(rep.Categoria)), UPPER(LTRIM(RTRIM(rep.Categoria))), 1
+                SELECT rep.EmpresaId,
+                    dbo.UC032_NormalizarNomeCategoria(rep.Categoria),
+                    UPPER(dbo.UC032_NormalizarNomeCategoria(rep.Categoria)),
+                    1
                 FROM Produtos rep
                 INNER JOIN (
-                    SELECT EmpresaId, UPPER(LTRIM(RTRIM(Categoria))) AS CategoriaNormalizada, MIN(Id) AS MenorProdutoId
+                    SELECT EmpresaId, UPPER(dbo.UC032_NormalizarNomeCategoria(Categoria)) AS CategoriaNormalizada, MIN(Id) AS MenorProdutoId
                     FROM Produtos
                     WHERE Categoria IS NOT NULL
-                    GROUP BY EmpresaId, UPPER(LTRIM(RTRIM(Categoria)))
+                    GROUP BY EmpresaId, UPPER(dbo.UC032_NormalizarNomeCategoria(Categoria))
                 ) grupos ON grupos.MenorProdutoId = rep.Id
                 """);
 
@@ -60,9 +84,11 @@ namespace Precificador.Infrastructure.Migrations
                 FROM Produtos p
                 INNER JOIN CategoriasProdutos c
                     ON c.EmpresaId = p.EmpresaId
-                    AND c.NomeNormalizado = UPPER(LTRIM(RTRIM(p.Categoria)))
+                    AND c.NomeNormalizado = UPPER(dbo.UC032_NormalizarNomeCategoria(p.Categoria))
                 WHERE p.Categoria IS NOT NULL
                 """);
+
+            migrationBuilder.Sql("DROP FUNCTION dbo.UC032_NormalizarNomeCategoria");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Produtos_CategoriaProdutoId",

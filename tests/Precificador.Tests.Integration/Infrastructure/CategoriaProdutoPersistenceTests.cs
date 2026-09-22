@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -158,7 +159,6 @@ public sealed class CategoriaProdutoPersistenceTests
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
         int empresaDoisId;
-        int categoriaEmpresaDoisId;
         await using (var contexto = CriarContexto(connectionString, 1))
         {
             await contexto.Database.MigrateAsync();
@@ -166,10 +166,14 @@ public sealed class CategoriaProdutoPersistenceTests
             contexto.Empresas.Add(empresaDois);
             await contexto.SaveChangesAsync();
             empresaDoisId = empresaDois.Id;
+        }
 
+        int categoriaEmpresaDoisId;
+        await using (var contextoEmpresaDois = CriarContexto(connectionString, empresaDoisId))
+        {
             var categoriaEmpresaDois = CategoriaProduto.Criar(empresaDoisId, "Brindes");
-            contexto.CategoriasProdutos.Add(categoriaEmpresaDois);
-            await contexto.SaveChangesAsync();
+            contextoEmpresaDois.CategoriasProdutos.Add(categoriaEmpresaDois);
+            await contextoEmpresaDois.SaveChangesAsync();
             categoriaEmpresaDoisId = categoriaEmpresaDois.Id;
         }
 
@@ -178,6 +182,58 @@ public sealed class CategoriaProdutoPersistenceTests
         contextoEmpresaUm.Produtos.Add(produto);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task P10_Guard_central_rejeita_alteracao_tecnica_de_categoria_de_outra_empresa()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
+        int empresaDoisId;
+        int categoriaEmpresaDoisId;
+        await using (var contexto = CriarContexto(connectionString, 1))
+        {
+            await contexto.Database.MigrateAsync();
+            var empresaDois = Empresa.Criar("Empresa dois");
+            contexto.Empresas.Add(empresaDois);
+            await contexto.SaveChangesAsync();
+            empresaDoisId = empresaDois.Id;
+        }
+
+        await using (var contextoEmpresaDois = CriarContexto(connectionString, empresaDoisId))
+        {
+            var categoriaEmpresaDois = CategoriaProduto.Criar(empresaDoisId, "Brindes");
+            contextoEmpresaDois.CategoriasProdutos.Add(categoriaEmpresaDois);
+            await contextoEmpresaDois.SaveChangesAsync();
+            categoriaEmpresaDoisId = categoriaEmpresaDois.Id;
+        }
+
+        await using var contextoEmpresaUm = CriarContexto(connectionString, 1);
+        var categoriaDeOutraEmpresa = await contextoEmpresaUm.CategoriasProdutos.IgnoreQueryFilters()
+            .SingleAsync(item => item.Id == categoriaEmpresaDoisId);
+        categoriaDeOutraEmpresa.Renomear("Brindes alterados");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => contextoEmpresaUm.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task P12_FK_Restrict_impede_exclusao_fisica_de_categoria_referenciada_por_produto()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
+        await using var contexto = CriarContexto(connectionString, 1);
+        await contexto.Database.MigrateAsync();
+
+        var categoria = CategoriaProduto.Criar(1, "Papelaria");
+        contexto.CategoriasProdutos.Add(categoria);
+        await contexto.SaveChangesAsync();
+        var produto = Produto.Criar(1, "Agenda", 0.30m, categoria.Id);
+        contexto.Produtos.Add(produto);
+        await contexto.SaveChangesAsync();
+
+        contexto.CategoriasProdutos.Remove(categoria);
+
+        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => contexto.SaveChangesAsync());
+        var sqlException = Assert.IsType<SqlException>(exception.InnerException);
+        Assert.Equal(547, sqlException.Number);
     }
 
     [Fact]

@@ -52,7 +52,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal("/Produtos/Categorias", response.Headers.Location!.ToString());
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var categoria = await context.CategoriasProdutos.SingleAsync(item => item.Nome == nome);
+        var categoria = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Nome == nome);
         Assert.Equal(1, categoria.EmpresaId);
         Assert.True(categoria.Ativo);
         Assert.Equal(nome.ToUpperInvariant(), categoria.NomeNormalizado);
@@ -76,7 +76,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Contains("Já existe uma categoria de produto cadastrada com esse nome.", conteudo);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(1, await context.CategoriasProdutos.CountAsync(item => item.NomeNormalizado == nome.ToUpperInvariant()));
+        Assert.Equal(1, await context.CategoriasProdutos.IgnoreQueryFilters().CountAsync(item => item.NomeNormalizado == nome.ToUpperInvariant()));
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Null(response.Headers.Location);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(0, await context.CategoriasProdutos.CountAsync());
+        Assert.Equal(0, await context.CategoriasProdutos.IgnoreQueryFilters().CountAsync());
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal("/Produtos/Categorias", response.Headers.Location!.ToString());
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        var categoria = await context.CategoriasProdutos.SingleAsync(item => item.Id == id);
+        var categoria = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == id);
         Assert.Equal(novoNome, categoria.Nome);
         Assert.Equal(novoNome.ToUpperInvariant(), categoria.NomeNormalizado);
         Assert.False(categoria.Ativo);
@@ -145,8 +145,8 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.False((await context.CategoriasProdutos.SingleAsync(item => item.Id == categoriaId)).Ativo);
-        var produto = await context.Produtos.SingleAsync(item => item.Id == produtoId);
+        Assert.False((await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == categoriaId)).Ativo);
+        var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId);
         Assert.Equal(categoriaId, produto.CategoriaProdutoId);
 
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
@@ -164,7 +164,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.True((await context.CategoriasProdutos.SingleAsync(item => item.Id == categoriaId)).Ativo);
+        Assert.True((await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == categoriaId)).Ativo);
 
         var pagina = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync(response.Headers.Location!));
         Assert.Contains("Categoria de produto reativada com sucesso.", pagina);
@@ -185,7 +185,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(ativo, (await context.CategoriasProdutos.SingleAsync(item => item.Id == categoriaId)).Ativo);
+        Assert.Equal(ativo, (await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == categoriaId)).Ativo);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(categoriaId, (await context.Produtos.SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
+        Assert.Equal(categoriaId, (await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
     [Fact]
@@ -218,7 +218,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Null((await context.Produtos.SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
+        Assert.Null((await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
     [Fact]
@@ -235,7 +235,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Null(response.Headers.Location);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Equal(categoriaAtualId, (await context.Produtos.SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
+        Assert.Equal(categoriaAtualId, (await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
     [Fact]
@@ -270,7 +270,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Null(response.Headers.Location);
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Null((await context.Produtos.SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
+        Assert.Null((await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
     private async Task<HttpResponseMessage> EnviarNovoAsync(HttpClient client, string nome)
