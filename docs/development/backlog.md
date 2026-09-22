@@ -69,7 +69,7 @@ Regra operacional:
 | 09 | MEL023 — Refinar equipamentos elétricos e navegação de tarifa na Ficha Técnica | MEL | Concluído | MEL022 concluída; antes de MEL021 | [MEL023](improvements/MEL023-equipamentos-eletricos-navegacao-tarifa.md) |
 | 10 | UC032 — Administrar categorias de Produto | UC | Concluído | UC007–UC010 | [UC032](../use-cases/UC032-administrar-categorias-produto.md) |
 | 11 | UC036 — Configurar e calcular custo de desgaste de equipamentos por Categoria | UC | Pronto | UC032, UC018, UC022; antes da MEL021 | [UC036](../use-cases/UC036-configurar-calcular-desgaste-equipamentos-categoria.md) |
-| 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | UC032 e UC036; bloqueio externo: conta Azure sem assinatura utilizável | [MEL021](improvements/MEL021-publicacao-azure.md) |
+| 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | UC036 pendente; UC032 concluída; bloqueio externo: conta Azure sem assinatura utilizável | [MEL021](improvements/MEL021-publicacao-azure.md) |
 | 13 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
 | 14 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | 15 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
