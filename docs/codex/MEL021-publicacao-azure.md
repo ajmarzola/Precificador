@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** BLOQUEADO. MEL020, MEL022 e MEL023 estão concluídas, porém UC032 e UC036 devem ser concluídas antes desta implementação. Há também bloqueio externo da conta Azure. Só executar quando `docs/development/backlog.md` voltar a marcar MEL021 como `Pronto`.
+> **Gate:** BLOQUEADO. MEL020, MEL022, MEL023 e UC032 estão concluídas; UC036 ainda deve ser concluída antes desta implementação. Há também bloqueio externo da conta Azure. Só executar quando `docs/development/backlog.md` voltar a marcar MEL021 como `Pronto`.
 
 Implemente exclusivamente a MEL021 conforme:
 
