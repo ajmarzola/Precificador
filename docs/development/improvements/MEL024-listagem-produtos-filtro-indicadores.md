@@ -4,10 +4,10 @@
 - **Origem:** testes manuais / adaptação do usuário que hoje trabalha com planilha.
 - **Classificação:** UX / consulta operacional / desempenho de leitura.
 - **Prioridade:** alta.
-- **Estado:** Especificado.
+- **Estado:** Pronto.
 - **Ordem na fila pendente:** 13.
 - **Dependências:** UC008, UC012, UC022, UC024, UC032 e UC036 concluídas.
-- **Gate operacional:** após MEL021, salvo decisão explícita registrada no backlog; implementação permanece pausada durante a fase atual de testes.
+- **Gate operacional:** liberado por decisão explícita para implementação imediata, mesmo com MEL021 bloqueada externamente; demais novas UCs permanecem pausadas.
 - **Alteração de regra de negócio:** não.
 - **Alteração de domínio/schema:** não.
 - **Migration:** não.
@@ -477,7 +477,7 @@ MEL024 = Concluído
 UC028 = Planejado
 ~~~
 
-MEL021 não é implementada junto com MEL024.
+MEL021 continua bloqueada externamente e não é implementada junto com MEL024.
 
 ## Critérios de aceitação
 
