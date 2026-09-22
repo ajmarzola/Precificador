@@ -62,6 +62,42 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Contains(nome, pagina);
     }
 
+    [Theory]
+    [InlineData("1,50", "1", 1.50)]
+    [InlineData("5", "2", .05)]
+    [InlineData("12,5", "2", .125)]
+    public async Task UC036_W1_W4_Cadastro_ptbr_persiste_forma_e_valor(string valor, string forma, decimal esperado)
+    {
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+        var nome = NomeUnico("Desgaste");
+        var response = await EnviarNovoAsync(client, nome, forma, valor);
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var categoria = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(c => c.Nome == nome);
+        Assert.Equal((FormaCalculoDesgasteEquipamento)int.Parse(forma, CultureInfo.InvariantCulture), categoria.FormaCalculoDesgasteEquipamento);
+        Assert.Equal(esperado, categoria.ValorDesgasteEquipamento);
+    }
+
+    [Fact]
+    public async Task UC036_W5_W10_Edicao_percentual_inativa_e_validacao_preservam_estado()
+    {
+        var id = await CriarCategoriaAsync(1, NomeUnico("Inativa"), ativo: false);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+        var editada = await EnviarEdicaoAsync(client, id, NomeUnico("Percentual"), "2", "5");
+        Assert.Equal(HttpStatusCode.Redirect, editada.StatusCode);
+        var get = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos/Categorias/Editar/{id}"));
+        Assert.Contains("value=\"5\"", get);
+        var invalida = await EnviarEdicaoAsync(client, id, "Alteracao invalida", "99", "-1");
+        Assert.Equal(HttpStatusCode.OK, invalida.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var categoria = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(c => c.Id == id);
+        Assert.False(categoria.Ativo);
+        Assert.Equal(FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, categoria.FormaCalculoDesgasteEquipamento);
+        Assert.Equal(.05m, categoria.ValorDesgasteEquipamento);
+    }
+
     [Fact]
     public async Task W3_Cadastro_duplicado_case_insensitive_exibe_mensagem_amigavel_e_nao_persiste_segunda_categoria()
     {
@@ -272,7 +308,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         Assert.Null((await context.Produtos.IgnoreQueryFilters().SingleAsync(item => item.Id == produtoId)).CategoriaProdutoId);
     }
 
-    private async Task<HttpResponseMessage> EnviarNovoAsync(HttpClient client, string nome)
+    private async Task<HttpResponseMessage> EnviarNovoAsync(HttpClient client, string nome, string forma = "1", string valor = "0,00")
     {
         var respostaPagina = await client.GetAsync("/Produtos/Categorias/Novo");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
@@ -281,11 +317,13 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         return await client.PostAsync("/Produtos/Categorias/Novo", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
-            ["Input.Nome"] = nome
+            ["Input.Nome"] = nome,
+            ["Input.FormaCalculoDesgasteEquipamento"] = forma,
+            ["Input.ValorDesgasteEquipamento"] = valor
         }));
     }
 
-    private async Task<HttpResponseMessage> EnviarEdicaoAsync(HttpClient client, int id, string nome)
+    private async Task<HttpResponseMessage> EnviarEdicaoAsync(HttpClient client, int id, string nome, string forma = "1", string valor = "0,00")
     {
         var respostaPagina = await client.GetAsync($"/Produtos/Categorias/Editar/{id}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
@@ -294,7 +332,9 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         return await client.PostAsync($"/Produtos/Categorias/Editar/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
-            ["Input.Nome"] = nome
+            ["Input.Nome"] = nome,
+            ["Input.FormaCalculoDesgasteEquipamento"] = forma,
+            ["Input.ValorDesgasteEquipamento"] = valor
         }));
     }
 

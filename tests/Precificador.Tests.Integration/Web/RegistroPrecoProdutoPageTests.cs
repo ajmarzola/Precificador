@@ -78,6 +78,26 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
     }
 
     [Fact]
+    public async Task UC036_Snapshot_anterior_nao_reinterpreta_desgaste_e_novo_congela_custo_atual()
+    {
+        var produto = await CriarProdutoPrecificavelAsync(1, true);
+        await DefinirDesgasteAsync(produto, 1m);
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
+        Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "20"))).StatusCode);
+        var primeiro = Assert.Single(await RegistrosAsync(produto, 1));
+        Assert.Equal(11m, primeiro.CustoReferencia);
+
+        await DefinirDesgasteAsync(produto, 2m);
+        token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync($"/Produtos/Precos/Novo/{produto}"));
+        Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Produtos/Precos/Novo/{produto}", Form(token, "21"))).StatusCode);
+        var registros = await RegistrosAsync(produto, 1);
+        Assert.Equal(2, registros.Count);
+        Assert.Equal(11m, registros.Single(r => r.Id == primeiro.Id).CustoReferencia);
+        Assert.Equal(12m, registros.Single(r => r.Id != primeiro.Id).CustoReferencia);
+    }
+
+    [Fact]
     public async Task W20_W21_Configuracao_de_outra_empresa_nao_vaza_e_detalhes_tem_acao_em_ambos_status()
     {
         var ativo = await CriarProdutoPrecificavelAsync(1, true); var inativo = await CriarProdutoPrecificavelAsync(1, false); var empresaDois = await web.CriarEmpresaAsync(); await DefinirConfiguracaoAsync(empresaDois, 99m, .9m);
@@ -134,6 +154,7 @@ public sealed class RegistroPrecoProdutoPageTests : IClassFixture<CustomWebAppli
     private async Task<int> CriarProdutoComItemSemPrecoAsync(int empresa) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); var p=Produto.Criar(empresa,Guid.NewGuid().ToString(),.3m); c.Produtos.Add(p); await c.SaveChangesAsync(); var f=FichaTecnica.Criar(empresa,p.Id,1m); var i=Insumo.Criar(empresa,Guid.NewGuid().ToString(),CategoriaInsumo.MateriaPrima,UnidadeMedida.Unidade); c.FichasTecnicas.Add(f); c.Insumos.Add(i); await c.SaveChangesAsync(); c.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(empresa,f.Id,i.Id,1m,null,0m)); await c.SaveChangesAsync(); return p.Id; }
     private async Task DefinirConfiguracaoAsync(int empresa, decimal? incremento, decimal reserva) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); var x=await c.ConfiguracoesPrecificacaoEmpresas.SingleAsync(); x.Atualizar(.1m,null,null,incremento,reserva); await c.SaveChangesAsync(); }
     private async Task AlterarEstadoAsync(int produto, decimal? margem=null, decimal? incremento=null, decimal? reserva=null, decimal? precoInsumo=null) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(1)); if(margem.HasValue){var p=await c.Produtos.SingleAsync(x=>x.Id==produto); p.AtualizarDados(p.Nome,margem.Value,p.CategoriaProdutoId);} if(incremento.HasValue||reserva.HasValue){var x=await c.ConfiguracoesPrecificacaoEmpresas.SingleAsync(); x.Atualizar(x.PercentualMaoDeObra,null,null,incremento ?? x.IncrementoComercial,reserva ?? x.ReservaComercialDesconto);} if(precoInsumo.HasValue){var ficha=await c.FichasTecnicas.SingleAsync(x=>x.ProdutoId==produto); var insumo=await c.ItensFichaTecnica.Where(x=>x.FichaTecnicaId==ficha.Id).Select(x=>x.InsumoId).SingleAsync(); c.PrecosInsumos.Add(PrecoInsumo.Criar(1,insumo,1m,precoInsumo.Value,new DateOnly(2030,1,2)));} await c.SaveChangesAsync(); }
+    private async Task DefinirDesgasteAsync(int produtoId, decimal valor) { using var s=factory.Services.CreateScope(); var o=s.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(1)); var produto=await c.Produtos.SingleAsync(p=>p.Id==produtoId); var categoria=await c.CategoriasProdutos.SingleOrDefaultAsync(c=>c.Nome=="Desgaste snapshot"); if(categoria is null){categoria=CategoriaProduto.Criar(1,"Desgaste snapshot",FormaCalculoDesgasteEquipamento.ValorFixoPorLote,valor);c.CategoriasProdutos.Add(categoria);await c.SaveChangesAsync();produto.AtualizarDados(produto.Nome,produto.MargemAlvo,categoria.Id);}else categoria.AtualizarDados(categoria.Nome,FormaCalculoDesgasteEquipamento.ValorFixoPorLote,valor);await c.SaveChangesAsync(); }
     private async Task<List<RegistroPrecoProduto>> RegistrosAsync(int produto, int empresa) { using var scope = factory.Services.CreateScope(); var o=scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); return await c.RegistrosPrecosProdutos.Where(r=>r.ProdutoId==produto).ToListAsync(); }
     private async Task<Produto> ProdutoAsync(int id,int empresa) { using var scope=factory.Services.CreateScope(); var o=scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>(); await using var c=new PrecificadorDbContext(o,new Contexto(empresa)); return await c.Produtos.SingleAsync(p=>p.Id==id); }
     private sealed class Contexto(int id) : IEmpresaContext { public int? EmpresaId=>id; public int EmpresaIdOuSentinela=>id; public string? TimeZoneId=>Empresa.TimeZoneIdPadrao; }

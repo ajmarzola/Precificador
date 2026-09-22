@@ -13,6 +13,7 @@ Quando a ficha estiver completa, apresentar pelo menos:
 - custo de perdas;
 - custo de mão de obra;
 - custo de energia;
+- custo de desgaste de equipamentos;
 - custo do lote;
 - rendimento;
 - custo unitário;

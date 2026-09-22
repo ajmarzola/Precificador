@@ -491,11 +491,11 @@ A completude é específica por etapa. Um dado ausente que afete somente uma eta
 
 ### RN057 — Configuração de desgaste por Categoria
 
-Toda Categoria possui Forma e Valor de desgaste válidos e não negativos. Valor fixo é custo por lote; percentual é armazenado como fração decimal, sem teto de 100%.
+Toda Categoria possui Forma e Valor de desgaste válidos e não negativos. Valor fixo é custo por lote; percentual é armazenado como fração decimal, sem teto de 100%. A migration de UC036 preserva Categorias existentes com Forma fixa e Valor zero, sem alterar tenant, situação ou vínculos de Produtos.
 
 ### RN058 — Custo de desgaste de equipamentos
 
-Sem Categoria, o desgaste é zero conhecido. Valor fixo retorna o valor configurado. Percentual zero retorna zero mesmo sem custo base; percentual positivo é `CustoBaseItens × Valor` e fica indisponível se a base for desconhecida.
+Produto sem Categoria possui desgaste zero conhecido. Categoria inativa já vinculada continua aplicando sua regra. Valor fixo retorna o valor configurado. Percentual usa exclusivamente `CustoBaseItens`; percentual zero retorna zero mesmo sem custo base conhecido, enquanto percentual positivo é `CustoBaseItens × Valor` e fica indisponível se a base for desconhecida.
 
 ### RN018 — Desativação e reativação de produto
 
