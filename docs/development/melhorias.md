@@ -101,7 +101,7 @@ Em regra, melhorias não bloqueiam histórias principais, salvo quando uma reval
 - **Especificação:** [MEL024 — Listagem de Produtos com filtro e indicadores atuais](improvements/MEL024-listagem-produtos-filtro-indicadores.md)
 - **Instrução Codex:** [MEL024 — implementação](../codex/MEL024-listagem-produtos-filtro-indicadores.md)
 - **Decisão:** valores permanecem derivados; criar consulta/orquestração em lote com paridade frente a PrecificacaoProdutoAtual; nenhuma migration.
-- **Prioridade:** alta; especificada, porém implementação permanece pausada conforme a fila normativa.
+- **Prioridade:** alta; marcada como Pronto por decisão explícita e liberada para implementação imediata, sem liberar UC028 ou itens seguintes.
 
 ## Regra de uso
 
