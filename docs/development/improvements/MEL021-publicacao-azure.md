@@ -6,7 +6,7 @@
 - **Estado:** Especificado — bloqueado exclusivamente pela indisponibilidade externa da conta Azure.
 - **Ordem na fila pendente:** 12.
 - **Dependências:** MEL020, MEL022, MEL023, UC032 e UC036 concluídas.
-- **Gate operacional:** executar somente após UC036; bloqueio externo adicional até existir assinatura Azure utilizável; ainda antes de UC028.
+- **Gate operacional:** dependências funcionais atendidas; não executar enquanto a conta Azure não possuir assinatura utilizável; ainda antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
@@ -30,7 +30,7 @@ Azure SQL Database Free offer / General Purpose Serverless
 
 A MEL021 materializa a publicação preparada pela MEL020 e não cria funcionalidade de negócio.
 
-## Gate adicional — UC032 / UC036
+## Gate funcional concluído — UC032 / UC036
 
 Após a especificação original da publicação, foi decidido antecipar:
 
@@ -49,17 +49,21 @@ UC032
 
 Motivo: o desgaste altera o custo atual do Produto e deve estar consolidado antes da primeira publicação hospedada.
 
-Além disso, a conta Azure encontra-se atualmente bloqueada para criação/uso de assinatura, com solicitação de suporte aberta. Esse bloqueio é externo ao código.
+UC032 e UC036 estão concluídas e mergeadas. Não existe mais dependência funcional pendente para a MEL021.
 
-Portanto, não iniciar o provisionamento enquanto qualquer um destes gates estiver pendente:
+A conta Azure permanece bloqueada para criação/uso de assinatura, com solicitação de suporte aberta. Esse é o único gate operacional atual e é externo ao código.
 
-- conta Azure sem assinatura utilizável.
+Portanto:
 
-A especificação técnica desta MEL permanece válida e não deve ser descartada.
+- não iniciar provisionamento enquanto não existir assinatura Azure utilizável;
+- não implementar parcialmente infraestrutura contra outra conta como contorno;
+- não avançar UC028 ou UCs seguintes enquanto permanecer a pausa operacional decidida para esta fase.
+
+A especificação técnica desta MEL permanece válida e deve ser retomada quando a conta for liberada.
 
 ## Referências de plataforma
 
-Situação revalidada em 20/09/2026 contra documentação oficial da Microsoft:
+Situação revalidada novamente em **22/09/2026** contra documentação oficial da Microsoft:
 
 - **Azure App Service F1 / Linux** permanece gratuito, com compute compartilhado, **60 minutos de CPU por dia**, **1 GB de RAM** e **1 GB de armazenamento** por aplicativo;
 - F1 não possui SLA e a Microsoft declara que a camada Free é destinada a avaliação/experimentação/aprendizado e **não é suportada para workloads de produção**;
@@ -67,6 +71,9 @@ Situação revalidada em 20/09/2026 contra documentação oficial da Microsoft:
 - **Azure SQL Database Free offer** permanece sem prazo de expiração, com franquia mensal por banco de **100.000 vCore-seconds**, **32 GB de dados** e **32 GB de backup**; a oferta gratuita também não possui SLA e é recomendada principalmente para desenvolvimento/PoC;
 - a oferta gratuita do Azure SQL permite até 10 bancos por assinatura, mas o Precificador usará apenas 1;
 - o comportamento **AutoPause** ao atingir o limite gratuito interrompe o banco até o início do próximo mês e evita cobrança de excedente;
+- com AutoPause por limite gratuito, a oferta atual limita o banco a **4 vCores**, **32 GB**, retenção PITR de até **7 dias**, backup localmente redundante e sem retenção de longo prazo;
+- um banco criado na oferta gratuita é um banco novo: não é suportado restaurar/converter um banco existente para a oferta Free;
+- mudar o comportamento para continuidade paga/upgrade pode tornar a decisão irreversível para aquela instância gratuita; a MEL021 não deve executar essa mudança;
 - App Service suporta System Assigned Managed Identity para conexão passwordless com Azure SQL;
 - o projeto já está em .NET 10 / SQL Server e Production não executa migrations automaticamente.
 
@@ -78,9 +85,21 @@ Referências oficiais:
 - https://learn.microsoft.com/azure/azure-sql/database/free-offer-faq
 - https://learn.microsoft.com/cli/azure/sql/db
 - https://learn.microsoft.com/azure/app-service/tutorial-connect-msi-sql-database
+- https://learn.microsoft.com/azure/app-service/overview-inbound-outbound-ips
+- https://learn.microsoft.com/azure/app-service/app-service-web-tutorial-custom-domain
+- https://learn.microsoft.com/cli/azure/webapp
 - https://learn.microsoft.com/ef/core/providers/sql-server
 
 A implementação deve revalidar disponibilidade regional e os parâmetros da oferta gratuita imediatamente antes do provisionamento.
+
+Validações de descoberta recomendadas:
+
+~~~text
+az webapp list-runtimes --os linux --runtime dotnet
+az sql db list-editions -l <regiao> -o table
+~~~
+
+Não hardcodar um identificador de runtime .NET 10 antes dessa descoberta; usar o valor canônico retornado pela CLI vigente.
 
 ## Regra de custo
 
@@ -252,10 +271,13 @@ Evitar manter permanentemente `0.0.0.0` / “Allow Azure services and resources 
 
 Provisionamento deve:
 
-1. obter outbound IPs da Web App;
-2. criar regras do SQL para esses IPs;
+1. obter `outboundIpAddresses` e também `possibleOutboundIpAddresses` da Web App;
+2. criar regras do SQL que cubram o conjunto necessário para o tier/região atual;
 3. adicionar IP do operador temporariamente apenas para migration/bootstrap;
-4. remover o IP temporário ao final.
+4. remover o IP temporário ao final;
+5. documentar que IPs de saída do App Service são compartilhados na infraestrutura multitenant e podem mudar em situações descritas pela plataforma; a segurança principal continua sendo a autenticação Entra/Managed Identity.
+
+Não habilitar permanentemente a regra `0.0.0.0` apenas para evitar manutenção da allowlist.
 
 ## Resiliência de conexão
 
@@ -319,7 +341,8 @@ Responsabilidades:
 - validar login/subscription;
 - criar/obter Resource Group;
 - validar disponibilidade regional do F1 e Azure SQL Free;
-- validar que o runtime Linux .NET 10 está disponível;
+- validar que o runtime Linux .NET 10 está disponível via descoberta da CLI;
+- validar que `AutoPause` continua sendo opção disponível da oferta gratuita e que `BillOverUsage` não será usado;
 - resolver/receber os parâmetros do Microsoft Entra administrator;
 - criar App Service Plan F1;
 - criar Web App .NET 10;
@@ -328,7 +351,7 @@ Responsabilidades:
 - criar Azure SQL Database com Free Limit + AutoPause;
 - criar/conceder principal da Managed Identity no banco com `db_datareader` + `db_datawriter`;
 - configurar conexão passwordless;
-- configurar firewall;
+- configurar firewall considerando outbound e possible outbound IPs;
 - imprimir apenas outputs não sensíveis;
 - falhar se a configuração gratuita não puder ser criada.
 
