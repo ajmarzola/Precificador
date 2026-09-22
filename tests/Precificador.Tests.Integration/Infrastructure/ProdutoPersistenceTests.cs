@@ -29,7 +29,7 @@ public sealed class ProdutoPersistenceTests
         await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
 
-        var categoria = CategoriaProduto.Criar(1, "Planners");
+        var categoria = CategoriaProduto.Criar(1, "Planners", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         context.CategoriasProdutos.Add(categoria);
         await context.SaveChangesAsync();
 
@@ -134,8 +134,8 @@ public sealed class ProdutoPersistenceTests
         await using var context = CriarContexto(connectionString, 1);
         await context.Database.MigrateAsync();
 
-        var categoriaOriginal = CategoriaProduto.Criar(1, "Planners");
-        var categoriaNova = CategoriaProduto.Criar(1, "Datas");
+        var categoriaOriginal = CategoriaProduto.Criar(1, "Planners", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
+        var categoriaNova = CategoriaProduto.Criar(1, "Datas", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         context.CategoriasProdutos.AddRange(categoriaOriginal, categoriaNova);
         await context.SaveChangesAsync();
 

@@ -471,7 +471,7 @@ O componente de energia é calculado em tempo de consulta e nunca persistido.
 
 ### RN015 — Custo do lote
 
-O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recursos/equipamentos aplicáveis ao processo.
+O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra, energia e desgaste de equipamentos aplicáveis ao processo.
 
 ### RN016 — Custo unitário do produto
 
@@ -551,7 +551,7 @@ O vínculo do Produto com a Categoria:
 - é opcional (`CategoriaProdutoId : int?`);
 - referencia obrigatoriamente uma `CategoriaProduto` da mesma Empresa (cross-tenant é rejeitado);
 - não participa da unicidade do Produto;
-- não altera regras de cálculo.
+- quando vinculada, sua configuração de desgaste participa do custo atual conforme RN057 e RN058.
 
 O nome da `CategoriaProduto` segue a mesma semântica de normalização histórica:
 

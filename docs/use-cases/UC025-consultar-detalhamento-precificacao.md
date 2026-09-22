@@ -17,6 +17,7 @@ Permitir consultar, em uma única tela, **como a precificação atual do Produto
 - perdas;
 - mão de obra;
 - energia/equipamentos;
+- desgaste de equipamentos por Categoria;
 - custo do lote;
 - rendimento;
 - custo unitário;
@@ -72,6 +73,9 @@ CustoBaseItens
 CustoPerdasLote
 CustoMaoDeObraLote
 CustoEnergiaLote
+CustoDesgasteEquipamentosLote
+FormaCalculoDesgasteEquipamento
+ValorDesgasteEquipamento
 CustoLote
 CustoUnitarioProduto
 PrecoTeorico

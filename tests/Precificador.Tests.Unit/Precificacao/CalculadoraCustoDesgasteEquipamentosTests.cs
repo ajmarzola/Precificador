@@ -36,4 +36,15 @@ public sealed class CalculadoraCustoDesgasteEquipamentosTests
         Assert.True(resultado.Completo);
         Assert.Equal(0m, resultado.CustoDesgasteEquipamentosLote);
     }
+
+    [Fact]
+    public void Preserva_precisao_sem_arredondamento_intermediario() =>
+        Assert.Equal(0.041871m, CalculadoraCustoDesgasteEquipamentos.Calcular(FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .123m, .3404146341463414634146341463m).CustoDesgasteEquipamentosLote);
+
+    [Fact]
+    public void Rejeita_forma_invalida_e_valor_negativo()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => CalculadoraCustoDesgasteEquipamentos.Calcular((FormaCalculoDesgasteEquipamento)99, 0m, 1m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CalculadoraCustoDesgasteEquipamentos.Calcular(FormaCalculoDesgasteEquipamento.ValorFixoPorLote, -1m, 1m));
+    }
 }

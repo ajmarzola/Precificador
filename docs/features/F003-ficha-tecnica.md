@@ -196,6 +196,10 @@ FichaTecnica é tenant-owned:
 - [UC019 — Calcular perdas aplicáveis](../use-cases/UC019-calcular-perdas-aplicaveis.md);
 - [UC021 — Calcular custo de energia/equipamentos](../use-cases/UC021-calcular-custo-energia-equipamentos.md).
 
+## UC036 — Desgaste de equipamentos por Categoria
+
+A Ficha exibe forma, valor e custo atual do desgaste configurado na Categoria do Produto. Valor fixo é aplicado uma vez ao lote; percentual usa exclusivamente o custo base dos itens. Produto sem Categoria exibe desgaste zero e Categoria inativa já vinculada continua válida para cálculo.
+
 ## Fora do escopo do estágio atual
 
 - preparação intermediária reutilizável;

@@ -43,9 +43,6 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
 
     public static CategoriaProduto Criar(int empresaId, string nome, FormaCalculoDesgasteEquipamento formaCalculoDesgasteEquipamento, decimal valorDesgasteEquipamento) => new(empresaId, nome, formaCalculoDesgasteEquipamento, valorDesgasteEquipamento);
 
-    public static CategoriaProduto Criar(int empresaId, string nome) =>
-        Criar(empresaId, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
-
     public void Renomear(string nome)
     {
         var nomeNormalizado = NormalizarNome(nome);

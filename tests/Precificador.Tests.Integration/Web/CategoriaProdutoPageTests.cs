@@ -329,7 +329,7 @@ public sealed class CategoriaProdutoPageTests(CustomWebApplicationFactory factor
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var categoria = CategoriaProduto.Criar(empresaId, nome);
+        var categoria = CategoriaProduto.Criar(empresaId, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         if (!ativo)
         {
             categoria.Desativar();

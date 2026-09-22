@@ -222,7 +222,7 @@ public sealed class SituacaoProdutoPageTests(CustomWebApplicationFactory factory
             return existente.Id;
         }
 
-        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome);
+        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         context.CategoriasProdutos.Add(categoriaNova);
         await context.SaveChangesAsync();
         return categoriaNova.Id;

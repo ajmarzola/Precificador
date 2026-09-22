@@ -77,6 +77,8 @@ O componente é independente de Itens e mão de obra, derivado em tempo de consu
 
 UC022 compõe os resultados já calculados por UC018, UC019, UC020, UC021 e UC036 para obter o custo total do lote pela RN015 e o custo unitário do Produto pela RN016.
 
+UC036 adiciona o desgaste configurado na Categoria: valor fixo entra uma vez por lote; percentual aplica-se exclusivamente ao `CustoBaseItens`. A fotografia atual expõe forma, valor, base percentual quando aplicável e custo do desgaste.
+
 A composição só é considerada completa quando todos os componentes são determináveis. Zero conhecido é valor válido; componente indisponível nunca é convertido em zero e impede a apresentação de soma parcial como custo total confiável, conforme RN017.
 
 O custo unitário divide o custo completo do lote pelo Rendimento atual da Ficha. Os resultados são derivados em consulta, sem arredondamento intermediário e sem persistência.
