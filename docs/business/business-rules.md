@@ -489,6 +489,14 @@ A completude é específica por etapa. Um dado ausente que afete somente uma eta
 
 `SituacaoMargem` da UC024 representa especificamente a situação frente à Margem-alvo e não substitui um indicador global de completude da precificação.
 
+### RN057 — Configuração de desgaste por Categoria
+
+Toda Categoria possui Forma e Valor de desgaste válidos e não negativos. Valor fixo é custo por lote; percentual é armazenado como fração decimal, sem teto de 100%.
+
+### RN058 — Custo de desgaste de equipamentos
+
+Sem Categoria, o desgaste é zero conhecido. Valor fixo retorna o valor configurado. Percentual zero retorna zero mesmo sem custo base; percentual positivo é `CustoBaseItens × Valor` e fica indisponível se a base for desconhecida.
+
 ### RN018 — Desativação e reativação de produto
 
 Produtos são desativados, não excluídos fisicamente pelo fluxo normal.

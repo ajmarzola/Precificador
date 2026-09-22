@@ -110,7 +110,7 @@ Decisões já fechadas para futura especificação:
 - percentual usa exclusivamente o total dos insumos como base;
 - energia elétrica e desgaste permanecem componentes distintos.
 
-A UC036 está especificada e pronta para implementação. Ela não altera energia elétrica; adiciona um componente próprio de desgaste ao custo do lote.
+A UC036 está concluída. Ela não altera energia elétrica; adiciona um componente próprio de desgaste ao custo do lote.
 
 ## Dashboard
 

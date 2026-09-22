@@ -18,10 +18,12 @@ public sealed class NovoModel(PrecificadorDbContext context, IEmpresaContext emp
 
     public async Task<IActionResult> OnPostAsync()
     {
+        var desgasteValido = CategoriaProdutoFormulario.TentarObterDesgaste(ModelState, Input, out var valorDesgaste);
+        if (!desgasteValido) return Page();
         CategoriaProduto categoria;
         try
         {
-            categoria = CategoriaProduto.Criar(empresaContext.EmpresaId!.Value, Input.Nome!);
+            categoria = CategoriaProduto.Criar(empresaContext.EmpresaId!.Value, Input.Nome!, Input.FormaCalculoDesgasteEquipamento, valorDesgaste);
         }
         catch (ArgumentException exception)
         {

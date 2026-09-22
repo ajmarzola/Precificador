@@ -75,7 +75,7 @@ O componente é independente de Itens e mão de obra, derivado em tempo de consu
 
 ## UC022 — Custo total e custo unitário
 
-UC022 compõe os resultados já calculados por UC018, UC019, UC020 e UC021 para obter o custo total do lote pela RN015 e o custo unitário do Produto pela RN016.
+UC022 compõe os resultados já calculados por UC018, UC019, UC020, UC021 e UC036 para obter o custo total do lote pela RN015 e o custo unitário do Produto pela RN016.
 
 A composição só é considerada completa quando todos os componentes são determináveis. Zero conhecido é valor válido; componente indisponível nunca é convertido em zero e impede a apresentação de soma parcial como custo total confiável, conforme RN017.
 

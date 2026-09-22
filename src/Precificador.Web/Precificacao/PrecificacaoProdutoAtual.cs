@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Precificacao;
+using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
 
 namespace Precificador.Web.Precificacao;
@@ -11,7 +12,9 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
     public async Task<ResultadoPrecificacaoProdutoAtual?> CalcularAsync(int produtoId)
     {
         var produto = await context.Produtos.AsNoTracking().Where(p => p.Id == produtoId)
-            .Select(p => new ProdutoCarregado(p.Id, p.EmpresaId, p.MargemAlvo)).SingleOrDefaultAsync();
+            .Select(p => new ProdutoCarregado(p.Id, p.EmpresaId, p.MargemAlvo,
+                p.CategoriaProdutoId == null ? null : context.CategoriasProdutos.Where(c => c.Id == p.CategoriaProdutoId).Select(c => (FormaCalculoDesgasteEquipamento?)c.FormaCalculoDesgasteEquipamento).SingleOrDefault(),
+                p.CategoriaProdutoId == null ? null : context.CategoriasProdutos.Where(c => c.Id == p.CategoriaProdutoId).Select(c => (decimal?)c.ValorDesgasteEquipamento).SingleOrDefault())).SingleOrDefaultAsync();
         if (produto is null) return null;
 
         var registroAtual = await context.RegistrosPrecosProdutos.AsNoTracking()
@@ -60,7 +63,8 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         var usos = await context.UsosEquipamentosFicha.AsNoTracking().Where(u => u.FichaTecnicaId == ficha.Id)
             .Select(u => new UsoEquipamentoCustoEntrada(u.Id, u.PotenciaKw, u.TempoUsoMinutos)).ToListAsync();
         var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh, usos);
-        var custoProduto = CalculadoraCustoProduto.Calcular(itensCalculados.CustoBaseItens, perdas.CustoPerdasLote, maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, ficha.Rendimento);
+        var desgaste = CalculadoraCustoDesgasteEquipamentos.Calcular(produto.FormaCalculoDesgasteEquipamento, produto.ValorDesgasteEquipamento, itensCalculados.CustoBaseItens);
+        var custoProduto = CalculadoraCustoProduto.Calcular(itensCalculados.CustoBaseItens, perdas.CustoPerdasLote, maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, desgaste.CustoDesgasteEquipamentosLote, ficha.Rendimento);
         var precoProduto = CalculadoraPrecoProduto.Calcular(custoProduto.CustoUnitarioProduto, produto.MargemAlvo, configuracao.IncrementoComercial);
         var margemAtual = CalculadoraMargemAtual.Calcular(custoProduto.CustoUnitarioProduto, precoPrateleiraAtual, produto.MargemAlvo);
 
@@ -91,6 +95,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
             perdas.CustoPerdasLote,
             maoDeObra.CustoMaoDeObraLote,
             energia.CustoEnergiaLote,
+            desgaste.CustoDesgasteEquipamentosLote,
             custoProduto.CustoLote,
             custoProduto.CustoUnitarioProduto,
             precoProduto.PrecoTeorico,
@@ -110,6 +115,8 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
             Rendimento = ficha.Rendimento,
             PercentualMaoDeObra = configuracao.PercentualMaoDeObra,
             TarifaEnergiaKwh = configuracao.TarifaEnergiaKwh,
+            FormaCalculoDesgasteEquipamento = produto.FormaCalculoDesgasteEquipamento,
+            ValorDesgasteEquipamento = produto.ValorDesgasteEquipamento,
             IncrementoComercial = configuracao.IncrementoComercial,
             Itens = itensCalculados.Itens.ToDictionary(i => i.ItemId, i => new ItemPrecificacaoAtual(i.CustoUnitario, i.CustoItem, perdas.Itens.Single(p => p.ItemId == i.ItemId).CustoPerdaItem)),
             Usos = energia.Usos.ToDictionary(u => u.UsoId, u => new UsoPrecificacaoAtual(u.ConsumoKwh, u.CustoEnergiaUso))
@@ -129,6 +136,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         var margemAtual = CalculadoraMargemAtual.Calcular(null, precoPrateleiraAtual, produto.MargemAlvo);
         return new ResultadoPrecificacaoProdutoAtual(
             produto.EmpresaId,
+            null,
             null,
             null,
             null,
@@ -162,7 +170,7 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         return impedimentos;
     }
 
-    private sealed record ProdutoCarregado(int Id, int EmpresaId, decimal MargemAlvo);
+    private sealed record ProdutoCarregado(int Id, int EmpresaId, decimal MargemAlvo, FormaCalculoDesgasteEquipamento? FormaCalculoDesgasteEquipamento, decimal? ValorDesgasteEquipamento);
     private sealed record FichaCarregada(int Id, decimal Rendimento);
     private sealed record ItemCarregado(int Id, int InsumoId, decimal Quantidade, decimal PercentualPerda);
     private sealed record ConfiguracaoCarregada(decimal PercentualMaoDeObra, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial, decimal ReservaComercialDesconto);
@@ -174,6 +182,7 @@ public sealed record ResultadoPrecificacaoProdutoAtual(
     decimal? CustoPerdasLote,
     decimal? CustoMaoDeObraLote,
     decimal? CustoEnergiaLote,
+    decimal? CustoDesgasteEquipamentosLote,
     decimal? CustoLote,
     decimal? CustoUnitarioProduto,
     decimal? PrecoTeorico,
@@ -193,6 +202,8 @@ public sealed record ResultadoPrecificacaoProdutoAtual(
     public decimal? Rendimento { get; init; }
     public decimal? PercentualMaoDeObra { get; init; }
     public decimal? TarifaEnergiaKwh { get; init; }
+    public FormaCalculoDesgasteEquipamento? FormaCalculoDesgasteEquipamento { get; init; }
+    public decimal? ValorDesgasteEquipamento { get; init; }
     public decimal? IncrementoComercial { get; init; }
     public IReadOnlyDictionary<int, ItemPrecificacaoAtual> Itens { get; init; } = new Dictionary<int, ItemPrecificacaoAtual>();
     public IReadOnlyDictionary<int, UsoPrecificacaoAtual> Usos { get; init; } = new Dictionary<int, UsoPrecificacaoAtual>();

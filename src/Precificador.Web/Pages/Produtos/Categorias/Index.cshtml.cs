@@ -15,7 +15,7 @@ public sealed class IndexModel(PrecificadorDbContext context) : PageModel
     {
         Categorias = await context.CategoriasProdutos.AsNoTracking()
             .OrderBy(categoria => categoria.NomeNormalizado)
-            .Select(categoria => new CategoriaListagem(categoria.Id, categoria.Nome, categoria.Ativo))
+            .Select(categoria => new CategoriaListagem(categoria.Id, categoria.Nome, categoria.Ativo, categoria.FormaCalculoDesgasteEquipamento, categoria.ValorDesgasteEquipamento))
             .ToListAsync();
     }
 
@@ -47,8 +47,9 @@ public sealed class IndexModel(PrecificadorDbContext context) : PageModel
         return RedirectToPage();
     }
 
-    public sealed record CategoriaListagem(int Id, string Nome, bool Ativo)
+    public sealed record CategoriaListagem(int Id, string Nome, bool Ativo, Precificador.Core.Produtos.FormaCalculoDesgasteEquipamento Forma, decimal Valor)
     {
         public string Situacao => Ativo ? "Ativo" : "Inativo";
+        public string Desgaste => CategoriaProdutoFormulario.Resumir(Forma, Valor);
     }
 }
