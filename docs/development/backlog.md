@@ -70,15 +70,16 @@ Regra operacional:
 | 10 | UC032 — Administrar categorias de Produto | UC | Concluído | UC007–UC010 | [UC032](../use-cases/UC032-administrar-categorias-produto.md) |
 | 11 | UC036 — Configurar e calcular custo de desgaste de equipamentos por Categoria | UC | Concluído | UC032, UC018, UC022 | [UC036](../use-cases/UC036-configurar-calcular-desgaste-equipamentos-categoria.md) |
 | 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | dependências funcionais concluídas; bloqueio externo exclusivo: conta Azure sem assinatura utilizável | [MEL021](improvements/MEL021-publicacao-azure.md) |
-| 13 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024 | Documento a criar |
-| 14 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
-| 15 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
-| 16 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
-| 17 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
-| 18 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
-| 19 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 20 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 21 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 13 | MEL024 — Enriquecer listagem de Produtos com filtro por Categoria e indicadores atuais | MEL | Especificado | após MEL021, salvo decisão explícita; implementação pausada durante testes | [MEL024](improvements/MEL024-listagem-produtos-filtro-indicadores.md) |
+| 14 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024; após MEL024 na fila | Documento a criar |
+| 15 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
+| 16 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
+| 17 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
+| 18 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
+| 19 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
+| 20 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 21 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 22 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional consolidado | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -87,11 +88,12 @@ Regra operacional:
 - **08–09 — segunda estabilização manual:** corrigir o modelo de mão de obra e tornar explícita a opcionalidade dos equipamentos elétricos antes de publicar;
 - **10–11 — Categoria estruturada e desgaste:** antecipar Categorias de Produto e, em seguida, o custo de desgaste de equipamentos por Categoria antes da primeira publicação;
 - **12 — publicação:** disponibilizar o sistema no Azure somente após UC032/UC036 e quando o bloqueio externo da conta Azure estiver resolvido;
-- **13–15 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
-- **16 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
-- **17–18 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
-- **19 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
-- **20–21 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
+- **13 — adaptação operacional pós-planilha:** enriquecer a listagem de Produtos com filtro por Categoria e indicadores atuais, sem antecipar Dashboard;
+- **14–16 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
+- **17 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
+- **18–19 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
+- **20 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
+- **21–22 — documentação:** escrever o guia técnico e o Manual do Usuário depois de os fluxos funcionais estarem estabilizados.
 
 ## Melhorias concluídas
 
