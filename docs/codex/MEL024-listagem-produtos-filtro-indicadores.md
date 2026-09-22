@@ -213,7 +213,7 @@ Atualizar:
 
 UC028 continua Planejado.
 
-Não implementar MEL021/Azure.
+Não implementar MEL021/Azure. UC028 e itens seguintes permanecem pausados.
 
 ## Testes
 
