@@ -85,6 +85,8 @@ Adicionar integridade SQL para Forma válida e Valor não negativo.
 
 Não editar migrations históricas.
 
+O ValorFixo/0 das Categorias existentes é backfill de compatibilidade. Não deixar a criação futura depender silenciosamente de default SQL; a aplicação/domínio deve fornecer Forma + Valor explicitamente.
+
 ## Criação/edição de Categoria
 
 Novo:
