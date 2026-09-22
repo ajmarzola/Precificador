@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
+using Precificador.Core.FichasTecnicas;
+using Precificador.Core.Insumos;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
@@ -159,6 +161,50 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     }
 
     [Fact]
+    public async Task MEL024_Filtro_com_resultado_preserva_selecao_e_exibe_limpar()
+    {
+        var nome = NomeUnico("Produto filtrado");
+        await CriarProdutoAsync(1, nome, "Categoria filtrável", .30m);
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        var categoriaId = await context.CategoriasProdutos.Where(item => item.Nome == "Categoria filtrável").Select(item => item.Id).SingleAsync();
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos?categoria={categoriaId}"));
+
+        Assert.Contains(nome, conteudo);
+        Assert.Contains("Limpar filtros", conteudo);
+        Assert.Contains($"value=\"{categoriaId}\" selected", conteudo);
+    }
+
+    [Fact]
+    public async Task MEL024_Grid_exibe_indicadores_calculados_e_nao_persiste_get()
+    {
+        var completo = await CriarProdutoPrecificavelAsync("Completo", 10m, 20m, ativo: true);
+        var zero = await CriarProdutoPrecificavelAsync("Zero", 0m, 10m, ativo: false);
+        var negativo = await CriarProdutoPrecificavelAsync("Negativo", 10m, 5m, ativo: true);
+        var semFicha = await CriarProdutoComPrecoSemFichaAsync("Sem ficha", 20m);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+
+        Assert.Contains("R$ 10,00", LinhaProduto(conteudo, completo.Nome));
+        Assert.Contains("50%", LinhaProduto(conteudo, completo.Nome));
+        Assert.Contains("R$ 0,00", LinhaProduto(conteudo, zero.Nome));
+        Assert.Contains("100%", LinhaProduto(conteudo, zero.Nome));
+        Assert.Contains("Inativo", LinhaProduto(conteudo, zero.Nome));
+        Assert.Contains("-100%", LinhaProduto(conteudo, negativo.Nome));
+        Assert.Contains("R$ 20,00", LinhaProduto(conteudo, semFicha.Nome));
+        Assert.Contains("indisponível", LinhaProduto(conteudo, semFicha.Nome));
+
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var verificacao = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        Assert.Equal(0, await verificacao.SaveChangesAsync());
+    }
+
+    [Fact]
     public async Task CA14_CA15_Detalhes_exibem_somente_campos_permitidos()
     {
         var nomeProduto = NomeUnico("Produto detalhes");
@@ -255,6 +301,38 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
         return produto.Id;
+    }
+
+    private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(string prefixo, decimal custo, decimal preco, bool ativo)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(0m, 0m, null, null, .10m);
+        var nome = NomeUnico(prefixo);
+        var produto = Produto.Criar(1, nome, .30m); if (!ativo) produto.Desativar();
+        context.Produtos.Add(produto); await context.SaveChangesAsync();
+        var ficha = FichaTecnica.Criar(1, produto.Id, 1m);
+        var insumo = Insumo.Criar(1, NomeUnico("Insumo"), CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade);
+        context.FichasTecnicas.Add(ficha); context.Insumos.Add(insumo); await context.SaveChangesAsync();
+        context.ItensFichaTecnica.Add(ItemFichaTecnica.Criar(1, ficha.Id, insumo.Id, 1m));
+        context.PrecosInsumos.Add(PrecoInsumo.Criar(1, insumo.Id, 1m, custo, new DateOnly(2026, 9, 15)));
+        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(1, produto.Id, new DateOnly(2026, 9, 15), custo, .30m, custo, preco, .10m));
+        await context.SaveChangesAsync();
+        return (produto.Id, nome);
+    }
+
+    private async Task<(int Id, string Nome)> CriarProdutoComPrecoSemFichaAsync(string prefixo, decimal preco)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        var nome = NomeUnico(prefixo); var produto = Produto.Criar(1, nome, .30m);
+        context.Produtos.Add(produto); await context.SaveChangesAsync();
+        context.RegistrosPrecosProdutos.Add(RegistroPrecoProduto.Criar(1, produto.Id, new DateOnly(2026, 9, 15), 10m, .30m, 10m, preco, .10m));
+        await context.SaveChangesAsync();
+        return (produto.Id, nome);
     }
 
     private static async Task<int> ObterOuCriarCategoriaIdAsync(PrecificadorDbContext context, int empresaId, string nome)

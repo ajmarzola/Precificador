@@ -24,12 +24,9 @@ Não implementar neste UC:
 
 - edição;
 - desativação;
-- preço de venda;
 - histórico de preço de venda;
 - Ficha Técnica;
-- custo;
 - preço sugerido;
-- margem atual.
 
 ## Isolamento por Empresa
 
@@ -60,6 +57,9 @@ A página lista todos os Produtos visíveis da Empresa Ativa.
 
 - Nome;
 - Categoria;
+- Custo unitário atual;
+- Preço de prateleira vigente;
+- Margem atual;
 - Margem-alvo;
 - Situação;
 - ação **Consultar**.
@@ -68,10 +68,7 @@ Não exibir na listagem:
 
 - EmpresaId;
 - NomeNormalizado;
-- preço de venda;
-- custo;
 - preço sugerido;
-- margem atual;
 - informações de Ficha Técnica.
 
 ### Categoria ausente
@@ -145,7 +142,7 @@ O UC008 não deve criar schema adicional nem introduzir normalização técnica 
 
 A implementação atual de `Insumos/Index` já usa normalização simples da query no próprio PageModel (`trim`, colapso de whitespace e `ToUpperInvariant`). O UC008 pode seguir o mesmo padrão sem extrair agora uma abstração compartilhada entre áreas. Se a duplicação evoluir para um padrão recorrente em mais telas, registrar/refatorar posteriormente com evidência real.
 
-Se pesquisa/filtro por Categoria se tornar necessária, deverá ser avaliada em melhoria/UC próprio.
+A MEL024 formaliza o filtro estruturado `categoria`: vazio lista todas, `sem-categoria` seleciona Produtos sem Categoria e um inteiro positivo seleciona a Categoria correspondente. Valores inválidos, inexistentes ou cross-tenant retornam zero resultados. Categorias ativas e inativas são opções do seletor; a pesquisa textual continua exclusivamente em Nome.
 
 ### Normalização da consulta
 
@@ -181,9 +178,9 @@ Exibir mensagem clara e ação:
 Cadastrar produto
 ~~~
 
-### Pesquisa sem resultado
+### Filtros sem resultado
 
-Exibir mensagem de nenhum resultado, preservando o campo de pesquisa e oferecendo retorno à listagem completa.
+Exibir mensagem de nenhum resultado, preservando os filtros e oferecendo **Limpar filtros**. A ação também aparece quando um filtro possui resultados.
 
 Nenhum desses estados é erro.
 
@@ -295,7 +292,7 @@ Usuário anônimo não acessa `/Produtos` nem detalhes.
 
 ### CA03 — Dados listados
 
-Cada linha mostra Nome, Categoria, Margem-alvo e Situação.
+Cada linha mostra Nome, Categoria, Custo unitário atual, Preço de prateleira vigente, Margem atual, Margem-alvo, Situação e Consultar. Os três indicadores atuais são derivados em lote, sem persistência; custo ou margem indisponível são exibidos como `indisponível` e preço ausente como `—`.
 
 ### CA04 — Categoria ausente usa estado neutro
 
@@ -345,7 +342,7 @@ Produto da Empresa Ativa exibe Nome, Categoria, Margem-alvo e Situação.
 
 ### CA15 — Campos técnicos/futuros ocultos
 
-Listagem/detalhes não exibem EmpresaId, NomeNormalizado, preço, custo ou Ficha Técnica.
+Listagem/detalhes não exibem EmpresaId, NomeNormalizado ou dados de Ficha Técnica. Os indicadores atuais da MEL024 pertencem somente à listagem; detalhes cadastrais não precisam exibi-los.
 
 ### CA16 — Id inexistente
 
@@ -365,7 +362,7 @@ Nenhuma migration/ModelSnapshot.
 
 ### CA20 — Sem escopo antecipado
 
-Não implementar UC009+, preço de venda, Ficha Técnica, custo, dashboard ou filtros avançados.
+Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024.
 
 ## Matriz de testes fechada antes da implementação
 
@@ -528,10 +525,7 @@ Se surgir necessidade de schema, interromper e reavaliar o escopo.
 - UC011 preço de venda;
 - UC012 histórico de venda;
 - Ficha Técnica;
-- custo;
-- margem atual;
 - preço teórico/sugerido;
-- filtro por Categoria;
 - filtro por Situação;
 - paginação;
 - ordenação configurável;
@@ -545,7 +539,8 @@ Além da DoD global:
 
 - `/Produtos` lista somente a Empresa Ativa;
 - pesquisa por Nome funciona com normalização;
-- Categoria é exibida, mas não pesquisada;
+- `q` pesquisa somente Nome e Categoria é filtrada de forma estruturada;
+- listagem apresenta custo, preço de prateleira e margem atuais derivados, sem persistência;
 - margem aparece como percentual;
 - `/Produtos/Detalhes/{id}` respeita tenancy/404;
 - consultas puras usam `AsNoTracking`;

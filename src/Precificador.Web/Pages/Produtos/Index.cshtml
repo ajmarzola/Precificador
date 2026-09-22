@@ -24,12 +24,16 @@
     <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Pesquisar</button></div>
 </form>
 
+@if (Model.TemFiltros)
+{
+    <p><a asp-page="/Produtos/Index">Limpar filtros</a></p>
+}
+
 @if (Model.Produtos.Count == 0)
 {
     if (Model.TemFiltros)
     {
         <p>Nenhum produto encontrado para os filtros informados.</p>
-        <p><a asp-page="/Produtos/Index">Limpar filtros</a></p>
     }
     else
     {

@@ -81,6 +81,76 @@ public sealed class ConsultaProdutosTests
         Assert.True(pagina.TemPesquisa);
     }
 
+    [Fact]
+    public async Task MEL024_Filtro_estrutura_categoria_combina_com_nome_e_mantem_inativa()
+    {
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await using var escrita = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
+        var ativa = CategoriaProduto.Criar(1, "Ativa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
+        var inativa = CategoriaProduto.Criar(1, "Inativa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
+        inativa.Desativar();
+        escrita.CategoriasProdutos.AddRange(ativa, inativa);
+        await escrita.SaveChangesAsync();
+        escrita.Produtos.AddRange(
+            Produto.Criar(1, "Agenda ativa", .3m, ativa.Id),
+            Produto.Criar(1, "Agenda inativa", .3m, inativa.Id),
+            Produto.Criar(1, "Agenda sem categoria", .3m));
+        await escrita.SaveChangesAsync();
+
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
+        var pagina = CriarPagina(leitura);
+        await pagina.OnGetAsync("agenda", ativa.Id.ToString());
+        Assert.Equal(["Agenda ativa"], pagina.Produtos.Select(item => item.Nome));
+        Assert.Contains(pagina.Categorias, item => item.Value == inativa.Id.ToString() && item.Text == "Inativa (inativa)");
+
+        await pagina.OnGetAsync(null, "sem-categoria");
+        Assert.Equal(["Agenda sem categoria"], pagina.Produtos.Select(item => item.Nome));
+        await pagina.OnGetAsync(null, inativa.Id.ToString());
+        Assert.Equal(["Agenda inativa"], pagina.Produtos.Select(item => item.Nome));
+        await pagina.OnGetAsync(null, null);
+        Assert.Equal(3, pagina.Produtos.Count);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("invalida")]
+    public async Task MEL024_Categoria_invalida_nao_amplia_resultados(string categoria)
+    {
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await CriarProdutosPadraoAsync(opcoes);
+        await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
+
+        var pagina = CriarPagina(leitura);
+        await pagina.OnGetAsync(null, categoria);
+
+        Assert.Empty(pagina.Produtos);
+        Assert.True(pagina.TemFiltros);
+    }
+
+    [Fact]
+    public async Task MEL024_Categoria_cross_tenant_nao_retorna_nem_revela_produtos()
+    {
+        var opcoes = await CriarOpcoesMigradasAsync(1);
+        await using (var empresaDois = new PrecificadorDbContext(opcoes, new ContextoEmpresa(2)))
+        {
+            var categoria = CategoriaProduto.Criar(2, "Externa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
+            empresaDois.CategoriasProdutos.Add(categoria);
+            await empresaDois.SaveChangesAsync();
+            empresaDois.Produtos.Add(Produto.Criar(2, "Produto externo", .3m, categoria.Id));
+            await empresaDois.SaveChangesAsync();
+
+            await using var empresaUm = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
+            empresaUm.Produtos.Add(Produto.Criar(1, "Produto interno", .3m));
+            await empresaUm.SaveChangesAsync();
+            var pagina = CriarPagina(empresaUm);
+            await pagina.OnGetAsync(null, categoria.Id.ToString());
+
+            Assert.Empty(pagina.Produtos);
+            Assert.DoesNotContain(pagina.Categorias, item => item.Value == categoria.Id.ToString());
+        }
+    }
+
     private static async Task<DbContextOptions<PrecificadorDbContext>> CriarOpcoesMigradasAsync(int empresaId)
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("ConsultaProdutos");
