@@ -13,19 +13,23 @@
 </div>
 
 <form method="get" class="row g-2 mb-3">
-    <div class="col-sm-6">
+    <div class="col-sm-5">
         <label for="q" class="visually-hidden">Pesquisar produtos</label>
         <input id="q" name="q" value="@Model.Consulta" class="form-control" placeholder="Pesquisar por nome" />
+    </div>
+    <div class="col-sm-4">
+        <label for="categoria" class="visually-hidden">Categoria</label>
+        <select id="categoria" name="categoria" asp-items="Model.Categorias" class="form-select"></select>
     </div>
     <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Pesquisar</button></div>
 </form>
 
 @if (Model.Produtos.Count == 0)
 {
-    if (Model.TemPesquisa)
+    if (Model.TemFiltros)
     {
-        <p>Nenhum produto encontrado para a pesquisa.</p>
-        <p><a asp-page="/Produtos/Index">Voltar para listagem completa</a></p>
+        <p>Nenhum produto encontrado para os filtros informados.</p>
+        <p><a asp-page="/Produtos/Index">Limpar filtros</a></p>
     }
     else
     {
@@ -34,16 +38,18 @@
 }
 else
 {
+    <div class="table-responsive">
     <table class="table">
-        <thead><tr><th>Nome</th><th>Categoria</th><th>Margem-alvo</th><th>Situação</th><th></th></tr></thead>
+        <thead><tr><th>Nome</th><th>Categoria</th><th>Custo unitário atual</th><th>Preço de prateleira vigente</th><th>Margem atual</th><th>Margem-alvo</th><th>Situação</th><th>Consultar</th></tr></thead>
         <tbody>
         @foreach (var produto in Model.Produtos)
         {
             <tr>
-                <td>@produto.Nome</td><td>@(produto.Categoria ?? "—")</td><td>@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</td><td>@(produto.Ativo ? "Ativo" : "Inativo")</td>
+                <td>@produto.Nome</td><td>@(produto.Categoria ?? "—")</td><td>@(produto.CustoUnitarioProduto is decimal custo ? PrecoInsumoFormatacao.CustoCalculado(custo) : "indisponível")</td><td>@(produto.PrecoPrateleiraAtual is decimal preco ? PrecoInsumoFormatacao.CustoCalculado(preco) : "—")</td><td>@(produto.MargemAtual is decimal margem ? ProdutoFormatacao.MargemAlvo(margem) : "indisponível")</td><td>@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</td><td>@(produto.Ativo ? "Ativo" : "Inativo")</td>
                 <td><a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id">Consultar</a></td>
             </tr>
         }
         </tbody>
     </table>
+    </div>
 }

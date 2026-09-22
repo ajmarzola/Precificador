@@ -4,7 +4,7 @@
 - **Origem:** testes manuais / adaptação do usuário que hoje trabalha com planilha.
 - **Classificação:** UX / consulta operacional / desempenho de leitura.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
+- **Estado:** Concluído.
 - **Ordem na fila pendente:** 13.
 - **Dependências:** UC008, UC012, UC022, UC024, UC032 e UC036 concluídas.
 - **Gate operacional:** liberado por decisão explícita para implementação imediata, mesmo com MEL021 bloqueada externamente; demais novas UCs permanecem pausadas.

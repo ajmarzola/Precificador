@@ -5,6 +5,28 @@ namespace Precificador.Infrastructure.Persistence;
 
 public static class RegistroPrecoProdutoConsultas
 {
+    public static async Task<Dictionary<int, RegistroPrecoProduto>> SelecionarAtuaisAsync(
+        this IQueryable<RegistroPrecoProduto> registros,
+        IReadOnlyCollection<int> produtoIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (produtoIds.Count == 0)
+        {
+            return [];
+        }
+
+        var atuais = await registros
+            .Where(registro => produtoIds.Contains(registro.ProdutoId))
+            .GroupBy(registro => registro.ProdutoId)
+            .Select(grupo => grupo
+                .OrderByDescending(registro => registro.DataReferencia)
+                .ThenByDescending(registro => registro.Id)
+                .First())
+            .ToListAsync(cancellationToken);
+
+        return atuais.ToDictionary(registro => registro.ProdutoId);
+    }
+
     public static Task<RegistroPrecoProduto?> SelecionarAtualAsync(
         this IQueryable<RegistroPrecoProduto> registros,
         int produtoId,

@@ -136,15 +136,15 @@ A UC032 não implementa nenhuma regra de desgaste de equipamentos nem altera fó
 As páginas `/Produtos` e `/Produtos/Detalhes/{id}` mantêm consultas tenant-aware somente leitura.
 
 - listar Produtos da Empresa Ativa;
-- pesquisar por Nome;
+- pesquisar por Nome e filtrar Categoria de forma estruturada;
 - ordenar por Nome normalizado;
-- exibir Categoria, Margem-alvo e Situação;
+- exibir Categoria, Custo unitário atual, Preço de prateleira vigente, Margem atual, Margem-alvo e Situação;
 - consultar detalhes cadastrais;
 - preservar isolamento tenant-aware.
 
-A pesquisa não usa Categoria neste incremento, evitando criar normalização/schema apenas para filtro.
+`q` continua restrito a Nome. A MEL024 adiciona `categoria` como filtro estruturado, incluindo Sem categoria e categorias inativas vinculadas.
 
-Preço sugerido, Preço de prateleira, custo, margem atual e Ficha Técnica permanecem ausentes da consulta até seus respectivos UCs.
+Preço sugerido e detalhes da Ficha Técnica permanecem ausentes da consulta. Custo, preço de prateleira e margem atuais são derivados em lote, sem persistência.
 
 ## Edição cadastral — UC009
 

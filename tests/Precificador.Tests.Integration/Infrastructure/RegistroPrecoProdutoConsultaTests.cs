@@ -30,6 +30,30 @@ public sealed class RegistroPrecoProdutoConsultaTests
     }
 
     [Fact]
+    public async Task P6_Selecao_em_lote_retorna_um_atual_por_produto_e_ignora_ids_ausentes()
+    {
+        await using var context = await CriarAsync(1);
+        await context.Database.MigrateAsync();
+        var primeiro = await CriarProdutoAsync(context, 1, "Primeiro");
+        var segundo = await CriarProdutoAsync(context, 1, "Segundo");
+        context.RegistrosPrecosProdutos.AddRange(
+            Registro(1, primeiro.Id, new DateOnly(2026, 9, 1), 10m),
+            Registro(1, primeiro.Id, new DateOnly(2026, 9, 2), 12m),
+            Registro(1, segundo.Id, new DateOnly(2026, 9, 2), 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var atuais = await context.RegistrosPrecosProdutos.AsNoTracking()
+            .SelecionarAtuaisAsync([primeiro.Id, segundo.Id, 999999]);
+
+        Assert.Equal(2, atuais.Count);
+        Assert.Equal(12m, atuais[primeiro.Id].PrecoPrateleira);
+        Assert.Equal(20m, atuais[segundo.Id].PrecoPrateleira);
+        Assert.DoesNotContain(999999, atuais.Keys);
+        Assert.Empty(await context.RegistrosPrecosProdutos.AsNoTracking().SelecionarAtuaisAsync([]));
+    }
+
+    [Fact]
     public async Task P3_Gqf_isola_historico_entre_empresas()
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("RegistroPrecoProdutoConsulta");

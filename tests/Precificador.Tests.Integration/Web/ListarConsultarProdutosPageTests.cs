@@ -50,7 +50,9 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         Assert.DoesNotContain("EmpresaId", conteudo);
         Assert.DoesNotContain("NomeNormalizado", conteudo);
         Assert.DoesNotContain("Preço de venda", conteudo);
-        Assert.DoesNotContain("Custo", conteudo);
+        Assert.Contains("Custo unitário atual", conteudo);
+        Assert.Contains("Preço de prateleira vigente", conteudo);
+        Assert.Contains("Margem atual", conteudo);
         Assert.DoesNotContain("Ficha Técnica", conteudo);
     }
 
@@ -101,7 +103,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
 
         var semAcento = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=calendario"));
         Assert.DoesNotContain(nomeCalendario, semAcento);
-        Assert.Contains("Nenhum produto encontrado para a pesquisa.", semAcento);
+        Assert.Contains("Nenhum produto encontrado para os filtros informados.", semAcento);
     }
 
     [Fact]
@@ -114,7 +116,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=%20%20%20"));
 
         Assert.Contains(nomeProduto, conteudo);
-        Assert.DoesNotContain("Nenhum produto encontrado para a pesquisa.", conteudo);
+        Assert.DoesNotContain("Nenhum produto encontrado para os filtros informados.", conteudo);
     }
 
     [Fact]
@@ -127,7 +129,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=Categoria%20Exclusiva%20Busca"));
 
         Assert.DoesNotContain(nomeProduto, conteudo);
-        Assert.Contains("Nenhum produto encontrado para a pesquisa.", conteudo);
+        Assert.Contains("Nenhum produto encontrado para os filtros informados.", conteudo);
     }
 
     [Fact]
@@ -151,8 +153,8 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=naoexiste"));
 
-        Assert.Contains("Nenhum produto encontrado para a pesquisa.", conteudo);
-        Assert.Contains("Voltar para listagem completa", conteudo);
+        Assert.Contains("Nenhum produto encontrado para os filtros informados.", conteudo);
+        Assert.Contains("Limpar filtros", conteudo);
         Assert.Contains("name=\"q\"", conteudo);
     }
 

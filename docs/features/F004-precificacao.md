@@ -26,6 +26,10 @@ Quando a ficha estiver completa, apresentar pelo menos:
 
 Quando o cálculo estiver incompleto, apresentar claramente quais dados impedem a precificação.
 
+## Superfície operacional — MEL024
+
+A listagem `/Produtos` reutiliza as calculadoras de custo e margem para apresentar indicadores atuais derivados. A carga é realizada em lote, sem usar snapshots históricos como custo ou margem e sem persistir resultados.
+
 ## UC018 — Custo atual dos Itens
 
 A primeira fatia do motor de custo calcula cada Item pela RN011 usando o preço vigente do Insumo na data operacional da Empresa.

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Precificacao;
 using Precificador.Web.Pages.Produtos;
 
 namespace Precificador.Tests.Integration.Infrastructure;
@@ -15,7 +16,7 @@ public sealed class ConsultaProdutosTests
         await CriarProdutosPadraoAsync(opcoes);
 
         await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
-        var pagina = new IndexModel(leitura);
+        var pagina = CriarPagina(leitura);
         await pagina.OnGetAsync(null);
 
         Assert.Equal(["Agenda", "Calendário 2027", "Planner"], pagina.Produtos.Select(produto => produto.Nome));
@@ -29,7 +30,7 @@ public sealed class ConsultaProdutosTests
         await CriarProdutosPadraoAsync(opcoes);
 
         await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
-        var pagina = new IndexModel(leitura);
+        var pagina = CriarPagina(leitura);
         await pagina.OnGetAsync("  caLenDÁRIO  2027  ");
 
         var produto = Assert.Single(pagina.Produtos);
@@ -46,7 +47,7 @@ public sealed class ConsultaProdutosTests
         await CriarProdutosPadraoAsync(opcoes);
 
         await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
-        var pagina = new IndexModel(leitura);
+        var pagina = CriarPagina(leitura);
         await pagina.OnGetAsync("   ");
 
         Assert.Equal(3, pagina.Produtos.Count);
@@ -60,7 +61,7 @@ public sealed class ConsultaProdutosTests
         await CriarProdutosPadraoAsync(opcoes);
 
         await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
-        var pagina = new IndexModel(leitura);
+        var pagina = CriarPagina(leitura);
         await pagina.OnGetAsync("Papelaria");
 
         Assert.Empty(pagina.Produtos);
@@ -73,7 +74,7 @@ public sealed class ConsultaProdutosTests
         await CriarProdutosPadraoAsync(opcoes);
 
         await using var leitura = new PrecificadorDbContext(opcoes, new ContextoEmpresa(1));
-        var pagina = new IndexModel(leitura);
+        var pagina = CriarPagina(leitura);
         await pagina.OnGetAsync("naoexiste");
 
         Assert.Empty(pagina.Produtos);
@@ -105,6 +106,14 @@ public sealed class ConsultaProdutosTests
         await using var empresaDois = new PrecificadorDbContext(opcoes, new ContextoEmpresa(2));
         empresaDois.Produtos.Add(Produto.Criar(2, "Bloco externo", 0.20m));
         await empresaDois.SaveChangesAsync();
+    }
+
+    private static IndexModel CriarPagina(PrecificadorDbContext context) =>
+        new(context, new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa()));
+
+    private sealed class DataOperacionalFixa : IDataOperacionalEmpresa
+    {
+        public DateOnly Hoje => new(2026, 9, 22);
     }
 
     private sealed class ContextoEmpresa(int? empresaId) : IEmpresaContext

@@ -5,6 +5,8 @@
 - **Sequenciamento:** UC007 já implementado, revisado e mergeado; gate concluído
 - **Sem alteração de schema:** este UC é exclusivamente de consulta/apresentação
 
+> Evolução MEL024: a listagem agora admite o filtro estruturado `categoria` e expõe custo unitário atual, preço de prateleira vigente e margem atual. `q` continua exclusivo para Nome; os indicadores são derivados em lote e não persistidos.
+
 ## Objetivo
 
 Permitir que o usuário autenticado visualize o catálogo de Produtos da **Empresa Ativa**, pesquise por Nome e consulte os dados cadastrais de um Produto sem modificar seu estado.
