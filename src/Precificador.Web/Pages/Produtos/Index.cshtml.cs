@@ -22,7 +22,14 @@ public sealed class IndexModel(PrecificadorDbContext context) : Microsoft.AspNet
 
         Produtos = await consulta
             .OrderBy(produto => produto.NomeNormalizado)
-            .Select(produto => new ProdutoListagem(produto.Id, produto.Nome, produto.Categoria, produto.MargemAlvo, produto.Ativo))
+            .Select(produto => new ProdutoListagem(
+                produto.Id,
+                produto.Nome,
+                produto.CategoriaProdutoId == null
+                    ? null
+                    : context.CategoriasProdutos.Where(categoria => categoria.Id == produto.CategoriaProdutoId).Select(categoria => categoria.Nome).FirstOrDefault(),
+                produto.MargemAlvo,
+                produto.Ativo))
             .ToListAsync();
     }
 

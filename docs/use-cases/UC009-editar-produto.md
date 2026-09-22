@@ -7,6 +7,8 @@
 
 ## Objetivo
 
+> **Atualização (UC032):** Categoria deixou de ser texto livre; a edição passa a operar sobre `CategoriaProdutoId : int?`, referenciando a entidade estruturada `CategoriaProduto` (ver [UC032](UC032-administrar-categorias-produto.md)). A narrativa abaixo descreve o comportamento original deste UC e permanece como registro histórico, exceto onde indicado.
+
 Permitir editar os dados cadastrais e estratégicos atuais de um **Produto da Empresa Ativa** sem alterar sua propriedade, situação ou introduzir qualquer conceito de preço de venda, Ficha Técnica ou custo.
 
 O UC009 edita somente:
@@ -50,6 +52,8 @@ Editar conforme RN041 e RN042:
 Renomear mantém o mesmo Produto.Id.
 
 ### Categoria
+
+> **Atualização (UC032):** substituída por seleção de `CategoriaProdutoId : int?` entre as Categorias ativas da Empresa Ativa (mais a Categoria atual, se inativa). As regras de nome/normalização abaixo migraram para `CategoriaProduto` (ver RN043 atualizada).
 
 Editar conforme RN043:
 
@@ -108,6 +112,8 @@ EmpresaId continua vindo exclusivamente do contexto de Empresa e não do request
 Ativo continua fora deste UC. UC010 introduzirá desativação e reativação.
 
 ## Domínio
+
+> **Atualização (UC032):** a assinatura atual é `produto.AtualizarDados(nome, margemAlvo, categoriaProdutoId)`, recebendo `int?` no lugar do texto livre.
 
 Adicionar comportamento ao agregado existente, sugerido:
 

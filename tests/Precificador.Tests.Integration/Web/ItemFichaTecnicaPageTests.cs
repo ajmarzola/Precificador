@@ -802,7 +802,7 @@ public sealed class ItemFichaTecnicaPageTests(CustomWebApplicationFactory factor
         Assert.Equal(produtoAntes.Id, produtoDepois.Id);
         Assert.Equal(produtoAntes.EmpresaId, produtoDepois.EmpresaId);
         Assert.Equal(produtoAntes.Nome, produtoDepois.Nome);
-        Assert.Equal(produtoAntes.Categoria, produtoDepois.Categoria);
+        Assert.Equal(produtoAntes.CategoriaProdutoId, produtoDepois.CategoriaProdutoId);
         Assert.Equal(produtoAntes.MargemAlvo, produtoDepois.MargemAlvo);
         Assert.Equal(produtoAntes.Ativo, produtoDepois.Ativo);
         Assert.Equal(fichaAntes.Id, fichaDepois.Id);

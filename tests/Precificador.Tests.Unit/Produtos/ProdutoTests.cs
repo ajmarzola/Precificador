@@ -7,12 +7,12 @@ public sealed class ProdutoTests
     [Fact]
     public void CA03_Criar_produto_valido_normaliza_campos_define_margem_e_nasce_ativo()
     {
-        var produto = Produto.Criar(7, "  Agenda   2027  ", 0.30m, "  Planners   personalizados  ");
+        var produto = Produto.Criar(7, "  Agenda   2027  ", 0.30m, 5);
 
         Assert.Equal(7, produto.EmpresaId);
         Assert.Equal("Agenda 2027", produto.Nome);
         Assert.Equal("AGENDA 2027", produto.NomeNormalizado);
-        Assert.Equal("Planners personalizados", produto.Categoria);
+        Assert.Equal(5, produto.CategoriaProdutoId);
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }
@@ -42,15 +42,18 @@ public sealed class ProdutoTests
     }
 
     [Fact]
-    public void CA06_Categoria_opcional_normaliza_whitespace_e_respeita_limite()
+    public void CA09_CA10_Categoria_e_opcional_e_permanece_nula_quando_nao_informada()
     {
-        Assert.Null(Produto.Criar(1, "Agenda", 0.30m).Categoria);
-        Assert.Null(Produto.Criar(1, "Agenda", 0.30m, " \r\n\t ").Categoria);
+        Assert.Null(Produto.Criar(1, "Agenda", 0.30m).CategoriaProdutoId);
+        Assert.Null(Produto.Criar(1, "Agenda", 0.30m, null).CategoriaProdutoId);
+    }
 
-        var produto = Produto.Criar(1, "Agenda", 0.30m, "  Linha   premium ");
-
-        Assert.Equal("Linha premium", produto.Categoria);
-        Assert.Throws<ArgumentException>(() => Produto.Criar(1, "Agenda 2", 0.30m, new string('a', 81)));
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void CA09_CategoriaProdutoId_menor_ou_igual_a_zero_e_rejeitado(int categoriaProdutoId)
+    {
+        Assert.Throws<ArgumentException>(() => Produto.Criar(1, "Agenda", 0.30m, categoriaProdutoId));
     }
 
     [Theory]
@@ -85,14 +88,14 @@ public sealed class ProdutoTests
     [Fact]
     public void CA04_Atualizar_produto_valido_normaliza_campos_e_preserva_ownership_e_status()
     {
-        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+        var produto = Produto.Criar(7, "Agenda", 0.30m, 3);
 
-        produto.AtualizarDados("  Calendário   2027  ", 0.255m, "  Datas   comemorativas ");
+        produto.AtualizarDados("  Calendário   2027  ", 0.255m, 9);
 
         Assert.Equal(7, produto.EmpresaId);
         Assert.Equal("Calendário 2027", produto.Nome);
         Assert.Equal("CALENDÁRIO 2027", produto.NomeNormalizado);
-        Assert.Equal("Datas comemorativas", produto.Categoria);
+        Assert.Equal(9, produto.CategoriaProdutoId);
         Assert.Equal(0.255m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }
@@ -112,16 +115,17 @@ public sealed class ProdutoTests
     }
 
     [Fact]
-    public void CA06_Atualizar_categoria_opcional_normaliza_e_valida_limite()
+    public void CA09_CA10_Atualizar_categoria_opcional_pode_remover_trocar_e_rejeita_id_invalido()
     {
-        var produto = Produto.Criar(1, "Agenda", 0.30m, "Papelaria");
+        var produto = Produto.Criar(1, "Agenda", 0.30m, 4);
 
-        produto.AtualizarDados("Agenda", 0.30m, " \r\n\t ");
-        Assert.Null(produto.Categoria);
+        produto.AtualizarDados("Agenda", 0.30m);
+        Assert.Null(produto.CategoriaProdutoId);
 
-        produto.AtualizarDados("Agenda", 0.30m, "  Linha   premium ");
-        Assert.Equal("Linha premium", produto.Categoria);
-        Assert.Throws<ArgumentException>(() => produto.AtualizarDados("Agenda", 0.30m, new string('a', 81)));
+        produto.AtualizarDados("Agenda", 0.30m, 8);
+        Assert.Equal(8, produto.CategoriaProdutoId);
+
+        Assert.Throws<ArgumentException>(() => produto.AtualizarDados("Agenda", 0.30m, 0));
     }
 
     [Theory]
@@ -151,15 +155,15 @@ public sealed class ProdutoTests
     [Fact]
     public void CA08_Atualizacao_invalida_nao_altera_estado_anterior()
     {
-        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+        var produto = Produto.Criar(7, "Agenda", 0.30m, 3);
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            produto.AtualizarDados("Calendário 2027", 1m, "Datas"));
+            produto.AtualizarDados("Calendário 2027", 1m, 9));
 
         Assert.Equal(7, produto.EmpresaId);
         Assert.Equal("Agenda", produto.Nome);
         Assert.Equal("AGENDA", produto.NomeNormalizado);
-        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(3, produto.CategoriaProdutoId);
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }
@@ -167,14 +171,14 @@ public sealed class ProdutoTests
     [Fact]
     public void CA03_Desativar_altera_apenas_status_e_preserva_demais_dados()
     {
-        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+        var produto = Produto.Criar(7, "Agenda", 0.30m, 3);
 
         produto.Desativar();
 
         Assert.Equal(7, produto.EmpresaId);
         Assert.Equal("Agenda", produto.Nome);
         Assert.Equal("AGENDA", produto.NomeNormalizado);
-        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(3, produto.CategoriaProdutoId);
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.False(produto.Ativo);
     }
@@ -182,7 +186,7 @@ public sealed class ProdutoTests
     [Fact]
     public void CA04_Reativar_altera_apenas_status_e_preserva_demais_dados()
     {
-        var produto = Produto.Criar(7, "Agenda", 0.30m, "Planners");
+        var produto = Produto.Criar(7, "Agenda", 0.30m, 3);
         produto.Desativar();
 
         produto.Reativar();
@@ -190,7 +194,7 @@ public sealed class ProdutoTests
         Assert.Equal(7, produto.EmpresaId);
         Assert.Equal("Agenda", produto.Nome);
         Assert.Equal("AGENDA", produto.NomeNormalizado);
-        Assert.Equal("Planners", produto.Categoria);
+        Assert.Equal(3, produto.CategoriaProdutoId);
         Assert.Equal(0.30m, produto.MargemAlvo);
         Assert.True(produto.Ativo);
     }

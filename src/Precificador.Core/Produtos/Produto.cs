@@ -6,7 +6,6 @@ namespace Precificador.Core.Produtos;
 public sealed class Produto : IEntidadeEmpresa
 {
     private const int TamanhoMaximoNome = 120;
-    private const int TamanhoMaximoCategoria = 80;
 
     private Produto()
     {
@@ -14,16 +13,16 @@ public sealed class Produto : IEntidadeEmpresa
         NomeNormalizado = null!;
     }
 
-    private Produto(int empresaId, string nome, decimal margemAlvo, string? categoria)
+    private Produto(int empresaId, string nome, decimal margemAlvo, int? categoriaProdutoId)
     {
         DefinirEmpresa(empresaId);
         Nome = NormalizarNome(nome);
         NomeNormalizado = Nome.ToUpperInvariant();
-        Categoria = NormalizarCategoria(categoria);
         ValidarNome(Nome);
-        ValidarCategoria(Categoria);
+        ValidarCategoriaProdutoId(categoriaProdutoId);
         ValidarMargemAlvo(margemAlvo);
 
+        CategoriaProdutoId = categoriaProdutoId;
         MargemAlvo = margemAlvo;
         Ativo = true;
     }
@@ -36,32 +35,31 @@ public sealed class Produto : IEntidadeEmpresa
 
     public string NomeNormalizado { get; private set; }
 
-    public string? Categoria { get; private set; }
+    public int? CategoriaProdutoId { get; private set; }
 
     public decimal MargemAlvo { get; private set; }
 
     public bool Ativo { get; private set; }
 
-    public static Produto Criar(int empresaId, string nome, decimal margemAlvo, string? categoria = null) =>
-        new(empresaId, nome, margemAlvo, categoria);
+    public static Produto Criar(int empresaId, string nome, decimal margemAlvo, int? categoriaProdutoId = null) =>
+        new(empresaId, nome, margemAlvo, categoriaProdutoId);
 
     public void Desativar() => Ativo = false;
 
     public void Reativar() => Ativo = true;
 
-    public void AtualizarDados(string nome, decimal margemAlvo, string? categoria = null)
+    public void AtualizarDados(string nome, decimal margemAlvo, int? categoriaProdutoId = null)
     {
         var nomeNormalizado = NormalizarNome(nome);
         var nomeNormalizadoComparacao = nomeNormalizado.ToUpperInvariant();
-        var categoriaNormalizada = NormalizarCategoria(categoria);
 
         ValidarNome(nomeNormalizado);
-        ValidarCategoria(categoriaNormalizada);
+        ValidarCategoriaProdutoId(categoriaProdutoId);
         ValidarMargemAlvo(margemAlvo);
 
         Nome = nomeNormalizado;
         NomeNormalizado = nomeNormalizadoComparacao;
-        Categoria = categoriaNormalizada;
+        CategoriaProdutoId = categoriaProdutoId;
         MargemAlvo = margemAlvo;
     }
 
@@ -83,12 +81,6 @@ public sealed class Produto : IEntidadeEmpresa
     private static string NormalizarNome(string? nome) =>
         Regex.Replace(nome?.Trim() ?? string.Empty, @"\s+", " ");
 
-    private static string? NormalizarCategoria(string? categoria)
-    {
-        var categoriaNormalizada = Regex.Replace(categoria?.Trim() ?? string.Empty, @"\s+", " ");
-        return string.IsNullOrEmpty(categoriaNormalizada) ? null : categoriaNormalizada;
-    }
-
     private static void ValidarNome(string nome)
     {
         if (string.IsNullOrWhiteSpace(nome))
@@ -102,11 +94,11 @@ public sealed class Produto : IEntidadeEmpresa
         }
     }
 
-    private static void ValidarCategoria(string? categoria)
+    private static void ValidarCategoriaProdutoId(int? categoriaProdutoId)
     {
-        if (categoria?.Length > TamanhoMaximoCategoria)
+        if (categoriaProdutoId is <= 0)
         {
-            throw new ArgumentException("A categoria deve possuir no máximo 80 caracteres.", "categoria");
+            throw new ArgumentException("A categoria informada é inválida.", nameof(categoriaProdutoId));
         }
     }
 

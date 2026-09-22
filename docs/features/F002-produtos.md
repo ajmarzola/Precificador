@@ -11,6 +11,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - editar dados cadastrais;
 - desativar e reativar produto;
 - definir margem-alvo;
+- administrar Categorias de Produto (UC032);
 - calcular Preço sugerido a partir do custo e da margem de referência;
 - registrar Preço de prateleira preservando snapshot da precificação;
 - consultar histórico de precificação do Produto;
@@ -27,7 +28,7 @@ O Produto inicial contém:
 
 - Empresa proprietária;
 - Nome;
-- Categoria opcional de organização;
+- Categoria de Produto opcional;
 - Margem-alvo;
 - Situação Ativo/Inativo.
 
@@ -37,9 +38,11 @@ Nome é obrigatório, normalizado para comparação e único por Empresa conform
 
 ### Categoria
 
-Categoria é texto livre opcional conforme RN043.
+Desde a UC032, Categoria não é mais texto livre: o Produto referencia opcionalmente uma `CategoriaProduto` (`CategoriaProdutoId : int?`), entidade estruturada e tenant-aware administrada em `/Produtos/Categorias` conforme RN043.
 
-Não criar enum compartilhado entre negócios: categorias como `Pães`, `Agendas`, `Planners` ou `Calendários` pertencem à organização de cada Empresa.
+A lista de Categorias oferecida no cadastro/edição do Produto é restrita às Categorias ativas da Empresa Ativa (mais a Categoria atualmente vinculada, mesmo se inativa, quando editando um Produto existente).
+
+Não existe enum compartilhado entre negócios: Categorias como `Pães`, `Agendas`, `Planners` ou `Calendários` pertencem à organização de cada Empresa.
 
 ### Margem-alvo
 
@@ -108,6 +111,20 @@ Todo Produto é tenant-owned:
 - `EmpresaId` nunca é escolhido pelo formulário;
 - mesmo Nome pode existir em Empresas diferentes.
 
+## Administrar Categorias de Produto — UC032
+
+A página `/Produtos/Categorias` (listar/cadastrar/editar) permite à Empresa Ativa administrar suas próprias Categorias de Produto:
+
+- cadastrar Categoria (Nome obrigatório, até 80 caracteres, normalizado);
+- listar Categorias (ativas e inativas) da Empresa Ativa;
+- editar o Nome;
+- desativar e reativar (idempotente, sem exclusão física);
+- identidade funcional `EmpresaId + NomeNormalizado` com índice único, impedindo duplicidade case-insensitive na mesma Empresa.
+
+Desativar uma Categoria não desvincula Produtos já associados a ela; apenas deixa de ser oferecida para novo vínculo.
+
+A UC032 não implementa nenhuma regra de desgaste de equipamentos nem altera fórmula de precificação; prepara a base estruturada para a futura UC036.
+
 ## Regras relacionadas
 
 - RN018 a RN024, conforme aplicáveis;
@@ -136,7 +153,7 @@ A página `/Produtos/Editar/{id}` preserva o mesmo Id, a Empresa proprietária e
 Campos editáveis:
 
 - Nome;
-- Categoria;
+- Categoria (`CategoriaProdutoId`);
 - Margem-alvo.
 
 A edição reutiliza RN041–RN045, mantém a unicidade por Empresa + Nome normalizado e não altera Situação.

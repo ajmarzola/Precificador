@@ -2,7 +2,7 @@
 
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Origem:** evolução do catálogo / necessidade de regra futura de desgaste de equipamentos por Categoria
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Prioridade:** antecipada
 - **Gate operacional:** executar antes da UC036 e da MEL021
 - **Dependências funcionais:** UC007, UC008, UC009 e UC010

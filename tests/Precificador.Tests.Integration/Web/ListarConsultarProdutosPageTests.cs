@@ -247,10 +247,28 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoria);
+        int? categoriaId = categoria is null ? null : await ObterOuCriarCategoriaIdAsync(context, empresaId, categoria);
+
+        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoriaId);
         context.Produtos.Add(produto);
         await context.SaveChangesAsync();
         return produto.Id;
+    }
+
+    private static async Task<int> ObterOuCriarCategoriaIdAsync(PrecificadorDbContext context, int empresaId, string nome)
+    {
+        var nomeNormalizado = Regex.Replace(nome.Trim(), @"\s+", " ").ToUpperInvariant();
+        var existente = await context.CategoriasProdutos.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(categoria => categoria.EmpresaId == empresaId && categoria.NomeNormalizado == nomeNormalizado);
+        if (existente is not null)
+        {
+            return existente.Id;
+        }
+
+        var categoriaNova = CategoriaProduto.Criar(empresaId, nome);
+        context.CategoriasProdutos.Add(categoriaNova);
+        await context.SaveChangesAsync();
+        return categoriaNova.Id;
     }
     private static string LinhaProduto(string conteudo, string nome)
     {

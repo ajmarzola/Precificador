@@ -24,6 +24,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
     public DbSet<RegistroPrecoProduto> RegistrosPrecosProdutos => Set<RegistroPrecoProduto>();
     public DbSet<Produto> Produtos => Set<Produto>();
+    public DbSet<CategoriaProduto> CategoriasProdutos => Set<CategoriaProduto>();
     public DbSet<UsuarioEmpresa> UsuariosEmpresas => Set<UsuarioEmpresa>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -46,6 +47,8 @@ public sealed class PrecificadorDbContext(
             registro.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<Produto>().HasQueryFilter(produto =>
             produto.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<CategoriaProduto>().HasQueryFilter(categoria =>
+            categoria.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -56,6 +59,7 @@ public sealed class PrecificadorDbContext(
         ValidarReferenciaProdutoDasFichas();
         ValidarReferenciaInsumoDosPrecos();
         ValidarReferenciaProdutoDosRegistrosPrecos();
+        ValidarReferenciaCategoriaProdutoDosProdutos();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -67,6 +71,7 @@ public sealed class PrecificadorDbContext(
         await ValidarReferenciaProdutoDasFichasAsync(cancellationToken);
         await ValidarReferenciaInsumoDosPrecosAsync(cancellationToken);
         await ValidarReferenciaProdutoDosRegistrosPrecosAsync(cancellationToken);
+        await ValidarReferenciaCategoriaProdutoDosProdutosAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -127,6 +132,25 @@ public sealed class PrecificadorDbContext(
         }
     }
 
+    private void ValidarReferenciaCategoriaProdutoDosProdutos()
+    {
+        foreach (var produto in ProdutosAlterados())
+        {
+            if (produto.CategoriaProdutoId is not int categoriaProdutoId)
+            {
+                continue;
+            }
+
+            var referenciaValida = CategoriasProdutos.IgnoreQueryFilters()
+                .Any(categoria => categoria.Id == categoriaProdutoId && categoria.EmpresaId == produto.EmpresaId);
+
+            if (!referenciaValida)
+            {
+                throw new InvalidOperationException("A categoria referenciada pelo produto não pertence à mesma empresa.");
+            }
+        }
+    }
+
     private void ValidarReferenciasDosItensFichaTecnica()
     {
         foreach (var item in ItensFichaTecnicaAlterados())
@@ -156,6 +180,27 @@ public sealed class PrecificadorDbContext(
                 .Any(ficha => ficha.Id == uso.FichaTecnicaId && ficha.EmpresaId == uso.EmpresaId);
             if (!fichaValida)
                 throw new InvalidOperationException("A ficha técnica referenciada pelo uso de equipamento não pertence à mesma empresa.");
+        }
+    }
+
+    private async Task ValidarReferenciaCategoriaProdutoDosProdutosAsync(CancellationToken cancellationToken)
+    {
+        foreach (var produto in ProdutosAlterados())
+        {
+            if (produto.CategoriaProdutoId is not int categoriaProdutoId)
+            {
+                continue;
+            }
+
+            var referenciaValida = await CategoriasProdutos.IgnoreQueryFilters()
+                .AnyAsync(
+                    categoria => categoria.Id == categoriaProdutoId && categoria.EmpresaId == produto.EmpresaId,
+                    cancellationToken);
+
+            if (!referenciaValida)
+            {
+                throw new InvalidOperationException("A categoria referenciada pelo produto não pertence à mesma empresa.");
+            }
         }
     }
 
@@ -248,6 +293,11 @@ public sealed class PrecificadorDbContext(
 
     private IEnumerable<RegistroPrecoProduto> RegistrosPrecosAlterados() =>
         ChangeTracker.Entries<RegistroPrecoProduto>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity);
+
+    private IEnumerable<Produto> ProdutosAlterados() =>
+        ChangeTracker.Entries<Produto>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
             .Select(entry => entry.Entity);
 

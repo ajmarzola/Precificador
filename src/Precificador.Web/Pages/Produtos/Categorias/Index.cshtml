@@ -1,0 +1,51 @@
+@page
+@model Precificador.Web.Pages.Produtos.Categorias.IndexModel
+@{
+    ViewData["Title"] = "Categorias de produto";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Categorias de produto</h1>
+    <a class="btn btn-primary" asp-page="/Produtos/Categorias/Novo">Nova categoria</a>
+</div>
+
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+
+@if (Model.Categorias.Count == 0)
+{
+    <p>Não há categorias de produto cadastradas para a empresa ativa.</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Nome</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var categoria in Model.Categorias)
+        {
+            <tr>
+                <td>@categoria.Nome</td>
+                <td>@categoria.Situacao</td>
+                <td>
+                    <a asp-page="/Produtos/Categorias/Editar" asp-route-id="@categoria.Id">Editar</a>
+                    @if (categoria.Ativo)
+                    {
+                        <form method="post" asp-page-handler="Desativar" asp-route-id="@categoria.Id" class="d-inline">
+                            <button type="submit" class="btn btn-link" onclick="return confirm('Deseja desativar esta categoria de produto?');">Desativar</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Reativar" asp-route-id="@categoria.Id" class="d-inline">
+                            <button type="submit" class="btn btn-link">Reativar</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<a asp-page="/Produtos/Index">Voltar para produtos</a>

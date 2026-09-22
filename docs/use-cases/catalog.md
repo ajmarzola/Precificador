@@ -63,7 +63,7 @@ A review manual identificou a necessidade de substituir a Categoria livre atual 
 - **UC033 — Administrar coleções:** cadastrar Coleções com período de lançamento/finalização e Categorias envolvidas;
 - **UC034 — Vincular Produtos a Coleções:** permitir acompanhar a participação/destaque de Produtos ao longo das Coleções.
 
-UC032 está especificada e foi antecipada na fila. UC033/UC034 permanecem para especificação posterior.
+UC032 foi concluída (`CategoriaProduto` tenant-aware substituindo o texto livre, com migration e administração de cadastro/situação). UC033/UC034 permanecem para especificação posterior.
 
 ## Ficha técnica
 

@@ -112,7 +112,7 @@ public sealed class SituacaoProdutoPageTests(CustomWebApplicationFactory factory
         var produto = await ObterProdutoAsync(id, 1);
         Assert.Equal(novoNome, produto.Nome);
         Assert.Equal(novoNome.ToUpperInvariant(), produto.NomeNormalizado);
-        Assert.Equal("Atualizada", produto.Categoria);
+        Assert.NotNull(produto.CategoriaProdutoId);
         Assert.Equal(0.255m, produto.MargemAlvo);
         Assert.False(produto.Ativo);
     }
@@ -188,7 +188,7 @@ public sealed class SituacaoProdutoPageTests(CustomWebApplicationFactory factory
         return WebTestHtml.ExtrairTokenAntiforgery(pagina);
     }
 
-    private static async Task<HttpResponseMessage> EnviarEdicaoAsync(
+    private async Task<HttpResponseMessage> EnviarEdicaoAsync(
         HttpClient client,
         int id,
         string nome,
@@ -198,22 +198,43 @@ public sealed class SituacaoProdutoPageTests(CustomWebApplicationFactory factory
         var respostaPagina = await client.GetAsync($"/Produtos/Editar/{id}");
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
+        var categoriaId = categoria is null ? (int?)null : await ObterOuCriarCategoriaIdAsync(categoria);
 
         return await client.PostAsync($"/Produtos/Editar/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(pagina),
             ["Input.Nome"] = nome,
-            ["Input.Categoria"] = categoria ?? string.Empty,
+            ["Input.CategoriaProdutoId"] = categoriaId?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             ["Input.MargemAlvoPercentual"] = margemPercentual
         }));
     }
 
-    private async Task<int> CriarProdutoAsync(int empresaId, string nome, string? categoria, decimal margemAlvo, bool ativo)
+    private async Task<int> ObterOuCriarCategoriaIdAsync(string nome, int empresaIdFallback = 1)
     {
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaIdFallback));
+        var nomeNormalizado = nome.Trim().ToUpperInvariant();
+        var existente = await context.CategoriasProdutos.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(categoria => categoria.NomeNormalizado == nomeNormalizado);
+        if (existente is not null)
+        {
+            return existente.Id;
+        }
+
+        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome);
+        context.CategoriasProdutos.Add(categoriaNova);
+        await context.SaveChangesAsync();
+        return categoriaNova.Id;
+    }
+
+    private async Task<int> CriarProdutoAsync(int empresaId, string nome, string? categoria, decimal margemAlvo, bool ativo)
+    {
+        var categoriaId = categoria is null ? (int?)null : await ObterOuCriarCategoriaIdAsync(categoria, empresaId);
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoria);
+        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoriaId);
         if (!ativo)
         {
             produto.Desativar();

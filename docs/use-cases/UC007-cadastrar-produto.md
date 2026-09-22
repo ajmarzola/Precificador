@@ -12,6 +12,8 @@ O Produto representa aquilo que a Empresa vende. Como o Precificador atende neg�
 
 ## Modelo de domínio
 
+> **Atualização (UC032):** `Categoria : string?` foi substituído por `CategoriaProdutoId : int?` (ver nota na seção "Categoria opcional — RN043").
+
 Criar entidade tenant-owned:
 
 ~~~text
@@ -89,6 +91,8 @@ Já existe um produto cadastrado com esse nome.
 Não converter qualquer `DbUpdateException` genericamente para duplicidade.
 
 ## Categoria opcional — RN043
+
+> **Atualização (UC032):** a partir da UC032, Categoria deixou de ser texto livre. `Produto.Categoria : string?` foi substituído por `Produto.CategoriaProdutoId : int?`, referenciando a entidade estruturada e tenant-aware `CategoriaProduto` (ver [UC032](UC032-administrar-categorias-produto.md) e RN043 atualizada). A narrativa abaixo descreve a decisão original deste UC e permanece como registro histórico.
 
 Categoria serve apenas para organização do catálogo.
 

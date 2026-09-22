@@ -340,7 +340,16 @@ public sealed class FichaTecnicaPageTests(CustomWebApplicationFactory factory) :
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
         await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaId));
-        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoria);
+        int? categoriaId = null;
+        if (categoria is not null)
+        {
+            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria);
+            context.CategoriasProdutos.Add(categoriaEntidade);
+            await context.SaveChangesAsync();
+            categoriaId = categoriaEntidade.Id;
+        }
+
+        var produto = Produto.Criar(empresaId, nome, margemAlvo, categoriaId);
         if (!ativo)
         {
             produto.Desativar();

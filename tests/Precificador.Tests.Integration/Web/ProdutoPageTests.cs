@@ -184,7 +184,8 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
             var produto = await context.Produtos.IgnoreQueryFilters().SingleAsync(produto => produto.Nome == nome);
             produtoId = produto.Id;
             Assert.Equal(1, produto.EmpresaId);
-            Assert.Equal("Planners 2027", produto.Categoria);
+            var categoriaPersistida = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(item => item.Id == produto.CategoriaProdutoId);
+            Assert.Equal("Planners 2027", categoriaPersistida.Nome);
             Assert.Equal(0.30m, produto.MargemAlvo);
             Assert.True(produto.Ativo);
         }
@@ -201,18 +202,33 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
     }
 
     [Theory]
-    [InlineData("   ", "Categoria", "30")]
-    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Categoria", "30")]
-    [InlineData("Agenda", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "30")]
-    [InlineData("Agenda", "Categoria", "-1")]
-    [InlineData("Agenda", "Categoria", "100")]
-    [InlineData("Agenda", "Categoria", "101")]
-    public async Task CA04_CA06_CA07_Post_invalido_nao_persiste_produto(string nome, string categoria, string margemPercentual)
+    [InlineData("   ", "30")]
+    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "30")]
+    [InlineData("Agenda", "-1")]
+    [InlineData("Agenda", "100")]
+    [InlineData("Agenda", "101")]
+    public async Task CA04_CA06_CA07_Post_invalido_nao_persiste_produto(string nome, string margemPercentual)
     {
         using var client = await web.CriarClienteAutenticadoAsync();
         var quantidadeAntes = await ContarProdutosAsync();
 
-        var response = await EnviarFormularioAsync(client, nome, categoria, margemPercentual);
+        var response = await EnviarFormularioAsync(client, nome, "Categoria", margemPercentual);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(response.Headers.Location);
+        Assert.Equal(quantidadeAntes, await ContarProdutosAsync());
+    }
+
+    [Fact]
+    public async Task CA06_Post_com_categoria_inexistente_e_invalido_e_nao_persiste_produto()
+    {
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var quantidadeAntes = await ContarProdutosAsync();
+
+        var response = await EnviarFormularioAsync(client, "Agenda", null, "30", new Dictionary<string, string>
+        {
+            ["Input.CategoriaProdutoId"] = "999999"
+        });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(response.Headers.Location);
@@ -295,7 +311,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         Assert.Contains("href=\"/Produtos/Novo\"", conteudo);
     }
 
-    private static async Task<HttpResponseMessage> EnviarFormularioAsync(
+    private async Task<HttpResponseMessage> EnviarFormularioAsync(
         HttpClient client,
         string nome,
         string? categoria,
@@ -306,11 +322,12 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         var pagina = await respostaPagina.Content.ReadAsStringAsync();
         Assert.True(respostaPagina.IsSuccessStatusCode, pagina);
         var token = WebTestHtml.ExtrairTokenAntiforgery(pagina);
+        var categoriaId = categoria is null ? (int?)null : await ObterOuCriarCategoriaIdAsync(categoria);
         var dados = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
             ["Input.Nome"] = nome,
-            ["Input.Categoria"] = categoria ?? string.Empty,
+            ["Input.CategoriaProdutoId"] = categoriaId?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             ["Input.MargemAlvoPercentual"] = margemPercentual
         };
 
@@ -323,6 +340,25 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         }
 
         return await client.PostAsync("/Produtos/Novo", new FormUrlEncodedContent(dados));
+    }
+
+    private async Task<int> ObterOuCriarCategoriaIdAsync(string nome, int empresaIdFallback = 1)
+    {
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(empresaIdFallback));
+        var nomeNormalizado = nome.Trim().ToUpperInvariant();
+        var existente = await context.CategoriasProdutos.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(categoria => categoria.NomeNormalizado == nomeNormalizado);
+        if (existente is not null)
+        {
+            return existente.Id;
+        }
+
+        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome);
+        context.CategoriasProdutos.Add(categoriaNova);
+        await context.SaveChangesAsync();
+        return categoriaNova.Id;
     }
 
     private async Task<int> ContarProdutosAsync(string? nome = null)
