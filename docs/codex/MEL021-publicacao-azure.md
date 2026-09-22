@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** BLOQUEADO externamente. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; a conta Azure ainda não possui assinatura utilizável. Só executar quando `docs/development/backlog.md` marcar MEL021 como `Pronto`.
+> **Gate:** BLOQUEADO EXCLUSIVAMENTE POR FATOR EXTERNO. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; a conta Azure ainda não possui assinatura utilizável. Não alterar código/provisionar Azure até `docs/development/backlog.md` marcar MEL021 como `Pronto`.
 
 Implemente exclusivamente a MEL021 conforme:
 
@@ -35,6 +35,8 @@ Além das dependências de código, é necessário que a conta Azure possua uma 
 - App Service: **F1/Free**;
 - Azure SQL: **Free Limit + AutoPause**;
 - confirmar no provisionamento a franquia gratuita vigente (atualmente 100.000 vCore-seconds/mês, 32 GB dados, 32 GB backup);
+- com AutoPause por limite gratuito, confirmar as limitações vigentes (atualmente até 4 vCores, PITR até 7 dias, backup LRS e sem LTR);
+- não mudar a oferta para continuidade paga/upgrade como fallback;
 - App Service F1 é aceito conscientemente para uso pessoal/familiar, sem SLA e sem suporte Microsoft para workload de produção;
 - nunca criar fallback pago;
 - App Service -> Azure SQL por **Managed Identity**, sem senha;
@@ -74,7 +76,7 @@ Deve:
 1. validar login/subscription;
 2. criar/usar Resource Group;
 3. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
-4. validar runtime Linux .NET 10;
+4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
 5. obter por parâmetro o Entra admin (nome + Object ID/SID);
 6. criar App Service Plan F1 Linux;
 7. criar Web App .NET 10;
@@ -86,7 +88,7 @@ Deve:
 13. criar usuário da Managed Identity no banco;
 14. conceder somente `db_datareader` + `db_datawriter`;
 15. configurar conexão passwordless;
-16. configurar firewall com outbound IPs da Web App;
+16. configurar firewall considerando `outboundIpAddresses` e `possibleOutboundIpAddresses` da Web App;
 17. falhar se qualquer etapa exigir tier pago.
 
 Microsoft Entra-only é o caminho normativo. Não criar senha SQL como fallback automático.
