@@ -5,6 +5,19 @@ namespace Precificador.Tests.Unit.Precificacao;
 public sealed class CalculadoraCustoProdutoTests
 {
     [Fact]
+    public void U18_Soma_os_cinco_componentes() =>
+        Assert.Equal(19m, CalculadoraCustoProduto.Calcular(10m, 2m, 5m, 1m, 1m, 2m).CustoLote);
+
+    [Fact]
+    public void U20_Desgaste_indisponivel_torna_custo_incompleto()
+    {
+        var resultado = CalculadoraCustoProduto.Calcular(10m, 2m, 5m, 1m, null, 2m);
+        Assert.False(resultado.Completo);
+        Assert.Null(resultado.CustoLote);
+        Assert.Null(resultado.CustoUnitarioProduto);
+    }
+
+    [Fact]
     public void U1_Soma_os_quatro_componentes() =>
         Assert.Equal(18m, CalculadoraCustoProduto.Calcular(10m, 2m, 5m, 1m, 2m).CustoLote);
 

@@ -38,7 +38,7 @@ Nome é obrigatório, normalizado para comparação e único por Empresa conform
 
 ### Categoria
 
-Desde a UC032, Categoria não é mais texto livre: o Produto referencia opcionalmente uma `CategoriaProduto` (`CategoriaProdutoId : int?`), entidade estruturada e tenant-aware administrada em `/Produtos/Categorias` conforme RN043.
+Desde a UC032, Categoria não é mais texto livre: o Produto referencia opcionalmente uma `CategoriaProduto` (`CategoriaProdutoId : int?`), entidade estruturada e tenant-aware administrada em `/Produtos/Categorias` conforme RN043. Após UC036, a Categoria também define a regra de desgaste do equipamento.
 
 A lista de Categorias oferecida no cadastro/edição do Produto é restrita às Categorias ativas da Empresa Ativa (mais a Categoria atualmente vinculada, mesmo se inativa, quando editando um Produto existente).
 

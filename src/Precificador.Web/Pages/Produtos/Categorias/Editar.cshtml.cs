@@ -14,7 +14,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
     {
         var categoria = await context.CategoriasProdutos.AsNoTracking()
             .Where(item => item.Id == id)
-            .Select(item => new CategoriaProdutoInputModel { Nome = item.Nome })
+            .Select(item => new { item.Nome, item.FormaCalculoDesgasteEquipamento, item.ValorDesgasteEquipamento })
             .SingleOrDefaultAsync();
 
         if (categoria is null)
@@ -22,7 +22,7 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
-        Input = categoria;
+        Input = new CategoriaProdutoInputModel { Nome = categoria.Nome, FormaCalculoDesgasteEquipamento = categoria.FormaCalculoDesgasteEquipamento, ValorDesgasteEquipamento = CategoriaProdutoFormulario.FormatarValor(categoria.FormaCalculoDesgasteEquipamento, categoria.ValorDesgasteEquipamento) };
         return Page();
     }
 
@@ -34,9 +34,11 @@ public sealed class EditarModel(PrecificadorDbContext context) : PageModel
             return NotFound();
         }
 
+        var desgasteValido = CategoriaProdutoFormulario.TentarObterDesgaste(ModelState, Input, out var valorDesgaste);
+        if (!desgasteValido) return Page();
         try
         {
-            categoria.Renomear(Input.Nome!);
+            categoria.AtualizarDados(Input.Nome!, Input.FormaCalculoDesgasteEquipamento, valorDesgaste);
         }
         catch (ArgumentException exception)
         {

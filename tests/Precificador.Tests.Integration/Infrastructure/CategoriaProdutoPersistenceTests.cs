@@ -11,6 +11,8 @@ namespace Precificador.Tests.Integration.Infrastructure;
 public sealed class CategoriaProdutoPersistenceTests
 {
     private const string MigracaoAnterior = "20260920172653_ReplaceHourlyLaborWithPercentage";
+    private const string MigracaoUc032 = "20260921130356_AddCategoriaProduto";
+    private const string MigracaoUc036 = "20260922130351_AddDesgasteEquipamentosCategoria";
 
     [Fact]
     public async Task P1_Migration_agrupa_categorias_por_empresa_e_texto_normalizado_preservando_nome_do_menor_id()
@@ -24,14 +26,14 @@ public sealed class CategoriaProdutoPersistenceTests
         await InserirProdutoLegadoAsync(contexto, 1, "Brindes");
         await InserirProdutoLegadoAsync(contexto, 1, null);
 
-        Assert.Single(await contexto.Database.GetPendingMigrationsAsync());
-        await contexto.Database.MigrateAsync();
+        Assert.Contains(MigracaoUc032, await contexto.Database.GetPendingMigrationsAsync());
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc032);
 
         var categorias = await contexto.Database
             .SqlQueryRaw<string>("SELECT Nome AS Value FROM CategoriasProdutos WHERE EmpresaId = 1 ORDER BY Nome")
             .ToListAsync();
         Assert.Equal(["Brindes", "Papelaria escolar"], categorias);
-        Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());
+        Assert.DoesNotContain(MigracaoUc032, await contexto.Database.GetPendingMigrationsAsync());
     }
 
     [Fact]
@@ -49,7 +51,7 @@ public sealed class CategoriaProdutoPersistenceTests
         await InserirProdutoLegadoAsync(contexto, 1, "Papelaria");
         await InserirProdutoLegadoAsync(contexto, empresaDoisId, "Papelaria");
 
-        await contexto.Database.MigrateAsync();
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc032);
 
         var categoriasEmpresaUm = await contexto.Database
             .SqlQueryRaw<int>("SELECT Id AS Value FROM CategoriasProdutos WHERE EmpresaId = 1").ToListAsync();
@@ -70,7 +72,7 @@ public sealed class CategoriaProdutoPersistenceTests
         var idComCategoria = await InserirProdutoLegadoAsync(contexto, 1, "Papelaria");
         var idSemCategoria = await InserirProdutoLegadoAsync(contexto, 1, null);
 
-        await contexto.Database.MigrateAsync();
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc032);
 
         var categoriaProdutoId = await contexto.Database.SqlQuery<int?>(
             $"SELECT CategoriaProdutoId AS Value FROM Produtos WHERE Id = {idComCategoria}").SingleAsync();
@@ -88,7 +90,7 @@ public sealed class CategoriaProdutoPersistenceTests
         await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoAnterior);
         await InserirProdutoLegadoAsync(contexto, 1, "Papelaria");
 
-        await contexto.Database.MigrateAsync();
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc032);
 
         var colunasAntigas = await contexto.Database.SqlQueryRaw<string>(
             "SELECT COLUMN_NAME AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Produtos' AND COLUMN_NAME = 'Categoria'").ToListAsync();
@@ -112,6 +114,49 @@ public sealed class CategoriaProdutoPersistenceTests
     }
 
     [Fact]
+    public async Task P13_Uc036_backfill_preserva_categoria_ativa_inativa_produto_e_tenant()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("DesgasteCategoria");
+        await using var contexto = CriarContexto(connectionString, 1);
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoAnterior);
+        var produtoId = await InserirProdutoLegadoAsync(contexto, 1, "Papelaria");
+        await contexto.Database.ExecuteSqlRawAsync("INSERT INTO Empresas (Ativo, Nome, NomeNormalizado, TimeZoneId) VALUES (1, 'Empresa dois', 'EMPRESA DOIS', 'America/Sao_Paulo')");
+        var empresaDoisId = await contexto.Database.SqlQueryRaw<int>("SELECT Id AS Value FROM Empresas WHERE Nome = 'Empresa dois'").SingleAsync();
+        await InserirProdutoLegadoAsync(contexto, empresaDoisId, "Brindes");
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc032);
+        await contexto.Database.ExecuteSqlRawAsync("UPDATE CategoriasProdutos SET Ativo = 0 WHERE EmpresaId = {0}", empresaDoisId);
+
+        await contexto.Database.GetService<IMigrator>().MigrateAsync(MigracaoUc036);
+
+        var categorias = await contexto.CategoriasProdutos.IgnoreQueryFilters().OrderBy(c => c.EmpresaId).ToListAsync();
+        Assert.Equal(2, categorias.Count);
+        Assert.All(categorias, categoria =>
+        {
+            Assert.Equal(FormaCalculoDesgasteEquipamento.ValorFixoPorLote, categoria.FormaCalculoDesgasteEquipamento);
+            Assert.Equal(0m, categoria.ValorDesgasteEquipamento);
+        });
+        Assert.False(categorias.Single(c => c.EmpresaId == empresaDoisId).Ativo);
+        Assert.NotNull(await contexto.Produtos.IgnoreQueryFilters().Where(p => p.Id == produtoId).Select(p => p.CategoriaProdutoId).SingleAsync());
+        Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());
+    }
+
+    [Fact]
+    public async Task P14_Uc036_persiste_precisao_e_checks_rejeitam_forma_e_valor_invalidos()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("DesgasteChecks");
+        await using var contexto = CriarContexto(connectionString, 1);
+        await contexto.Database.MigrateAsync();
+        contexto.CategoriasProdutos.Add(CategoriaProduto.Criar(1, "Fixo", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 1.123456m));
+        contexto.CategoriasProdutos.Add(CategoriaProduto.Criar(1, "Percentual", FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .125m));
+        await contexto.SaveChangesAsync();
+        contexto.ChangeTracker.Clear();
+        Assert.Equal(1.123456m, (await contexto.CategoriasProdutos.SingleAsync(c => c.Nome == "Fixo")).ValorDesgasteEquipamento);
+        Assert.Equal(.125m, (await contexto.CategoriasProdutos.SingleAsync(c => c.Nome == "Percentual")).ValorDesgasteEquipamento);
+        await Assert.ThrowsAsync<SqlException>(() => contexto.Database.ExecuteSqlRawAsync("UPDATE CategoriasProdutos SET FormaCalculoDesgasteEquipamento = 99 WHERE Nome = 'Fixo'"));
+        await Assert.ThrowsAsync<SqlException>(() => contexto.Database.ExecuteSqlRawAsync("UPDATE CategoriasProdutos SET ValorDesgasteEquipamento = -1 WHERE Nome = 'Fixo'"));
+    }
+
+    [Fact]
     public async Task P6_GQF_nao_retorna_categoria_de_outra_empresa()
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
@@ -124,11 +169,11 @@ public sealed class CategoriaProdutoPersistenceTests
             await contexto.SaveChangesAsync();
             empresaDoisId = empresaDois.Id;
 
-            contexto.CategoriasProdutos.Add(CategoriaProduto.Criar(1, "Papelaria"));
+            contexto.CategoriasProdutos.Add(CriarCategoria(1, "Papelaria"));
             await contexto.SaveChangesAsync();
 
             await using var contextoEmpresaDois = CriarContexto(connectionString, empresaDoisId);
-            contextoEmpresaDois.CategoriasProdutos.Add(CategoriaProduto.Criar(empresaDoisId, "Brindes"));
+            contextoEmpresaDois.CategoriasProdutos.Add(CriarCategoria(empresaDoisId, "Brindes"));
             await contextoEmpresaDois.SaveChangesAsync();
         }
 
@@ -145,11 +190,11 @@ public sealed class CategoriaProdutoPersistenceTests
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("CategoriaProduto");
         await using var contexto = CriarContexto(connectionString, 1);
         await contexto.Database.MigrateAsync();
-        contexto.CategoriasProdutos.Add(CategoriaProduto.Criar(1, "Papelaria"));
+        contexto.CategoriasProdutos.Add(CriarCategoria(1, "Papelaria"));
         await contexto.SaveChangesAsync();
         contexto.ChangeTracker.Clear();
 
-        contexto.CategoriasProdutos.Add(CategoriaProduto.Criar(1, "  PAPELARIA  "));
+        contexto.CategoriasProdutos.Add(CriarCategoria(1, "  PAPELARIA  "));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => contexto.SaveChangesAsync());
     }
@@ -171,7 +216,7 @@ public sealed class CategoriaProdutoPersistenceTests
         int categoriaEmpresaDoisId;
         await using (var contextoEmpresaDois = CriarContexto(connectionString, empresaDoisId))
         {
-            var categoriaEmpresaDois = CategoriaProduto.Criar(empresaDoisId, "Brindes");
+            var categoriaEmpresaDois = CriarCategoria(empresaDoisId, "Brindes");
             contextoEmpresaDois.CategoriasProdutos.Add(categoriaEmpresaDois);
             await contextoEmpresaDois.SaveChangesAsync();
             categoriaEmpresaDoisId = categoriaEmpresaDois.Id;
@@ -201,7 +246,7 @@ public sealed class CategoriaProdutoPersistenceTests
 
         await using (var contextoEmpresaDois = CriarContexto(connectionString, empresaDoisId))
         {
-            var categoriaEmpresaDois = CategoriaProduto.Criar(empresaDoisId, "Brindes");
+            var categoriaEmpresaDois = CriarCategoria(empresaDoisId, "Brindes");
             contextoEmpresaDois.CategoriasProdutos.Add(categoriaEmpresaDois);
             await contextoEmpresaDois.SaveChangesAsync();
             categoriaEmpresaDoisId = categoriaEmpresaDois.Id;
@@ -225,7 +270,7 @@ public sealed class CategoriaProdutoPersistenceTests
         {
             await contexto.Database.MigrateAsync();
 
-            var categoria = CategoriaProduto.Criar(1, "Papelaria");
+            var categoria = CriarCategoria(1, "Papelaria");
             contexto.CategoriasProdutos.Add(categoria);
             await contexto.SaveChangesAsync();
             categoriaId = categoria.Id;
@@ -258,7 +303,7 @@ public sealed class CategoriaProdutoPersistenceTests
         await using var contexto = CriarContexto(connectionString, 1);
         await contexto.Database.MigrateAsync();
 
-        var categoria = CategoriaProduto.Criar(1, "Papelaria");
+        var categoria = CriarCategoria(1, "Papelaria");
         contexto.CategoriasProdutos.Add(categoria);
         await contexto.SaveChangesAsync();
         var produto = Produto.Criar(1, "Agenda", 0.30m, categoria.Id);
@@ -297,6 +342,9 @@ public sealed class CategoriaProdutoPersistenceTests
     private static PrecificadorDbContext CriarContexto(string connectionString, int empresaId) => new(
         new DbContextOptionsBuilder<PrecificadorDbContext>().UseSqlServer(connectionString).Options,
         new ContextoEmpresa(empresaId));
+
+    private static CategoriaProduto CriarCategoria(int empresaId, string nome) =>
+        CategoriaProduto.Criar(empresaId, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
 
     private sealed class ContextoEmpresa(int empresaId) : IEmpresaContext
     {

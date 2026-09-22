@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Empresas;
 using Precificador.Core.Insumos;
 using Precificador.Core.Precificacao;
+using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Apresentacao;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Itens;
 using Precificador.Web.Pages.Produtos.FichaTecnica.Equipamentos;
+using Precificador.Web.Pages.Produtos.Categorias;
 using Precificador.Web.Precificacao;
 using FichaTecnicaDominio = Precificador.Core.FichasTecnicas.FichaTecnica;
 
@@ -52,6 +54,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
     public IReadOnlyList<UsoEquipamentoResumo> UsosEquipamentos { get; private set; } = [];
     public decimal? CustoEnergiaLote { get; private set; }
     public bool CustoEnergiaCompleto { get; private set; }
+    public FormaCalculoDesgasteEquipamento? FormaCalculoDesgasteEquipamento { get; private set; }
+    public decimal? ValorDesgasteEquipamento { get; private set; }
+    public decimal? CustoDesgasteEquipamentosLote { get; private set; }
+    public bool CustoDesgasteCompleto { get; private set; }
     public bool DeveConfigurarTarifaEnergia => PossuiFicha && UsosEquipamentos.Count > 0 && !CustoEnergiaCompleto;
 
     public decimal? CustoLote { get; private set; }
@@ -77,6 +83,8 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         ? null
         : PrecoInsumoFormatacao.CustoCalculado(CustoPerdasLote.Value);
     public string? CustoEnergiaLoteFormatado => CustoEnergiaLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoEnergiaLote.Value);
+    public string? CustoDesgasteEquipamentosLoteFormatado => CustoDesgasteEquipamentosLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoDesgasteEquipamentosLote.Value);
+    public string ConfiguracaoDesgasteFormatada => FormaCalculoDesgasteEquipamento is null ? "Produto sem categoria: nenhum desgaste por categoria aplicado." : CategoriaProdutoFormulario.Resumir(FormaCalculoDesgasteEquipamento.Value, ValorDesgasteEquipamento!.Value);
 
     public string? CustoLoteFormatado => CustoLote is null ? null : PrecoInsumoFormatacao.CustoCalculado(CustoLote.Value);
 
@@ -208,6 +216,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
             UsosEquipamentos = [];
             CustoEnergiaLote = null;
             CustoEnergiaCompleto = false;
+            FormaCalculoDesgasteEquipamento = null;
+            ValorDesgasteEquipamento = null;
+            CustoDesgasteEquipamentosLote = null;
+            CustoDesgasteCompleto = false;
             CustoLote = null;
             CustoUnitarioProduto = null;
             CustoProdutoCompleto = false;
@@ -264,6 +276,10 @@ public sealed class FichaTecnicaModel(PrecificadorDbContext context, Precificaca
         PercentualMaoDeObra = atual.PercentualMaoDeObra;
         CustoEnergiaLote = atual.CustoEnergiaLote;
         CustoEnergiaCompleto = atual.CustoEnergiaLote is not null;
+        FormaCalculoDesgasteEquipamento = atual.FormaCalculoDesgasteEquipamento;
+        ValorDesgasteEquipamento = atual.ValorDesgasteEquipamento;
+        CustoDesgasteEquipamentosLote = atual.CustoDesgasteEquipamentosLote;
+        CustoDesgasteCompleto = atual.CustoDesgasteEquipamentosLote is not null;
         Itens = Itens.Select(item => atual.Itens.TryGetValue(item.Id, out var custo) ? item with { CustoUnitario = custo.CustoUnitario, CustoItem = custo.CustoItem, CustoPerdaItem = custo.CustoPerdaItem } : item).ToList();
         UsosEquipamentos = UsosEquipamentos.Select(uso => atual.Usos.TryGetValue(uso.Id, out var custo) ? uso with { ConsumoKwh = custo.ConsumoKwh, CustoEnergiaUso = custo.CustoEnergiaUso } : uso).ToList();
         CustoLote = atual.CustoLote;

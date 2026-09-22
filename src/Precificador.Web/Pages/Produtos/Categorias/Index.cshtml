@@ -20,12 +20,13 @@
 else
 {
     <table class="table">
-        <thead><tr><th>Nome</th><th>Situação</th><th></th></tr></thead>
+        <thead><tr><th>Nome</th><th>Desgaste</th><th>Situação</th><th></th></tr></thead>
         <tbody>
         @foreach (var categoria in Model.Categorias)
         {
             <tr>
                 <td>@categoria.Nome</td>
+                <td>@categoria.Desgaste</td>
                 <td>@categoria.Situacao</td>
                 <td>
                     <a asp-page="/Produtos/Categorias/Editar" asp-route-id="@categoria.Id">Editar</a>

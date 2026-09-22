@@ -13,7 +13,7 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
         NomeNormalizado = null!;
     }
 
-    private CategoriaProduto(int empresaId, string nome)
+    private CategoriaProduto(int empresaId, string nome, FormaCalculoDesgasteEquipamento formaCalculoDesgasteEquipamento, decimal valorDesgasteEquipamento)
     {
         DefinirEmpresa(empresaId);
         var nomeNormalizado = NormalizarNome(nome);
@@ -21,6 +21,9 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
 
         Nome = nomeNormalizado;
         NomeNormalizado = nomeNormalizado.ToUpperInvariant();
+        ValidarDesgaste(formaCalculoDesgasteEquipamento, valorDesgasteEquipamento);
+        FormaCalculoDesgasteEquipamento = formaCalculoDesgasteEquipamento;
+        ValorDesgasteEquipamento = valorDesgasteEquipamento;
         Ativo = true;
     }
 
@@ -34,7 +37,11 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
 
     public bool Ativo { get; private set; }
 
-    public static CategoriaProduto Criar(int empresaId, string nome) => new(empresaId, nome);
+    public FormaCalculoDesgasteEquipamento FormaCalculoDesgasteEquipamento { get; private set; }
+
+    public decimal ValorDesgasteEquipamento { get; private set; }
+
+    public static CategoriaProduto Criar(int empresaId, string nome, FormaCalculoDesgasteEquipamento formaCalculoDesgasteEquipamento, decimal valorDesgasteEquipamento) => new(empresaId, nome, formaCalculoDesgasteEquipamento, valorDesgasteEquipamento);
 
     public void Renomear(string nome)
     {
@@ -43,6 +50,17 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
 
         Nome = nomeNormalizado;
         NomeNormalizado = nomeNormalizado.ToUpperInvariant();
+    }
+
+    public void AtualizarDados(string nome, FormaCalculoDesgasteEquipamento formaCalculoDesgasteEquipamento, decimal valorDesgasteEquipamento)
+    {
+        var nomeNormalizado = NormalizarNome(nome);
+        ValidarNome(nomeNormalizado);
+        ValidarDesgaste(formaCalculoDesgasteEquipamento, valorDesgasteEquipamento);
+        Nome = nomeNormalizado;
+        NomeNormalizado = nomeNormalizado.ToUpperInvariant();
+        FormaCalculoDesgasteEquipamento = formaCalculoDesgasteEquipamento;
+        ValorDesgasteEquipamento = valorDesgasteEquipamento;
     }
 
     public void Desativar() => Ativo = false;
@@ -78,5 +96,11 @@ public sealed class CategoriaProduto : IEntidadeEmpresa
         {
             throw new ArgumentException("O nome da categoria deve possuir no máximo 80 caracteres.", nameof(nome));
         }
+    }
+
+    private static void ValidarDesgaste(FormaCalculoDesgasteEquipamento forma, decimal valor)
+    {
+        if (!Enum.IsDefined(forma)) throw new ArgumentOutOfRangeException(nameof(forma));
+        if (valor < 0m) throw new ArgumentOutOfRangeException(nameof(valor));
     }
 }

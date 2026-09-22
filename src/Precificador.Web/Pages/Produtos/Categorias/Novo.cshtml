@@ -13,6 +13,17 @@
         <input asp-for="Input.Nome" class="form-control" />
         <span asp-validation-for="Input.Nome" class="text-danger"></span>
     </div>
+    <div class="mb-3">
+        <label asp-for="Input.FormaCalculoDesgasteEquipamento" class="form-label"></label>
+        <select asp-for="Input.FormaCalculoDesgasteEquipamento" class="form-select"><option value="1">Valor fixo por lote</option><option value="2">Percentual sobre os insumos</option></select>
+        <div class="form-text">Valor fixo por lote é acrescentado uma vez ao custo do lote. Percentual sobre os insumos é aplicado exclusivamente ao custo base dos itens.</div>
+        <span asp-validation-for="Input.FormaCalculoDesgasteEquipamento" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.ValorDesgasteEquipamento" class="form-label"></label>
+        <input asp-for="Input.ValorDesgasteEquipamento" class="form-control" inputmode="decimal" />
+        <span asp-validation-for="Input.ValorDesgasteEquipamento" class="text-danger"></span>
+    </div>
     <button type="submit" class="btn btn-primary">Cadastrar</button>
     <a asp-page="/Produtos/Categorias/Index" class="btn btn-secondary">Cancelar</a>
 </form>

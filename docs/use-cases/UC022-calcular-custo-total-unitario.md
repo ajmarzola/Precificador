@@ -3,7 +3,7 @@
 > **Nota MEL022:** referências históricas a `TempoAtivoMinutos` e `ValorHoraTrabalho` foram substituídas por `PercentualMaoDeObra` aplicado sobre `CustoBaseItens` no UC020/RN013 vigente.
 
 - **Funcionalidade:** F004 — Precificação
-- **Dependências funcionais:** UC018, UC019, UC020 e UC021
+- **Dependências funcionais:** UC018, UC019, UC020, UC021 e UC036
 - **Base de revalidação:** UC018–UC021 concluídas
 - **Schema:** não
 - **Persistência do resultado:** não
@@ -26,6 +26,7 @@ CustoBaseItens
 CustoPerdasLote
 CustoMaoDeObraLote
 CustoEnergiaLote
+CustoDesgasteEquipamentosLote
 Rendimento
 ~~~
 
@@ -36,6 +37,7 @@ CustoBaseItens          => UC018
 CustoPerdasLote         => UC019
 CustoMaoDeObraLote      => UC020
 CustoEnergiaLote        => UC021
+CustoDesgasteEquipamentosLote => UC036
 Rendimento              => FichaTecnica / UC013
 ~~~
 
@@ -61,6 +63,7 @@ CustoLote =
   + CustoPerdasLote
   + CustoMaoDeObraLote
   + CustoEnergiaLote
+  + CustoDesgasteEquipamentosLote
 ~~~
 
 Todos os componentes participam da composição, inclusive quando seu valor conhecido é zero.
@@ -80,13 +83,14 @@ Rendimento representa unidades vendáveis produzidas pelo lote. Reduções de sa
 
 Aplicar RN017.
 
-O custo total somente existe quando todos os quatro componentes forem determináveis.
+O custo total somente existe quando todos os cinco componentes forem determináveis.
 
 ~~~text
 CustoBaseItens != null
 E CustoPerdasLote != null
 E CustoMaoDeObraLote != null
 E CustoEnergiaLote != null
+E CustoDesgasteEquipamentosLote != null
 
 => CustoLote conhecido
 => Completo = true

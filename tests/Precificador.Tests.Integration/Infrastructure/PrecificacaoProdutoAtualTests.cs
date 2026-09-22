@@ -191,6 +191,66 @@ public sealed class PrecificacaoProdutoAtualTests
         Assert.Equal(0, await context.ConfiguracoesPrecificacaoEmpresas.CountAsync());
     }
 
+    [Fact]
+    public async Task UC036_Produto_sem_categoria_e_fixo_por_lote_refletem_no_total_unitario_preco_e_margem()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(0m, 0m, null, .5m, .1m);
+        var produto = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var semCategoria = await CalcularAsync(context, produto.Id);
+        Assert.Equal(0m, semCategoria!.CustoDesgasteEquipamentosLote);
+
+        var categoria = CategoriaProduto.Criar(1, "Fixa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 1.50m);
+        context.CategoriasProdutos.Add(categoria);
+        await context.SaveChangesAsync();
+        produto.AtualizarDados(produto.Nome, produto.MargemAlvo, categoria.Id);
+        var ficha = await context.FichasTecnicas.SingleAsync(f => f.ProdutoId == produto.Id);
+        ficha.AtualizarBase(5m);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var resultado = await CalcularAsync(context, produto.Id);
+        Assert.Equal(1.50m, resultado!.CustoDesgasteEquipamentosLote);
+        Assert.Equal(11.50m, resultado.CustoLote);
+        Assert.Equal(2.30m, resultado.CustoUnitarioProduto);
+        Assert.Equal(3.5m, resultado.PrecoSugerido);
+    }
+
+    [Fact]
+    public async Task UC036_Percentual_usa_somente_base_e_categoria_inativa_ou_alterada_reflete_no_calculo_atual()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(.10m, 0m, null, .5m, .1m);
+        var produto = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(.10m, 0m, null, .5m, .1m);
+        var categoria = CategoriaProduto.Criar(1, "Percentual", FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .05m);
+        categoria.Desativar();
+        context.CategoriasProdutos.Add(categoria);
+        await context.SaveChangesAsync();
+        produto.AtualizarDados(produto.Nome, produto.MargemAlvo, categoria.Id);
+        var item = await context.ItensFichaTecnica.SingleAsync();
+        item.AtualizarDados(1m, null, .20m);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var primeiro = await CalcularAsync(context, produto.Id);
+        Assert.Equal(.50m, primeiro!.CustoDesgasteEquipamentosLote);
+        Assert.Equal(13.50m, primeiro.CustoLote);
+        var categoriaAtual = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(c => c.Id == categoria.Id);
+        categoriaAtual.AtualizarDados(categoriaAtual.Nome, FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .10m);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var segundo = await CalcularAsync(context, produto.Id);
+        Assert.Equal(1m, segundo!.CustoDesgasteEquipamentosLote);
+        Assert.Equal(14m, segundo.CustoLote);
+    }
+
     private static async Task<Produto> CriarProdutoPrecificavelAsync(
         PrecificadorDbContext context,
         decimal margemAlvo,

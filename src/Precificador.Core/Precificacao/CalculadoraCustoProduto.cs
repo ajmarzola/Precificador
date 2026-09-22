@@ -7,6 +7,14 @@ public static class CalculadoraCustoProduto
         decimal? custoPerdasLote,
         decimal? custoMaoDeObraLote,
         decimal? custoEnergiaLote,
+        decimal rendimento) => Calcular(custoBaseItens, custoPerdasLote, custoMaoDeObraLote, custoEnergiaLote, 0m, rendimento);
+
+    public static ResultadoCalculoCustoProduto Calcular(
+        decimal? custoBaseItens,
+        decimal? custoPerdasLote,
+        decimal? custoMaoDeObraLote,
+        decimal? custoEnergiaLote,
+        decimal? custoDesgasteEquipamentosLote,
         decimal rendimento)
     {
         ValidarRendimento(rendimento);
@@ -14,13 +22,14 @@ public static class CalculadoraCustoProduto
         ValidarCustoConhecido(custoPerdasLote, nameof(custoPerdasLote));
         ValidarCustoConhecido(custoMaoDeObraLote, nameof(custoMaoDeObraLote));
         ValidarCustoConhecido(custoEnergiaLote, nameof(custoEnergiaLote));
+        ValidarCustoConhecido(custoDesgasteEquipamentosLote, nameof(custoDesgasteEquipamentosLote));
 
-        if (custoBaseItens is null || custoPerdasLote is null || custoMaoDeObraLote is null || custoEnergiaLote is null)
+        if (custoBaseItens is null || custoPerdasLote is null || custoMaoDeObraLote is null || custoEnergiaLote is null || custoDesgasteEquipamentosLote is null)
         {
             return new ResultadoCalculoCustoProduto(null, null, false);
         }
 
-        var custoLote = custoBaseItens.Value + custoPerdasLote.Value + custoMaoDeObraLote.Value + custoEnergiaLote.Value;
+        var custoLote = custoBaseItens.Value + custoPerdasLote.Value + custoMaoDeObraLote.Value + custoEnergiaLote.Value + custoDesgasteEquipamentosLote.Value;
         return new ResultadoCalculoCustoProduto(custoLote, custoLote / rendimento, true);
     }
 

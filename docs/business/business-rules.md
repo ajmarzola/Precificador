@@ -471,7 +471,7 @@ O componente de energia é calculado em tempo de consulta e nunca persistido.
 
 ### RN015 — Custo do lote
 
-O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra e recursos/equipamentos aplicáveis ao processo.
+O custo do lote soma custo dos itens, perdas aplicáveis, mão de obra, energia e desgaste de equipamentos aplicáveis ao processo.
 
 ### RN016 — Custo unitário do produto
 
@@ -488,6 +488,14 @@ Ficha Técnica existente sem Itens também não equivale a custo zero nem torna 
 A completude é específica por etapa. Um dado ausente que afete somente uma etapa posterior não invalida resultados independentes já determináveis. Em particular, `IncrementoComercial = null` mantém UC023/Preço sugerido incompleto, mas não invalida por si só Custo unitário conhecido nem a Margem atual da UC024 quando existe Preço de prateleira atual.
 
 `SituacaoMargem` da UC024 representa especificamente a situação frente à Margem-alvo e não substitui um indicador global de completude da precificação.
+
+### RN057 — Configuração de desgaste por Categoria
+
+Toda Categoria possui Forma e Valor de desgaste válidos e não negativos. Valor fixo é custo por lote; percentual é armazenado como fração decimal, sem teto de 100%. A migration de UC036 preserva Categorias existentes com Forma fixa e Valor zero, sem alterar tenant, situação ou vínculos de Produtos.
+
+### RN058 — Custo de desgaste de equipamentos
+
+Produto sem Categoria possui desgaste zero conhecido. Categoria inativa já vinculada continua aplicando sua regra. Valor fixo retorna o valor configurado. Percentual usa exclusivamente `CustoBaseItens`; percentual zero retorna zero mesmo sem custo base conhecido, enquanto percentual positivo é `CustoBaseItens × Valor` e fica indisponível se a base for desconhecida.
 
 ### RN018 — Desativação e reativação de produto
 
@@ -543,7 +551,7 @@ O vínculo do Produto com a Categoria:
 - é opcional (`CategoriaProdutoId : int?`);
 - referencia obrigatoriamente uma `CategoriaProduto` da mesma Empresa (cross-tenant é rejeitado);
 - não participa da unicidade do Produto;
-- não altera regras de cálculo.
+- quando vinculada, sua configuração de desgaste participa do custo atual conforme RN057 e RN058.
 
 O nome da `CategoriaProduto` segue a mesma semântica de normalização histórica:
 

@@ -265,7 +265,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
             return existente.Id;
         }
 
-        var categoriaNova = CategoriaProduto.Criar(empresaId, nome);
+        var categoriaNova = CategoriaProduto.Criar(empresaId, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         context.CategoriasProdutos.Add(categoriaNova);
         await context.SaveChangesAsync();
         return categoriaNova.Id;

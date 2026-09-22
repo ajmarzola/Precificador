@@ -210,7 +210,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         int? categoriaId = null;
         if (categoria is not null)
         {
-            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria);
+            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
             context.CategoriasProdutos.Add(categoriaEntidade);
             await context.SaveChangesAsync();
             categoriaId = categoriaEntidade.Id;
@@ -271,7 +271,7 @@ public sealed class HistoricoPrecoProdutoPageTests(CustomWebApplicationFactory f
         int? categoriaId = null;
         if (categoria is not null)
         {
-            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria);
+            var categoriaEntidade = CategoriaProduto.Criar(empresaId, categoria, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
             context.CategoriasProdutos.Add(categoriaEntidade);
             await context.SaveChangesAsync();
             categoriaId = categoriaEntidade.Id;

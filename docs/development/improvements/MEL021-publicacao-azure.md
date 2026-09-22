@@ -3,9 +3,9 @@
 - **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Especificado — bloqueado pela UC036 e pela indisponibilidade externa da conta Azure.
+- **Estado:** Especificado — bloqueado exclusivamente pela indisponibilidade externa da conta Azure.
 - **Ordem na fila pendente:** 12.
-- **Dependências:** MEL020, MEL022, MEL023 e UC032 concluídas; UC036 pendente.
+- **Dependências:** MEL020, MEL022, MEL023, UC032 e UC036 concluídas.
 - **Gate operacional:** executar somente após UC036; bloqueio externo adicional até existir assinatura Azure utilizável; ainda antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
@@ -53,7 +53,6 @@ Além disso, a conta Azure encontra-se atualmente bloqueada para criação/uso d
 
 Portanto, não iniciar o provisionamento enquanto qualquer um destes gates estiver pendente:
 
-- UC036 não concluída;
 - conta Azure sem assinatura utilizável.
 
 A especificação técnica desta MEL permanece válida e não deve ser descartada.

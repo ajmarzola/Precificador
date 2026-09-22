@@ -355,7 +355,7 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
             return existente.Id;
         }
 
-        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome);
+        var categoriaNova = CategoriaProduto.Criar(empresaIdFallback, nome, FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0m);
         context.CategoriasProdutos.Add(categoriaNova);
         await context.SaveChangesAsync();
         return categoriaNova.Id;

@@ -2,7 +2,7 @@
 
 - **Funcionalidades:** F002 — Gestão de Produtos; F003 — Ficha Técnica; F004 — Precificação
 - **Origem:** evolução do modelo de custo identificada após UC032
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Prioridade:** antecipada
 - **Gate operacional:** executar imediatamente após UC032 e antes da MEL021
 - **Dependências funcionais:** UC032, UC018, UC022, UC023, UC024 e UC025

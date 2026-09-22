@@ -14,6 +14,13 @@ public sealed class CategoriaProdutoConfiguration : IEntityTypeConfiguration<Cat
         builder.Property(categoria => categoria.NomeNormalizado).IsRequired().HasMaxLength(80);
         builder.Property(categoria => categoria.Ativo).IsRequired();
         builder.Property(categoria => categoria.EmpresaId).IsRequired();
+        builder.Property(categoria => categoria.FormaCalculoDesgasteEquipamento).HasConversion<int>().IsRequired();
+        builder.Property(categoria => categoria.ValorDesgasteEquipamento).HasPrecision(18, 6).IsRequired();
+        builder.ToTable(table =>
+        {
+            table.HasCheckConstraint("CK_CategoriasProdutos_FormaCalculoDesgasteEquipamento", "[FormaCalculoDesgasteEquipamento] IN (1, 2)");
+            table.HasCheckConstraint("CK_CategoriasProdutos_ValorDesgasteEquipamento", "[ValorDesgasteEquipamento] >= 0");
+        });
         builder.HasIndex(categoria => new { categoria.EmpresaId, categoria.NomeNormalizado }).IsUnique();
         builder.HasOne<Precificador.Core.Empresas.Empresa>()
             .WithMany()
