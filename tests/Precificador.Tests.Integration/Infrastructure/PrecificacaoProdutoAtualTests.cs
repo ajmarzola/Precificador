@@ -201,6 +201,8 @@ public sealed class PrecificacaoProdutoAtualTests
         var produto = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
         var semCategoria = await CalcularAsync(context, produto.Id);
         Assert.Equal(0m, semCategoria!.CustoDesgasteEquipamentosLote);
+        var resumoSemCategoria = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
+        Assert.Equal(10m, resumoSemCategoria[produto.Id].CustoUnitarioProduto);
 
         var categoria = CategoriaProduto.Criar(1, "Fixa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 1.50m);
         context.CategoriasProdutos.Add(categoria);
@@ -216,6 +218,8 @@ public sealed class PrecificacaoProdutoAtualTests
         Assert.Equal(11.50m, resultado.CustoLote);
         Assert.Equal(2.30m, resultado.CustoUnitarioProduto);
         Assert.Equal(3.5m, resultado.PrecoSugerido);
+        var resumoFixo = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
+        Assert.Equal(resultado.CustoUnitarioProduto, resumoFixo[produto.Id].CustoUnitarioProduto);
     }
 
     [Fact]
@@ -241,6 +245,8 @@ public sealed class PrecificacaoProdutoAtualTests
         var primeiro = await CalcularAsync(context, produto.Id);
         Assert.Equal(.50m, primeiro!.CustoDesgasteEquipamentosLote);
         Assert.Equal(13.50m, primeiro.CustoLote);
+        var resumoCategoriaInativa = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
+        Assert.Equal(primeiro.CustoUnitarioProduto, resumoCategoriaInativa[produto.Id].CustoUnitarioProduto);
         var categoriaAtual = await context.CategoriasProdutos.IgnoreQueryFilters().SingleAsync(c => c.Id == categoria.Id);
         categoriaAtual.AtualizarDados(categoriaAtual.Nome, FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .10m);
         await context.SaveChangesAsync();
@@ -249,6 +255,99 @@ public sealed class PrecificacaoProdutoAtualTests
         var segundo = await CalcularAsync(context, produto.Id);
         Assert.Equal(1m, segundo!.CustoDesgasteEquipamentosLote);
         Assert.Equal(14m, segundo.CustoLote);
+    }
+
+    [Fact]
+    public async Task MEL024_Resumo_em_lote_tem_paridade_e_preserva_estados_incompletos()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var completo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var negativo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        negativo.Desativar();
+        var semPreco = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var itemSemPreco = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var energiaIncompleta = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var semFicha = Produto.Criar(1, "Sem ficha", .30m);
+        context.Produtos.Add(semFicha);
+        await context.SaveChangesAsync();
+        context.RegistrosPrecosProdutos.AddRange(
+            Registro(1, completo.Id, Hoje, 20m),
+            Registro(1, negativo.Id, Hoje, 5m),
+            Registro(1, itemSemPreco.Id, Hoje, 20m),
+            Registro(1, energiaIncompleta.Id, Hoje, 20m),
+            Registro(1, semFicha.Id, Hoje, 20m));
+        var fichaItemSemPrecoId = await context.FichasTecnicas.Where(ficha => ficha.ProdutoId == itemSemPreco.Id).Select(ficha => ficha.Id).SingleAsync();
+        var insumoItemSemPrecoId = await context.ItensFichaTecnica.Where(item => item.FichaTecnicaId == fichaItemSemPrecoId).Select(item => item.InsumoId).SingleAsync();
+        var precoDoItem = await context.PrecosInsumos.SingleAsync(item => item.InsumoId == insumoItemSemPrecoId);
+        context.PrecosInsumos.Remove(precoDoItem);
+        var fichaEnergiaIncompletaId = await context.FichasTecnicas.Where(ficha => ficha.ProdutoId == energiaIncompleta.Id).Select(ficha => ficha.Id).SingleAsync();
+        context.UsosEquipamentosFicha.Add(UsoEquipamentoFicha.Criar(1, fichaEnergiaIncompletaId, "Equipamento", 1m, 60));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var ids = new[] { completo.Id, negativo.Id, semPreco.Id, itemSemPreco.Id, energiaIncompleta.Id, semFicha.Id };
+        var lote = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync(ids);
+
+        foreach (var id in ids)
+        {
+            var individual = await CalcularAsync(context, id);
+            var resumo = lote[id];
+            Assert.Equal(individual!.CustoUnitarioProduto, resumo.CustoUnitarioProduto);
+            Assert.Equal(individual.PrecoPrateleiraAtual, resumo.PrecoPrateleiraAtual);
+            Assert.Equal(individual.MargemAtual, resumo.MargemAtual);
+            Assert.Equal(individual.SituacaoMargem, resumo.SituacaoMargem);
+        }
+
+        Assert.Equal(.5m, lote[completo.Id].MargemAtual);
+        Assert.Equal(-1m, lote[negativo.Id].MargemAtual);
+        Assert.Null(lote[semPreco.Id].MargemAtual);
+        Assert.Null(lote[itemSemPreco.Id].CustoUnitarioProduto);
+        Assert.Null(lote[itemSemPreco.Id].MargemAtual);
+        Assert.Null(lote[energiaIncompleta.Id].CustoUnitarioProduto);
+        Assert.Null(lote[energiaIncompleta.Id].MargemAtual);
+        Assert.Equal(20m, lote[semFicha.Id].PrecoPrateleiraAtual);
+        Assert.Null(lote[semFicha.Id].CustoUnitarioProduto);
+    }
+
+    [Fact]
+    public async Task MEL024_Resumo_em_lote_tem_paridade_para_desgaste_fixo_percentual_e_categoria_inativa()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var fixa = CategoriaProduto.Criar(1, "Fixa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 2m);
+        var percentual = CategoriaProduto.Criar(1, "Percentual", FormaCalculoDesgasteEquipamento.PercentualSobreInsumos, .10m);
+        var inativa = CategoriaProduto.Criar(1, "Inativa", FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 3m);
+        inativa.Desativar();
+        context.CategoriasProdutos.AddRange(fixa, percentual, inativa);
+        await context.SaveChangesAsync();
+        var produtoFixo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var produtoPercentual = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        var produtoInativo = await CriarProdutoPrecificavelAsync(context, .30m, 10m);
+        produtoFixo.AtualizarDados(produtoFixo.Nome, produtoFixo.MargemAlvo, fixa.Id);
+        produtoPercentual.AtualizarDados(produtoPercentual.Nome, produtoPercentual.MargemAlvo, percentual.Id);
+        produtoInativo.AtualizarDados(produtoInativo.Nome, produtoInativo.MargemAlvo, inativa.Id);
+        context.RegistrosPrecosProdutos.AddRange(
+            Registro(1, produtoFixo.Id, Hoje, 20m),
+            Registro(1, produtoPercentual.Id, Hoje, 20m),
+            Registro(1, produtoInativo.Id, Hoje, 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var ids = new[] { produtoFixo.Id, produtoPercentual.Id, produtoInativo.Id };
+        var lote = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync(ids);
+
+        foreach (var id in ids)
+        {
+            var individual = await CalcularAsync(context, id);
+            Assert.Equal(individual!.CustoUnitarioProduto, lote[id].CustoUnitarioProduto);
+            Assert.Equal(individual.MargemAtual, lote[id].MargemAtual);
+            Assert.Equal(individual.SituacaoMargem, lote[id].SituacaoMargem);
+        }
+
+        Assert.Equal(12m, lote[produtoFixo.Id].CustoUnitarioProduto);
+        Assert.Equal(11m, lote[produtoPercentual.Id].CustoUnitarioProduto);
+        Assert.Equal(13m, lote[produtoInativo.Id].CustoUnitarioProduto);
     }
 
     private static async Task<Produto> CriarProdutoPrecificavelAsync(

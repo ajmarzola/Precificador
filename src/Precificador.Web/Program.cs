@@ -26,6 +26,7 @@ builder.Services.AddScoped<IEmpresaContext>(provider => provider.GetRequiredServ
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDataOperacionalEmpresa, DataOperacionalEmpresa>();
 builder.Services.AddScoped<PrecificacaoProdutoAtual>();
+builder.Services.AddScoped<ResumoPrecificacaoProdutosAtual>();
 builder.Services.AddDbContext<PrecificadorDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Precificador")));
 builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>

@@ -30,6 +30,55 @@ public sealed class RegistroPrecoProdutoConsultaTests
     }
 
     [Fact]
+    public async Task P6_Selecao_em_lote_retorna_um_atual_por_produto_e_ignora_ids_ausentes()
+    {
+        await using var context = await CriarAsync(1);
+        await context.Database.MigrateAsync();
+        var primeiro = await CriarProdutoAsync(context, 1, "Primeiro");
+        var segundo = await CriarProdutoAsync(context, 1, "Segundo");
+        context.RegistrosPrecosProdutos.AddRange(
+            Registro(1, primeiro.Id, new DateOnly(2026, 9, 1), 10m),
+            Registro(1, primeiro.Id, new DateOnly(2026, 9, 2), 11m),
+            Registro(1, primeiro.Id, new DateOnly(2026, 9, 2), 12m),
+            Registro(1, segundo.Id, new DateOnly(2026, 9, 2), 20m));
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var atuais = await context.RegistrosPrecosProdutos.AsNoTracking()
+            .SelecionarAtuaisAsync([primeiro.Id, segundo.Id, 999999]);
+
+        Assert.Equal(2, atuais.Count);
+        Assert.Equal(12m, atuais[primeiro.Id].PrecoPrateleira);
+        Assert.Equal(20m, atuais[segundo.Id].PrecoPrateleira);
+        Assert.DoesNotContain(999999, atuais.Keys);
+        Assert.Empty(await context.RegistrosPrecosProdutos.AsNoTracking().SelecionarAtuaisAsync([]));
+    }
+
+    [Fact]
+    public async Task P7_Selecao_em_lote_respeita_gqf()
+    {
+        var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("RegistroPrecoProdutoLoteGqf");
+        await using (var empresaUm = Criar(connectionString, 1))
+        {
+            await empresaUm.Database.MigrateAsync();
+            empresaUm.Empresas.Add(Empresa.Criar("Empresa dois"));
+            await empresaUm.SaveChangesAsync();
+            var produto = await CriarProdutoAsync(empresaUm, 1);
+            empresaUm.RegistrosPrecosProdutos.Add(Registro(1, produto.Id, new DateOnly(2026, 9, 15), 10m));
+            await empresaUm.SaveChangesAsync();
+        }
+        await using var empresaDois = Criar(connectionString, 2);
+        var externo = await CriarProdutoAsync(empresaDois, 2);
+        empresaDois.RegistrosPrecosProdutos.Add(Registro(2, externo.Id, new DateOnly(2026, 9, 15), 20m));
+        await empresaDois.SaveChangesAsync();
+
+        var atuais = await empresaDois.RegistrosPrecosProdutos.AsNoTracking().SelecionarAtuaisAsync([externo.Id, 1]);
+
+        Assert.Equal(20m, Assert.Single(atuais).Value.PrecoPrateleira);
+        Assert.Equal(externo.Id, Assert.Single(atuais).Key);
+    }
+
+    [Fact]
     public async Task P3_Gqf_isola_historico_entre_empresas()
     {
         var connectionString = await SqlServerTestDatabase.CriarConnectionStringAsync("RegistroPrecoProdutoConsulta");
