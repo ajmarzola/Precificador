@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** BLOQUEADO EXCLUSIVAMENTE POR FATOR EXTERNO. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; a conta Azure ainda não possui assinatura utilizável. Não alterar código/provisionar Azure até `docs/development/backlog.md` marcar MEL021 como `Pronto`.
+> **Gate:** LIBERADO. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; uma assinatura Azure utilizável foi confirmada em 26/09/2026 e `docs/development/backlog.md` marca MEL021 como `Pronto`. Implementar exclusivamente a MEL021 e não antecipar UC028.
 
 Implemente exclusivamente a MEL021 conforme:
 
@@ -20,7 +20,7 @@ Nunca editar `master` diretamente.
 
 Publicar o Precificador em Azure App Service F1 com Azure SQL Free, mantendo custo alvo zero e sem implementar UC028.
 
-Não executar provisionamento, scripts contra Azure ou mudanças de runtime enquanto o gate estiver bloqueado.
+O provisionamento está liberado. Antes de qualquer criação de recurso, validar login, assinatura selecionada/ativa, região, F1, runtime .NET 10 e Azure SQL Free; falhar sem criar fallback pago se qualquer pré-condição não for atendida.
 
 A ordem obrigatória é:
 
@@ -28,7 +28,7 @@ A ordem obrigatória é:
 UC032 -> UC036 -> MEL021
 ```
 
-Além das dependências de código, é necessário que a conta Azure possua uma assinatura utilizável.
+O gate externo de assinatura está atendido desde 26/09/2026. Não hardcodar subscription/tenant pessoal no repositório; a assinatura deve ser selecionada/validada em runtime pelos scripts.
 
 ## Invariantes
 
@@ -37,7 +37,7 @@ Além das dependências de código, é necessário que a conta Azure possua uma 
 - confirmar no provisionamento a franquia gratuita vigente (atualmente 100.000 vCore-seconds/mês, 32 GB dados, 32 GB backup);
 - com AutoPause por limite gratuito, confirmar as limitações vigentes (atualmente até 4 vCores, PITR até 7 dias, backup LRS e sem LTR);
 - não mudar a oferta para continuidade paga/upgrade como fallback;
-- App Service F1 é aceito conscientemente para uso pessoal/familiar, sem SLA e sem suporte Microsoft para workload de produção;
+- App Service F1 é aceito conscientemente para piloto operacional interno da Carinho e Amor, de baixo uso e sem SLA, apesar de não possuir suporte Microsoft para workload de produção;
 - nunca criar fallback pago;
 - App Service -> Azure SQL por **Managed Identity**, sem senha;
 - Azure SQL logical server com **Microsoft Entra-only + Entra administrator explícito**;
