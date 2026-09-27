@@ -69,7 +69,7 @@ Regra operacional:
 | 09 | MEL023 — Refinar equipamentos elétricos e navegação de tarifa na Ficha Técnica | MEL | Concluído | MEL022 concluída; antes de MEL021 | [MEL023](improvements/MEL023-equipamentos-eletricos-navegacao-tarifa.md) |
 | 10 | UC032 — Administrar categorias de Produto | UC | Concluído | UC007–UC010 | [UC032](../use-cases/UC032-administrar-categorias-produto.md) |
 | 11 | UC036 — Configurar e calcular custo de desgaste de equipamentos por Categoria | UC | Concluído | UC032, UC018, UC022 | [UC036](../use-cases/UC036-configurar-calcular-desgaste-equipamentos-categoria.md) |
-| 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Especificado | dependências funcionais concluídas; bloqueio externo exclusivo: conta Azure sem assinatura utilizável | [MEL021](improvements/MEL021-publicacao-azure.md) |
+| 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Pronto | dependências funcionais concluídas; assinatura Azure utilizável confirmada em 26/09/2026; implementação liberada; antes de UC028 | [MEL021](improvements/MEL021-publicacao-azure.md) |
 | 13 | MEL024 — Enriquecer listagem de Produtos com filtro por Categoria e indicadores atuais | MEL | Concluído | concluída como exceção explícita, sem liberar UC028 ou itens seguintes | [MEL024](improvements/MEL024-listagem-produtos-filtro-indicadores.md) |
 | 14 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024; após MEL024 na fila | Documento a criar |
 | 15 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
@@ -87,8 +87,8 @@ Regra operacional:
 - **07 — fundação de persistência:** SQL Server concluído e usado como base da nova rodada;
 - **08–09 — segunda estabilização manual:** corrigir o modelo de mão de obra e tornar explícita a opcionalidade dos equipamentos elétricos antes de publicar;
 - **10–11 — Categoria estruturada e desgaste:** antecipar Categorias de Produto e, em seguida, o custo de desgaste de equipamentos por Categoria antes da primeira publicação;
-- **12 — publicação:** disponibilizar o sistema no Azure somente após UC032/UC036 e quando o bloqueio externo da conta Azure estiver resolvido;
-- **13 — adaptação operacional pós-planilha:** MEL024 explicitamente liberada para implementação imediata mesmo com MEL021 bloqueada; enriquecer a listagem de Produtos com filtro por Categoria e indicadores atuais, sem antecipar Dashboard;
+- **12 — publicação:** gate funcional e externo concluídos; MEL021 está liberada para publicar o sistema no Azure com F1 + Azure SQL Free, sem fallback pago;
+- **13 — adaptação operacional pós-planilha:** MEL024 foi concluída como exceção enquanto MEL021 ainda estava bloqueada externamente; a exceção não antecipou Dashboard nem liberou UC028;
 - **14–16 — fechamento do escopo original:** concluir Dashboard e identificação de problemas de margem/precificação;
 - **17 — acesso multiusuário:** fechar o primeiro acesso e a administração de usuários/vínculos sobre a fundação FT002 já existente;
 - **18–19 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
