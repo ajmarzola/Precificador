@@ -1,12 +1,12 @@
 # MEL021 — Publicar Precificador no Azure com custo controlado
 
-- **Origem:** disponibilização remota do Precificador para uso pessoal/familiar.
+- **Origem:** disponibilização remota do Precificador para piloto operacional interno da Carinho e Amor.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Especificado — bloqueado exclusivamente pela indisponibilidade externa da conta Azure.
+- **Estado:** Pronto.
 - **Ordem na fila pendente:** 12.
 - **Dependências:** MEL020, MEL022, MEL023, UC032 e UC036 concluídas.
-- **Gate operacional:** dependências funcionais atendidas; não executar enquanto a conta Azure não possuir assinatura utilizável; ainda antes de UC028.
+- **Gate operacional:** dependências funcionais atendidas e assinatura Azure utilizável confirmada em 26/09/2026; implementação liberada; concluir/mergear MEL021 antes de UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
@@ -15,7 +15,7 @@
 
 ## Objetivo
 
-Publicar o Precificador em Azure, acessível pela internet, preservando o objetivo de **custo mensal igual a zero** no cenário atual de poucos usuários conhecidos e uso esporádico.
+Publicar o Precificador em Azure, acessível pela internet, preservando o objetivo de **custo mensal igual a zero** no cenário atual de piloto operacional interno da Carinho e Amor, com poucos usuários conhecidos, baixo volume e sem requisito de SLA.
 
 Arquitetura alvo:
 
@@ -30,7 +30,7 @@ Azure SQL Database Free offer / General Purpose Serverless
 
 A MEL021 materializa a publicação preparada pela MEL020 e não cria funcionalidade de negócio.
 
-## Gate funcional concluído — UC032 / UC036
+## Gate funcional e operacional concluídos — UC032 / UC036 / Azure
 
 Após a especificação original da publicação, foi decidido antecipar:
 
@@ -51,19 +51,20 @@ Motivo: o desgaste altera o custo atual do Produto e deve estar consolidado ante
 
 UC032 e UC036 estão concluídas e mergeadas. Não existe mais dependência funcional pendente para a MEL021.
 
-A conta Azure permanece bloqueada para criação/uso de assinatura, com solicitação de suporte aberta. Esse é o único gate operacional atual e é externo ao código.
+Em **26/09/2026**, foi confirmada uma assinatura Azure utilizável. O bloqueio externo que impedia o provisionamento está encerrado.
 
 Portanto:
 
-- não iniciar provisionamento enquanto não existir assinatura Azure utilizável;
-- não implementar parcialmente infraestrutura contra outra conta como contorno;
-- não avançar UC028 ou UCs seguintes enquanto permanecer a pausa operacional decidida para esta fase.
+- a implementação e o provisionamento da MEL021 estão liberados;
+- o provisionamento deve continuar validando, antes de criar recursos, que a assinatura selecionada está ativa e que F1/Azure SQL Free estão disponíveis na região escolhida;
+- não versionar identificadores pessoais de conta, tenant ou subscription;
+- não avançar UC028 ou UCs seguintes antes de MEL021 estar concluída e mergeada.
 
-A especificação técnica desta MEL permanece válida e deve ser retomada quando a conta for liberada.
+A especificação técnica desta MEL permanece válida e passa a ser o contrato normativo para a implementação.
 
 ## Referências de plataforma
 
-Situação revalidada novamente em **22/09/2026** contra documentação oficial da Microsoft:
+Situação revalidada novamente em **26/09/2026** contra documentação oficial da Microsoft:
 
 - **Azure App Service F1 / Linux** permanece gratuito, com compute compartilhado, **60 minutos de CPU por dia**, **1 GB de RAM** e **1 GB de armazenamento** por aplicativo;
 - F1 não possui SLA e a Microsoft declara que a camada Free é destinada a avaliação/experimentação/aprendizado e **não é suportada para workloads de produção**;
@@ -140,7 +141,7 @@ Habilitar HTTPS Only.
 
 ### Limitações e risco aceitos
 
-O Precificador será um **ambiente hospedado pessoal/familiar de baixo uso**, não uma oferta comercial com SLA.
+O Precificador será um **piloto operacional interno da Carinho e Amor, de baixo uso e sem requisito de SLA**, não uma oferta pública/comercial com SLA.
 
 É decisão consciente usar F1 mesmo com a advertência da Microsoft de que a camada Free não é suportada para workloads de produção.
 
@@ -500,7 +501,7 @@ Referências históricas podem permanecer se identificadas como históricas.
 - **CA29:** MEL021 passa a `Concluído`.
 - **CA30:** UC028 permanece sem implementação.
 - **CA31:** limites gratuitos de App Service e Azure SQL são revalidados no momento do provisionamento.
-- **CA32:** risco/limitação do F1 para uso pessoal sem SLA está documentado.
+- **CA32:** risco/limitação do F1 para piloto operacional interno sem SLA está documentado.
 - **CA33:** logical server possui Microsoft Entra admin explícito e não depende de senha SQL.
 - **CA34:** Web App usa apenas `db_datareader` + `db_datawriter` em runtime.
 - **CA35:** `EnableRetryOnFailure` ou equivalente está habilitado para o provider SQL Server.
