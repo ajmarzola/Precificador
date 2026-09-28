@@ -11,7 +11,9 @@ public sealed class DesignTimePrecificadorDbContextFactory : IDesignTimeDbContex
 
     public PrecificadorDbContext CreateDbContext(string[] args) => new(
         new DbContextOptionsBuilder<PrecificadorDbContext>()
-            .UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings__Precificador") ?? ConnectionStringPadrao)
+            .UseSqlServer(
+                Environment.GetEnvironmentVariable("ConnectionStrings__Precificador") ?? ConnectionStringPadrao,
+                sql => sql.EnableRetryOnFailure())
             .Options,
         new EmpresaContextVazio());
 

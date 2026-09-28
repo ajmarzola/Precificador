@@ -61,7 +61,7 @@ Em caso de conflito, decisões mais específicas e ADRs aceitos prevalecem sobre
 
 ## 3. Arquitetura
 
-A aplicação é um monólito web local-first.
+A aplicação é um monólito web com execução local para desenvolvimento e publicação controlada em Azure para piloto operacional interno.
 
 Projetos de produção previstos:
 
@@ -76,7 +76,7 @@ Não introduza CQRS, MediatR, repository genérico, Unit of Work customizado, mi
 ## 4. Persistência
 
 - Entity Framework Core é a abstração padrão de persistência.
-- SQLite é o banco do MVP.
+- SQL Server é o banco de desenvolvimento/testes do MVP; Azure SQL é o banco da publicação Azure.
 - Alterações de esquema devem ser feitas por migrations.
 - Não altere manualmente o banco como mecanismo de evolução de esquema.
 - Valores monetários e quantidades que exijam precisão devem usar tipos decimais apropriados; não use ponto flutuante binário para dinheiro.
@@ -92,7 +92,7 @@ Não introduza CQRS, MediatR, repository genérico, Unit of Work customizado, mi
 ## 6. Testes
 
 - Toda regra de negócio nova ou alterada deve possuir testes unitários.
-- Fluxos de persistência relevantes devem possuir testes de integração com SQLite real temporário.
+- Fluxos de persistência relevantes devem possuir testes de integração com SQL Server real temporário.
 - Não substitua testes de integração de EF Core por mocks quando o comportamento da consulta/persistência fizer parte do risco testado.
 - Todo teste existente deve continuar passando.
 - Não remova ou enfraqueça testes apenas para obter build verde.

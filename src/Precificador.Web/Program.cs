@@ -28,7 +28,9 @@ builder.Services.AddScoped<IDataOperacionalEmpresa, DataOperacionalEmpresa>();
 builder.Services.AddScoped<PrecificacaoProdutoAtual>();
 builder.Services.AddScoped<ResumoPrecificacaoProdutosAtual>();
 builder.Services.AddDbContext<PrecificadorDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Precificador")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Precificador"),
+        sql => sql.EnableRetryOnFailure()));
 builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;
