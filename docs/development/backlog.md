@@ -79,10 +79,11 @@ Regra operacional:
 | 19 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
 | 20 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 21 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 22 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Planejado | MEL021; após estabilização funcional e técnica da publicação | Documento a criar |
-| 23 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Planejado | MEL012; após MEL025 na fila | Documento a criar |
-| 24 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002, UC031; após MEL026 na fila | Documento a criar |
-| 25 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional e experiência do usuário consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 22 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021; após estabilização do deploy manual reproduzível | Documento a criar |
+| 23 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Planejado | MEL021; após estabilização funcional e técnica da publicação | Documento a criar |
+| 24 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Planejado | MEL012; após MEL025 na fila | Documento a criar |
+| 25 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002, UC031; após MEL026 na fila | Documento a criar |
+| 26 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional e experiência do usuário consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -97,8 +98,9 @@ Regra operacional:
 - **18–19 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
 - **20 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
 - **21 — documentação técnica:** consolidar execução e teste local depois da infraestrutura e dos fluxos técnicos relevantes estarem estabilizados;
-- **22–24 — acabamento e experiência do usuário:** tratar erros/404 de forma amigável, apresentar o Precificador na Home pública e permitir identidade visual tenant-aware por Empresa, sem misturar essas preocupações às regras de precificação;
-- **25 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais e a experiência visual estarem consolidados.
+- **22 — entrega contínua:** automatizar o deploy no Azure somente depois de o fluxo manual da MEL021 estar estabilizado e documentado, sem transformar CD em gate das funcionalidades de negócio;
+- **23–25 — acabamento e experiência do usuário:** tratar erros/404 de forma amigável, apresentar o Precificador na Home pública e permitir identidade visual tenant-aware por Empresa, sem misturar essas preocupações às regras de precificação;
+- **26 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais e a experiência visual estarem consolidados.
 
 ## Melhorias concluídas
 
