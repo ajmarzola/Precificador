@@ -109,7 +109,7 @@ Service Connector passwordless é aceitável se o resultado final respeitar o co
 
 Como a aplicação usa `UseSqlServer`, habilitar `EnableRetryOnFailure()` ou equivalente suportado pelo EF Core 10.
 
-O Azure SQL Serverless pode ficar `Paused` após inatividade; isso é comportamento esperado. A primeira conexão pode precisar aguardar o auto-resume. Corrigir as connection strings Azure usadas pela aplicação e pelas migrations para `Connection Timeout=60` ou superior, preservando `EnableRetryOnFailure()`.
+O Azure SQL Serverless pode ficar `Paused` após inatividade; isso é comportamento esperado. A primeira conexão pode precisar aguardar o auto-resume. Corrigir as connection strings Azure usadas pela aplicação e pelas migrations para `Connection Timeout=60` ou superior, preservando `EnableRetryOnFailure()`. O bootstrap de `provision.ps1` deve repetir de forma finita a abertura da conexão para o erro transitório `40613`, com backoff e descarte da conexão a cada tentativa.
 
 Não trocar provider entre desenvolvimento e Azure.
 

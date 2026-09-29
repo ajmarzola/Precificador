@@ -193,7 +193,7 @@ Esse `AutoPause` é o **comportamento ao esgotar a franquia gratuita**. Ele não
 
 Ferramentas como SSMS/Visual Studio/SQL tooling devem ser desconectadas quando não estiverem em uso, pois conexões abertas podem impedir auto-pause e consumir a franquia de vCore.
 
-O estado `Paused` após inatividade é esperado para o compute Serverless e não representa, por si só, falha do banco. A primeira conexão após a pausa pode precisar aguardar o auto-resume; por isso a conexão hospedada e a conexão usada nas migrations devem usar `Connection Timeout=60` ou superior, mantendo também `EnableRetryOnFailure()` para falhas transitórias.
+O estado `Paused` após inatividade é esperado para o compute Serverless e não representa, por si só, falha do banco. A primeira conexão após a pausa pode precisar aguardar o auto-resume; por isso a conexão hospedada e a conexão usada nas migrations devem usar `Connection Timeout=60` ou superior, mantendo também `EnableRetryOnFailure()` para falhas transitórias. O bootstrap do `provision.ps1` deve repetir de forma finita a abertura da conexão quando o Azure SQL retornar o erro transitório `40613`, com backoff e descarte da conexão em cada tentativa.
 
 Criar logical server dedicado ao Precificador.
 

@@ -100,7 +100,7 @@ O deploy:
 
 ## Azure SQL Serverless pausado
 
-O Azure SQL Serverless pode aparecer como `Paused` apos inatividade. Esse e o comportamento esperado de pausa do compute serverless: a primeira conexao faz o auto-resume e pode demorar mais. Por isso, a connection string da Web App por Managed Identity, a conexao de bootstrap e a conexao Entra usada pelas migrations usam `Connection Timeout=60`; o EF Core tambem preserva `EnableRetryOnFailure()` para falhas transitorias.
+O Azure SQL Serverless pode aparecer como `Paused` apos inatividade. Esse e o comportamento esperado de pausa do compute serverless: a primeira conexao faz o auto-resume e pode demorar mais. Por isso, a connection string da Web App por Managed Identity, a conexao de bootstrap e a conexao Entra usada pelas migrations usam `Connection Timeout=60`; o EF Core tambem preserva `EnableRetryOnFailure()` para falhas transitorias. Durante o bootstrap, `provision.ps1` tambem tenta novamente a abertura da conexao ate cinco vezes quando o Azure SQL retorna o erro transitorio `40613`, com backoff e descarte da conexao de cada tentativa.
 
 Isso e diferente de `AutoPause` por esgotamento da franquia Azure SQL Free. A pausa por inatividade e reversivel quando chega uma nova conexao. Ja o `AutoPause` da franquia gratuita impede o uso ate o inicio do proximo mes, para evitar cobranca por excedente. Nao alterar esse comportamento para continuidade paga.
 

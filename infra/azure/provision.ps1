@@ -254,6 +254,8 @@ function Remove-SqlFirewallRuleIfExists {
 function Invoke-Sql {
     param([Parameter(Mandatory = $true)][string]$Query)
 
+    $maximumAttempts = 5
+
     $token = Invoke-AzJson @(
         "account", "get-access-token",
         "--resource", "https://database.windows.net/"
@@ -262,23 +264,51 @@ function Invoke-Sql {
         throw "Azure CLI nao retornou access token para o bootstrap do Azure SQL."
     }
 
-    $connection = New-Object System.Data.SqlClient.SqlConnection
-    $connection.ConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Initial Catalog=$SqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;"
-    $connection.AccessToken = $token.accessToken
-    $command = $null
-    try {
-        $connection.Open()
-        $command = $connection.CreateCommand()
-        $command.CommandText = $Query
-        $command.CommandTimeout = 60
-        [void]$command.ExecuteNonQuery()
-    }
-    finally {
-        if ($null -ne $command) {
-            $command.Dispose()
+    $lastTransientError = $null
+    for ($attempt = 1; $attempt -le $maximumAttempts; $attempt++) {
+        $connection = $null
+        $command = $null
+        try {
+            $connection = New-Object System.Data.SqlClient.SqlConnection
+            $connection.ConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Initial Catalog=$SqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;"
+            $connection.AccessToken = $token.accessToken
+            try {
+                $connection.Open()
+            }
+            catch [System.Data.SqlClient.SqlException] {
+                $sqlError = $_.Exception
+                if ($sqlError.Number -ne 40613) {
+                    throw
+                }
+
+                $lastTransientError = $sqlError
+                if ($attempt -eq $maximumAttempts) {
+                    break
+                }
+
+                $delaySeconds = [Math]::Pow(2, $attempt)
+                Write-Warning "Azure SQL ainda esta retomando do estado Paused (erro 40613). Tentativa $attempt de $maximumAttempts; nova tentativa em $delaySeconds segundos."
+                Start-Sleep -Seconds $delaySeconds
+                continue
+            }
+
+            $command = $connection.CreateCommand()
+            $command.CommandText = $Query
+            $command.CommandTimeout = 60
+            [void]$command.ExecuteNonQuery()
+            return
         }
-        $connection.Dispose()
+        finally {
+            if ($null -ne $command) {
+                $command.Dispose()
+            }
+            if ($null -ne $connection) {
+                $connection.Dispose()
+            }
+        }
     }
+
+    throw "Bootstrap Azure SQL falhou apos $maximumAttempts tentativas durante o auto-resume. Erro SQL original 40613: $($lastTransientError.Message)"
 }
 
 function Assert-SameRegion {
