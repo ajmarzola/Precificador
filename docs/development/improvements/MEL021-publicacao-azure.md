@@ -99,7 +99,7 @@ A implementação deve revalidar disponibilidade regional e os parâmetros da of
 Validações de descoberta recomendadas:
 
 ~~~text
-az webapp list-runtimes --os linux --runtime dotnet
+az webapp list-runtimes --os linux
 az sql db list-editions -l <regiao> -o table
 ~~~
 

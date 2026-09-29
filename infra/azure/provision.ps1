@@ -124,9 +124,9 @@ function Assert-AzLogin {
 }
 
 function Get-DotNetRuntime {
-    $output = & az webapp list-runtimes --os linux --runtime dotnet -o json 2>&1
+    $output = & az webapp list-runtimes --os linux -o json 2>&1
     if ($LASTEXITCODE -ne 0) {
-        throw "A Azure CLI instalada nao suportou 'az webapp list-runtimes --os linux --runtime dotnet'. Atualize a Azure CLI antes de criar recursos. Erro: $($output -join [Environment]::NewLine)"
+        throw "A Azure CLI instalada nao suportou 'az webapp list-runtimes --os linux'. Atualize a Azure CLI antes de criar recursos. Erro: $($output -join [Environment]::NewLine)"
     }
 
     $runtimes = (($output -join [Environment]::NewLine) | ConvertFrom-Json)

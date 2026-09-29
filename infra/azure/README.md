@@ -64,7 +64,7 @@ az account show
 O script:
 
 - valida, em modo fail-closed, o login, a assinatura `Enabled`, o tenant e a subscription ja selecionados pelo operador;
-- descobre o runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
+- descobre o runtime Linux .NET 10 com `az webapp list-runtimes --os linux`;
 - valida F1, Azure SQL Free e `AutoPause` antes de criar recursos;
 - cria/usa Resource Group, App Service Plan F1, Web App, SQL logical server Entra-only e database Free;
 - configura `ConnectionStrings__Precificador` sem senha;

@@ -86,7 +86,7 @@ Deve:
 5. não executar `az account set` para corrigir contexto;
 6. somente depois criar/usar Resource Group;
 7. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
-4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
+4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux`;
 5. obter por parâmetro o Entra admin (nome + Object ID/SID);
 6. criar App Service Plan F1 Linux;
 7. criar Web App .NET 10;
