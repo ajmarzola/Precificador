@@ -56,7 +56,10 @@ Em **26/09/2026**, foi confirmada uma assinatura Azure utilizável. O bloqueio e
 Portanto:
 
 - a implementação e o provisionamento da MEL021 estão liberados;
-- o provisionamento deve continuar validando, antes de criar recursos, que a assinatura selecionada está ativa e que F1/Azure SQL Free estão disponíveis na região escolhida;
+- o provisionamento deve continuar validando, antes de qualquer operação mutável, que o tenant e a assinatura ativos na Azure CLI correspondem exatamente aos identificadores esperados e que F1/Azure SQL Free estão disponíveis na região escolhida;
+- `TenantId` e `SubscriptionId` são parâmetros obrigatórios de `provision.ps1` e `deploy.ps1`;
+- os scripts devem operar em modo **fail closed**: divergência de tenant/assinatura interrompe a execução antes de criar, alterar, migrar ou publicar qualquer recurso;
+- os scripts não devem trocar automaticamente tenant/assinatura com `az account set`; a seleção do contexto é uma ação explícita do operador antes da execução;
 - não versionar identificadores pessoais de conta, tenant ou subscription;
 - não avançar UC028 ou UCs seguintes antes de MEL021 estar concluída e mergeada.
 
@@ -190,6 +193,8 @@ Esse `AutoPause` é o **comportamento ao esgotar a franquia gratuita**. Ele não
 
 Ferramentas como SSMS/Visual Studio/SQL tooling devem ser desconectadas quando não estiverem em uso, pois conexões abertas podem impedir auto-pause e consumir a franquia de vCore.
 
+O estado `Paused` após inatividade é esperado para o compute Serverless e não representa, por si só, falha do banco. A primeira conexão após a pausa pode precisar aguardar o auto-resume; por isso a conexão hospedada e a conexão usada nas migrations devem usar `Connection Timeout=60` ou superior, mantendo também `EnableRetryOnFailure()` para falhas transitórias.
+
 Criar logical server dedicado ao Precificador.
 
 Usar autenticação **Microsoft Entra-only** como caminho normativo. Se a assinatura/tenant não permitir configurar o Entra admin necessário, interromper o provisionamento e informar o bloqueio; não habilitar senha SQL automaticamente.
@@ -231,7 +236,7 @@ Database=<database>;
 Authentication=Active Directory Managed Identity;
 Encrypt=True;
 TrustServerCertificate=False;
-Connection Timeout=30;
+Connection Timeout=60;
 ```
 
 `Active Directory Default` é aceitável se continuar passwordless e determinístico no App Service.
@@ -335,12 +340,38 @@ Azure CLI + PowerShell é a abordagem preferida.
 
 Scripts devem ser parametrizados e não conter senha, token, subscription/tenant pessoal fixo ou segredo.
 
+### Contexto Azure obrigatório e fail closed
+
+`TenantId` e `SubscriptionId` são obrigatórios em **ambos** os scripts.
+
+Antes de qualquer comando que possa criar, alterar, excluir, migrar ou publicar recursos, o script deve executar uma validação somente leitura equivalente a:
+
+```text
+az account show
+-> state == Enabled
+-> tenantId == TenantId esperado
+-> id == SubscriptionId esperado
+```
+
+Se qualquer comparação falhar, abortar imediatamente e informar o contexto atual e o esperado de forma adequada para uso local. Não executar `az account set` automaticamente para corrigir a divergência.
+
+O operador é responsável por selecionar explicitamente o contexto antes do script, por exemplo:
+
+```text
+az login --tenant <TenantId>
+az account set --subscription <SubscriptionId>
+az account show
+```
+
+Identificadores reais podem ser usados localmente como parâmetros, mas não devem ser hardcoded/versionados nem publicados como evidência na PR.
+
 ### provision.ps1
 
 Responsabilidades:
 
-- validar login/subscription;
-- criar/obter Resource Group;
+- exigir `TenantId` e `SubscriptionId`;
+- validar login e correspondência exata do tenant/subscription em modo fail closed, sem troca automática de contexto;
+- somente após essa validação criar/obter Resource Group;
 - validar disponibilidade regional do F1 e Azure SQL Free;
 - validar que o runtime Linux .NET 10 está disponível via descoberta da CLI;
 - validar que `AutoPause` continua sendo opção disponível da oferta gratuita e que `BillOverUsage` não será usado;
@@ -360,7 +391,7 @@ Responsabilidades:
 
 Responsabilidades:
 
-1. validar login/subscription;
+1. exigir `TenantId` e `SubscriptionId` e validar correspondência exata do contexto Azure em modo fail closed, antes de qualquer operação mutável;
 2. executar ou exigir restore/build/test/CI verde;
 3. aplicar migrations explicitamente;
 4. publicar `Precificador.Web` em Release;
@@ -509,6 +540,9 @@ Referências históricas podem permanecer se identificadas como históricas.
 - **CA37:** scripts falham em vez de trocar automaticamente para tier pago ou runtime incompatível.
 - **CA38:** App Service e Azure SQL são provisionados na mesma região.
 - **CA39:** pausa serverless por inatividade não é deliberadamente desabilitada para eliminar cold start.
+- **CA40:** `TenantId` e `SubscriptionId` são obrigatórios em provision/deploy e divergência aborta antes de qualquer operação mutável.
+- **CA41:** scripts não executam `az account set` automaticamente para trocar de assinatura/tenant.
+- **CA42:** connection strings Azure usadas pela aplicação e pelas migrations usam timeout de conexão de pelo menos 60 segundos, preservando retry para falhas transitórias.
 
 ## Matriz mínima
 
