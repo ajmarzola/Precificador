@@ -10,7 +10,12 @@ param(
 
     [string]$SqlDatabaseName = "precificador",
     [string]$AppServicePlanName = "",
-    [string]$SubscriptionId = "",
+
+    [Parameter(Mandatory = $true)]
+    [string]$TenantId,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SubscriptionId,
     [string]$OperatorIpAddress = ""
 )
 
@@ -95,12 +100,12 @@ function Assert-AzLogin {
         throw "A assinatura Azure selecionada precisa estar ativa/Enabled antes do deploy."
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($SubscriptionId) -and $account.id -ne $SubscriptionId) {
-        Invoke-Az @("account", "set", "--subscription", $SubscriptionId) | Out-Null
-        $account = Invoke-AzJson @("account", "show", "--query", "{id:id,name:name,state:state,tenantId:tenantId,user:user.name}")
-        if ($account.state -ne "Enabled") {
-            throw "A assinatura Azure informada nao esta ativa/Enabled."
-        }
+    if ($account.tenantId -ne $TenantId) {
+        throw "Tenant Azure selecionado diverge do TenantId informado. Selecione manualmente o contexto correto antes do deploy."
+    }
+
+    if ($account.id -ne $SubscriptionId) {
+        throw "Assinatura Azure selecionada diverge do SubscriptionId informado. Selecione manualmente o contexto correto antes do deploy."
     }
 
     Write-Host "Assinatura validada: $($account.name) ($($account.id)); tenant $($account.tenantId); usuario $($account.user)."
@@ -215,6 +220,9 @@ if ($null -eq $connectionSetting -or $connectionSetting.value -notmatch "Active 
 if ($connectionSetting.value -match "Password\s*=" -or $connectionSetting.value -match "User ID\s*=") {
     throw "Deploy interrompido: connection string contem credencial."
 }
+if ($connectionSetting.value -notmatch "(?i)Connection Timeout\s*=\s*([6-9][0-9]|[1-9][0-9]{2,})") {
+    throw "Deploy interrompido: ConnectionStrings__Precificador deve usar Connection Timeout de pelo menos 60 segundos."
+}
 
 Invoke-DotNet @("tool", "restore")
 Invoke-DotNet @("restore", "Precificador.slnx")
@@ -223,7 +231,7 @@ Invoke-DotNet @("test", "Precificador.slnx", "--configuration", "Release", "--no
 
 $operatorRule = "operator-migration-temp"
 $operatorIp = Get-PublicIp -ExplicitIp $OperatorIpAddress
-$migrationConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Database=$SqlDatabaseName;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+$migrationConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Database=$SqlDatabaseName;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;"
 
 try {
     Add-SqlFirewallIp -RuleName $operatorRule -IpAddress $operatorIp

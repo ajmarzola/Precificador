@@ -13,7 +13,12 @@ param(
 
     [string]$SqlDatabaseName = "precificador",
     [string]$AppServicePlanName = "",
-    [string]$SubscriptionId = "",
+
+    [Parameter(Mandatory = $true)]
+    [string]$TenantId,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SubscriptionId,
 
     [Parameter(Mandatory = $true)]
     [string]$EntraAdminName,
@@ -106,12 +111,12 @@ function Assert-AzLogin {
         throw "A assinatura Azure selecionada precisa estar ativa/Enabled antes do provisionamento."
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($SubscriptionId) -and $account.id -ne $SubscriptionId) {
-        Invoke-Az @("account", "set", "--subscription", $SubscriptionId) | Out-Null
-        $account = Invoke-AzJson @("account", "show", "--query", "{id:id,name:name,state:state,tenantId:tenantId,user:user.name}")
-        if ($account.state -ne "Enabled") {
-            throw "A assinatura Azure informada nao esta ativa/Enabled."
-        }
+    if ($account.tenantId -ne $TenantId) {
+        throw "Tenant Azure selecionado diverge do TenantId informado. Selecione manualmente o contexto correto antes do provisionamento."
+    }
+
+    if ($account.id -ne $SubscriptionId) {
+        throw "Assinatura Azure selecionada diverge do SubscriptionId informado. Selecione manualmente o contexto correto antes do provisionamento."
     }
 
     Write-Host "Assinatura validada: $($account.name) ($($account.id)); tenant $($account.tenantId); usuario $($account.user)."
@@ -258,7 +263,7 @@ function Invoke-Sql {
     }
 
     $connection = New-Object System.Data.SqlClient.SqlConnection
-    $connection.ConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Initial Catalog=$SqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+    $connection.ConnectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Initial Catalog=$SqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;"
     $connection.AccessToken = $token.accessToken
     $command = $null
     try {
@@ -378,7 +383,7 @@ if ($null -eq $db) {
     ) | Out-Null
 }
 
-$connectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Database=$SqlDatabaseName;Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+$connectionString = "Server=tcp:$SqlServerName.database.windows.net,1433;Database=$SqlDatabaseName;Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;"
 Invoke-Az @(
     "webapp", "config", "appsettings", "set",
     "-g", $ResourceGroupName,

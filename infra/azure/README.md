@@ -37,6 +37,16 @@ Fontes oficiais usadas pela MEL021:
 
 Escolha nomes unicos e uma regiao onde F1 Linux, runtime .NET 10 e Azure SQL Free estejam disponiveis.
 
+Antes de executar qualquer script, o operador deve autenticar-se e selecionar manualmente a assinatura correta. Os scripts nao executam `az account set` e apenas aceitam o contexto ja selecionado:
+
+```powershell
+az login --tenant <TenantId>
+az account set --subscription <SubscriptionId>
+az account show
+```
+
+`TenantId` e `SubscriptionId` sao obrigatorios nos dois scripts. Antes de qualquer operacao mutavel, cada script executa `az account show` e interrompe a execucao se a assinatura nao estiver `Enabled`, se `tenantId` for diferente do `TenantId` informado ou se `id` for diferente do `SubscriptionId` informado. Use os identificadores reais somente como parametros locais; nao os registre no repositorio ou na PR.
+
 ```powershell
 .\infra\azure\provision.ps1 `
   -ResourceGroupName rg-precificador-piloto `
@@ -44,6 +54,8 @@ Escolha nomes unicos e uma regiao onde F1 Linux, runtime .NET 10 e Azure SQL Fre
   -AppName app-precificador-piloto `
   -SqlServerName sql-precificador-piloto `
   -SqlDatabaseName precificador `
+  -TenantId <TenantId> `
+  -SubscriptionId <SubscriptionId> `
   -EntraAdminName usuario@dominio.com `
   -EntraAdminObjectId 00000000-0000-0000-0000-000000000000 `
   -EntraAdminPrincipalType User
@@ -51,7 +63,7 @@ Escolha nomes unicos e uma regiao onde F1 Linux, runtime .NET 10 e Azure SQL Fre
 
 O script:
 
-- valida login e assinatura ativa;
+- valida, em modo fail-closed, o login, a assinatura `Enabled`, o tenant e a subscription ja selecionados pelo operador;
 - descobre o runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
 - valida F1, Azure SQL Free e `AutoPause` antes de criar recursos;
 - cria/usa Resource Group, App Service Plan F1, Web App, SQL logical server Entra-only e database Free;
@@ -69,12 +81,14 @@ Se qualquer pre-condicao gratuita ou passwordless falhar, o script interrompe. E
   -ResourceGroupName rg-precificador-piloto `
   -AppName app-precificador-piloto `
   -SqlServerName sql-precificador-piloto `
-  -SqlDatabaseName precificador
+  -SqlDatabaseName precificador `
+  -TenantId <TenantId> `
+  -SubscriptionId <SubscriptionId>
 ```
 
 O deploy:
 
-1. valida login, F1, SQL Free + AutoPause, HTTPS Only e connection string passwordless;
+1. valida em modo fail-closed login, assinatura `Enabled`, tenant e subscription ja selecionados, alem de F1, SQL Free + AutoPause, HTTPS Only e connection string passwordless com `Connection Timeout=60` ou superior;
 2. executa `dotnet tool restore`;
 3. executa restore, build Release e testes Release;
 4. abre regra temporaria para o IP do operador;
@@ -83,6 +97,12 @@ O deploy:
 7. remove o IP temporario;
 8. publica Release e faz deploy zip;
 9. executa smoke HTTPS.
+
+## Azure SQL Serverless pausado
+
+O Azure SQL Serverless pode aparecer como `Paused` apos inatividade. Esse e o comportamento esperado de pausa do compute serverless: a primeira conexao faz o auto-resume e pode demorar mais. Por isso, a connection string da Web App por Managed Identity, a conexao de bootstrap e a conexao Entra usada pelas migrations usam `Connection Timeout=60`; o EF Core tambem preserva `EnableRetryOnFailure()` para falhas transitorias.
+
+Isso e diferente de `AutoPause` por esgotamento da franquia Azure SQL Free. A pausa por inatividade e reversivel quando chega uma nova conexao. Ja o `AutoPause` da franquia gratuita impede o uso ate o inicio do proximo mes, para evitar cobranca por excedente. Nao alterar esse comportamento para continuidade paga.
 
 ## Smoke manual obrigatorio
 
