@@ -28,7 +28,9 @@ A ordem obrigatória é:
 UC032 -> UC036 -> MEL021
 ```
 
-O gate externo de assinatura está atendido desde 26/09/2026. Não hardcodar subscription/tenant pessoal no repositório; a assinatura deve ser selecionada/validada em runtime pelos scripts.
+O gate externo de assinatura está atendido desde 26/09/2026. Não hardcodar subscription/tenant pessoal no repositório.
+
+**Correção obrigatória após validação da primeira publicação:** não confiar no contexto implícito da Azure CLI. `TenantId` e `SubscriptionId` devem ser parâmetros obrigatórios de `provision.ps1` e `deploy.ps1`. Os scripts devem apenas validar o contexto ativo; não devem trocar automaticamente tenant/assinatura.
 
 ## Invariantes
 
@@ -43,6 +45,10 @@ O gate externo de assinatura está atendido desde 26/09/2026. Não hardcodar sub
 - Azure SQL logical server com **Microsoft Entra-only + Entra administrator explícito**;
 - se Entra-only não puder ser configurado, parar; não habilitar SQL password como fallback;
 - App Service e Azure SQL obrigatoriamente na mesma região;
+- `TenantId` e `SubscriptionId` obrigatórios nos scripts;
+- antes de qualquer operação mutável, `az account show` deve confirmar `state=Enabled`, tenant esperado e subscription esperada;
+- divergência de contexto deve abortar a execução antes de criar, alterar, migrar ou publicar recurso;
+- **não** executar `az account set` automaticamente dentro dos scripts;
 - runtime da Web App somente `db_datareader` + `db_datawriter`;
 - `ConnectionStrings__Precificador` é a configuração do Azure;
 - Production não executa `Database.MigrateAsync()` automaticamente;
@@ -73,9 +79,13 @@ Scripts parametrizados; proibido versionar senha, token, subscription/tenant pes
 
 Deve:
 
-1. validar login/subscription;
-2. criar/usar Resource Group;
-3. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
+1. tornar `TenantId` e `SubscriptionId` parâmetros obrigatórios;
+2. executar preflight somente leitura com `az account show`;
+3. confirmar `state=Enabled`, `tenantId == TenantId` e `id == SubscriptionId`;
+4. abortar em qualquer divergência antes de operação mutável;
+5. não executar `az account set` para corrigir contexto;
+6. somente depois criar/usar Resource Group;
+7. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
 4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
 5. obter por parâmetro o Entra admin (nome + Object ID/SID);
 6. criar App Service Plan F1 Linux;
@@ -98,6 +108,8 @@ Service Connector passwordless é aceitável se o resultado final respeitar o co
 ## Resiliência
 
 Como a aplicação usa `UseSqlServer`, habilitar `EnableRetryOnFailure()` ou equivalente suportado pelo EF Core 10.
+
+O Azure SQL Serverless pode ficar `Paused` após inatividade; isso é comportamento esperado. A primeira conexão pode precisar aguardar o auto-resume. Corrigir as connection strings Azure usadas pela aplicação e pelas migrations para `Connection Timeout=60` ou superior, preservando `EnableRetryOnFailure()`.
 
 Não trocar provider entre desenvolvimento e Azure.
 
@@ -125,7 +137,11 @@ A Managed Identity runtime não recebe DDL.
 
 `deploy.ps1` deve:
 
-- validar login/subscription;
+- tornar `TenantId` e `SubscriptionId` parâmetros obrigatórios;
+- validar `az account show` em modo fail closed antes de migration, deploy ou qualquer alteração;
+- abortar se tenant/subscription atuais não forem exatamente os esperados;
+- não trocar automaticamente o contexto com `az account set`;
+- usar `Connection Timeout=60` ou superior na connection string Entra usada pelas migrations;
 - compilar/publicar Release;
 - aplicar migrations explicitamente;
 - fazer deploy para App Service;
@@ -162,6 +178,17 @@ Não alterar documentos históricos além do necessário para marcar contexto hi
 
 ## Validação antes da PR
 
+Antes de provision/deploy, validar localmente o contexto (sem publicar IDs pessoais na PR):
+
+```text
+az account show
+state == Enabled
+tenant atual == TenantId esperado
+subscription atual == SubscriptionId esperada
+```
+
+Em seguida:
+
 1. `dotnet restore Precificador.slnx`;
 2. `dotnet build Precificador.slnx --configuration Release --no-restore`;
 3. `dotnet test Precificador.slnx --configuration Release --no-build`;
@@ -175,4 +202,9 @@ Não alterar documentos históricos além do necessário para marcar contexto hi
 11. smoke Azure concluído;
 12. scripts sem segredo;
 13. MEL021 -> Concluído;
-14. UC028 permanece Planejado.
+14. UC028 permanece Planejado;
+15. execução com `TenantId` incorreto falha antes de qualquer mutação;
+16. execução com `SubscriptionId` incorreto falha antes de qualquer mutação;
+17. scripts não contêm troca automática de tenant/subscription;
+18. connection strings Azure da aplicação e das migrations usam `Connection Timeout=60` ou superior;
+19. documentação distingue `Paused` por inatividade do esgotamento da franquia Free.
