@@ -71,7 +71,7 @@ Regra operacional:
 | 11 | UC036 — Configurar e calcular custo de desgaste de equipamentos por Categoria | UC | Concluído | UC032, UC018, UC022 | [UC036](../use-cases/UC036-configurar-calcular-desgaste-equipamentos-categoria.md) |
 | 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Concluído | provisionamento, deploy e smoke real concluídos em 29/09/2026; merge da PR da MEL021 antes de UC028 | [MEL021](improvements/MEL021-publicacao-azure.md) |
 | 13 | MEL024 — Enriquecer listagem de Produtos com filtro por Categoria e indicadores atuais | MEL | Concluído | concluída como exceção explícita, sem liberar UC028 ou itens seguintes | [MEL024](improvements/MEL024-listagem-produtos-filtro-indicadores.md) |
-| 14 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Planejado | MEL021, MEL015, UC024; após MEL024 na fila | Documento a criar |
+| 14 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Pronto | MEL021, MEL015, UC024 e MEL024 concluídos | [UC028](../use-cases/UC028-consultar-resumo-margens.md) |
 | 15 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028 | Documento a criar |
 | 16 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028 | Documento a criar |
 | 17 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
@@ -79,7 +79,7 @@ Regra operacional:
 | 19 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
 | 20 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 21 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 22 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021; após estabilização do deploy manual reproduzível | Documento a criar |
+| 22 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021; antes da próxima publicação em produção após a versão inicial | Documento a criar |
 | 23 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Planejado | MEL021; após estabilização funcional e técnica da publicação | Documento a criar |
 | 24 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Planejado | MEL012; após MEL025 na fila | Documento a criar |
 | 25 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002, UC031; após MEL026 na fila | Documento a criar |
@@ -98,7 +98,7 @@ Regra operacional:
 - **18–19 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
 - **20 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
 - **21 — documentação técnica:** consolidar execução e teste local depois da infraestrutura e dos fluxos técnicos relevantes estarem estabilizados;
-- **22 — entrega contínua:** automatizar o deploy no Azure somente depois de o fluxo manual da MEL021 estar estabilizado e documentado, sem transformar CD em gate das funcionalidades de negócio;
+- **22 — entrega contínua:** automatizar o deploy no Azure após o fluxo manual da MEL021 estar estabilizado; MEL027 é gate da próxima publicação em produção, sem bloquear a implementação local das UCs funcionais anteriores;
 - **23–25 — acabamento e experiência do usuário:** tratar erros/404 de forma amigável, apresentar o Precificador na Home pública e permitir identidade visual tenant-aware por Empresa, sem misturar essas preocupações às regras de precificação;
 - **26 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais e a experiência visual estarem consolidados.
 

@@ -116,9 +116,11 @@ A UC036 está concluída. Ela não altera energia elétrica; adiciona um compone
 
 | UC | Nome | Dependências funcionais |
 |---|---|---|
-| UC028 | Consultar resumo de margens da Empresa Ativa | UC024 |
+| [UC028](UC028-consultar-resumo-margens.md) | Consultar resumo de margens da Empresa Ativa | UC024 |
 | UC029 | Filtrar produtos abaixo da margem | UC028 |
 | UC030 | Identificar produtos com precificação incompleta | UC017, UC028 |
+
+UC028 inaugura a superfície `/Dashboard` sobre Produtos ativos da Empresa Ativa, reutilizando a precificação atual em lote. Ela resume `SituacaoMargem` e apresenta valores correntes sem persistência. O filtro abaixo da margem pertence à UC029; a completude global da precificação, distinta de `SituacaoMargem.Incompleto`, pertence à UC030.
 
 ## Administração multiempresa
 
