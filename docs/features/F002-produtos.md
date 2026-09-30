@@ -8,6 +8,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 
 - cadastrar produto;
 - listar e pesquisar produtos;
+- filtrar Produtos ativos abaixo da Margem-alvo;
 - editar dados cadastrais;
 - desativar e reativar produto;
 - definir margem-alvo;
@@ -144,6 +145,8 @@ As páginas `/Produtos` e `/Produtos/Detalhes/{id}` mantêm consultas tenant-awa
 
 `q` continua restrito a Nome. A MEL024 adiciona `categoria` como filtro estruturado, incluindo Sem categoria e categorias inativas vinculadas.
 
+A UC029 acrescenta `filtro=abaixo-da-margem` à listagem. Esse recorte se combina por AND com `q` e `categoria`, usa `SituacaoMargem.AbaixoDaMargem` do resumo em lote e inclui somente Produtos ativos. Sem o recorte, Produtos inativos continuam visíveis normalmente.
+
 Preço sugerido e detalhes da Ficha Técnica permanecem ausentes da consulta. Custo, preço de prateleira e margem atuais são derivados em lote, sem persistência.
 
 ## Edição cadastral — UC009
@@ -184,7 +187,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC011 — Registrar preço de prateleira preservando snapshot de precificação](../use-cases/UC011-registrar-preco-prateleira-snapshot.md);
 - [UC012 — Consultar histórico de precificação do Produto](../use-cases/UC012-consultar-historico-precificacao-produto.md);
 - [UC024 — Calcular margem atual e situação](../use-cases/UC024-calcular-margem-atual-situacao.md);
-- [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md).
+- [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md);
+- [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`.
 
 ## Fora do escopo
 

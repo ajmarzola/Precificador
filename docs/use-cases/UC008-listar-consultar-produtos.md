@@ -6,6 +6,8 @@
 - **Sem alteração de schema:** este UC é exclusivamente de consulta/apresentação
 
 > Evolução MEL024: a listagem agora admite o filtro estruturado `categoria` e expõe custo unitário atual, preço de prateleira vigente e margem atual. `q` continua exclusivo para Nome; os indicadores são derivados em lote e não persistidos.
+>
+> Evolução UC029: `/Produtos` também admite `filtro=abaixo-da-margem`, combinado por AND com `q` e `categoria`. O recorte usa `SituacaoMargem.AbaixoDaMargem` do resumo em lote e inclui somente Produtos ativos; sem o recorte, inativos continuam visíveis.
 
 ## Objetivo
 
@@ -143,6 +145,8 @@ O UC008 não deve criar schema adicional nem introduzir normalização técnica 
 A implementação atual de `Insumos/Index` já usa normalização simples da query no próprio PageModel (`trim`, colapso de whitespace e `ToUpperInvariant`). O UC008 pode seguir o mesmo padrão sem extrair agora uma abstração compartilhada entre áreas. Se a duplicação evoluir para um padrão recorrente em mais telas, registrar/refatorar posteriormente com evidência real.
 
 A MEL024 formaliza o filtro estruturado `categoria`: vazio lista todas, `sem-categoria` seleciona Produtos sem Categoria e um inteiro positivo seleciona a Categoria correspondente. Valores inválidos, inexistentes ou cross-tenant retornam zero resultados. Categorias ativas e inativas são opções do seletor; a pesquisa textual continua exclusivamente em Nome.
+
+A UC029 acrescenta o parâmetro estruturado `filtro`. O único valor introduzido por ela é `abaixo-da-margem`. Quando presente, `q AND categoria AND filtro` define o conjunto final. O recorte de margem é aplicado a partir da `SituacaoMargem` calculada em lote e exclui Produtos inativos. Valor de `filtro` inválido retorna zero resultados sem ampliar silenciosamente para a visão completa.
 
 ### Normalização da consulta
 
@@ -362,7 +366,7 @@ Nenhuma migration/ModelSnapshot.
 
 ### CA20 — Sem escopo antecipado
 
-Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024.
+Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024 e do recorte abaixo da margem introduzido pela UC029.
 
 ## Matriz de testes fechada antes da implementação
 
