@@ -204,6 +204,61 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     }
 
     [Fact]
+    public async Task UC029_Recorte_abaixo_da_margem_exclui_inativo_e_preserva_visao_sem_recorte()
+    {
+        var abaixo = await CriarProdutoPrecificavelAsync("Abaixo", 10m, 5m, ativo: true);
+        var dentro = await CriarProdutoPrecificavelAsync("Dentro", 10m, 20m, ativo: true);
+        var inativo = await CriarProdutoPrecificavelAsync("Inativo abaixo", 10m, 5m, ativo: false);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var filtrado = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?filtro=abaixo-da-margem"));
+        var completo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+
+        Assert.Contains(abaixo.Nome, filtrado);
+        Assert.DoesNotContain(dentro.Nome, filtrado);
+        Assert.DoesNotContain(inativo.Nome, filtrado);
+        Assert.Contains(inativo.Nome, completo);
+        Assert.Contains("Abaixo da margem", filtrado);
+    }
+
+    [Fact]
+    public async Task UC029_Filtro_invalido_retorna_lista_vazia_e_limpar_filtros()
+    {
+        var produto = await CriarProdutoPrecificavelAsync("Produto", 10m, 5m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var resposta = await client.GetAsync("/Produtos?q=Produto&filtro=nao-suportado");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(resposta);
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.DoesNotContain(produto.Nome, conteudo);
+        Assert.Contains("Filtro de margem inválido.", conteudo);
+        Assert.Contains("Limpar filtros", conteudo);
+    }
+
+    [Fact]
+    public async Task UC029_Combina_pesquisa_categoria_e_recorte_por_and_e_mantem_os_campos_no_formulario()
+    {
+        var encontrado = await CriarProdutoPrecificavelAsync("Agenda alvo", 10m, 5m, ativo: true, categoria: "Papelaria");
+        var outraCategoria = await CriarProdutoPrecificavelAsync("Agenda outra", 10m, 5m, ativo: true, categoria: "Outra");
+        var dentro = await CriarProdutoPrecificavelAsync("Agenda dentro", 10m, 20m, ativo: true, categoria: "Papelaria");
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        var categoriaId = await context.CategoriasProdutos.Where(item => item.Nome == "Papelaria").Select(item => item.Id).SingleAsync();
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos?q=Agenda&categoria={categoriaId}&filtro=abaixo-da-margem"));
+
+        Assert.Contains(encontrado.Nome, conteudo);
+        Assert.DoesNotContain(outraCategoria.Nome, conteudo);
+        Assert.DoesNotContain(dentro.Nome, conteudo);
+        Assert.Contains("name=\"q\" value=\"AGENDA\"", conteudo);
+        Assert.Matches($"<option\\b(?=[^>]*\\bvalue=\"{categoriaId}\")(?=[^>]*\\bselected(?:=\"selected\")?)[^>]*>", conteudo);
+        Assert.Contains("value=\"abaixo-da-margem\" selected", conteudo);
+    }
+
+    [Fact]
     public async Task CA14_CA15_Detalhes_exibem_somente_campos_permitidos()
     {
         var nomeProduto = NomeUnico("Produto detalhes");
@@ -302,7 +357,7 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         return produto.Id;
     }
 
-    private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(string prefixo, decimal custo, decimal preco, bool ativo)
+    private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(string prefixo, decimal custo, decimal preco, bool ativo, string? categoria = null)
     {
         using var scope = factory.Services.CreateScope();
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
@@ -310,7 +365,8 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
         configuracao.Atualizar(0m, 0m, null, null, .10m);
         var nome = NomeUnico(prefixo);
-        var produto = Produto.Criar(1, nome, .30m); if (!ativo) produto.Desativar();
+        int? categoriaId = categoria is null ? null : await ObterOuCriarCategoriaIdAsync(context, 1, categoria);
+        var produto = Produto.Criar(1, nome, .30m, categoriaId); if (!ativo) produto.Desativar();
         context.Produtos.Add(produto); await context.SaveChangesAsync();
         var ficha = FichaTecnica.Criar(1, produto.Id, 1m);
         var insumo = Insumo.Criar(1, NomeUnico("Insumo"), CategoriaInsumo.MateriaPrima, UnidadeMedida.Unidade);

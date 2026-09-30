@@ -4,7 +4,7 @@
 - **Superfície relacionada:** F002 / UC008 — listagem de Produtos
 - **Dependências funcionais:** UC028 e MEL024
 - **Dependências operacionais concluídas:** MEL028
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** não
 - **Persistência de resultado:** não
 - **Natureza:** consulta somente leitura

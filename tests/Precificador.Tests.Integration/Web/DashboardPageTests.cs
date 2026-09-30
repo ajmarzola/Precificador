@@ -97,6 +97,44 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         Assert.Equal(2, await verificacao.Insumos.CountAsync());
     }
 
+    [Fact]
+    public async Task UC029_Filtro_abaixo_da_margem_preserva_cards_globais_e_exclui_demais_situacoes()
+    {
+        var empresa = await web.CriarEmpresaAsync();
+        var abaixo = await CriarProdutoPrecificavelAsync(empresa, "Abaixo", 10m, 5m, ativo: true);
+        var dentro = await CriarProdutoPrecificavelAsync(empresa, "Dentro", 10m, 20m, ativo: true);
+        var incompleto = await CriarProdutoSemFichaAsync(empresa, "Incompleto", 20m);
+        var inativo = await CriarProdutoPrecificavelAsync(empresa, "Inativo", 10m, 5m, ativo: false);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard?filtro=%20ABAiXO-da-MARGEM%20"));
+
+        Assert.Contains(abaixo.Nome, conteudo);
+        Assert.DoesNotContain(dentro.Nome, conteudo);
+        Assert.DoesNotContain(incompleto.Nome, conteudo);
+        Assert.DoesNotContain(inativo.Nome, conteudo);
+        Assert.Contains("Produtos ativos</div><strong>3", conteudo);
+        Assert.Contains("Abaixo da margem</div><strong>1", conteudo);
+        Assert.Contains("Todos os ativos", conteudo);
+        Assert.Contains("filtro=abaixo-da-margem", conteudo);
+    }
+
+    [Fact]
+    public async Task UC029_Filtro_invalido_nao_amplia_a_lista_e_oferece_recuperacao()
+    {
+        var empresa = await web.CriarEmpresaAsync();
+        var produto = await CriarProdutoPrecificavelAsync(empresa, "Produto", 10m, 5m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var resposta = await client.GetAsync("/Dashboard?filtro=invalido");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(resposta);
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.DoesNotContain(produto.Nome, conteudo);
+        Assert.Contains("Filtro do Dashboard inválido.", conteudo);
+        Assert.Contains("Mostrar todos", conteudo);
+    }
+
     private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(int empresaId, string nome, decimal custo, decimal preco, bool ativo, decimal? incrementoComercial = .50m)
     {
         using var scope = factory.Services.CreateScope();

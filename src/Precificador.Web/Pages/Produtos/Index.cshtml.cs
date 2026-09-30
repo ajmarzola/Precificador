@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Precificacao;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Precificacao;
 
@@ -12,13 +13,18 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
     public IReadOnlyList<SelectListItem> Categorias { get; private set; } = [];
     public string? Consulta { get; private set; }
     public string? Categoria { get; private set; }
-    public bool TemFiltros => Consulta is not null || Categoria is not null;
+    public string? Filtro { get; private set; }
+    public bool FiltroInvalido { get; private set; }
+    public bool TemFiltros => Consulta is not null || Categoria is not null || Filtro is not null || FiltroInvalido;
     public bool TemPesquisa => Consulta is not null;
 
-    public async Task OnGetAsync(string? q, string? categoria = null)
+    public async Task OnGetAsync(string? q, string? categoria = null, string? filtro = null)
     {
         Consulta = NormalizarConsulta(q);
         Categoria = NormalizarCategoria(categoria);
+        var filtroMargem = NormalizarFiltro(filtro);
+        Filtro = filtroMargem == FiltroMargem.AbaixoDaMargem ? "abaixo-da-margem" : null;
+        FiltroInvalido = filtroMargem == FiltroMargem.Invalido;
         var categoriasCarregadas = await context.CategoriasProdutos.AsNoTracking()
             .OrderBy(item => item.NomeNormalizado)
             .Select(item => new { item.Id, item.Nome, item.Ativo })
@@ -31,6 +37,11 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
                 item.Id.ToString(),
                 Categoria == item.Id.ToString()))
         ];
+        if (FiltroInvalido)
+        {
+            Produtos = [];
+            return;
+        }
         var consulta = context.Produtos.AsNoTracking();
 
         if (Consulta is not null)
@@ -50,6 +61,10 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         {
             consulta = consulta.Where(_ => false);
         }
+        if (filtroMargem == FiltroMargem.AbaixoDaMargem)
+        {
+            consulta = consulta.Where(produto => produto.Ativo);
+        }
 
         var produtos = await consulta
             .OrderBy(produto => produto.NomeNormalizado)
@@ -67,8 +82,12 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
             .ToListAsync();
         var resumos = await resumoPrecificacao.CalcularAsync(produtos.Select(produto => produto.Id).ToArray());
         Produtos = produtos.Select(produto => resumos.TryGetValue(produto.Id, out var resumo)
-            ? produto with { CustoUnitarioProduto = resumo.CustoUnitarioProduto, PrecoPrateleiraAtual = resumo.PrecoPrateleiraAtual, MargemAtual = resumo.MargemAtual }
+            ? produto with { CustoUnitarioProduto = resumo.CustoUnitarioProduto, PrecoPrateleiraAtual = resumo.PrecoPrateleiraAtual, MargemAtual = resumo.MargemAtual, SituacaoMargem = resumo.SituacaoMargem }
             : produto).ToList();
+        if (filtroMargem == FiltroMargem.AbaixoDaMargem)
+        {
+            Produtos = Produtos.Where(produto => produto.SituacaoMargem == SituacaoMargemProduto.AbaixoDaMargem).ToList();
+        }
     }
 
     public static string? NormalizarConsulta(string? consulta)
@@ -80,6 +99,17 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
     private static string? NormalizarCategoria(string? categoria) =>
         string.IsNullOrWhiteSpace(categoria) ? null : categoria.Trim();
 
+    private static FiltroMargem NormalizarFiltro(string? filtro)
+    {
+        if (string.IsNullOrWhiteSpace(filtro)) return FiltroMargem.Todos;
+        return string.Equals(filtro.Trim(), "abaixo-da-margem", StringComparison.OrdinalIgnoreCase)
+            ? FiltroMargem.AbaixoDaMargem
+            : FiltroMargem.Invalido;
+    }
+
     public sealed record ProdutoListagem(int Id, string Nome, string? Categoria, decimal MargemAlvo, bool Ativo,
-        decimal? CustoUnitarioProduto, decimal? PrecoPrateleiraAtual, decimal? MargemAtual);
+        decimal? CustoUnitarioProduto, decimal? PrecoPrateleiraAtual, decimal? MargemAtual,
+        SituacaoMargemProduto SituacaoMargem = SituacaoMargemProduto.Incompleto);
+
+    private enum FiltroMargem { Todos, AbaixoDaMargem, Invalido }
 }
