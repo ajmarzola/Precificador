@@ -45,7 +45,9 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
             if (string.IsNullOrWhiteSpace(ReturnUrl)) return RedirectToPage("/Dashboard/Index");
             return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToPage("/Dashboard/Index");
         }
-        return RedirectToPage("/Empresas/Selecionar");
+        return Url?.IsLocalUrl(ReturnUrl) == true
+            ? RedirectToPage("/Empresas/Selecionar", new { ReturnUrl })
+            : RedirectToPage("/Empresas/Selecionar");
     }
     public sealed class InputModel { [Required, EmailAddress] public string Email { get; set; } = string.Empty; [Required, DataType(DataType.Password)] public string Senha { get; set; } = string.Empty; }
 }

@@ -705,7 +705,7 @@ Além da DoD global:
 - /Produtos protegido por EmpresaAtiva;
 - /Produtos/Novo com apenas campos autorizados;
 - PRG + mensagem;
-- Home permite navegar ao cadastro;
+- requisito histórico de navegação da Home superado pela UC028;
 - nenhuma listagem do UC008;
 - nenhum preço/ficha/custo antecipado;
 - F002/catálogo/backlog/ordem/regras/glossário ficam coerentes;

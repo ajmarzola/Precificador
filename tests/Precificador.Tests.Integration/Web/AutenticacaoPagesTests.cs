@@ -143,6 +143,37 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
     }
 
     [Fact]
+    public async Task Login_com_multiplas_empresas_preserva_return_url_local_apos_selecao()
+    {
+        var web = new WebTestContext(factory);
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        using var client = web.CriarCliente();
+        var tokenLogin = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Conta/Login?ReturnUrl=%2FProdutos");
+
+        var login = await client.PostAsync("/Conta/Login?ReturnUrl=%2FProdutos", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = tokenLogin,
+            ["ReturnUrl"] = "/Produtos",
+            ["Input.Email"] = usuario.Email,
+            ["Input.Senha"] = usuario.Senha
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
+        Assert.Equal("/Empresas/Selecionar?ReturnUrl=%2FProdutos", login.Headers.Location!.ToString());
+        var tokenSelecao = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Empresas/Selecionar?ReturnUrl=%2FProdutos");
+        var selecao = await client.PostAsync("/Empresas/Selecionar?ReturnUrl=%2FProdutos", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = tokenSelecao,
+            ["EmpresaId"] = empresaDois.ToString(),
+            ["ReturnUrl"] = "/Produtos"
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, selecao.StatusCode);
+        Assert.Equal("/Produtos", selecao.Headers.Location!.ToString());
+    }
+
+    [Fact]
     public async Task Selecao_explicita_de_empresa_redireciona_para_dashboard()
     {
         var web = new WebTestContext(factory);

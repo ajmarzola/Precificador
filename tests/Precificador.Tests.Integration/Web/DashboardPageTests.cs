@@ -27,11 +27,12 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
     [Fact]
     public async Task CA05_a_CA26_Resume_ativos_com_valores_atuais_e_ordem_por_nome()
     {
-        var dentro = await CriarProdutoPrecificavelAsync(1, "Zeta dentro", 10m, 20m, ativo: true);
-        var abaixo = await CriarProdutoPrecificavelAsync(1, "Alfa abaixo", 10m, 5m, ativo: true);
-        var inativo = await CriarProdutoPrecificavelAsync(1, "Inativo", 10m, 20m, ativo: false);
-        var semMargem = await CriarProdutoSemFichaAsync(1, "Meio sem margem", 20m);
-        using var client = await web.CriarClienteAutenticadoAsync(1);
+        var empresa = await web.CriarEmpresaAsync();
+        var dentro = await CriarProdutoPrecificavelAsync(empresa, "Zeta dentro", 10m, 20m, ativo: true);
+        var abaixo = await CriarProdutoPrecificavelAsync(empresa, "Alfa abaixo", 10m, 5m, ativo: true);
+        var inativo = await CriarProdutoPrecificavelAsync(empresa, "Inativo", 10m, 20m, ativo: false);
+        var semMargem = await CriarProdutoSemFichaAsync(empresa, "Meio sem margem", 20m);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard"));
 
@@ -56,11 +57,12 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
     [Fact]
     public async Task CA08_CA25_Conta_insumos_do_tenant_e_incremento_ausente_nao_invalida_margem()
     {
-        var produto = await CriarProdutoPrecificavelAsync(1, "Produto incremento ausente", 10m, 20m, ativo: true, incrementoComercial: null);
-        await CriarProdutoPrecificavelAsync(1, "Produto inativo", 10m, 20m, ativo: false, incrementoComercial: null);
+        var empresa = await web.CriarEmpresaAsync();
+        var produto = await CriarProdutoPrecificavelAsync(empresa, "Produto incremento ausente", 10m, 20m, ativo: true, incrementoComercial: null);
+        await CriarProdutoPrecificavelAsync(empresa, "Produto inativo", 10m, 20m, ativo: false, incrementoComercial: null);
         var empresaExterna = await web.CriarEmpresaAsync();
         var externo = await CriarProdutoPrecificavelAsync(empresaExterna, "Produto externo", 10m, 20m, ativo: true);
-        using var client = await web.CriarClienteAutenticadoAsync(1);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard"));
         var linha = LinhaProduto(conteudo, produto.Nome);
