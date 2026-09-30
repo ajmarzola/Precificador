@@ -22,7 +22,7 @@ public sealed class SelecionarModel(PrecificadorDbContext context, EmpresaContex
         if (!autorizada) { ModelState.AddModelError(string.Empty, "Empresa indisponível para este usuário."); Empresas = await ObterEmpresasAsync(); return Page(); }
         var empresa = await context.Empresas.SingleAsync(empresa => empresa.Id == EmpresaId);
         empresaContext.Definir(EmpresaId, empresa.Nome, empresa.TimeZoneId);
-        return RedirectToPage("/Index");
+        return RedirectToPage("/Dashboard/Index");
     }
     private async Task<List<SelectListItem>> ObterEmpresasAsync()
     {

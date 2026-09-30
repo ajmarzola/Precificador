@@ -46,7 +46,7 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
             itens.Select(item => item.InsumoId).Distinct().ToArray(), dataOperacionalEmpresa.Hoje, cancellationToken);
         var registrosAtuais = await context.RegistrosPrecosProdutos.AsNoTracking().SelecionarAtuaisAsync(ids, cancellationToken);
         var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(item => new ConfiguracaoCarregada(item.PercentualMaoDeObra, item.TarifaEnergiaKwh))
+            .Select(item => new ConfiguracaoCarregada(item.PercentualMaoDeObra, item.TarifaEnergiaKwh, item.IncrementoComercial))
             .SingleOrDefaultAsync(cancellationToken);
 
         var itensPorFicha = itens.GroupBy(item => item.FichaTecnicaId).ToDictionary(grupo => grupo.Key, grupo => grupo.ToArray());
@@ -78,8 +78,9 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
                 itensCalculados.CustoBaseItens);
             var custo = CalculadoraCustoProduto.Calcular(itensCalculados.CustoBaseItens, perdas.CustoPerdasLote,
                 maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, desgaste.CustoDesgasteEquipamentosLote, ficha.Rendimento);
+            var preco = CalculadoraPrecoProduto.Calcular(custo.CustoUnitarioProduto, produto.MargemAlvo, configuracao.IncrementoComercial);
             var margem = CalculadoraMargemAtual.Calcular(custo.CustoUnitarioProduto, precoPrateleira, produto.MargemAlvo);
-            resultado.Add(produto.Id, new ResumoPrecificacaoProdutoAtual(produto.Id, custo.CustoUnitarioProduto, precoPrateleira, margem.MargemAtual, margem.Situacao));
+            resultado.Add(produto.Id, new ResumoPrecificacaoProdutoAtual(produto.Id, custo.CustoUnitarioProduto, precoPrateleira, preco.PrecoSugerido, margem.MargemAtual, margem.Situacao));
         }
 
         return resultado;
@@ -88,7 +89,7 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
     private static ResumoPrecificacaoProdutoAtual Incompleto(int produtoId, decimal margemAlvo, decimal? precoPrateleira)
     {
         var margem = CalculadoraMargemAtual.Calcular(null, precoPrateleira, margemAlvo);
-        return new ResumoPrecificacaoProdutoAtual(produtoId, null, precoPrateleira, margem.MargemAtual, margem.Situacao);
+        return new ResumoPrecificacaoProdutoAtual(produtoId, null, precoPrateleira, null, margem.MargemAtual, margem.Situacao);
     }
 
     private sealed record ProdutoCarregado(int Id, decimal MargemAlvo, int? CategoriaProdutoId);
@@ -96,12 +97,13 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
     private sealed record FichaCarregada(int Id, int ProdutoId, decimal Rendimento);
     private sealed record ItemCarregado(int Id, int FichaTecnicaId, int InsumoId, decimal Quantidade, decimal PercentualPerda);
     private sealed record UsoCarregado(int FichaTecnicaId, int Id, decimal PotenciaKw, int TempoUsoMinutos);
-    private sealed record ConfiguracaoCarregada(decimal PercentualMaoDeObra, decimal? TarifaEnergiaKwh);
+    private sealed record ConfiguracaoCarregada(decimal PercentualMaoDeObra, decimal? TarifaEnergiaKwh, decimal? IncrementoComercial);
 }
 
 public sealed record ResumoPrecificacaoProdutoAtual(
     int ProdutoId,
     decimal? CustoUnitarioProduto,
     decimal? PrecoPrateleiraAtual,
+    decimal? PrecoSugerido,
     decimal? MargemAtual,
     SituacaoMargemProduto SituacaoMargem);

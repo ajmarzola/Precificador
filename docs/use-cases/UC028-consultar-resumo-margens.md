@@ -3,7 +3,7 @@
 - **Funcionalidade:** F005 — Dashboard de Margens
 - **Dependências funcionais:** UC024
 - **Dependências operacionais concluídas:** MEL015, MEL021 e MEL024
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** não
 - **Persistência de resultado:** não
 - **Natureza:** consulta somente leitura

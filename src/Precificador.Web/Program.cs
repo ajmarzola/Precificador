@@ -14,6 +14,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Insumos", "EmpresaAtiva");
     options.Conventions.AuthorizeFolder("/Produtos", "EmpresaAtiva");
     options.Conventions.AuthorizeFolder("/Configuracoes", "EmpresaAtiva");
+    options.Conventions.AuthorizeFolder("/Dashboard", "EmpresaAtiva");
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
