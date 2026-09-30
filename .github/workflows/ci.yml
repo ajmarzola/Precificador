@@ -6,15 +6,80 @@ on:
   push:
     branches: [master]
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-dotnet@v5
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Classify CI mode
+        id: classify
+        shell: bash
+        run: |
+          mode=full
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+
+            if git cat-file -e "${base}^{commit}" 2>/dev/null && \
+              git cat-file -e "${head}^{commit}" 2>/dev/null && \
+              files="$(git diff --name-only "${base}...${head}")"; then
+              if [[ -n "${files}" ]]; then
+                mode=documentation-only
+                while IFS= read -r file; do
+                  case "${file}" in
+                    docs/*) ;;
+                    *.md)
+                      [[ "${file}" != */* ]] || mode=full
+                      ;;
+                    *) mode=full ;;
+                  esac
+                done <<< "${files}"
+              fi
+            fi
+          fi
+
+          echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+      - name: Report CI mode
+        run: |
+          echo "CI mode: ${{ steps.classify.outputs.mode }}"
+      - name: Check diff whitespace
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --check "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+          else
+            before="${{ github.event.before }}"
+            head="${{ github.sha }}"
+
+            if git cat-file -e "${before}^{commit}" 2>/dev/null; then
+              git diff --check "${before}" "${head}"
+            else
+              git diff --check "$(git hash-object -t tree /dev/null)" "${head}"
+            fi
+          fi
+      - name: Setup .NET
+        if: steps.classify.outputs.mode == 'full'
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
-      - run: dotnet tool restore
-      - run: dotnet restore Precificador.slnx
-      - run: dotnet build Precificador.slnx --configuration Release --no-restore
-      - run: dotnet test Precificador.slnx --configuration Release --no-build
+      - name: Restore
+        if: steps.classify.outputs.mode == 'full'
+        run: dotnet restore Precificador.slnx
+      - name: Build Release
+        if: steps.classify.outputs.mode == 'full'
+        run: dotnet build Precificador.slnx --configuration Release --no-restore
+      - name: Unit tests
+        if: steps.classify.outputs.mode == 'full'
+        run: dotnet test tests/Precificador.Tests.Unit/Precificador.Tests.Unit.csproj --configuration Release --no-build
+      - name: Integration tests
+        if: steps.classify.outputs.mode == 'full'
+        run: dotnet test tests/Precificador.Tests.Integration/Precificador.Tests.Integration.csproj --configuration Release --no-build

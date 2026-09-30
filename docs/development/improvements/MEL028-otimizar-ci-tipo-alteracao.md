@@ -3,7 +3,7 @@
 - **Origem:** observação operacional durante a validação documental da UC028.
 - **Classificação:** CI / feedback de PR / eficiência operacional.
 - **Prioridade:** alta.
-- **Estado:** Especificado.
+- **Estado:** Concluído.
 - **Ordem na fila pendente:** 15.
 - **Dependências funcionais:** nenhuma.
 - **Gate operacional:** executar após UC028 e antes de UC029.
