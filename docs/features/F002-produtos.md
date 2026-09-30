@@ -187,7 +187,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC011 — Registrar preço de prateleira preservando snapshot de precificação](../use-cases/UC011-registrar-preco-prateleira-snapshot.md);
 - [UC012 — Consultar histórico de precificação do Produto](../use-cases/UC012-consultar-historico-precificacao-produto.md);
 - [UC024 — Calcular margem atual e situação](../use-cases/UC024-calcular-margem-atual-situacao.md);
-- [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md).
+- [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md);
+- [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`.
 
 ## Fora do escopo
 
