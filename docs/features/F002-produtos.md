@@ -8,6 +8,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 
 - cadastrar produto;
 - listar e pesquisar produtos;
+- filtrar Produtos ativos abaixo da Margem-alvo;
 - editar dados cadastrais;
 - desativar e reativar produto;
 - definir margem-alvo;
@@ -143,6 +144,8 @@ As páginas `/Produtos` e `/Produtos/Detalhes/{id}` mantêm consultas tenant-awa
 - preservar isolamento tenant-aware.
 
 `q` continua restrito a Nome. A MEL024 adiciona `categoria` como filtro estruturado, incluindo Sem categoria e categorias inativas vinculadas.
+
+A UC029 acrescenta `filtro=abaixo-da-margem` à listagem. Esse recorte se combina por AND com `q` e `categoria`, usa `SituacaoMargem.AbaixoDaMargem` do resumo em lote e inclui somente Produtos ativos. Sem o recorte, Produtos inativos continuam visíveis normalmente.
 
 Preço sugerido e detalhes da Ficha Técnica permanecem ausentes da consulta. Custo, preço de prateleira e margem atuais são derivados em lote, sem persistência.
 
