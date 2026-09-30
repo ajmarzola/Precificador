@@ -10,6 +10,8 @@ Dar visão rápida dos produtos que precisam de atenção após mudanças em pre
 
 UC028 cria `/Dashboard` e considera somente Produtos ativos da Empresa Ativa.
 
+O Dashboard também passa a ser a **página inicial operacional** após autenticação e resolução da Empresa Ativa. A Home `/` permanece pública para anônimos; para usuário autenticado com Empresa Ativa, `/` redireciona para `/Dashboard`. Login sem `ReturnUrl` e seleção explícita de Empresa também terminam no Dashboard.
+
 Indicadores:
 
 - quantidade de Produtos ativos;
