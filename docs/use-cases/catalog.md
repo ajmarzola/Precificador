@@ -122,7 +122,7 @@ A UC036 está concluída. Ela não altera energia elétrica; adiciona um compone
 
 UC028 foi concluída com a superfície `/Dashboard` sobre Produtos ativos da Empresa Ativa, reutilizando a precificação atual em lote. Ela resume `SituacaoMargem` e apresenta valores correntes sem persistência.
 
-UC029 acrescenta o recorte `filtro=abaixo-da-margem` sem alterar o significado dos cards globais e sem recalcular Produto por Produto. A completude global da precificação, distinta de `SituacaoMargem.Incompleto`, permanece responsabilidade da UC030.
+UC029 acrescenta o recorte `filtro=abaixo-da-margem` tanto ao Dashboard quanto à listagem `/Produtos`. No Dashboard, os cards continuam globais; em `/Produtos`, o recorte combina por AND com pesquisa/Categoria e mantém o processamento em lote, sem recalcular Produto por Produto. A completude global da precificação, distinta de `SituacaoMargem.Incompleto`, permanece responsabilidade da UC030.
 
 ## Administração multiempresa
 
