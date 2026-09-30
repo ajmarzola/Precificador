@@ -1,7 +1,6 @@
 @page
 @model Precificador.Web.Pages.Produtos.IndexModel
 @using Precificador.Web.Apresentacao
-@using Precificador.Web.Pages.Dashboard
 @{
     ViewData["Title"] = "Produtos";
 }
@@ -89,7 +88,7 @@ else
                         <ul class="mb-0">
                         @foreach (var motivo in produto.MotivosPrecificacaoIncompleta ?? [])
                         {
-                            <li>@Precificador.Web.Pages.Dashboard.IndexModel.MotivoPrecificacaoRotulo(motivo)</li>
+                            <li>@PrecificacaoRotulos.MotivoIncompleto(motivo)</li>
                         }
                         </ul>
                     }

@@ -79,18 +79,6 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         _ => "Margem indisponível"
     };
 
-    public static string MotivoPrecificacaoRotulo(MotivoPrecificacaoIncompleta motivo) => motivo switch
-    {
-        MotivoPrecificacaoIncompleta.FichaTecnicaAusente => "Ficha técnica não cadastrada",
-        MotivoPrecificacaoIncompleta.FichaTecnicaSemItens => "Ficha técnica sem itens",
-        MotivoPrecificacaoIncompleta.InsumoSemPrecoVigente => "Insumo sem preço vigente",
-        MotivoPrecificacaoIncompleta.ConfiguracaoPrecificacaoAusente => "Configuração de precificação não encontrada",
-        MotivoPrecificacaoIncompleta.TarifaEnergiaNaoConfigurada => "Tarifa de energia não configurada",
-        MotivoPrecificacaoIncompleta.IncrementoComercialNaoConfigurado => "Incremento comercial não configurado",
-        MotivoPrecificacaoIncompleta.PrecoPrateleiraNaoDefinido => "Preço de prateleira não definido",
-        _ => throw new ArgumentOutOfRangeException(nameof(motivo))
-    };
-
     public sealed record ProdutoDashboard(int Id, string Nome, decimal MargemAlvo, decimal? CustoUnitarioProduto,
         decimal? PrecoPrateleiraAtual, decimal? PrecoSugerido, decimal? MargemAtual, SituacaoMargemProduto SituacaoMargem,
         bool PrecificacaoCompleta, IReadOnlyList<MotivoPrecificacaoIncompleta> MotivosPrecificacaoIncompleta);

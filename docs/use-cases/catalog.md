@@ -124,7 +124,7 @@ UC028 foi concluída com a superfície `/Dashboard` sobre Produtos ativos da Emp
 
 UC029 acrescentou o recorte `filtro=abaixo-da-margem` tanto ao Dashboard quanto à listagem `/Produtos`. No Dashboard, os cards continuam globais; em `/Produtos`, o recorte combina por AND com pesquisa/Categoria e mantém o processamento em lote, sem recalcular Produto por Produto.
 
-UC030 especifica a **completude global da precificação**, distinta de `SituacaoMargem.Incompleto`, com motivos estruturados e o novo recorte `filtro=precificacao-incompleta` nas mesmas duas superfícies. A classificação cobre também casos em que a Margem atual existe, mas outra etapa permanece incompleta — por exemplo, Incremento comercial ausente impedindo o Preço sugerido.
+UC030 implementa a **completude global da precificação**, distinta de `SituacaoMargem.Incompleto`, com motivos estruturados e o novo recorte `filtro=precificacao-incompleta` nas mesmas duas superfícies. A classificação cobre também casos em que a Margem atual existe, mas outra etapa permanece incompleta — por exemplo, Incremento comercial ausente impedindo o Preço sugerido.
 
 ## Administração multiempresa
 

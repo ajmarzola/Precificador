@@ -143,6 +143,7 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
     {
         var empresa = await web.CriarEmpresaAsync();
         var incrementoAusente = await CriarProdutoPrecificavelAsync(empresa, "Incremento ausente UC030", 10m, 20m, ativo: true, incrementoComercial: null);
+        var abaixoEIncompleto = await CriarProdutoPrecificavelAsync(empresa, "Abaixo e incompleto UC030", 10m, 5m, ativo: true, incrementoComercial: null);
         var semFicha = await CriarProdutoSemFichaAsync(empresa, "Sem ficha UC030", 20m);
         var inativo = await CriarProdutoSemFichaAsync(empresa, "Inativo UC030", 20m);
         using (var scope = factory.Services.CreateScope())
@@ -155,16 +156,19 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         using var client = await web.CriarClienteAutenticadoAsync(empresa);
 
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard?filtro=precificacao-incompleta"));
+        var abaixo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard?filtro=abaixo-da-margem"));
         var linhas = LinhasDaTabela(conteudo);
 
         Assert.Contains(incrementoAusente.Nome, linhas);
+        Assert.Contains(abaixoEIncompleto.Nome, linhas);
         Assert.Contains(semFicha.Nome, linhas);
         Assert.DoesNotContain(inativo.Nome, linhas);
         Assert.Contains("Incremento comercial não configurado", LinhaProduto(conteudo, incrementoAusente.Nome));
         Assert.Contains("Ficha técnica não cadastrada", LinhaProduto(conteudo, semFicha.Nome));
         Assert.Contains("Dentro da margem", LinhaProduto(conteudo, incrementoAusente.Nome));
-        Assert.Matches("<a\\b(?=[^>]*filtro=\"precificacao-incompleta\")(?=[^>]*aria-current=\"page\")[^>]*>Precificação incompleta</a>", conteudo);
-        Assert.Contains("Produtos ativos</div><strong>2", conteudo);
+        Assert.Contains(abaixoEIncompleto.Nome, LinhasDaTabela(abaixo));
+        Assert.Matches("<a\\b(?=[^>]*href=\"[^\"]*filtro=precificacao-incompleta\")(?=[^>]*aria-current=\"page\")[^>]*>Precificação incompleta</a>", conteudo);
+        Assert.Contains("Produtos ativos</div><strong>3", conteudo);
     }
 
     private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(int empresaId, string nome, decimal custo, decimal preco, bool ativo, decimal? incrementoComercial = .50m)

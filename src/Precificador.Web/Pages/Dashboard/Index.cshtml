@@ -76,7 +76,7 @@ else
                             <ul class="mb-0">
                             @foreach (var motivo in produto.MotivosPrecificacaoIncompleta)
                             {
-                                <li>@IndexModel.MotivoPrecificacaoRotulo(motivo)</li>
+                                <li>@PrecificacaoRotulos.MotivoIncompleto(motivo)</li>
                             }
                             </ul>
                         }

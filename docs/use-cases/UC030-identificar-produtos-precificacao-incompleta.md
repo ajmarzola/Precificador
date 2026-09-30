@@ -3,7 +3,7 @@
 - **Funcionalidade principal:** F005 — Dashboard de Margens
 - **Superfície relacionada:** F002 / UC008 — listagem de Produtos
 - **Dependências funcionais:** UC017, UC023, UC024, UC028 e UC029
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** não
 - **Persistência de resultado:** não
 - **Natureza:** consulta somente leitura
