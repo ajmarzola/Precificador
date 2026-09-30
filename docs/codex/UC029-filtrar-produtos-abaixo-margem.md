@@ -27,8 +27,11 @@ Ler:
 - RN022, RN023, RN027, RN036 e RN037;
 - `Dashboard/Index.cshtml.cs`;
 - `Dashboard/Index.cshtml`;
+- `Produtos/Index.cshtml.cs`;
+- `Produtos/Index.cshtml`;
+- MEL024;
 - `ResumoPrecificacaoProdutosAtual`;
-- testes atuais de Dashboard.
+- testes atuais de Dashboard e Produtos.
 
 Confirmar no backlog:
 
@@ -38,22 +41,29 @@ UC029 = Pronto
 
 ## Escopo
 
-Evoluir apenas `/Dashboard`.
+Evoluir as páginas existentes:
 
-Adicionar dois modos:
+~~~text
+/Dashboard
+/Produtos
+~~~
+
+Não criar nova página.
+
+No Dashboard, adicionar:
 
 ~~~text
 Todos os ativos
 Abaixo da margem
 ~~~
 
-Query canônica:
+Na lista de Produtos, adicionar o mesmo recorte **Abaixo da margem**, preservando pesquisa por Nome, filtro por Categoria, colunas e Produtos inativos na visão sem recorte.
+
+Query canônica nas duas superfícies:
 
 ~~~text
-/Dashboard?filtro=abaixo-da-margem
+filtro=abaixo-da-margem
 ~~~
-
-Não criar nova página.
 
 ## Parsing do filtro
 
@@ -78,11 +88,17 @@ Links gerados sempre usam:
 abaixo-da-margem
 ~~~
 
-Valor inválido não pode ampliar para todos: HTTP 200, lista vazia, mensagem explícita e link Mostrar todos.
+No Dashboard, valor inválido não pode ampliar para todos: HTTP 200, lista vazia, mensagem explícita e link Mostrar todos.
+
+Em `/Produtos`, valor inválido também retorna HTTP 200/lista vazia, com mensagem explícita e ação Limpar filtros.
+
+Em `/Produtos`, `q`, `categoria` e `filtro` combinam por AND; alterar somente o recorte de margem deve preservar `q` e `categoria`.
 
 Não criar o filtro da UC030.
 
 ## Ordem de processamento
+
+### Dashboard
 
 Preservar uma única fotografia corrente:
 
@@ -94,7 +110,21 @@ Preservar uma única fotografia corrente:
 5. aplicar filtro à lista em memória
 ~~~
 
-Não filtrar os IDs antes do resumo.
+Não filtrar os IDs por margem antes do resumo, pois os cards são globais.
+
+### Produtos
+
+Preservar `q` e `categoria` como filtros cadastrais. Para `filtro=abaixo-da-margem`:
+
+~~~text
+1. carregar candidatos conforme q/categoria
+2. restringir a ativos
+3. ResumoPrecificacaoProdutosAtual.CalcularAsync(ids) uma vez
+4. aplicar SituacaoMargem.AbaixoDaMargem em memória
+5. renderizar a lista
+~~~
+
+Sem `filtro`, preservar o comportamento da MEL024, inclusive Produtos inativos.
 
 Não executar segundo `CalcularAsync`.
 
@@ -137,16 +167,14 @@ Assim:
 
 ## UI
 
+### Dashboard
+
 Adicionar controles explícitos acima da tabela:
 
 ~~~text
 Todos os ativos
 Abaixo da margem
 ~~~
-
-Podem ser links/botões Bootstrap.
-
-O selecionado deve ser identificável por texto/semântica e não apenas cor.
 
 Rotas:
 
@@ -158,6 +186,18 @@ Abaixo => /Dashboard?filtro=abaixo-da-margem
 Card Abaixo da margem pode ser clicável como conveniência, mas não é requisito.
 
 Preservar tabela/colunas da UC028.
+
+### Produtos
+
+Integrar o recorte **Abaixo da margem** aos controles existentes de `q` e `categoria`.
+
+- preservar `q/categoria` ao alternar somente o recorte;
+- incluir `filtro` no estado de filtros;
+- Limpar filtros => `/Produtos`;
+- preservar todas as colunas da MEL024;
+- não adicionar coluna SituacaoMargem;
+- Situação continua Ativo/Inativo;
+- sem recorte, inativos continuam visíveis.
 
 ## Estados vazios
 
@@ -197,7 +237,7 @@ Nenhum ModelSnapshot.
 
 ## Testes
 
-Cobrir no mínimo:
+Cobrir no mínimo no Dashboard:
 
 1. sem filtro => todos ativos;
 2. abaixo-da-margem => somente AbaixoDaMargem;
@@ -213,10 +253,23 @@ Cobrir no mínimo:
 12. estado vazio sem Produtos;
 13. estado vazio sem abaixo;
 14. isolamento entre Empresas;
-15. uma fotografia em lote;
-16. ausência de escrita/migration.
+15. uma fotografia em lote.
 
-Preservar todos os testes da UC028.
+Cobrir no mínimo em `/Produtos`:
+
+16. sem filtro preserva ativos/inativos e comportamento MEL024;
+17. abaixo-da-margem => somente ativos AbaixoDaMargem;
+18. inativo abaixo => fora;
+19. q + categoria + filtro => AND;
+20. alternar recorte preserva q/categoria;
+21. filtro vazio => visão atual;
+22. inválido => lista vazia/mensagem/Limpar filtros;
+23. estado vazio filtrado distinto do catálogo vazio;
+24. isolamento entre Empresas;
+25. resumo continua em lote, sem N+1;
+26. ausência de escrita/migration.
+
+Preservar todos os testes da UC028 e da MEL024.
 
 ## Documentação
 
@@ -225,6 +278,8 @@ Na implementação atualizar:
 - UC029: Pronto -> Concluído;
 - backlog: UC029 -> Concluído;
 - F005;
+- F002;
+- UC008;
 - catálogo funcional.
 
 Não alterar UC030 para Pronto/Concluído.
@@ -251,9 +306,10 @@ Não reduzir cobertura para fazer a CI passar.
 Informar:
 
 - arquivos alterados;
-- parsing/semântica do filtro;
+- parsing/semântica do filtro nas duas superfícies;
+- como q/categoria/filtro são combinados em /Produtos;
 - como os cards permaneceram globais;
-- confirmação de uma única chamada em lote;
+- confirmação das chamadas em lote sem N+1;
 - cenários de testes adicionados;
 - confirmação de nenhuma migration;
 - resultado da CI;
