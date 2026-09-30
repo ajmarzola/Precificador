@@ -118,7 +118,7 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         Assert.Contains("Abaixo da margem</div><strong>1", conteudo);
         Assert.Contains("Todos os ativos", conteudo);
         Assert.Contains("filtro=abaixo-da-margem", conteudo);
-        Assert.Matches("<a[^>]*filtro=abaixo-da-margem[^>]*aria-current=\"page\"[^>]*>Abaixo da margem</a>", conteudo);
+        Assert.Matches("<a\\b(?=[^>]*href=\"[^\"]*filtro=abaixo-da-margem\")(?=[^>]*aria-current=\"page\")[^>]*>Abaixo da margem</a>", conteudo);
     }
 
     [Fact]
