@@ -186,11 +186,36 @@ Incompleto     => Margem indisponível
 
 Cor pode complementar, nunca substituir texto.
 
-## Navegação
+## Navegação e landing autenticada
 
 Adicionar `Dashboard` ao menu autenticado.
 
-Não transformar `/` em Dashboard.
+O Dashboard deve ser o destino operacional padrão quando a autenticação já resolveu a Empresa Ativa:
+
+~~~text
+login sem ReturnUrl + uma Empresa
+=> /Dashboard
+
+seleção explícita de Empresa
+=> /Dashboard
+
+GET /
++ usuário autenticado
++ Empresa Ativa
+=> redirect /Dashboard
+~~~
+
+Preservar `ReturnUrl` local válido: ele continua tendo precedência quando o usuário foi enviado ao login por uma rota protegida.
+
+A Home `/` continua pública para anônimos. Não copiar o Dashboard para `Index.cshtml`; no estado autenticado, redirecionar.
+
+Revisar explicitamente:
+
+- `Conta/Login.cshtml.cs`;
+- `Empresas/Selecionar.cshtml.cs`;
+- `Pages/Index.cshtml.cs`.
+
+Usuário autenticado sem Empresa Ativa continua no fluxo de seleção/resolução existente e não acessa o Dashboard por bypass da policy.
 
 Consultar deve levar à superfície existente do Produto; não criar edição inline.
 
@@ -229,7 +254,11 @@ Cobrir a matriz da especificação, com prioridade para:
 13. isolamento entre Empresas;
 14. sem escrita no GET;
 15. sem N+1 por Produto;
-16. regressão de `/Produtos`.
+16. regressão de `/Produtos`;
+17. login padrão termina em `/Dashboard`;
+18. ReturnUrl local continua preservado;
+19. seleção de Empresa termina em `/Dashboard`;
+20. `/` anônimo continua público e `/` autenticado com Empresa Ativa redireciona ao Dashboard.
 
 Não é necessária nova fórmula Core.
 
