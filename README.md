@@ -1,6 +1,6 @@
 # Precificador
 
-Aplicação local-first para formação e acompanhamento de preços de produtos artesanais.
+Aplicação web para formação e acompanhamento de preços de produtos artesanais, com execução local e publicação controlada em Azure para piloto operacional interno.
 
 O Precificador calcula custos a partir da ficha técnica dos produtos, dos preços históricos dos insumos e das configurações de produção. Também identifica produtos cuja margem atual ficou abaixo da margem-alvo após alterações de custos.
 
@@ -13,10 +13,15 @@ Projeto reiniciado em setembro de 2026 com novo escopo. A implementação será 
 - .NET 10 LTS
 - ASP.NET Core Razor Pages
 - Entity Framework Core
-- SQLite
+- SQL Server em desenvolvimento/testes
+- Azure SQL Database na publicação Azure
 - Bootstrap
 - JavaScript apenas quando necessário
 - xUnit para testes unitários e de integração
+
+## Publicação Azure
+
+A publicação inicial usa Azure App Service F1/Linux e Azure SQL Database Free offer, com custo alvo zero, Managed Identity e migrations explícitas de deploy. O procedimento reproduzível fica em [`infra/azure/`](infra/azure/README.md).
 
 ## Documentação
 

@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** LIBERADO. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; uma assinatura Azure utilizável foi confirmada em 26/09/2026 e `docs/development/backlog.md` marca MEL021 como `Pronto`. Implementar exclusivamente a MEL021 e não antecipar UC028.
+> **Gate:** CONCLUÍDO. MEL021 foi provisionada, publicada e validada no Azure em 29/09/2026. `docs/development/backlog.md` marca MEL021 como `Concluído`; não antecipar UC028 antes do merge da PR da MEL021.
 
 Implemente exclusivamente a MEL021 conforme:
 
@@ -86,7 +86,7 @@ Deve:
 5. não executar `az account set` para corrigir contexto;
 6. somente depois criar/usar Resource Group;
 7. escolher uma única região onde F1, runtime .NET 10 e Azure SQL Free estejam disponíveis;
-4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux --runtime dotnet`;
+4. descobrir/validar runtime Linux .NET 10 com `az webapp list-runtimes --os linux`;
 5. obter por parâmetro o Entra admin (nome + Object ID/SID);
 6. criar App Service Plan F1 Linux;
 7. criar Web App .NET 10;
@@ -109,7 +109,7 @@ Service Connector passwordless é aceitável se o resultado final respeitar o co
 
 Como a aplicação usa `UseSqlServer`, habilitar `EnableRetryOnFailure()` ou equivalente suportado pelo EF Core 10.
 
-O Azure SQL Serverless pode ficar `Paused` após inatividade; isso é comportamento esperado. A primeira conexão pode precisar aguardar o auto-resume. Corrigir as connection strings Azure usadas pela aplicação e pelas migrations para `Connection Timeout=60` ou superior, preservando `EnableRetryOnFailure()`.
+O Azure SQL Serverless pode ficar `Paused` após inatividade; isso é comportamento esperado. A primeira conexão pode precisar aguardar o auto-resume. Corrigir as connection strings Azure usadas pela aplicação e pelas migrations para `Connection Timeout=60` ou superior, preservando `EnableRetryOnFailure()`. O bootstrap de `provision.ps1` deve repetir de forma finita a abertura da conexão para o erro transitório `40613`, com backoff e descarte da conexão a cada tentativa.
 
 Não trocar provider entre desenvolvimento e Azure.
 

@@ -42,7 +42,7 @@ Quando aplicável:
 ## Testes
 
 - regras novas/alteradas possuem testes unitários quando aplicável;
-- persistência relevante possui testes de integração com SQLite;
+- persistência relevante possui testes de integração com SQL Server real;
 - matriz de testes definida antes da implementação foi atendida;
 - golden cases são mantidos quando o motor de precificação for afetado;
 - todos os testes existentes passam;

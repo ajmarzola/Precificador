@@ -15,19 +15,23 @@ public sealed class SetupModel(PrecificadorDbContext context, UserManager<Usuari
     public async Task<IActionResult> OnGetAsync() => await userManager.Users.AnyAsync() ? NotFound() : Page();
     public async Task<IActionResult> OnPostAsync()
     {
-        if (await userManager.Users.AnyAsync()) return NotFound();
-        if (!ModelState.IsValid) return Page();
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        var empresa = await context.Empresas.SingleAsync(empresa => empresa.NomeNormalizado == "EMPRESA INICIAL");
-        try { empresa.Renomear(Input.NomeEmpresa); }
-        catch (ArgumentException exception) { ModelState.AddModelError("Input.NomeEmpresa", exception.Message); return Page(); }
-        var usuario = new UsuarioAplicacao { UserName = Input.Email, Email = Input.Email };
-        var resultado = await userManager.CreateAsync(usuario, Input.Senha);
-        if (!resultado.Succeeded) { foreach (var erro in resultado.Errors) ModelState.AddModelError(string.Empty, erro.Description); return Page(); }
-        context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresa.Id, Ativo = true });
-        await context.SaveChangesAsync();
-        await transaction.CommitAsync();
-        return RedirectToPage("/Conta/Login");
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
+        {
+            if (await userManager.Users.AnyAsync()) return NotFound();
+            if (!ModelState.IsValid) return Page();
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            var empresa = await context.Empresas.SingleAsync(empresa => empresa.NomeNormalizado == "EMPRESA INICIAL");
+            try { empresa.Renomear(Input.NomeEmpresa); }
+            catch (ArgumentException exception) { ModelState.AddModelError("Input.NomeEmpresa", exception.Message); return Page(); }
+            var usuario = new UsuarioAplicacao { UserName = Input.Email, Email = Input.Email };
+            var resultado = await userManager.CreateAsync(usuario, Input.Senha);
+            if (!resultado.Succeeded) { foreach (var erro in resultado.Errors) ModelState.AddModelError(string.Empty, erro.Description); return Page(); }
+            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresa.Id, Ativo = true });
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return RedirectToPage("/Conta/Login");
+        });
     }
     public sealed class InputModel
     {

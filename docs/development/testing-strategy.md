@@ -16,7 +16,7 @@ Não criar testes unitários dos internals do ASP.NET Core Identity.
 
 ## 2. Testes de integração
 
-Usar SQLite real temporário ou `:memory:` com conexão adequadamente mantida para riscos de persistência.
+Usar SQL Server real temporário, preferencialmente via Testcontainers ou infraestrutura equivalente, para riscos de persistência.
 
 Cobrir, conforme aplicável:
 
@@ -29,6 +29,8 @@ Cobrir, conforme aplicável:
 - rejeição de escrita cross-tenant.
 
 Não usar mocks de repositório ou EF InMemory como substitutos desses testes.
+
+SQLite não é provider ativo após a MEL020; menções históricas não autorizam novos testes de persistência em SQLite.
 
 ## 3. Testes multiempresa/autenticação
 

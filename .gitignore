@@ -15,4 +15,5 @@
 *.db
 *.db-shm
 *.db-wal
+/artifacts/azure/
 .github/copilot-instructions.md
