@@ -259,6 +259,80 @@ public sealed class ListarConsultarProdutosPageTests(CustomWebApplicationFactory
     }
 
     [Fact]
+    public async Task UC030_Recorte_exibe_somente_ativos_incompletos_com_estado_e_motivos()
+    {
+        var abaixo = await CriarProdutoPrecificavelAsync("Abaixo incompleto", 10m, 5m, ativo: true);
+        var semFicha = await CriarProdutoComPrecoSemFichaAsync("Sem ficha incompleto", 20m);
+        var inativo = await CriarProdutoPrecificavelAsync("Inativo incompleto", 10m, 5m, ativo: false);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var filtrado = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?filtro=precificacao-incompleta"));
+        var normal = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos"));
+
+        Assert.Contains(abaixo.Nome, filtrado);
+        Assert.Contains(semFicha.Nome, filtrado);
+        Assert.DoesNotContain(inativo.Nome, filtrado);
+        Assert.Contains(inativo.Nome, normal);
+        Assert.Contains("Precificação", filtrado);
+        Assert.Contains("Incompleta", LinhaProduto(filtrado, abaixo.Nome));
+        Assert.Contains("Incremento comercial não configurado", LinhaProduto(filtrado, abaixo.Nome));
+        Assert.Contains("Ficha técnica não cadastrada", LinhaProduto(filtrado, semFicha.Nome));
+        Assert.Contains("Ativo", LinhaProduto(filtrado, abaixo.Nome));
+        Assert.Contains("value=\"precificacao-incompleta\" selected", filtrado);
+    }
+
+    [Fact]
+    public async Task UC030_Combina_q_categoria_e_recorte_por_and_e_preserva_campos()
+    {
+        var encontrado = await CriarProdutoPrecificavelAsync("Agenda incompleta", 10m, 20m, ativo: true, categoria: "Papelaria UC030");
+        var outraCategoria = await CriarProdutoPrecificavelAsync("Agenda outra categoria", 10m, 20m, ativo: true, categoria: "Outra UC030");
+        var outroNome = await CriarProdutoPrecificavelAsync("Caderno incompleto", 10m, 20m, ativo: true, categoria: "Papelaria UC030");
+        using var scope = factory.Services.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+        await using var context = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+        var categoriaId = await context.CategoriasProdutos.Where(item => item.Nome == "Papelaria UC030").Select(item => item.Id).SingleAsync();
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync($"/Produtos?q=Agenda&categoria={categoriaId}&filtro=precificacao-incompleta"));
+
+        Assert.Contains(encontrado.Nome, conteudo);
+        Assert.DoesNotContain(outraCategoria.Nome, conteudo);
+        Assert.DoesNotContain(outroNome.Nome, conteudo);
+        Assert.Contains("name=\"q\" value=\"AGENDA\"", conteudo);
+        Assert.Matches($"<option\\b(?=[^>]*\\bvalue=\"{categoriaId}\")(?=[^>]*\\bselected(?:=\"selected\")?)[^>]*>", conteudo);
+        Assert.Contains("value=\"precificacao-incompleta\" selected", conteudo);
+    }
+
+    [Fact]
+    public async Task UC030_Recortes_abaixo_da_margem_e_precificacao_incompleta_se_sobrepoem()
+    {
+        var produto = await CriarProdutoPrecificavelAsync("Abaixo e incompleto", 10m, 5m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var abaixo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?filtro=abaixo-da-margem"));
+        var incompletos = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?filtro=precificacao-incompleta"));
+
+        Assert.Contains(produto.Nome, abaixo);
+        Assert.Contains(produto.Nome, incompletos);
+        Assert.Contains("Incompleta", LinhaProduto(incompletos, produto.Nome));
+    }
+
+    [Fact]
+    public async Task UC030_Estado_vazio_e_filtro_invalido_oferecem_limpar_filtros()
+    {
+        await CriarProdutoPrecificavelAsync("Produto existente UC030", 10m, 20m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(1);
+
+        var vazio = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?q=nao-encontrado&filtro=precificacao-incompleta"));
+        var invalido = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Produtos?filtro=nao-suportado"));
+
+        Assert.Contains("Nenhum Produto ativo com precificação incompleta foi encontrado para os filtros informados.", vazio);
+        Assert.Contains("Limpar filtros", vazio);
+        Assert.Contains("Filtro de margem inválido.", invalido);
+        Assert.Contains("Limpar filtros", invalido);
+    }
+
+    [Fact]
     public async Task CA14_CA15_Detalhes_exibem_somente_campos_permitidos()
     {
         var nomeProduto = NomeUnico("Produto detalhes");

@@ -56,13 +56,19 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
         foreach (var produto in produtos)
         {
             var precoPrateleira = registrosAtuais.GetValueOrDefault(produto.Id)?.PrecoPrateleira;
-            if (configuracao is null || !fichasPorProduto.TryGetValue(produto.Id, out var ficha))
+            var temFicha = fichasPorProduto.TryGetValue(produto.Id, out var ficha);
+            var itensDaFicha = temFicha ? itensPorFicha.GetValueOrDefault(ficha!.Id) ?? [] : [];
+            var usosDaFicha = temFicha ? usosPorFicha.GetValueOrDefault(ficha!.Id) ?? [] : [];
+            var haInsumoSemPreco = itensDaFicha.Any(item => !vigentes.ContainsKey(item.InsumoId));
+            if (configuracao is null || !temFicha)
             {
-                resultado.Add(produto.Id, Incompleto(produto.Id, produto.MargemAlvo, precoPrateleira));
+                var classificacaoIncompleta = Classificar(temFicha, itensDaFicha.Length > 0, haInsumoSemPreco,
+                    configuracao is not null, usosDaFicha.Length > 0, configuracao?.TarifaEnergiaKwh,
+                    configuracao?.IncrementoComercial, false, false, precoPrateleira, null);
+                resultado.Add(produto.Id, Incompleto(produto.Id, produto.MargemAlvo, precoPrateleira, classificacaoIncompleta));
                 continue;
             }
 
-            var itensDaFicha = itensPorFicha.GetValueOrDefault(ficha.Id) ?? [];
             var itensCalculados = CalculadoraCustoItens.Calcular(itensDaFicha.Select(item =>
                 new ItemCustoEntrada(item.Id, item.Quantidade, vigentes.GetValueOrDefault(item.InsumoId)?.CustoUnitario)));
             var custosItens = itensCalculados.Itens.ToDictionary(item => item.ItemId);
@@ -70,27 +76,40 @@ public sealed class ResumoPrecificacaoProdutosAtual(PrecificadorDbContext contex
                 new ItemCustoPerdaEntrada(item.Id, item.PercentualPerda, custosItens[item.Id].CustoItem)));
             var maoDeObra = CalculadoraCustoMaoDeObra.Calcular(itensCalculados.CustoBaseItens, configuracao.PercentualMaoDeObra);
             var energia = CalculadoraCustoEnergia.Calcular(configuracao.TarifaEnergiaKwh,
-                (usosPorFicha.GetValueOrDefault(ficha.Id) ?? []).Select(uso => new UsoEquipamentoCustoEntrada(uso.Id, uso.PotenciaKw, uso.TempoUsoMinutos)));
+                usosDaFicha.Select(uso => new UsoEquipamentoCustoEntrada(uso.Id, uso.PotenciaKw, uso.TempoUsoMinutos)));
             categorias.TryGetValue(produto.CategoriaProdutoId ?? 0, out var categoria);
             var desgaste = CalculadoraCustoDesgasteEquipamentos.Calcular(
                 categoria?.FormaCalculoDesgasteEquipamento,
                 categoria?.ValorDesgasteEquipamento,
                 itensCalculados.CustoBaseItens);
             var custo = CalculadoraCustoProduto.Calcular(itensCalculados.CustoBaseItens, perdas.CustoPerdasLote,
-                maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, desgaste.CustoDesgasteEquipamentosLote, ficha.Rendimento);
+                maoDeObra.CustoMaoDeObraLote, energia.CustoEnergiaLote, desgaste.CustoDesgasteEquipamentosLote, ficha!.Rendimento);
             var preco = CalculadoraPrecoProduto.Calcular(custo.CustoUnitarioProduto, produto.MargemAlvo, configuracao.IncrementoComercial);
             var margem = CalculadoraMargemAtual.Calcular(custo.CustoUnitarioProduto, precoPrateleira, produto.MargemAlvo);
-            resultado.Add(produto.Id, new ResumoPrecificacaoProdutoAtual(produto.Id, custo.CustoUnitarioProduto, precoPrateleira, preco.PrecoSugerido, margem.MargemAtual, margem.Situacao));
+            var completude = Classificar(true, itensDaFicha.Length > 0, haInsumoSemPreco, true, usosDaFicha.Length > 0,
+                configuracao.TarifaEnergiaKwh, configuracao.IncrementoComercial, custo.Completo, preco.Completo,
+                precoPrateleira, margem.MargemAtual);
+            resultado.Add(produto.Id, new ResumoPrecificacaoProdutoAtual(produto.Id, custo.CustoUnitarioProduto, precoPrateleira,
+                preco.PrecoSugerido, margem.MargemAtual, margem.Situacao, completude.PrecificacaoCompleta, completude.Motivos));
         }
 
         return resultado;
     }
 
-    private static ResumoPrecificacaoProdutoAtual Incompleto(int produtoId, decimal margemAlvo, decimal? precoPrateleira)
+    private static ResumoPrecificacaoProdutoAtual Incompleto(int produtoId, decimal margemAlvo, decimal? precoPrateleira,
+        ResultadoCompletudePrecificacao completude)
     {
         var margem = CalculadoraMargemAtual.Calcular(null, precoPrateleira, margemAlvo);
-        return new ResumoPrecificacaoProdutoAtual(produtoId, null, precoPrateleira, null, margem.MargemAtual, margem.Situacao);
+        return new ResumoPrecificacaoProdutoAtual(produtoId, null, precoPrateleira, null, margem.MargemAtual,
+            margem.Situacao, completude.PrecificacaoCompleta, completude.Motivos);
     }
+
+    private static ResultadoCompletudePrecificacao Classificar(bool fichaExiste, bool fichaTemItens,
+        bool haInsumoSemPreco, bool configuracaoExiste, bool haUsoEletrico, decimal? tarifa, decimal? incremento,
+        bool custoCompleto, bool precoCompleto, decimal? precoPrateleira, decimal? margemAtual) =>
+        ClassificadorCompletudePrecificacao.Classificar(new EntradaCompletudePrecificacao(fichaExiste, fichaTemItens,
+            haInsumoSemPreco, configuracaoExiste, haUsoEletrico, tarifa, incremento, custoCompleto, precoCompleto,
+            precoPrateleira, margemAtual));
 
     private sealed record ProdutoCarregado(int Id, decimal MargemAlvo, int? CategoriaProdutoId);
     private sealed record CategoriaCarregada(int Id, FormaCalculoDesgasteEquipamento FormaCalculoDesgasteEquipamento, decimal ValorDesgasteEquipamento);
@@ -106,4 +125,6 @@ public sealed record ResumoPrecificacaoProdutoAtual(
     decimal? PrecoPrateleiraAtual,
     decimal? PrecoSugerido,
     decimal? MargemAtual,
-    SituacaoMargemProduto SituacaoMargem);
+    SituacaoMargemProduto SituacaoMargem,
+    bool PrecificacaoCompleta,
+    IReadOnlyList<MotivoPrecificacaoIncompleta> MotivosPrecificacaoIncompleta);
