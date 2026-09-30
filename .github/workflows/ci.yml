@@ -49,7 +49,8 @@ jobs:
 
           echo "mode=${mode}" >> "$GITHUB_OUTPUT"
       - name: Report CI mode
-        run: echo "CI mode: ${{ steps.classify.outputs.mode }}"
+        run: |
+          echo "CI mode: ${{ steps.classify.outputs.mode }}"
       - name: Check diff whitespace
         shell: bash
         run: |
