@@ -74,3 +74,55 @@ O motor de precificação terá cenários canônicos obtidos de dados conferidos
 - nomes devem explicitar cenário e resultado esperado;
 - cada bug de regra confirmado deve, quando possível, ganhar teste de regressão;
 - critérios de isolamento têm prioridade equivalente às regras financeiras.
+
+## 8. Continuous Integration por tipo de alteração
+
+A MEL028 distingue validação de Pull Request de validação completa sem reduzir a cobertura aplicável a mudanças de código.
+
+### PR exclusivamente documental
+
+Somente alterações em:
+
+~~~text
+docs/**
+*.md na raiz
+~~~
+
+podem usar caminho rápido.
+
+Executar no mínimo:
+
+~~~text
+git diff --check
+~~~
+
+Não inicializar .NET, Testcontainers ou SQL Server nesse caminho.
+
+A classificação é fail-closed: qualquer arquivo fora da whitelist, lista vazia inesperada ou falha ao obter o diff executa a CI completa.
+
+### PR com alteração não documental
+
+Executar:
+
+1. restore;
+2. build Release;
+3. testes unitários completos;
+4. testes de integração completos com SQL Server/Testcontainers.
+
+Unitários e integração devem aparecer como passos separados. Não filtrar suítes para reduzir duração.
+
+### Push em master
+
+Executar sempre a validação completa.
+
+### Required check
+
+O status obrigatório `build-and-test` deve continuar sendo publicado tanto no caminho documental quanto no completo. Não usar filtros de trigger que possam deixar o ruleset aguardando um check inexistente.
+
+### Execuções obsoletas e timeout
+
+Novos pushes na mesma PR podem cancelar runs anteriores ainda ativos. O job possui timeout explícito para evitar espera indefinida por falha de runner, Docker ou rede.
+
+### Relação com CD
+
+CI responde se a mudança pode entrar em `master`. A MEL027/Continuous Deployment deverá executar a validação completa antes da publicação, sem reutilizar o caminho documental rápido como gate de deploy.
