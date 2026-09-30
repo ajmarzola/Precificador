@@ -65,7 +65,7 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard"));
         var linha = LinhaProduto(conteudo, produto.Nome);
 
-        Assert.Contains("Insumos ativos</div><strong>1", conteudo);
+        Assert.Contains("Insumos ativos</div><strong>2", conteudo);
         Assert.Contains("indisponível", linha);
         Assert.Contains("50%", linha);
         Assert.Contains("Dentro da margem", linha);

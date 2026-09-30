@@ -42,6 +42,7 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
         if (empresas.Count == 1)
         {
             empresaContext.Definir(empresas[0].Id, empresas[0].Nome, empresas[0].TimeZoneId);
+            if (string.IsNullOrWhiteSpace(ReturnUrl)) return RedirectToPage("/Dashboard/Index");
             return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToPage("/Dashboard/Index");
         }
         return RedirectToPage("/Empresas/Selecionar");

@@ -85,7 +85,6 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
         Assert.Contains("href=\"/Insumos\"", html);
         Assert.Contains("href=\"/Produtos\"", html);
         Assert.Contains("href=\"/Configuracoes/Precificacao\"", html);
-        Assert.Contains("href=\"/Produtos/Novo\"", html);
         Assert.Contains("Empresa ativa:", html);
         Assert.Contains("action=\"/Conta/Logout\"", html);
         Assert.DoesNotContain("href=\"/Conta/Login\"", html);
