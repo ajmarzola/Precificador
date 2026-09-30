@@ -72,7 +72,7 @@ Regra operacional:
 | 12 | MEL021 — Publicar Precificador no Azure com custo controlado | MEL | Concluído | provisionamento, deploy e smoke real concluídos em 29/09/2026; merge da PR da MEL021 antes de UC028 | [MEL021](improvements/MEL021-publicacao-azure.md) |
 | 13 | MEL024 — Enriquecer listagem de Produtos com filtro por Categoria e indicadores atuais | MEL | Concluído | concluída como exceção explícita, sem liberar UC028 ou itens seguintes | [MEL024](improvements/MEL024-listagem-produtos-filtro-indicadores.md) |
 | 14 | UC028 — Consultar resumo de margens da Empresa Ativa | UC | Concluído | MEL021, MEL015, UC024 e MEL024 concluídos | [UC028](../use-cases/UC028-consultar-resumo-margens.md) |
-| 15 | MEL028 — Otimizar pipeline de CI por tipo de alteração | MEL | Especificado | executar após UC028 e antes de UC029; preservar required check build-and-test | [MEL028](improvements/MEL028-otimizar-ci-tipo-alteracao.md) |
+| 15 | MEL028 — Otimizar pipeline de CI por tipo de alteração | MEL | Concluído | executar após UC028 e antes de UC029; preservar required check build-and-test | [MEL028](improvements/MEL028-otimizar-ci-tipo-alteracao.md) |
 | 16 | UC029 — Filtrar produtos abaixo da margem | UC | Planejado | UC028; após MEL028 na fila | Documento a criar |
 | 17 | UC030 — Identificar produtos com precificação incompleta | UC | Planejado | UC017, UC028; após UC029 na fila | Documento a criar |
 | 18 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT002; regras de primeiro acesso/autorização a definir | Documento a criar |
