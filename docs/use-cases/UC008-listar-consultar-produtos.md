@@ -366,7 +366,7 @@ Nenhuma migration/ModelSnapshot.
 
 ### CA20 — Sem escopo antecipado
 
-Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024.
+Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024 e do recorte abaixo da margem introduzido pela UC029.
 
 ## Matriz de testes fechada antes da implementação
 
