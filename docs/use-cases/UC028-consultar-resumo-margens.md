@@ -33,7 +33,36 @@ EmpresaAtiva
 
 Adicionar acesso **Dashboard** à navegação autenticada.
 
-A Home pública `/` continua com sua responsabilidade atual e não deve ser transformada em Dashboard nesta UC.
+## Página inicial após autenticação
+
+O Dashboard passa a ser a **página inicial operacional** do usuário autenticado quando existe Empresa Ativa.
+
+Hoje, após login/seleção de Empresa, o fluxo termina em `/`, cuja versão autenticada mostra apenas o atalho **Cadastrar produto**. A UC028 substitui esse comportamento operacional:
+
+~~~text
+login concluído
++ Empresa Ativa resolvida
+=> /Dashboard
+~~~
+
+O mesmo vale após selecionar manualmente uma Empresa quando o usuário possui mais de um vínculo ativo:
+
+~~~text
+/Empresas/Selecionar
+-> Empresa definida
+-> /Dashboard
+~~~
+
+Regras:
+
+- `ReturnUrl` local e válido continua tendo precedência quando o login foi iniciado por tentativa de acesso a uma rota protegida;
+- sem `ReturnUrl`, login com uma única Empresa deve terminar em `/Dashboard`;
+- após seleção explícita de Empresa, o destino padrão deve ser `/Dashboard`;
+- acessar `/` já autenticado e com Empresa Ativa deve redirecionar para `/Dashboard`;
+- a Home `/` permanece pública para usuário anônimo e continua oferecendo o fluxo de entrada;
+- não duplicar o conteúdo do Dashboard dentro da Home; o comportamento autenticado da Home é redirecionamento.
+
+Se o usuário estiver autenticado sem Empresa Ativa, preservar o fluxo de seleção/resolução de Empresa existente; não conceder acesso ao Dashboard sem satisfazer a policy `EmpresaAtiva`.
 
 ## Universo do Dashboard
 
@@ -406,7 +435,10 @@ A UC028:
 - **CA01:** existe GET `/Dashboard`.
 - **CA02:** Dashboard exige autenticação e Empresa Ativa.
 - **CA03:** existe acesso Dashboard na navegação autenticada.
-- **CA04:** Home pública não é substituída.
+- **CA04:** Home pública continua disponível para anônimos; autenticado com Empresa Ativa é redirecionado de `/` para `/Dashboard`.
+- **CA04A:** login sem ReturnUrl e com uma única Empresa termina em `/Dashboard`.
+- **CA04B:** ReturnUrl local válido continua tendo precedência sobre o destino padrão.
+- **CA04C:** seleção explícita de Empresa termina em `/Dashboard`.
 - **CA05:** somente Produtos ativos entram no Dashboard.
 - **CA06:** Produtos inativos não entram nos indicadores nem na lista.
 - **CA07:** Produtos ativos conta apenas o tenant atual.
@@ -486,9 +518,13 @@ A UC028:
 - sem filtros/query string de situação;
 - GET não persiste.
 
-### Autorização
+### Autorização e landing
 
-- anônimo segue fluxo de autenticação existente;
+- anônimo em `/` continua vendo a Home pública;
+- login sem ReturnUrl + uma única Empresa => `/Dashboard`;
+- login com ReturnUrl local válido => ReturnUrl preservado;
+- seleção de Empresa => `/Dashboard`;
+- acesso a `/` autenticado com Empresa Ativa => redirect `/Dashboard`;
 - autenticado sem Empresa Ativa não recebe acesso operacional;
 - Empresa Ativa A não lê dados de B.
 
@@ -498,6 +534,9 @@ A UC028:
 src/Precificador.Web/Precificacao/ResumoPrecificacaoProdutosAtual.cs
 src/Precificador.Web/Pages/Dashboard/Index.cshtml.cs
 src/Precificador.Web/Pages/Dashboard/Index.cshtml
+src/Precificador.Web/Pages/Index.cshtml.cs
+src/Precificador.Web/Pages/Conta/Login.cshtml.cs
+src/Precificador.Web/Pages/Empresas/Selecionar.cshtml.cs
 src/Precificador.Web/Pages/Shared/_Layout.cshtml
 src/Precificador.Web/Program.cs
 tests/Precificador.Tests.Integration/Infrastructure/*
@@ -526,7 +565,7 @@ A implementação pode ajustar nomes/organização interna se preservar o contra
 - exportação;
 - alertas/notificações;
 - edição inline;
-- transformar a Home pública em Dashboard;
+- substituir a Home pública anônima por Dashboard;
 - Continuous Deployment — MEL027;
 - qualquer alteração Azure necessária apenas para publicar esta UC.
 
@@ -535,6 +574,7 @@ A implementação pode ajustar nomes/organização interna se preservar o contra
 UC028 está concluída quando:
 
 - Dashboard tenant-aware existe e exige Empresa Ativa;
+- Dashboard é o destino operacional padrão após login/seleção de Empresa e ao acessar `/` autenticado com Empresa Ativa;
 - indicadores de Produtos/Insumos ativos e situações de margem estão corretos;
 - a listagem mostra os valores correntes definidos;
 - Preço sugerido atual é derivado sem usar snapshot histórico;
