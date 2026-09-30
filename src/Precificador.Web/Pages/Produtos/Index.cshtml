@@ -21,6 +21,21 @@
         <label for="categoria" class="visually-hidden">Categoria</label>
         <select id="categoria" name="categoria" asp-items="Model.Categorias" class="form-select"></select>
     </div>
+    <div class="col-sm-3">
+        <label for="filtro" class="visually-hidden">Recorte de margem</label>
+        <select id="filtro" name="filtro" class="form-select">
+            @if (Model.Filtro == "abaixo-da-margem")
+            {
+                <option value="">Todos os produtos</option>
+                <option value="abaixo-da-margem" selected>Abaixo da margem</option>
+            }
+            else
+            {
+                <option value="" selected>Todos os produtos</option>
+                <option value="abaixo-da-margem">Abaixo da margem</option>
+            }
+        </select>
+    </div>
     <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Pesquisar</button></div>
 </form>
 
@@ -29,11 +44,15 @@
     <p><a asp-page="/Produtos/Index">Limpar filtros</a></p>
 }
 
-@if (Model.Produtos.Count == 0)
+@if (Model.FiltroInvalido)
+{
+    <p>Filtro de margem inválido.</p>
+}
+else if (Model.Produtos.Count == 0)
 {
     if (Model.TemFiltros)
     {
-        <p>Nenhum produto encontrado para os filtros informados.</p>
+        <p>@(Model.Filtro == "abaixo-da-margem" ? "Nenhum Produto ativo está abaixo da margem." : "Nenhum produto encontrado para os filtros informados.")</p>
     }
     else
     {

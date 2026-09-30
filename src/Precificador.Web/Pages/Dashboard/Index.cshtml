@@ -13,9 +13,32 @@
     <div class="col"><div class="card h-100"><div class="card-body"><div>Margem indisponível</div><strong>@Model.MargemIndisponivel</strong></div></div></div>
 </div>
 
-@if (Model.Produtos.Count == 0)
+<nav class="mb-3" aria-label="Recorte de margem">
+    @if (Model.FiltroAbaixoDaMargem)
+    {
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
+        <a class="btn btn-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem" aria-current="page">Abaixo da margem</a>
+    }
+    else if (!Model.FiltroInvalido)
+    {
+        <a class="btn btn-primary" asp-page="/Dashboard/Index" aria-current="page">Todos os ativos</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+    }
+    else
+    {
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+    }
+</nav>
+
+@if (Model.FiltroInvalido)
 {
-    <p>Não há Produtos ativos para acompanhar.</p>
+    <p>Filtro do Dashboard inválido.</p>
+    <p><a asp-page="/Dashboard/Index">Mostrar todos</a></p>
+}
+else if (Model.Produtos.Count == 0)
+{
+    <p>@(Model.FiltroAbaixoDaMargem ? "Nenhum Produto ativo está abaixo da margem." : "Não há Produtos ativos para acompanhar.")</p>
 }
 else
 {

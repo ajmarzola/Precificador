@@ -97,6 +97,47 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         Assert.Equal(2, await verificacao.Insumos.CountAsync());
     }
 
+    [Fact]
+    public async Task UC029_Filtro_abaixo_da_margem_preserva_cards_globais_e_exclui_demais_situacoes()
+    {
+        var empresa = await web.CriarEmpresaAsync();
+        var abaixo = await CriarProdutoPrecificavelAsync(empresa, "ProdutoAbaixoXYZ", 10m, 5m, ativo: true);
+        var dentro = await CriarProdutoPrecificavelAsync(empresa, "ProdutoDentroXYZ", 10m, 20m, ativo: true);
+        var incompleto = await CriarProdutoSemFichaAsync(empresa, "ProdutoIncompletoXYZ", 20m);
+        var inativo = await CriarProdutoPrecificavelAsync(empresa, "ProdutoInativoXYZ", 10m, 5m, ativo: false);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/Dashboard?filtro=%20ABAiXO-da-MARGEM%20"));
+
+        var linhas = LinhasDaTabela(conteudo);
+        Assert.Contains(abaixo.Nome, linhas);
+        Assert.DoesNotContain(dentro.Nome, linhas);
+        Assert.DoesNotContain(incompleto.Nome, linhas);
+        Assert.DoesNotContain(inativo.Nome, linhas);
+        Assert.Contains("Produtos ativos</div><strong>3", conteudo);
+        Assert.Contains("Abaixo da margem</div><strong>1", conteudo);
+        Assert.Contains("Todos os ativos", conteudo);
+        Assert.Contains("filtro=abaixo-da-margem", conteudo);
+        Assert.Matches("<a\\b(?=[^>]*href=\"[^\"]*filtro=abaixo-da-margem\")(?=[^>]*aria-current=\"page\")[^>]*>Abaixo da margem</a>", conteudo);
+    }
+
+    [Fact]
+    public async Task UC029_Filtro_invalido_nao_amplia_a_lista_e_oferece_recuperacao()
+    {
+        var empresa = await web.CriarEmpresaAsync();
+        var produto = await CriarProdutoPrecificavelAsync(empresa, "ProdutoNaoDeveAparecerXYZ", 10m, 5m, ativo: true);
+        using var client = await web.CriarClienteAutenticadoAsync(empresa);
+
+        var resposta = await client.GetAsync("/Dashboard?filtro=invalido");
+        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(resposta);
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.DoesNotContain(produto.Nome, LinhasDaTabela(conteudo));
+        Assert.Contains("Filtro do Dashboard inválido.", conteudo);
+        Assert.Contains("Mostrar todos", conteudo);
+        Assert.DoesNotContain("aria-current=\"page\"", conteudo);
+    }
+
     private async Task<(int Id, string Nome)> CriarProdutoPrecificavelAsync(int empresaId, string nome, decimal custo, decimal preco, bool ativo, decimal? incrementoComercial = .50m)
     {
         using var scope = factory.Services.CreateScope();
@@ -149,5 +190,11 @@ public sealed class DashboardPageTests(CustomWebApplicationFactory factory) : IC
         var match = Regex.Match(conteudo, $"<tr>.*?{Regex.Escape(nome)}.*?</tr>", RegexOptions.Singleline);
         Assert.True(match.Success, conteudo);
         return match.Value;
+    }
+
+    private static string LinhasDaTabela(string conteudo)
+    {
+        var match = Regex.Match(conteudo, "<tbody>(.*?)</tbody>", RegexOptions.Singleline);
+        return match.Success ? match.Groups[1].Value : string.Empty;
     }
 }

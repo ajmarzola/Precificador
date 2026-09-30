@@ -14,9 +14,14 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
     public int AbaixoDaMargem { get; private set; }
     public int DentroDaMargem { get; private set; }
     public int MargemIndisponivel { get; private set; }
+    public bool FiltroAbaixoDaMargem { get; private set; }
+    public bool FiltroInvalido { get; private set; }
 
-    public async Task OnGetAsync(CancellationToken cancellationToken)
+    public async Task OnGetAsync(string? filtro, CancellationToken cancellationToken)
     {
+        var filtroNormalizado = NormalizarFiltro(filtro);
+        FiltroAbaixoDaMargem = filtroNormalizado == FiltroMargem.AbaixoDaMargem;
+        FiltroInvalido = filtroNormalizado == FiltroMargem.Invalido;
         var produtos = await context.Produtos.AsNoTracking()
             .Where(produto => produto.Ativo)
             .OrderBy(produto => produto.NomeNormalizado)
@@ -39,6 +44,22 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         AbaixoDaMargem = Produtos.Count(produto => produto.SituacaoMargem == SituacaoMargemProduto.AbaixoDaMargem);
         DentroDaMargem = Produtos.Count(produto => produto.SituacaoMargem == SituacaoMargemProduto.DentroDaMargem);
         MargemIndisponivel = Produtos.Count(produto => produto.SituacaoMargem == SituacaoMargemProduto.Incompleto);
+        if (FiltroAbaixoDaMargem)
+        {
+            Produtos = Produtos.Where(produto => produto.SituacaoMargem == SituacaoMargemProduto.AbaixoDaMargem).ToList();
+        }
+        else if (FiltroInvalido)
+        {
+            Produtos = [];
+        }
+    }
+
+    private static FiltroMargem NormalizarFiltro(string? filtro)
+    {
+        if (string.IsNullOrWhiteSpace(filtro)) return FiltroMargem.Todos;
+        return string.Equals(filtro.Trim(), "abaixo-da-margem", StringComparison.OrdinalIgnoreCase)
+            ? FiltroMargem.AbaixoDaMargem
+            : FiltroMargem.Invalido;
     }
 
     public static string SituacaoMargemRotulo(SituacaoMargemProduto situacao) => situacao switch
@@ -50,4 +71,6 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
 
     public sealed record ProdutoDashboard(int Id, string Nome, decimal MargemAlvo, decimal? CustoUnitarioProduto,
         decimal? PrecoPrateleiraAtual, decimal? PrecoSugerido, decimal? MargemAtual, SituacaoMargemProduto SituacaoMargem);
+
+    private enum FiltroMargem { Todos, AbaixoDaMargem, Invalido }
 }
