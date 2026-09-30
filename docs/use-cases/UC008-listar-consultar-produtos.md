@@ -300,7 +300,7 @@ Usuário anônimo não acessa `/Produtos` nem detalhes.
 
 ### CA03 — Dados listados
 
-Cada linha mostra Nome, Categoria, Custo unitário atual, Preço de prateleira vigente, Margem atual, Margem-alvo, Situação e Consultar. Os três indicadores atuais são derivados em lote, sem persistência; custo ou margem indisponível são exibidos como `indisponível` e preço ausente como `—`.
+Após as evoluções MEL024/UC029/UC030, cada linha mostra Nome, Categoria, Custo unitário atual, Preço de prateleira vigente, Margem atual, Margem-alvo, Situação, Precificação e Consultar. Os valores atuais e a classificação global de completude são derivados em lote, sem persistência; custo ou margem indisponível são exibidos como `indisponível`, preço ausente como `—` e Precificação informa `Completa` ou `Incompleta` com seus motivos estruturados.
 
 ### CA04 — Categoria ausente usa estado neutro
 
@@ -548,7 +548,10 @@ Além da DoD global:
 - `/Produtos` lista somente a Empresa Ativa;
 - pesquisa por Nome funciona com normalização;
 - `q` pesquisa somente Nome e Categoria é filtrada de forma estruturada;
-- listagem apresenta custo, preço de prateleira e margem atuais derivados, sem persistência;
+- listagem apresenta custo, preço de prateleira, margem e completude global atuais derivados, sem persistência;
+- coluna Precificação distingue Completa/Incompleta e apresenta motivos conforme UC030;
+- coluna Situação continua significando Ativo/Inativo;
+- `filtro` admite `abaixo-da-margem` e `precificacao-incompleta`, combinados por AND com `q`/`categoria`;
 - margem aparece como percentual;
 - `/Produtos/Detalhes/{id}` respeita tenancy/404;
 - consultas puras usam `AsNoTracking`;
