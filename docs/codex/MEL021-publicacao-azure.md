@@ -1,6 +1,6 @@
 # Codex — MEL021 — Publicação Azure
 
-> **Gate:** LIBERADO. MEL020, MEL022, MEL023, UC032 e UC036 estão concluídas; uma assinatura Azure utilizável foi confirmada em 26/09/2026 e `docs/development/backlog.md` marca MEL021 como `Pronto`. Implementar exclusivamente a MEL021 e não antecipar UC028.
+> **Gate:** CONCLUÍDO. MEL021 foi provisionada, publicada e validada no Azure em 29/09/2026. `docs/development/backlog.md` marca MEL021 como `Concluído`; não antecipar UC028 antes do merge da PR da MEL021.
 
 Implemente exclusivamente a MEL021 conforme:
 
