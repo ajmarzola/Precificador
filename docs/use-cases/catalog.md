@@ -118,11 +118,13 @@ A UC036 está concluída. Ela não altera energia elétrica; adiciona um compone
 |---|---|---|
 | [UC028](UC028-consultar-resumo-margens.md) | Consultar resumo de margens da Empresa Ativa | UC024 |
 | [UC029](UC029-filtrar-produtos-abaixo-margem.md) | Filtrar produtos abaixo da margem | UC028 |
-| UC030 | Identificar produtos com precificação incompleta | UC017, UC028 |
+| [UC030](UC030-identificar-produtos-precificacao-incompleta.md) | Identificar produtos com precificação incompleta | UC017, UC028, UC029 |
 
 UC028 foi concluída com a superfície `/Dashboard` sobre Produtos ativos da Empresa Ativa, reutilizando a precificação atual em lote. Ela resume `SituacaoMargem` e apresenta valores correntes sem persistência.
 
-UC029 acrescentou o recorte `filtro=abaixo-da-margem` tanto ao Dashboard quanto à listagem `/Produtos`. No Dashboard, os cards continuam globais; em `/Produtos`, o recorte combina por AND com pesquisa/Categoria e mantém o processamento em lote, sem recalcular Produto por Produto. A completude global da precificação, distinta de `SituacaoMargem.Incompleto`, permanece responsabilidade da UC030.
+UC029 acrescentou o recorte `filtro=abaixo-da-margem` tanto ao Dashboard quanto à listagem `/Produtos`. No Dashboard, os cards continuam globais; em `/Produtos`, o recorte combina por AND com pesquisa/Categoria e mantém o processamento em lote, sem recalcular Produto por Produto.
+
+UC030 especifica a **completude global da precificação**, distinta de `SituacaoMargem.Incompleto`, com motivos estruturados e o novo recorte `filtro=precificacao-incompleta` nas mesmas duas superfícies. A classificação cobre também casos em que a Margem atual existe, mas outra etapa permanece incompleta — por exemplo, Incremento comercial ausente impedindo o Preço sugerido.
 
 ## Administração multiempresa
 
