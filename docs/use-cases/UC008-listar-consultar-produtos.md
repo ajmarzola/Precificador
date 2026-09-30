@@ -8,6 +8,8 @@
 > Evolução MEL024: a listagem agora admite o filtro estruturado `categoria` e expõe custo unitário atual, preço de prateleira vigente e margem atual. `q` continua exclusivo para Nome; os indicadores são derivados em lote e não persistidos.
 >
 > Evolução UC029: `/Produtos` também admite `filtro=abaixo-da-margem`, combinado por AND com `q` e `categoria`. O recorte usa `SituacaoMargem.AbaixoDaMargem` do resumo em lote e inclui somente Produtos ativos; sem o recorte, inativos continuam visíveis.
+>
+> Evolução UC030: `/Produtos` passa a admitir também `filtro=precificacao-incompleta` e a exibir a coluna **Precificação**, com estado global e motivos estruturados. Esse conceito é distinto de `SituacaoMargem.Incompleto`; a coluna **Situação** continua significando Ativo/Inativo.
 
 ## Objetivo
 
@@ -146,7 +148,9 @@ A implementação atual de `Insumos/Index` já usa normalização simples da que
 
 A MEL024 formaliza o filtro estruturado `categoria`: vazio lista todas, `sem-categoria` seleciona Produtos sem Categoria e um inteiro positivo seleciona a Categoria correspondente. Valores inválidos, inexistentes ou cross-tenant retornam zero resultados. Categorias ativas e inativas são opções do seletor; a pesquisa textual continua exclusivamente em Nome.
 
-A UC029 acrescenta o parâmetro estruturado `filtro`. O único valor introduzido por ela é `abaixo-da-margem`. Quando presente, `q AND categoria AND filtro` define o conjunto final. O recorte de margem é aplicado a partir da `SituacaoMargem` calculada em lote e exclui Produtos inativos. Valor de `filtro` inválido retorna zero resultados sem ampliar silenciosamente para a visão completa.
+A UC029 acrescenta o parâmetro estruturado `filtro` com `abaixo-da-margem`. A UC030 adiciona o segundo valor suportado, `precificacao-incompleta`. Quando presente, `q AND categoria AND filtro` define o conjunto final. Ambos os recortes operacionais incluem somente Produtos ativos; sem `filtro`, a listagem normal continua incluindo ativos e inativos. Valor inválido retorna zero resultados sem ampliar silenciosamente para a visão completa.
+
+`precificacao-incompleta` usa a classificação global derivada em lote conforme RN017. Ela exige Custo unitário, Preço sugerido, Preço de prateleira e Margem atual determináveis e não é equivalente a `SituacaoMargem.Incompleto`. Um Produto pode simultaneamente estar `AbaixoDaMargem` e possuir precificação global incompleta.
 
 ### Normalização da consulta
 
@@ -366,7 +370,7 @@ Nenhuma migration/ModelSnapshot.
 
 ### CA20 — Sem escopo antecipado
 
-Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido, dashboard ou filtros avançados além da Categoria estruturada da MEL024 e do recorte abaixo da margem introduzido pela UC029.
+Não implementar UC009+, histórico de preço, Ficha Técnica, preço teórico/sugerido como coluna própria, dashboard ou filtros avançados além da Categoria estruturada da MEL024 e dos recortes operacionais introduzidos por UC029/UC030.
 
 ## Matriz de testes fechada antes da implementação
 
