@@ -473,7 +473,7 @@ Produto cadastrado com sucesso.
 
 ### CA17 — Navegação
 
-Critério histórico supersedido pela UC028: a Home autenticada passou a ser `/Dashboard`.
+Critério histórico superado pela UC028: a Home autenticada passou a ser `/Dashboard`.
 O Dashboard não herda a exigência de exibir o link **Cadastrar produto**; o cadastro
 permanece acessível pela área de Produtos.
 
@@ -662,7 +662,7 @@ Enviar campos adicionais manipulados `EmpresaId` e `Ativo=false` e confirmar que
 CA17_Home_exibe_link_cadastrar_produto
 ~~~
 
-Teste histórico supersedido pela UC028, que substituiu a Home autenticada pelo Dashboard.
+Teste histórico superado pela UC028, que substituiu a Home autenticada pelo Dashboard.
 
 ## Fora do escopo
 
