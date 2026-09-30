@@ -3,10 +3,10 @@
 - **Origem:** disponibilização remota do Precificador para piloto operacional interno da Carinho e Amor.
 - **Classificação:** infraestrutura / hospedagem / operação.
 - **Prioridade:** alta.
-- **Estado:** Pronto.
+- **Estado:** Concluído.
 - **Ordem na fila pendente:** 12.
 - **Dependências:** MEL020, MEL022, MEL023, UC032 e UC036 concluídas.
-- **Gate operacional:** dependências funcionais atendidas e assinatura Azure utilizável confirmada em 26/09/2026; implementação liberada; concluir/mergear MEL021 antes de UC028.
+- **Gate operacional:** provisionamento, deploy e smoke real concluídos em 29/09/2026; mergear a PR da MEL021 antes de iniciar UC028.
 - **Alteração de domínio/regra de negócio:** não.
 - **Alteração de schema lógico:** não intencional.
 - **Provisionamento Azure:** sim.
@@ -29,6 +29,26 @@ Azure SQL Database Free offer / General Purpose Serverless
 ```
 
 A MEL021 materializa a publicação preparada pela MEL020 e não cria funcionalidade de negócio.
+
+
+## Resultado real do piloto — 29/09/2026
+
+A publicação foi concluída e validada no ambiente piloto da Carinho e Amor:
+
+- App Service Linux em `F1/Free`, runtime .NET 10, acessível por HTTPS em `https://app-precificador-f00c6cc9.azurewebsites.net`;
+- Azure SQL Database na oferta gratuita, General Purpose/Serverless, com `useFreeLimit=true` e `freeLimitExhaustionBehavior=AutoPause`;
+- App Service e Azure SQL na mesma região (`Central US`);
+- conexão App Service -> Azure SQL passwordless por System Assigned Managed Identity;
+- identidade runtime limitada a `db_datareader` + `db_datawriter`, sem `db_owner` ou `db_ddladmin`;
+- migrations aplicadas explicitamente no deploy, sem migrations pendentes;
+- auto-resume do Azure SQL Serverless observado com erro transitório `40613` e tratado pelos retries previstos;
+- suíte completa validada com 729/729 testes;
+- fluxo de primeiro uso validado: Login -> Setup -> criação da empresa Carinho e Amor -> login normal -> Empresa Ativa;
+- cadastro e consulta de Insumo e Produto validados no Azure SQL;
+- acesso da aplicação ao banco confirmado após remoção do IP temporário do operador;
+- nenhum fallback pago ou recurso auxiliar pago foi criado.
+
+O `/Setup` continuar indisponível após o primeiro usuário é comportamento do bootstrap atual e não faz parte do escopo da MEL021 para administração posterior de empresas/usuários; essa evolução deve ser tratada separadamente.
 
 ## Gate funcional e operacional concluídos — UC032 / UC036 / Azure
 
