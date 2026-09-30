@@ -186,34 +186,61 @@ Incompleto     => Margem indisponível
 
 Cor pode complementar, nunca substituir texto.
 
-## Navegação e landing autenticada
+## Navegação — Dashboard é a Home da Empresa
 
 Adicionar `Dashboard` ao menu autenticado.
 
-O Dashboard deve ser o destino operacional padrão quando a autenticação já resolveu a Empresa Ativa:
+Tratar `/Dashboard` como a **Home da Empresa**. Depois que há usuário autenticado + Empresa Ativa, todo destino semântico de Home/Início deve ir diretamente ao Dashboard.
+
+Revisar todos os pontos atuais que apontam para `/Index` ou `/` com esse propósito. No mínimo:
+
+- `Conta/Login.cshtml.cs`;
+- `Conta/Logout.cshtml.cs`;
+- `Empresas/Selecionar.cshtml.cs`;
+- `Pages/Index.cshtml.cs`;
+- `Shared/_Layout.cshtml`.
+
+Comportamento obrigatório:
 
 ~~~text
 login sem ReturnUrl + uma Empresa
 => /Dashboard
 
+login com ReturnUrl local válido
+=> ReturnUrl
+
 seleção explícita de Empresa
 => /Dashboard
 
-GET /
-+ usuário autenticado
-+ Empresa Ativa
+GET /Conta/Login já autenticado + Empresa Ativa
+=> /Dashboard
+
+link Início autenticado
+=> /Dashboard
+
+marca Precificador autenticada
+=> /Dashboard
+
+GET / autenticado + Empresa Ativa
 => redirect /Dashboard
 ~~~
 
-Preservar `ReturnUrl` local válido: ele continua tendo precedência quando o usuário foi enviado ao login por uma rota protegida.
+Não usar `/` como salto intermediário quando o destino autenticado já é conhecido.
 
-A Home `/` continua pública para anônimos. Não copiar o Dashboard para `Index.cshtml`; no estado autenticado, redirecionar.
+### Logout
 
-Revisar explicitamente:
+Logout é a transição inversa:
 
-- `Conta/Login.cshtml.cs`;
-- `Empresas/Selecionar.cshtml.cs`;
-- `Pages/Index.cshtml.cs`.
+~~~text
+POST /Conta/Logout
+=> limpar Empresa Ativa
+=> SignOut
+=> /
+~~~
+
+O destino é a Home pública. Não redirecionar o logout para `/Conta/Login` nem para `/Dashboard`.
+
+A Home `/` continua pública para anônimos. Não copiar o Dashboard para `Index.cshtml`; no estado autenticado com Empresa Ativa, redirecionar.
 
 Usuário autenticado sem Empresa Ativa continua no fluxo de seleção/resolução existente e não acessa o Dashboard por bypass da policy.
 
@@ -258,7 +285,10 @@ Cobrir a matriz da especificação, com prioridade para:
 17. login padrão termina em `/Dashboard`;
 18. ReturnUrl local continua preservado;
 19. seleção de Empresa termina em `/Dashboard`;
-20. `/` anônimo continua público e `/` autenticado com Empresa Ativa redireciona ao Dashboard.
+20. GET de Login já autenticado termina em `/Dashboard`;
+21. links autenticados Início/marca Precificador apontam direto ao Dashboard;
+22. `/` anônimo continua público e `/` autenticado com Empresa Ativa redireciona ao Dashboard;
+23. Logout limpa contexto e retorna para `/` deslogado.
 
 Não é necessária nova fórmula Core.
 
