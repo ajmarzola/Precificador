@@ -1,6 +1,7 @@
 @page
 @model Precificador.Web.Pages.Produtos.IndexModel
 @using Precificador.Web.Apresentacao
+@using Precificador.Web.Pages.Dashboard
 @{
     ViewData["Title"] = "Produtos";
 }
@@ -22,17 +23,25 @@
         <select id="categoria" name="categoria" asp-items="Model.Categorias" class="form-select"></select>
     </div>
     <div class="col-sm-3">
-        <label for="filtro" class="visually-hidden">Recorte de margem</label>
+        <label for="filtro" class="visually-hidden">Recorte operacional</label>
         <select id="filtro" name="filtro" class="form-select">
             @if (Model.Filtro == "abaixo-da-margem")
             {
                 <option value="">Todos os produtos</option>
                 <option value="abaixo-da-margem" selected>Abaixo da margem</option>
+                <option value="precificacao-incompleta">Precificação incompleta</option>
+            }
+            else if (Model.Filtro == "precificacao-incompleta")
+            {
+                <option value="">Todos os produtos</option>
+                <option value="abaixo-da-margem">Abaixo da margem</option>
+                <option value="precificacao-incompleta" selected>Precificação incompleta</option>
             }
             else
             {
                 <option value="" selected>Todos os produtos</option>
                 <option value="abaixo-da-margem">Abaixo da margem</option>
+                <option value="precificacao-incompleta">Precificação incompleta</option>
             }
         </select>
     </div>
@@ -52,7 +61,7 @@ else if (Model.Produtos.Count == 0)
 {
     if (Model.TemFiltros)
     {
-        <p>@(Model.Filtro == "abaixo-da-margem" ? "Nenhum Produto ativo está abaixo da margem." : "Nenhum produto encontrado para os filtros informados.")</p>
+        <p>@(Model.Filtro == "abaixo-da-margem" ? "Nenhum Produto ativo está abaixo da margem." : Model.Filtro == "precificacao-incompleta" ? "Nenhum Produto ativo com precificação incompleta foi encontrado para os filtros informados." : "Nenhum produto encontrado para os filtros informados.")</p>
     }
     else
     {
@@ -63,12 +72,28 @@ else
 {
     <div class="table-responsive">
     <table class="table">
-        <thead><tr><th>Nome</th><th>Categoria</th><th>Custo unitário atual</th><th>Preço de prateleira vigente</th><th>Margem atual</th><th>Margem-alvo</th><th>Situação</th><th>Consultar</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Categoria</th><th>Custo unitário atual</th><th>Preço de prateleira vigente</th><th>Margem atual</th><th>Margem-alvo</th><th>Situação</th><th>Precificação</th><th>Consultar</th></tr></thead>
         <tbody>
         @foreach (var produto in Model.Produtos)
         {
             <tr>
                 <td>@produto.Nome</td><td>@(produto.Categoria ?? "—")</td><td>@(produto.CustoUnitarioProduto is decimal custo ? PrecoInsumoFormatacao.CustoCalculado(custo) : "indisponível")</td><td>@(produto.PrecoPrateleiraAtual is decimal preco ? PrecoInsumoFormatacao.CustoCalculado(preco) : "—")</td><td>@(produto.MargemAtual is decimal margem ? ProdutoFormatacao.MargemAlvo(margem) : "indisponível")</td><td>@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</td><td>@(produto.Ativo ? "Ativo" : "Inativo")</td>
+                <td>
+                    @if (produto.PrecificacaoCompleta)
+                    {
+                        <span>Completa</span>
+                    }
+                    else
+                    {
+                        <span>Incompleta</span>
+                        <ul class="mb-0">
+                        @foreach (var motivo in produto.MotivosPrecificacaoIncompleta ?? [])
+                        {
+                            <li>@Precificador.Web.Pages.Dashboard.IndexModel.MotivoPrecificacaoRotulo(motivo)</li>
+                        }
+                        </ul>
+                    }
+                </td>
                 <td><a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id">Consultar</a></td>
             </tr>
         }

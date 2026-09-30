@@ -88,6 +88,10 @@ public sealed class PrecificacaoProdutoAtualTests
         Assert.False(resultado!.PrecoProdutoCompleto);
         var resumo = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
         Assert.Null(resumo[produto.Id].PrecoSugerido);
+        Assert.False(resultado.PrecificacaoCompleta);
+        Assert.False(resumo[produto.Id].PrecificacaoCompleta);
+        Assert.Contains(MotivoPrecificacaoIncompleta.IncrementoComercialNaoConfigurado, resultado.MotivosPrecificacaoIncompleta);
+        Assert.Equal(resultado.MotivosPrecificacaoIncompleta, resumo[produto.Id].MotivosPrecificacaoIncompleta);
         Assert.Equal(.50m, resultado.MargemAtual);
         Assert.Equal(SituacaoMargemProduto.DentroDaMargem, resultado.SituacaoMargem);
         Assert.Contains("Incremento comercial não configurado.", resultado.Impedimentos);
@@ -314,6 +318,8 @@ public sealed class PrecificacaoProdutoAtualTests
             Assert.Equal(individual.PrecoPrateleiraAtual, resumo.PrecoPrateleiraAtual);
             Assert.Equal(individual.MargemAtual, resumo.MargemAtual);
             Assert.Equal(individual.SituacaoMargem, resumo.SituacaoMargem);
+            Assert.Equal(individual.PrecificacaoCompleta, resumo.PrecificacaoCompleta);
+            Assert.Equal(individual.MotivosPrecificacaoIncompleta, resumo.MotivosPrecificacaoIncompleta);
         }
 
         Assert.Equal(.5m, lote[completo.Id].MargemAtual);
@@ -360,6 +366,8 @@ public sealed class PrecificacaoProdutoAtualTests
             Assert.Equal(individual!.CustoUnitarioProduto, lote[id].CustoUnitarioProduto);
             Assert.Equal(individual.MargemAtual, lote[id].MargemAtual);
             Assert.Equal(individual.SituacaoMargem, lote[id].SituacaoMargem);
+            Assert.Equal(individual.PrecificacaoCompleta, lote[id].PrecificacaoCompleta);
+            Assert.Equal(individual.MotivosPrecificacaoIncompleta, lote[id].MotivosPrecificacaoIncompleta);
         }
 
         Assert.Equal(12m, lote[produtoFixo.Id].CustoUnitarioProduto);

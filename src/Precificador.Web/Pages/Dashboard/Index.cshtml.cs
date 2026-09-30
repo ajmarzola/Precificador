@@ -15,17 +15,19 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
     public int DentroDaMargem { get; private set; }
     public int MargemIndisponivel { get; private set; }
     public bool FiltroAbaixoDaMargem { get; private set; }
+    public bool FiltroPrecificacaoIncompleta { get; private set; }
     public bool FiltroInvalido { get; private set; }
 
     public async Task OnGetAsync(string? filtro, CancellationToken cancellationToken)
     {
         var filtroNormalizado = NormalizarFiltro(filtro);
         FiltroAbaixoDaMargem = filtroNormalizado == FiltroMargem.AbaixoDaMargem;
+        FiltroPrecificacaoIncompleta = filtroNormalizado == FiltroMargem.PrecificacaoIncompleta;
         FiltroInvalido = filtroNormalizado == FiltroMargem.Invalido;
         var produtos = await context.Produtos.AsNoTracking()
             .Where(produto => produto.Ativo)
             .OrderBy(produto => produto.NomeNormalizado)
-            .Select(produto => new ProdutoDashboard(produto.Id, produto.Nome, produto.MargemAlvo, null, null, null, null, SituacaoMargemProduto.Incompleto))
+            .Select(produto => new ProdutoDashboard(produto.Id, produto.Nome, produto.MargemAlvo, null, null, null, null, SituacaoMargemProduto.Incompleto, false, Array.Empty<MotivoPrecificacaoIncompleta>()))
             .ToListAsync(cancellationToken);
         var resumos = await resumoPrecificacao.CalcularAsync(produtos.Select(produto => produto.Id).ToArray(), cancellationToken);
         InsumosAtivos = await context.Insumos.AsNoTracking().CountAsync(insumo => insumo.Ativo, cancellationToken);
@@ -36,7 +38,9 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
                 PrecoPrateleiraAtual = resumo.PrecoPrateleiraAtual,
                 PrecoSugerido = resumo.PrecoSugerido,
                 MargemAtual = resumo.MargemAtual,
-                SituacaoMargem = resumo.SituacaoMargem
+                SituacaoMargem = resumo.SituacaoMargem,
+                PrecificacaoCompleta = resumo.PrecificacaoCompleta,
+                MotivosPrecificacaoIncompleta = resumo.MotivosPrecificacaoIncompleta
             }
             : produto).ToList();
 
@@ -47,6 +51,10 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         if (FiltroAbaixoDaMargem)
         {
             Produtos = Produtos.Where(produto => produto.SituacaoMargem == SituacaoMargemProduto.AbaixoDaMargem).ToList();
+        }
+        else if (FiltroPrecificacaoIncompleta)
+        {
+            Produtos = Produtos.Where(produto => !produto.PrecificacaoCompleta).ToList();
         }
         else if (FiltroInvalido)
         {
@@ -59,7 +67,9 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         if (string.IsNullOrWhiteSpace(filtro)) return FiltroMargem.Todos;
         return string.Equals(filtro.Trim(), "abaixo-da-margem", StringComparison.OrdinalIgnoreCase)
             ? FiltroMargem.AbaixoDaMargem
-            : FiltroMargem.Invalido;
+            : string.Equals(filtro.Trim(), "precificacao-incompleta", StringComparison.OrdinalIgnoreCase)
+                ? FiltroMargem.PrecificacaoIncompleta
+                : FiltroMargem.Invalido;
     }
 
     public static string SituacaoMargemRotulo(SituacaoMargemProduto situacao) => situacao switch
@@ -69,8 +79,21 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
         _ => "Margem indisponível"
     };
 
-    public sealed record ProdutoDashboard(int Id, string Nome, decimal MargemAlvo, decimal? CustoUnitarioProduto,
-        decimal? PrecoPrateleiraAtual, decimal? PrecoSugerido, decimal? MargemAtual, SituacaoMargemProduto SituacaoMargem);
+    public static string MotivoPrecificacaoRotulo(MotivoPrecificacaoIncompleta motivo) => motivo switch
+    {
+        MotivoPrecificacaoIncompleta.FichaTecnicaAusente => "Ficha técnica não cadastrada",
+        MotivoPrecificacaoIncompleta.FichaTecnicaSemItens => "Ficha técnica sem itens",
+        MotivoPrecificacaoIncompleta.InsumoSemPrecoVigente => "Insumo sem preço vigente",
+        MotivoPrecificacaoIncompleta.ConfiguracaoPrecificacaoAusente => "Configuração de precificação não encontrada",
+        MotivoPrecificacaoIncompleta.TarifaEnergiaNaoConfigurada => "Tarifa de energia não configurada",
+        MotivoPrecificacaoIncompleta.IncrementoComercialNaoConfigurado => "Incremento comercial não configurado",
+        MotivoPrecificacaoIncompleta.PrecoPrateleiraNaoDefinido => "Preço de prateleira não definido",
+        _ => throw new ArgumentOutOfRangeException(nameof(motivo))
+    };
 
-    private enum FiltroMargem { Todos, AbaixoDaMargem, Invalido }
+    public sealed record ProdutoDashboard(int Id, string Nome, decimal MargemAlvo, decimal? CustoUnitarioProduto,
+        decimal? PrecoPrateleiraAtual, decimal? PrecoSugerido, decimal? MargemAtual, SituacaoMargemProduto SituacaoMargem,
+        bool PrecificacaoCompleta, IReadOnlyList<MotivoPrecificacaoIncompleta> MotivosPrecificacaoIncompleta);
+
+    private enum FiltroMargem { Todos, AbaixoDaMargem, PrecificacaoIncompleta, Invalido }
 }

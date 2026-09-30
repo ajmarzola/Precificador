@@ -24,8 +24,13 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
 
         var ficha = await context.FichasTecnicas.AsNoTracking().Where(f => f.ProdutoId == produtoId)
             .Select(f => new FichaCarregada(f.Id, f.Rendimento)).SingleOrDefaultAsync();
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
+            .Select(c => new ConfiguracaoCarregada(c.PercentualMaoDeObra, c.TarifaEnergiaKwh, c.IncrementoComercial, c.ReservaComercialDesconto))
+            .SingleOrDefaultAsync();
         if (ficha is null)
         {
+            var completudeSemFicha = Classificar(false, false, false, configuracao is not null, false,
+                configuracao?.TarifaEnergiaKwh, configuracao?.IncrementoComercial, false, false, precoPrateleiraAtual, null);
             return ResultadoIncompleto(
                 produto,
                 dataOperacionalEmpresa.Hoje,
@@ -34,14 +39,20 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
                 ["A ficha técnica não foi cadastrada."],
                 ["A ficha técnica não foi cadastrada."],
                 null,
-                null);
+                null,
+                completudeSemFicha);
         }
 
-        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.AsNoTracking()
-            .Select(c => new ConfiguracaoCarregada(c.PercentualMaoDeObra, c.TarifaEnergiaKwh, c.IncrementoComercial, c.ReservaComercialDesconto))
-            .SingleOrDefaultAsync();
         if (configuracao is null)
         {
+            var itensSemConfiguracao = await context.ItensFichaTecnica.AsNoTracking().Where(i => i.FichaTecnicaId == ficha.Id)
+                .Select(i => new ItemCarregado(i.Id, i.InsumoId, i.Quantidade, i.PercentualPerda)).ToListAsync();
+            var vigentesSemConfiguracao = await context.PrecosInsumos.AsNoTracking().SelecionarVigentesAsync(
+                itensSemConfiguracao.Select(i => i.InsumoId).Distinct().ToArray(), dataOperacionalEmpresa.Hoje);
+            var temUsoEletrico = await context.UsosEquipamentosFicha.AsNoTracking().AnyAsync(u => u.FichaTecnicaId == ficha.Id);
+            var completudeSemConfiguracao = Classificar(true, itensSemConfiguracao.Count > 0,
+                itensSemConfiguracao.Any(item => !vigentesSemConfiguracao.ContainsKey(item.InsumoId)), false,
+                temUsoEletrico, null, null, false, false, precoPrateleiraAtual, null);
             return ResultadoIncompleto(
                 produto,
                 dataOperacionalEmpresa.Hoje,
@@ -50,7 +61,8 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
                 ["As configurações de precificação não foram encontradas."],
                 ["As configurações de precificação não foram encontradas."],
                 ficha.Rendimento,
-                null);
+                null,
+                completudeSemConfiguracao);
         }
 
         var itens = await context.ItensFichaTecnica.AsNoTracking().Where(i => i.FichaTecnicaId == ficha.Id)
@@ -88,6 +100,9 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         }
 
         if (configuracao.IncrementoComercial is null) impedimentos.Add("Incremento comercial não configurado.");
+        var classificacaoFinal = Classificar(true, itens.Count > 0, itensCalculados.Itens.Any(item => item.CustoUnitario is null), true,
+            usos.Count > 0, configuracao.TarifaEnergiaKwh, configuracao.IncrementoComercial,
+            custoProduto.Completo, precoProduto.Completo, precoPrateleiraAtual, margemAtual.MargemAtual);
 
         return new ResultadoPrecificacaoProdutoAtual(
             produto.EmpresaId,
@@ -118,6 +133,8 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
             FormaCalculoDesgasteEquipamento = produto.FormaCalculoDesgasteEquipamento,
             ValorDesgasteEquipamento = produto.ValorDesgasteEquipamento,
             IncrementoComercial = configuracao.IncrementoComercial,
+            PrecificacaoCompleta = classificacaoFinal.PrecificacaoCompleta,
+            MotivosPrecificacaoIncompleta = classificacaoFinal.Motivos,
             Itens = itensCalculados.Itens.ToDictionary(i => i.ItemId, i => new ItemPrecificacaoAtual(i.CustoUnitario, i.CustoItem, perdas.Itens.Single(p => p.ItemId == i.ItemId).CustoPerdaItem)),
             Usos = energia.Usos.ToDictionary(u => u.UsoId, u => new UsoPrecificacaoAtual(u.ConsumoKwh, u.CustoEnergiaUso))
         };
@@ -131,7 +148,8 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         IReadOnlyList<string> impedimentos,
         IReadOnlyList<string> impedimentosCusto,
         decimal? rendimento,
-        decimal? percentualMaoDeObra)
+        decimal? percentualMaoDeObra,
+        ResultadoCompletudePrecificacao completude)
     {
         var margemAtual = CalculadoraMargemAtual.Calcular(null, precoPrateleiraAtual, produto.MargemAlvo);
         return new ResultadoPrecificacaoProdutoAtual(
@@ -158,9 +176,18 @@ public sealed class PrecificacaoProdutoAtual(PrecificadorDbContext context, IDat
         {
             DataOperacional = dataOperacional,
             Rendimento = rendimento,
-            PercentualMaoDeObra = percentualMaoDeObra
+            PercentualMaoDeObra = percentualMaoDeObra,
+            PrecificacaoCompleta = completude.PrecificacaoCompleta,
+            MotivosPrecificacaoIncompleta = completude.Motivos
         };
     }
+
+    private static ResultadoCompletudePrecificacao Classificar(bool fichaExiste, bool fichaTemItens,
+        bool haInsumoSemPreco, bool configuracaoExiste, bool haUsoEletrico, decimal? tarifa, decimal? incremento,
+        bool custoCompleto, bool precoCompleto, decimal? precoPrateleira, decimal? margemAtual) =>
+        ClassificadorCompletudePrecificacao.Classificar(new EntradaCompletudePrecificacao(fichaExiste, fichaTemItens,
+            haInsumoSemPreco, configuracaoExiste, haUsoEletrico, tarifa, incremento, custoCompleto, precoCompleto,
+            precoPrateleira, margemAtual));
 
     private static IReadOnlyList<string> ImpedimentosMargem(decimal? precoPrateleiraAtual, IReadOnlyList<string> impedimentosCusto)
     {
@@ -205,6 +232,8 @@ public sealed record ResultadoPrecificacaoProdutoAtual(
     public FormaCalculoDesgasteEquipamento? FormaCalculoDesgasteEquipamento { get; init; }
     public decimal? ValorDesgasteEquipamento { get; init; }
     public decimal? IncrementoComercial { get; init; }
+    public bool PrecificacaoCompleta { get; init; }
+    public IReadOnlyList<MotivoPrecificacaoIncompleta> MotivosPrecificacaoIncompleta { get; init; } = [];
     public IReadOnlyDictionary<int, ItemPrecificacaoAtual> Itens { get; init; } = new Dictionary<int, ItemPrecificacaoAtual>();
     public IReadOnlyDictionary<int, UsoPrecificacaoAtual> Usos { get; init; } = new Dictionary<int, UsoPrecificacaoAtual>();
 }

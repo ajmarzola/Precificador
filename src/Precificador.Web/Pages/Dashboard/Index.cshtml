@@ -13,21 +13,30 @@
     <div class="col"><div class="card h-100"><div class="card-body"><div>Margem indisponível</div><strong>@Model.MargemIndisponivel</strong></div></div></div>
 </div>
 
-<nav class="mb-3" aria-label="Recorte de margem">
+<nav class="mb-3" aria-label="Recorte operacional">
     @if (Model.FiltroAbaixoDaMargem)
     {
         <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
         <a class="btn btn-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem" aria-current="page">Abaixo da margem</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="precificacao-incompleta">Precificação incompleta</a>
+    }
+    else if (Model.FiltroPrecificacaoIncompleta)
+    {
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+        <a class="btn btn-primary" asp-page="/Dashboard/Index" asp-route-filtro="precificacao-incompleta" aria-current="page">Precificação incompleta</a>
     }
     else if (!Model.FiltroInvalido)
     {
         <a class="btn btn-primary" asp-page="/Dashboard/Index" aria-current="page">Todos os ativos</a>
         <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="precificacao-incompleta">Precificação incompleta</a>
     }
     else
     {
         <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
         <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="precificacao-incompleta">Precificação incompleta</a>
     }
 </nav>
 
@@ -38,13 +47,13 @@
 }
 else if (Model.Produtos.Count == 0)
 {
-    <p>@(Model.FiltroAbaixoDaMargem ? "Nenhum Produto ativo está abaixo da margem." : "Não há Produtos ativos para acompanhar.")</p>
+    <p>@(Model.FiltroAbaixoDaMargem ? "Nenhum Produto ativo está abaixo da margem." : Model.FiltroPrecificacaoIncompleta ? "Nenhum Produto ativo possui precificação incompleta." : "Não há Produtos ativos para acompanhar.")</p>
 }
 else
 {
     <div class="table-responsive">
         <table class="table">
-            <thead><tr><th>Produto</th><th>Custo unitário atual</th><th>Preço de prateleira atual</th><th>Margem atual</th><th>Margem-alvo</th><th>Preço sugerido</th><th>Situação da margem</th><th>Consultar</th></tr></thead>
+            <thead><tr><th>Produto</th><th>Custo unitário atual</th><th>Preço de prateleira atual</th><th>Margem atual</th><th>Margem-alvo</th><th>Preço sugerido</th><th>Situação da margem</th><th>Precificação</th><th>Consultar</th></tr></thead>
             <tbody>
             @foreach (var produto in Model.Produtos)
             {
@@ -56,6 +65,22 @@ else
                     <td>@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</td>
                     <td>@(produto.PrecoSugerido is decimal sugerido ? PrecoInsumoFormatacao.CustoCalculado(sugerido) : "indisponível")</td>
                     <td>@IndexModel.SituacaoMargemRotulo(produto.SituacaoMargem)</td>
+                    <td>
+                        @if (produto.PrecificacaoCompleta)
+                        {
+                            <span>Completa</span>
+                        }
+                        else
+                        {
+                            <span>Incompleta</span>
+                            <ul class="mb-0">
+                            @foreach (var motivo in produto.MotivosPrecificacaoIncompleta)
+                            {
+                                <li>@IndexModel.MotivoPrecificacaoRotulo(motivo)</li>
+                            }
+                            </ul>
+                        }
+                    </td>
                     <td><a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id">Consultar</a></td>
                 </tr>
             }
