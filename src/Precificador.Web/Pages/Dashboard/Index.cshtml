@@ -14,8 +14,21 @@
 </div>
 
 <nav class="mb-3" aria-label="Recorte de margem">
-    <a class="btn @(Model.FiltroAbaixoDaMargem ? "btn-outline-primary" : "btn-primary")" asp-page="/Dashboard/Index">Todos os ativos</a>
-    <a class="btn @(Model.FiltroAbaixoDaMargem ? "btn-primary" : "btn-outline-primary")" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+    @if (Model.FiltroAbaixoDaMargem)
+    {
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
+        <a class="btn btn-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem" aria-current="page">Abaixo da margem</a>
+    }
+    else if (!Model.FiltroInvalido)
+    {
+        <a class="btn btn-primary" asp-page="/Dashboard/Index" aria-current="page">Todos os ativos</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+    }
+    else
+    {
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index">Todos os ativos</a>
+        <a class="btn btn-outline-primary" asp-page="/Dashboard/Index" asp-route-filtro="abaixo-da-margem">Abaixo da margem</a>
+    }
 </nav>
 
 @if (Model.FiltroInvalido)
