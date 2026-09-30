@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Precificador.Web.Empresas;
 
 namespace Precificador.Web.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(EmpresaContext empresaContext) : PageModel
 {
-    public void OnGet()
+    public IActionResult OnGet()
     {
-
+        return User.Identity?.IsAuthenticated == true && empresaContext.EmpresaId.HasValue
+            ? RedirectToPage("/Dashboard/Index")
+            : Page();
     }
 }

@@ -298,19 +298,6 @@ public sealed class ProdutoPageTests(CustomWebApplicationFactory factory) : ICla
         Assert.True(produto.Ativo);
     }
 
-    [Fact]
-    public async Task CA17_Home_exibe_link_cadastrar_produto()
-    {
-        using var client = await web.CriarClienteAutenticadoAsync();
-
-        var response = await client.GetAsync("/");
-        var conteudo = await WebTestHtml.LerHtmlDecodificadoAsync(response);
-
-        response.EnsureSuccessStatusCode();
-        Assert.Contains("Cadastrar produto", conteudo);
-        Assert.Contains("href=\"/Produtos/Novo\"", conteudo);
-    }
-
     private async Task<HttpResponseMessage> EnviarFormularioAsync(
         HttpClient client,
         string nome,

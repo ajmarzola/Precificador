@@ -13,6 +13,7 @@ namespace Precificador.Web.Pages.Empresas;
 public sealed class SelecionarModel(PrecificadorDbContext context, EmpresaContext empresaContext) : PageModel
 {
     [BindProperty] public int EmpresaId { get; set; }
+    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
     public List<SelectListItem> Empresas { get; private set; } = [];
     public async Task OnGetAsync() => Empresas = await ObterEmpresasAsync();
     public async Task<IActionResult> OnPostAsync()
@@ -22,7 +23,8 @@ public sealed class SelecionarModel(PrecificadorDbContext context, EmpresaContex
         if (!autorizada) { ModelState.AddModelError(string.Empty, "Empresa indisponível para este usuário."); Empresas = await ObterEmpresasAsync(); return Page(); }
         var empresa = await context.Empresas.SingleAsync(empresa => empresa.Id == EmpresaId);
         empresaContext.Definir(EmpresaId, empresa.Nome, empresa.TimeZoneId);
-        return RedirectToPage("/Index");
+        if (string.IsNullOrWhiteSpace(ReturnUrl)) return RedirectToPage("/Dashboard/Index");
+        return Url?.IsLocalUrl(ReturnUrl) == true ? LocalRedirect(ReturnUrl) : RedirectToPage("/Dashboard/Index");
     }
     private async Task<List<SelectListItem>> ObterEmpresasAsync()
     {

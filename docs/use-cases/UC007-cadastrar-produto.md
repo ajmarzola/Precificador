@@ -473,7 +473,9 @@ Produto cadastrado com sucesso.
 
 ### CA17 — Navegação
 
-Home possui link **Cadastrar produto**.
+Critério histórico superado pela UC028: a Home autenticada passou a ser `/Dashboard`.
+O Dashboard não herda a exigência de exibir o link **Cadastrar produto**; o cadastro
+permanece acessível pela área de Produtos.
 
 ### CA18 — Migration evolutiva
 
@@ -660,6 +662,8 @@ Enviar campos adicionais manipulados `EmpresaId` e `Ativo=false` e confirmar que
 CA17_Home_exibe_link_cadastrar_produto
 ~~~
 
+Teste histórico superado pela UC028, que substituiu a Home autenticada pelo Dashboard.
+
 ## Fora do escopo
 
 - UC008 listagem/consulta;
@@ -701,7 +705,7 @@ Além da DoD global:
 - /Produtos protegido por EmpresaAtiva;
 - /Produtos/Novo com apenas campos autorizados;
 - PRG + mensagem;
-- Home permite navegar ao cadastro;
+- requisito histórico de navegação da Home superado pela UC028;
 - nenhuma listagem do UC008;
 - nenhum preço/ficha/custo antecipado;
 - F002/catálogo/backlog/ordem/regras/glossário ficam coerentes;

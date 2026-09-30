@@ -68,26 +68,30 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
     }
 
     [Fact]
-    public async Task Navegação_e_home_autenticadas_são_preservadas_e_login_redireciona_para_início()
+    public async Task Navegação_autenticada_aponta_para_dashboard_e_login_redireciona_para_dashboard()
     {
         var web = new WebTestContext(factory);
         using var client = await web.CriarClienteAutenticadoAsync();
 
         var home = await client.GetAsync("/");
-        var html = await home.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.Redirect, home.StatusCode);
+        Assert.Equal("/Dashboard", home.Headers.Location!.ToString());
 
-        Assert.Equal(HttpStatusCode.OK, home.StatusCode);
+        var dashboard = await client.GetAsync("/Dashboard");
+        var html = await dashboard.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, dashboard.StatusCode);
+        Assert.Contains("href=\"/Dashboard\"", html);
         Assert.Contains("href=\"/Insumos\"", html);
         Assert.Contains("href=\"/Produtos\"", html);
         Assert.Contains("href=\"/Configuracoes/Precificacao\"", html);
-        Assert.Contains("href=\"/Produtos/Novo\"", html);
         Assert.Contains("Empresa ativa:", html);
         Assert.Contains("action=\"/Conta/Logout\"", html);
         Assert.DoesNotContain("href=\"/Conta/Login\"", html);
 
         var login = await client.GetAsync("/Conta/Login");
         Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
-        Assert.Equal("/", login.Headers.Location!.ToString());
+        Assert.Equal("/Dashboard", login.Headers.Location!.ToString());
     }
 
     [Fact]
@@ -116,5 +120,93 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
 
         Assert.Equal(HttpStatusCode.OK, post.StatusCode);
         Assert.Contains("E-mail ou senha inválidos.", WebUtility.HtmlDecode(await post.Content.ReadAsStringAsync()));
+    }
+
+    [Fact]
+    public async Task Login_com_return_url_local_preserva_destino_explicito()
+    {
+        var web = new WebTestContext(factory);
+        var usuario = await web.CriarUsuarioAsync(1);
+        using var client = web.CriarCliente();
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Conta/Login?ReturnUrl=%2FProdutos");
+
+        var post = await client.PostAsync("/Conta/Login?ReturnUrl=%2FProdutos", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["ReturnUrl"] = "/Produtos",
+            ["Input.Email"] = usuario.Email,
+            ["Input.Senha"] = usuario.Senha
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal("/Produtos", post.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Login_com_multiplas_empresas_preserva_return_url_local_apos_selecao()
+    {
+        var web = new WebTestContext(factory);
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        using var client = web.CriarCliente();
+        var tokenLogin = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Conta/Login?ReturnUrl=%2FProdutos");
+
+        var login = await client.PostAsync("/Conta/Login?ReturnUrl=%2FProdutos", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = tokenLogin,
+            ["ReturnUrl"] = "/Produtos",
+            ["Input.Email"] = usuario.Email,
+            ["Input.Senha"] = usuario.Senha
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
+        Assert.Equal("/Empresas/Selecionar?ReturnUrl=%2FProdutos", login.Headers.Location!.ToString());
+        var tokenSelecao = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Empresas/Selecionar?ReturnUrl=%2FProdutos");
+        var selecao = await client.PostAsync("/Empresas/Selecionar?ReturnUrl=%2FProdutos", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = tokenSelecao,
+            ["EmpresaId"] = empresaDois.ToString(),
+            ["ReturnUrl"] = "/Produtos"
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, selecao.StatusCode);
+        Assert.Equal("/Produtos", selecao.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Selecao_explicita_de_empresa_redireciona_para_dashboard()
+    {
+        var web = new WebTestContext(factory);
+        var empresaDois = await web.CriarEmpresaAsync();
+        var usuario = await web.CriarUsuarioAsync(1, empresaDois);
+        using var client = web.CriarCliente();
+        _ = await web.LoginAsync(client, usuario.Email, usuario.Senha);
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Empresas/Selecionar");
+
+        var post = await client.PostAsync("/Empresas/Selecionar", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["EmpresaId"] = empresaDois.ToString()
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal("/Dashboard", post.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Logout_limpa_autenticacao_e_retorna_para_home_publica()
+    {
+        var web = new WebTestContext(factory);
+        using var client = await web.CriarClienteAutenticadoAsync();
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Dashboard");
+
+        var post = await client.PostAsync("/Conta/Logout", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, post.StatusCode);
+        Assert.Equal("/", post.Headers.Location!.ToString());
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/")).StatusCode);
     }
 }

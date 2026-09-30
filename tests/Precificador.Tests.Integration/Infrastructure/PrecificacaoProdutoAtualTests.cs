@@ -86,10 +86,27 @@ public sealed class PrecificacaoProdutoAtualTests
         var resultado = await CalcularAsync(context, produto.Id);
 
         Assert.False(resultado!.PrecoProdutoCompleto);
+        var resumo = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
+        Assert.Null(resumo[produto.Id].PrecoSugerido);
         Assert.Equal(.50m, resultado.MargemAtual);
         Assert.Equal(SituacaoMargemProduto.DentroDaMargem, resultado.SituacaoMargem);
         Assert.Contains("Incremento comercial não configurado.", resultado.Impedimentos);
         Assert.DoesNotContain("Incremento comercial não configurado.", resultado.ImpedimentosMargemAtual);
+    }
+
+    [Fact]
+    public async Task UC028_Resumo_em_lote_calcula_preco_sugerido_atual_pela_calculadora()
+    {
+        await using var context = await CriarContextoAsync(1);
+        await context.Database.MigrateAsync();
+        var configuracao = await context.ConfiguracoesPrecificacaoEmpresas.SingleAsync();
+        configuracao.Atualizar(0m, 0m, null, .50m, .10m);
+        var produto = await CriarProdutoPrecificavelAsync(context, margemAlvo: .30m, custoInsumo: 10m);
+        await context.SaveChangesAsync();
+
+        var resumo = await new ResumoPrecificacaoProdutosAtual(context, new DataOperacionalFixa(Hoje)).CalcularAsync([produto.Id]);
+
+        Assert.Equal(14.5m, resumo[produto.Id].PrecoSugerido);
     }
 
     [Fact]

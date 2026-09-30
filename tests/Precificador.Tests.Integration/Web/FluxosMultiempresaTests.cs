@@ -28,8 +28,8 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         using var client = web.CriarCliente();
         var resposta = await LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
-        Assert.Equal("/", resposta.Headers.Location!.ToString());
-        var pagina = await client.GetStringAsync("/");
+        Assert.Equal("/Dashboard", resposta.Headers.Location!.ToString());
+        var pagina = await client.GetStringAsync("/Dashboard");
         Assert.Contains("Empresa ativa: Empresa inicial", pagina);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Insumos/Novo")).StatusCode);
     }
@@ -59,8 +59,8 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
 
         var resultado = await pagina.OnPostAsync();
 
-        var redirect = Assert.IsType<LocalRedirectResult>(resultado);
-        Assert.Equal("/", redirect.Url);
+        var redirect = Assert.IsType<RedirectToPageResult>(resultado);
+        Assert.Equal("/Dashboard/Index", redirect.PageName);
         Assert.Equal(empresaUtc, empresaContext.EmpresaId);
         Assert.Equal("Empresa login UTC", empresaContext.Nome);
         Assert.Equal("UTC", empresaContext.TimeZoneId);
@@ -95,7 +95,8 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         token = WebTestHtml.ExtrairTokenAntiforgery(await selecao.Content.ReadAsStringAsync());
         var aceita = await client.PostAsync("/Empresas/Selecionar", Form(token, empresaDois));
         Assert.Equal(HttpStatusCode.Redirect, aceita.StatusCode);
-        var inicio = await client.GetStringAsync("/");
+        Assert.Equal("/Dashboard", aceita.Headers.Location!.ToString());
+        var inicio = await client.GetStringAsync("/Dashboard");
         Assert.Contains("Empresa ativa: Empresa troca", inicio);
     }
 
@@ -136,9 +137,10 @@ public sealed class FluxosMultiempresaTests(CustomWebApplicationFactory factory)
         var usuario = await CriarUsuarioAsync(1);
         using var client = web.CriarCliente();
         await LoginAsync(client, usuario.Email, usuario.Senha);
-        var inicio = await client.GetAsync("/");
-        var logout = await client.PostAsync("/Conta/Logout", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await inicio.Content.ReadAsStringAsync()) }));
+        var dashboard = await client.GetAsync("/Dashboard");
+        var logout = await client.PostAsync("/Conta/Logout", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = WebTestHtml.ExtrairTokenAntiforgery(await dashboard.Content.ReadAsStringAsync()) }));
         Assert.Equal(HttpStatusCode.Redirect, logout.StatusCode);
+        Assert.Equal("/", logout.Headers.Location!.ToString());
         var protegido = await client.GetAsync("/Insumos/Novo");
         Assert.Equal(HttpStatusCode.Redirect, protegido.StatusCode);
         Assert.Contains("/Conta/Login", protegido.Headers.Location!.ToString());

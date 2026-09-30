@@ -16,7 +16,12 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
 
     public async Task<IActionResult> OnGetAsync()
     {
-        if (User.Identity?.IsAuthenticated == true) return RedirectToPage("/Index");
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return empresaContext.EmpresaId.HasValue
+                ? RedirectToPage("/Dashboard/Index")
+                : RedirectToPage("/Empresas/Selecionar");
+        }
         if (!await userManager.Users.AnyAsync()) return RedirectToPage("/Setup");
         return Page();
     }
@@ -34,8 +39,15 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
         await signInManager.SignInAsync(usuario, false);
         var empresas = await context.UsuariosEmpresas.Where(v => v.UsuarioId == usuario.Id && v.Ativo)
             .Join(context.Empresas.Where(e => e.Ativo), v => v.EmpresaId, e => e.Id, (v, e) => new { e.Id, e.Nome, e.TimeZoneId }).ToListAsync();
-        if (empresas.Count == 1) { empresaContext.Definir(empresas[0].Id, empresas[0].Nome, empresas[0].TimeZoneId); return LocalRedirect(ReturnUrl ?? "/"); }
-        return RedirectToPage("/Empresas/Selecionar");
+        if (empresas.Count == 1)
+        {
+            empresaContext.Definir(empresas[0].Id, empresas[0].Nome, empresas[0].TimeZoneId);
+            if (string.IsNullOrWhiteSpace(ReturnUrl)) return RedirectToPage("/Dashboard/Index");
+            return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToPage("/Dashboard/Index");
+        }
+        return Url?.IsLocalUrl(ReturnUrl) == true
+            ? RedirectToPage("/Empresas/Selecionar", new { ReturnUrl })
+            : RedirectToPage("/Empresas/Selecionar");
     }
     public sealed class InputModel { [Required, EmailAddress] public string Email { get; set; } = string.Empty; [Required, DataType(DataType.Password)] public string Senha { get; set; } = string.Empty; }
 }

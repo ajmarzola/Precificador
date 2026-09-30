@@ -1,0 +1,42 @@
+@page
+@model Precificador.Web.Pages.Dashboard.IndexModel
+@using Precificador.Web.Apresentacao
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<h1>Dashboard</h1>
+<div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
+    <div class="col"><div class="card h-100"><div class="card-body"><div>Produtos ativos</div><strong>@Model.ProdutosAtivos</strong></div></div></div>
+    <div class="col"><div class="card h-100"><div class="card-body"><div>Insumos ativos</div><strong>@Model.InsumosAtivos</strong></div></div></div>
+    <div class="col"><div class="card h-100"><div class="card-body"><div>Abaixo da margem</div><strong>@Model.AbaixoDaMargem</strong></div></div></div>
+    <div class="col"><div class="card h-100"><div class="card-body"><div>Dentro da margem</div><strong>@Model.DentroDaMargem</strong></div></div></div>
+    <div class="col"><div class="card h-100"><div class="card-body"><div>Margem indisponível</div><strong>@Model.MargemIndisponivel</strong></div></div></div>
+</div>
+
+@if (Model.Produtos.Count == 0)
+{
+    <p>Não há Produtos ativos para acompanhar.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Produto</th><th>Custo unitário atual</th><th>Preço de prateleira atual</th><th>Margem atual</th><th>Margem-alvo</th><th>Preço sugerido</th><th>Situação da margem</th><th>Consultar</th></tr></thead>
+            <tbody>
+            @foreach (var produto in Model.Produtos)
+            {
+                <tr>
+                    <td>@produto.Nome</td>
+                    <td>@(produto.CustoUnitarioProduto is decimal custo ? PrecoInsumoFormatacao.CustoCalculado(custo) : "indisponível")</td>
+                    <td>@(produto.PrecoPrateleiraAtual is decimal preco ? PrecoInsumoFormatacao.CustoCalculado(preco) : "—")</td>
+                    <td>@(produto.MargemAtual is decimal margem ? ProdutoFormatacao.MargemAlvo(margem) : "indisponível")</td>
+                    <td>@ProdutoFormatacao.MargemAlvo(produto.MargemAlvo)</td>
+                    <td>@(produto.PrecoSugerido is decimal sugerido ? PrecoInsumoFormatacao.CustoCalculado(sugerido) : "indisponível")</td>
+                    <td>@IndexModel.SituacaoMargemRotulo(produto.SituacaoMargem)</td>
+                    <td><a asp-page="/Produtos/Detalhes" asp-route-id="@produto.Id">Consultar</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
