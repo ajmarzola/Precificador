@@ -36,7 +36,24 @@ A UC028 não adiciona filtros.
 
 ### UC029 — abaixo da margem
 
-UC029 adiciona o recorte/filtro operacional de Produtos abaixo da Margem-alvo sobre o Dashboard criado pela UC028.
+UC029 adiciona o recorte operacional de Produtos abaixo da Margem-alvo sobre o Dashboard criado pela UC028.
+
+Filtros disponíveis após esta UC:
+
+~~~text
+Todos os ativos
+Abaixo da margem
+~~~
+
+A query canônica é:
+
+~~~text
+/Dashboard?filtro=abaixo-da-margem
+~~~
+
+O recorte usa exclusivamente `SituacaoMargem.AbaixoDaMargem`. Produtos `DentroDaMargem`, `Incompleto` e inativos não entram.
+
+Os cards permanecem globais para todos os Produtos ativos da Empresa Ativa; o filtro altera somente a tabela. O resumo em lote é calculado uma única vez para o universo completo e o recorte é aplicado depois, em memória.
 
 ### UC030 — precificação incompleta
 
