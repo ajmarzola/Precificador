@@ -60,9 +60,47 @@ Em `/Produtos`, o mesmo recorte se combina por AND com `q` e `categoria`. A vis�
 
 ### UC030 — precificação incompleta
 
-UC030 identifica a **completude global da precificação**, conceito distinto da situação de margem, e adiciona o recorte correspondente.
+UC030 identifica a **completude global da precificação**, conceito distinto da situação de margem, e adiciona o recorte correspondente ao Dashboard **e à listagem `/Produtos`**.
 
-É nessa UC que o Dashboard passa a tratar explicitamente Produtos cuja precificação completa não pode ser formada conforme RN017.
+A precificação global é completa somente quando a fotografia atual consegue determinar:
+
+- Custo unitário do Produto;
+- Preço sugerido;
+- Preço de prateleira atual;
+- Margem atual.
+
+A classificação não pode ser reduzida a `SituacaoMargem.Incompleto`. Um Produto pode possuir Margem atual calculável e ainda estar globalmente incompleto — por exemplo, quando `IncrementoComercial = null` impede apenas o Preço sugerido.
+
+A UC030 também passa a expor motivos estruturados de incompletude, incluindo:
+
+- Ficha técnica ausente;
+- Ficha sem Itens;
+- Item(ns) sem preço vigente;
+- configuração de precificação ausente;
+- tarifa de energia ausente quando existe uso elétrico;
+- Incremento comercial ausente;
+- Preço de prateleira não definido.
+
+Novo valor canônico:
+
+~~~text
+filtro=precificacao-incompleta
+~~~
+
+Superfícies:
+
+~~~text
+/Dashboard?filtro=precificacao-incompleta
+/Produtos?filtro=precificacao-incompleta
+~~~
+
+Os recortes `abaixo-da-margem` e `precificacao-incompleta` não são categorias mutuamente exclusivas. Um Produto pode pertencer aos dois conjuntos; o parâmetro `filtro` continua single-value e apresenta um recorte por vez.
+
+As duas tabelas passam a tornar explícito o estado de **Precificação** e, quando incompleta, seus motivos. Em `/Produtos`, a coluna **Situação** continua significando exclusivamente Ativo/Inativo.
+
+Os cards existentes do Dashboard mantêm a semântica da UC028/UC029. **Margem indisponível** não é renomeada para **Precificação incompleta**, e nenhum sexto card é obrigatório nesta UC.
+
+O cálculo continua derivado e em lote por `ResumoPrecificacaoProdutosAtual`, sem N+1 e sem persistência do estado/motivos.
 
 ## Filtros do F005 ao final das três UCs
 

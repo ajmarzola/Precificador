@@ -9,6 +9,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - cadastrar produto;
 - listar e pesquisar produtos;
 - filtrar Produtos ativos abaixo da Margem-alvo;
+- filtrar Produtos ativos com precificação global incompleta e exibir seus motivos;
 - editar dados cadastrais;
 - desativar e reativar produto;
 - definir margem-alvo;
@@ -147,7 +148,9 @@ As páginas `/Produtos` e `/Produtos/Detalhes/{id}` mantêm consultas tenant-awa
 
 A UC029 acrescenta `filtro=abaixo-da-margem` à listagem. Esse recorte se combina por AND com `q` e `categoria`, usa `SituacaoMargem.AbaixoDaMargem` do resumo em lote e inclui somente Produtos ativos. Sem o recorte, Produtos inativos continuam visíveis normalmente.
 
-Preço sugerido e detalhes da Ficha Técnica permanecem ausentes da consulta. Custo, preço de prateleira e margem atuais são derivados em lote, sem persistência.
+A UC030 acrescenta `filtro=precificacao-incompleta` e a coluna **Precificação**. O novo recorte inclui somente Produtos ativos cuja fotografia atual não consiga formar Custo unitário, Preço sugerido, Preço de prateleira e Margem atual completamente. A classificação é distinta de `SituacaoMargem.Incompleto` e expõe motivos estruturados. A coluna **Situação** permanece Ativo/Inativo.
+
+Preço sugerido continua ausente como coluna própria da listagem; ele participa da classificação global de completude. Detalhes da Ficha Técnica permanecem fora da tabela. Custo, preço de prateleira, margem e completude atuais são derivados em lote, sem persistência.
 
 ## Edição cadastral — UC009
 
@@ -188,7 +191,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC012 — Consultar histórico de precificação do Produto](../use-cases/UC012-consultar-historico-precificacao-produto.md);
 - [UC024 — Calcular margem atual e situação](../use-cases/UC024-calcular-margem-atual-situacao.md);
 - [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md);
-- [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`.
+- [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`;
+- [UC030 — Identificar Produtos com precificação incompleta](../use-cases/UC030-identificar-produtos-precificacao-incompleta.md) — adiciona classificação/motivos e o segundo recorte operacional à listagem.
 
 ## Fora do escopo
 
