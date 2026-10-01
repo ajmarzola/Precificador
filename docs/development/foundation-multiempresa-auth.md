@@ -1,5 +1,7 @@
 # FT002 — Fundação Multiempresa e Autenticação
 
+> **Evolução posterior:** a FT003 substitui a semântica de bootstrap/autorização administrativa descrita nesta fundação. O histórico FT002 permanece válido para autenticação, vínculo N:N, Empresa Ativa e isolamento tenant-aware, mas o `/Setup` passa a criar somente o primeiro `SystemAdmin` global e `UsuarioEmpresa` passa a possuir perfil contextual. Ver [FT003](foundation-administration-authorization.md).
+
 - **Status:** Implementado
 - **Tipo:** fundação técnica transversal
 - **Dependências:** FT001 e UC001 implementados

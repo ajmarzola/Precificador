@@ -40,6 +40,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 
 - [`development/foundation-technical.md`](development/foundation-technical.md) — FT001.
 - [`development/foundation-multiempresa-auth.md`](development/foundation-multiempresa-auth.md) — FT002.
+- [`development/foundation-administration-authorization.md`](development/foundation-administration-authorization.md) — FT003.
 - [`development/definition-of-done.md`](development/definition-of-done.md)
 - [`development/testing-strategy.md`](development/testing-strategy.md)
 - [`development/workflow-codex.md`](development/workflow-codex.md)
@@ -51,6 +52,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/`](codex/) — instruções executáveis versionadas para cada incremento.
 - [`codex/FT001-fundacao-tecnica.md`](codex/FT001-fundacao-tecnica.md)
 - [`codex/FT002-fundacao-multiempresa-autenticacao.md`](codex/FT002-fundacao-multiempresa-autenticacao.md)
+- [`codex/FT003-fundacao-administracao-autorizacao.md`](codex/FT003-fundacao-administracao-autorizacao.md)
 - [`codex/UC001A-complementar-insumo-marca-observacao.md`](codex/UC001A-complementar-insumo-marca-observacao.md)
 - [`codex/UC001B-generalizar-categoria-unidades-insumo.md`](codex/UC001B-generalizar-categoria-unidades-insumo.md)
 - [`codex/UC002-listar-consultar-insumos.md`](codex/UC002-listar-consultar-insumos.md)

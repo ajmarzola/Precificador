@@ -9,9 +9,10 @@ Um UC deve caber, idealmente, em uma sessão curta de implementação, testes e 
 ## Fundação técnica
 
 - **FT001 — Fundação Técnica:** solution, projetos, EF Core/SQLite, testes, logging e CI.
-- **FT002 — Fundação Multiempresa e Autenticação:** Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa, isolamento tenant-aware e `EmpresaId` em Insumo.
+- **FT002 — Fundação Multiempresa e Autenticação:** Empresa, ASP.NET Core Identity, UsuarioEmpresa, bootstrap inicial, login/logout, Empresa Ativa e isolamento tenant-aware.
+- **[FT003 — Fundação de administração e autorização](../development/foundation-administration-authorization.md):** SystemAdmin global, perfil Administrador/Operacional no vínculo UsuarioEmpresa, policies administrativas, novo bootstrap e área /Admin mínima.
 
-FT002 inclui apenas o bootstrap/login/seleção mínimos necessários ao isolamento. CRUD administrativo completo será detalhado posteriormente.
+A FT003 evolui especificamente a autorização/bootstrap da FT002 sem substituir o isolamento tenant-aware já implementado. Solicitação pública, token/e-mail, administração real de Empresas e gestão de vínculos permanecem nas UCs 038, 040, 039 e 031.
 
 ## Insumos
 
@@ -136,7 +137,7 @@ Linha planejada:
 
 | Item | Nome | Dependências funcionais |
 |---|---|---|
-| FT003 | Fundação de administração e autorização | FT002 |
+| [FT003](../development/foundation-administration-authorization.md) | Fundação de administração e autorização | FT002 |
 | UC038 | Solicitar acesso ao Precificador | FT003 |
 | UC040 | Ativar conta e recuperar acesso | FT003 |
 | UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |

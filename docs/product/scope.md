@@ -8,8 +8,9 @@ O MVP contempla:
 - autenticação de usuários;
 - vínculo de usuários a uma ou mais empresas;
 - seleção de Empresa Ativa e isolamento de dados por empresa;
-- bootstrap do primeiro usuário e primeira empresa;
-- cadastro administrativo de empresas/usuários e vínculos em UCs posteriores;
+- bootstrap protegido do primeiro Administrador do Sistema, separado de Empresas;
+- solicitação controlada de acesso, administração de Empresas e gestão de usuários/vínculos em UCs posteriores;
+- perfis Administrador/Operacional contextualizados por Empresa;
 - cadastro, edição, consulta e desativação de insumos;
 - histórico de preços de insumos;
 - cálculo do custo unitário de compra;
@@ -45,7 +46,7 @@ Não fazem parte do MVP:
 - emissão fiscal;
 - contabilidade;
 - fluxo de caixa;
-- permissões granulares/roles complexos;
+- matriz complexa de permissões por funcionalidade; roles globais adicionais além das necessárias à administração do sistema;
 - aplicativo móvel nativo;
 - microserviços;
 - integrações externas;
