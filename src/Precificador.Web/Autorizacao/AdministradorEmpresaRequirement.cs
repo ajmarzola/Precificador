@@ -14,6 +14,8 @@ public sealed class AdministradorEmpresaHandler(PrecificadorDbContext dbContext,
 {
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AdministradorEmpresaRequirement requirement)
     {
+        if (context.User.Identity?.IsAuthenticated != true || context.User.IsInRole(NomesAutorizacao.SystemAdmin))
+            return;
         var usuarioId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var empresaId = empresaContext.EmpresaId;
         if (usuarioId is null || !empresaId.HasValue || string.IsNullOrWhiteSpace(empresaContext.TimeZoneId))
