@@ -42,4 +42,29 @@ public sealed class AdministracaoAuthorizationTests(CustomWebApplicationFactory 
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         Assert.Contains("/Conta/Login", resposta.Headers.Location!.ToString());
     }
+
+    [Fact]
+    public async Task Admin_anonimo_redireciona_para_login_e_return_url_tenant_nao_desvia_system_admin()
+    {
+        var web = new WebTestContext(factory);
+        using (var anonimo = web.CriarCliente())
+        {
+            var resposta = await anonimo.GetAsync("/Admin");
+            Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
+            Assert.Contains("/Conta/Login", resposta.Headers.Location!.ToString());
+        }
+
+        var admin = await web.CriarSystemAdminAsync();
+        using var client = web.CriarCliente();
+        var login = await web.LoginAsync(client, admin.Email, admin.Senha, "/Produtos");
+        Assert.Equal("/Admin", login.Headers.Location!.ToString());
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Admin");
+        var logout = await client.PostAsync("/Conta/Logout", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, logout.StatusCode);
+        Assert.Equal("/", logout.Headers.Location!.ToString());
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/Admin")).StatusCode);
+    }
 }

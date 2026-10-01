@@ -1,6 +1,6 @@
 # FT003 — Fundação de administração e autorização
 
-- **Estado:** Concluído
+- **Estado:** Pronto
 - **Tipo:** Fundação técnica transversal
 - **Dependências:** FT002
 - **Bloqueia:** UC038, UC040, UC039 e UC031

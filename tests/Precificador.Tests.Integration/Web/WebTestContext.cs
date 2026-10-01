@@ -56,15 +56,18 @@ internal sealed class WebTestContext(CustomWebApplicationFactory factory)
         Assert.True((await userManager.AddToRoleAsync(usuario, NomesAutorizacao.SystemAdmin)).Succeeded);
     }
 
-    public async Task<HttpResponseMessage> LoginAsync(HttpClient client, string email, string senha)
+    public async Task<HttpResponseMessage> LoginAsync(HttpClient client, string email, string senha, string? returnUrl = null)
     {
-        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Conta/Login");
-        return await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        var url = returnUrl is null ? "/Conta/Login" : $"/Conta/Login?ReturnUrl={Uri.EscapeDataString(returnUrl)}";
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, url);
+        var formulario = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
             ["Input.Email"] = email,
             ["Input.Senha"] = senha
-        }));
+        };
+        if (returnUrl is not null) formulario["ReturnUrl"] = returnUrl;
+        return await client.PostAsync(url, new FormUrlEncodedContent(formulario));
     }
 
     public async Task<UsuarioTeste> CriarSystemAdminAsync()

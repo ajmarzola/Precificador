@@ -16,16 +16,24 @@ public sealed class AdministradorEmpresaHandler(PrecificadorDbContext dbContext,
     {
         var usuarioId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var empresaId = empresaContext.EmpresaId;
-        if (usuarioId is not null && empresaId.HasValue && !string.IsNullOrWhiteSpace(empresaContext.TimeZoneId) &&
-            await dbContext.UsuariosEmpresas.AnyAsync(v =>
-                v.UsuarioId == usuarioId && v.EmpresaId == empresaId.Value && v.Ativo &&
-                v.Perfil == PerfilUsuarioEmpresa.Administrador &&
-                dbContext.Empresas.Any(empresa => empresa.Id == empresaId.Value && empresa.Ativo)))
+        if (usuarioId is null || !empresaId.HasValue || string.IsNullOrWhiteSpace(empresaContext.TimeZoneId))
+            return;
+
+        if (!await dbContext.Empresas.AnyAsync(empresa => empresa.Id == empresaId.Value && empresa.Ativo))
         {
-            context.Succeed(requirement);
+            empresaContext.Limpar();
             return;
         }
 
-        empresaContext.Limpar();
+        var vinculo = await dbContext.UsuariosEmpresas.SingleOrDefaultAsync(v =>
+            v.UsuarioId == usuarioId && v.EmpresaId == empresaId.Value);
+        if (vinculo is null || !vinculo.Ativo)
+        {
+            empresaContext.Limpar();
+            return;
+        }
+
+        if (vinculo.Perfil == PerfilUsuarioEmpresa.Administrador)
+            context.Succeed(requirement);
     }
 }
