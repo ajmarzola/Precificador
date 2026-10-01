@@ -329,6 +329,51 @@ Configurações de precificação pertencem a uma Empresa e suas alterações n�
 
 O modelo é tenant-owned e 1:1 por Empresa. A configuração não deve ser inferida de outra Empresa quando ausente nem receber `EmpresaId` controlado pelo request.
 
+### RN059 — Solicitação pública não concede acesso
+
+A solicitação pública de acesso cria somente uma `SolicitacaoAcessoEmpresa`.
+
+Ela não cria ou altera:
+
+- `Empresa`;
+- `UsuarioAplicacao`;
+- `UsuarioEmpresa`;
+- role;
+- senha;
+- token/convite;
+- Empresa Ativa.
+
+A solicitação é global e pré-tenant: não possui `EmpresaId` e não participa do Global Query Filter de Empresa.
+
+### RN060 — Solicitação de acesso nasce Pendente
+
+Toda nova `SolicitacaoAcessoEmpresa` nasce em situação `Pendente`.
+
+O visitante não escolhe a situação e a UC038 não aprova nem recusa solicitações.
+
+As transições para `Aprovada` ou `Recusada` pertencem à administração global e serão tratadas pela UC039.
+
+### RN061 — Reenvio idempotente da solicitação de acesso
+
+A identidade de uma solicitação pública equivalente é:
+
+~~~text
+NomeEmpresaNormalizado + EmailResponsavelNormalizado
+~~~
+
+Se já existir solicitação `Pendente` para o mesmo par, nova submissão não cria outra linha e recebe a mesma resposta pública de sucesso.
+
+Solicitação `Aprovada` equivalente também impede novo pedido idêntico.
+
+Solicitação `Recusada` permite nova tentativa futura, desde que não exista outra Pendente/Aprovada equivalente.
+
+É permitido:
+
+- o mesmo e-mail solicitar Empresas diferentes;
+- a mesma Empresa receber solicitações de e-mails diferentes.
+
+A resposta pública não deve revelar a existência nem a situação de pedido anterior.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento

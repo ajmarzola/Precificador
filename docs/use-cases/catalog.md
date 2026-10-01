@@ -138,7 +138,7 @@ Linha planejada:
 | Item | Nome | Dependências funcionais |
 |---|---|---|
 | [FT003](../development/foundation-administration-authorization.md) | Fundação de administração e autorização | FT002 |
-| UC038 | Solicitar acesso ao Precificador | FT003 |
+| [UC038](UC038-solicitar-acesso-precificador.md) | Solicitar acesso ao Precificador | FT003 |
 | UC040 | Ativar conta e recuperar acesso | FT003 |
 | UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
 | UC031 | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
@@ -154,6 +154,8 @@ Direções já fechadas:
 - convite/ativação e recuperação de senha usam token enviado ao próprio usuário;
 - administradores não conhecem nem escolhem a senha do usuário;
 - Empresas pendentes não são criadas antes de aprovação;
+- a UC038 recebe Nome da Empresa, responsável, e-mail e Observação opcional na Home pública e persiste somente uma solicitação Pendente;
+- solicitações públicas equivalentes são idempotentes por Empresa normalizada + e-mail normalizado e não expõem a existência/estado de pedido anterior;
 - suspensão/encerramento devem ser preferidos a exclusão física cotidiana.
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.

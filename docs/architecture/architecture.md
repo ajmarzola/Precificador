@@ -95,6 +95,8 @@ Consultas comuns tenant-owned devem ser isoladas centralmente pelo EF Core, pref
 
 `Empresa`, `UsuarioEmpresa` e tabelas Identity precisam permanecer consultáveis para autenticação/resolução de contexto e não usam o filtro tenant padrão.
 
+Dados administrativos que existem **antes** da criação de um tenant também são globais. A partir da UC038, `SolicitacaoAcessoEmpresa` é pré-tenant: não possui `EmpresaId`, não recebe Global Query Filter e só poderá ser administrada globalmente pelo fluxo de `SystemAdmin` introduzido nas UCs seguintes.
+
 ## Autenticação e autorização
 
 ASP.NET Core Identity autentica o usuário. A autorização possui dois planos explícitos após a FT003.
