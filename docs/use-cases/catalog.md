@@ -130,14 +130,32 @@ UC030 implementa a **completude global da precificação**, distinta de `Situaca
 
 A fundação FT002 mantém `UsuarioAplicacao N:N Empresa` por `UsuarioEmpresa`.
 
-Backlog a detalhar:
+A review de primeiro uso fechou a direção de acesso controlado: o Setup deverá criar somente o primeiro `SystemAdmin` global, sem vínculo empresarial; Empresas entram por solicitação pública aprovada pelo `SystemAdmin`; credenciais usam convite/ativação por token, sem senha temporária; e a autoridade empresarial pertence ao vínculo `UsuarioEmpresa`.
 
-- cadastro/consulta de empresas;
-- **UC031 — Administrar usuários e vínculos com Empresas**;
-- regra de autorização para criação/gestão de usuários;
-- fluxo de primeiro acesso de usuários adicionais.
+Linha planejada:
 
-A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra as decisões pendentes antes da especificação do UC031.
+| Item | Nome | Dependências funcionais |
+|---|---|---|
+| FT003 | Fundação de administração e autorização | FT002 |
+| UC038 | Solicitar acesso ao Precificador | FT003 |
+| UC040 | Ativar conta e recuperar acesso | FT003 |
+| UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
+| UC031 | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
+
+Direções já fechadas:
+
+- `SystemAdmin` é global e não recebe `UsuarioEmpresa` apenas por ser administrador do sistema;
+- a administração global fica em área própria, distinta do `/Setup`;
+- `UsuarioEmpresa` deverá distinguir ao menos Administrador e Operacional;
+- Administrador da Empresa administra somente vínculos do próprio tenant;
+- o mesmo `UsuarioAplicacao` pode pertencer a várias Empresas;
+- desvincular de uma Empresa não afeta os demais vínculos;
+- convite/ativação e recuperação de senha usam token enviado ao próprio usuário;
+- administradores não conhecem nem escolhem a senha do usuário;
+- Empresas pendentes não são criadas antes de aprovação;
+- suspensão/encerramento devem ser preferidos a exclusão física cotidiana.
+
+A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
 ## Pós-MVP identificado
 
