@@ -25,3 +25,12 @@ Um vínculo próprio `UsuarioEmpresa` representa a relação N:N entre usuário 
 ## Fora da decisão inicial
 
 Autenticação externa, JWT/API tokens, confirmação de e-mail, recuperação de senha, 2FA e roles granulares.
+
+## Evolução pela FT003
+
+A [ADR-011](ADR-011-dois-planos-autorizacao.md) introduz o requisito específico que não existia na decisão inicial:
+
+- role global `SystemAdmin` para administração do sistema;
+- perfil contextual `Operacional/Administrador` no vínculo `UsuarioEmpresa`.
+
+A autenticação continua integralmente no ASP.NET Core Identity. A granularidade por Empresa não é modelada como IdentityRole global.
