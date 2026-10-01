@@ -136,6 +136,19 @@ Administrador de Empresa não é IdentityRole global.
 
 Ver [ADR-011](adr/ADR-011-dois-planos-autorizacao.md) e [FT003](../development/foundation-administration-authorization.md).
 
+### Credenciais, tokens e e-mail
+
+A partir da UC040:
+
+- ativação de conta e recuperação de senha permanecem no ASP.NET Core Identity;
+- providers de token de ativação e recuperação possuem propósito/validade independentes;
+- tokens não são persistidos;
+- o key ring do ASP.NET Core Data Protection é global e persistido no SQL Server/Azure SQL;
+- envio de e-mail é abstraído de SMTP e não depende de fornecedor específico;
+- links sensíveis usam uma URL pública canônica configurada, não o Host do request em Production.
+
+Ver [ADR-012](adr/ADR-012-email-tokens-data-protection.md) e [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md).
+
 ## Diretrizes
 
 - Regras financeiras não devem residir na UI.
