@@ -141,7 +141,7 @@ Linha planejada:
 | [UC038](UC038-solicitar-acesso-precificador.md) | Solicitar acesso ao Precificador | FT003 |
 | [UC040](UC040-ativar-conta-recuperar-acesso.md) | Ativar conta e recuperar acesso | FT003 |
 | [UC039](UC039-administrar-empresas-solicitacoes.md) | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
-| UC031 | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
+| [UC031](UC031-administrar-usuarios-vinculos.md) | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
 
 Direções já fechadas:
 
@@ -162,11 +162,15 @@ Direções já fechadas:
 - UC039 distingue a Empresa técnica do tenant real sem marcar cegamente a Empresa 1 histórica;
 - aprovação cria Empresa + configuração + primeiro Administrador transacionalmente e reutiliza identidade global existente;
 - Empresa real pode ser suspensa, reativada ou encerrada logicamente; encerramento não executa hard delete;
-- Empresa legada sem Administrador é corrigida explicitamente pelo SystemAdmin, sem auto-promoção.
+- Empresa legada sem Administrador é corrigida explicitamente pelo SystemAdmin, sem auto-promoção;
+- UC031 mantém a conta global separada do vínculo tenant e administra somente a Empresa Ativa;
+- convite cria/reativa vínculo imediatamente e reutiliza ativação/aviso da UC040, sem tabela de convite;
+- desvínculo é lógico por `UsuarioEmpresa.Ativo = false`;
+- demissão/desvínculo nunca podem deixar uma Empresa Ativa sem Administrador, inclusive sob concorrência.
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
-A UC038 persiste solicitações Pendentes e a UC040 entrega ativação/recuperação e e-mail. A UC039 passa a ser a camada global que decide solicitações, cria tenants reais, define o primeiro Administrador e administra o ciclo de vida da Empresa. A UC031 continua responsável pela gestão cotidiana dos vínculos do próprio tenant.
+A UC038 persiste solicitações Pendentes, a UC040 entrega ativação/recuperação e e-mail e a UC039 cria/administra o tenant globalmente. A UC031 fecha a gestão cotidiana: o Administrador da Empresa Ativa adiciona, reativa, altera perfil e desvincula usuários sem tocar a identidade global nem outras Empresas.
 
 ## Pós-MVP identificado
 
