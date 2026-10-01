@@ -162,7 +162,7 @@ Direções já fechadas:
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
-A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A análise administrativa e o envio de e-mail permanecem nas UC039/UC040; `/Admin` ainda não lista solicitações.
+A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A análise administrativa permanece na UC039; a UC040 passa a especificar e-mail, ativação e recuperação, sem fazer `/Admin` listar ou decidir solicitações.
 
 ## Pós-MVP identificado
 
