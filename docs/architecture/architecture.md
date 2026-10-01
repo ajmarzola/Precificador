@@ -97,9 +97,25 @@ Consultas comuns tenant-owned devem ser isoladas centralmente pelo EF Core, pref
 
 ## Autenticação e autorização
 
-ASP.NET Core Identity autentica o usuário. `UsuarioEmpresa` determina quais empresas podem ser ativadas.
+ASP.NET Core Identity autentica o usuário. A autorização possui dois planos explícitos após a FT003.
 
-A regra inicial é:
+### Plano global
+
+A role Identity `SystemAdmin` representa autoridade sobre o próprio sistema.
+
+```text
+SystemAdmin
++ autenticação válida
+= acesso à área /Admin
+```
+
+`SystemAdmin` não exige Empresa Ativa e não recebe bypass automático para dados tenant-owned.
+
+### Plano empresarial
+
+`UsuarioEmpresa` determina quais Empresas podem ser ativadas e passa a carregar `Perfil = Operacional | Administrador`.
+
+A regra operacional permanece:
 
 ```text
 usuário autenticado
@@ -108,7 +124,15 @@ usuário autenticado
 = acesso aos dados daquela empresa
 ```
 
-Roles/permissões granulares não são parte da FT002.
+A autorização administrativa da Empresa acrescenta:
+
+```text
++ Perfil == Administrador
+```
+
+Administrador de Empresa não é IdentityRole global.
+
+Ver [ADR-011](adr/ADR-011-dois-planos-autorizacao.md) e [FT003](../development/foundation-administration-authorization.md).
 
 ## Diretrizes
 
