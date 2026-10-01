@@ -16,3 +16,44 @@
         <p><a asp-page="/Conta/Login">Entrar</a></p>
     }
 </div>
+
+@if (User.Identity?.IsAuthenticated != true)
+{
+    <section class="mx-auto" style="max-width: 640px" aria-labelledby="solicitar-acesso">
+        <h2 id="solicitar-acesso">Solicitar acesso</h2>
+        <p>A solicitação será analisada e não concede acesso imediato. O contato será feito pelo e-mail informado.</p>
+        @if (Model.MensagemSucesso is not null)
+        {
+            <div class="alert alert-success" role="status">@Model.MensagemSucesso</div>
+        }
+        <form method="post" asp-page-handler="SolicitarAcesso">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="Input.NomeEmpresa" class="form-label"></label>
+                <input asp-for="Input.NomeEmpresa" class="form-control" required aria-required="true" />
+                <span asp-validation-for="Input.NomeEmpresa" class="text-danger"></span>
+                <small>Máximo de 120 caracteres após normalização dos espaços.</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.NomeResponsavel" class="form-label"></label>
+                <input asp-for="Input.NomeResponsavel" class="form-control" required aria-required="true" />
+                <span asp-validation-for="Input.NomeResponsavel" class="text-danger"></span>
+                <small>Máximo de 120 caracteres.</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.EmailResponsavel" class="form-label"></label>
+                <input asp-for="Input.EmailResponsavel" type="email" class="form-control" required aria-required="true" />
+                <span asp-validation-for="Input.EmailResponsavel" class="text-danger"></span>
+                <small>Máximo de 256 caracteres após remover espaços externos.</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Observacao" class="form-label"></label>
+                <textarea asp-for="Input.Observacao" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Input.Observacao" class="text-danger"></span>
+                <small>Opcional, máximo de 1000 caracteres.</small>
+            </div>
+            <p>Usaremos os dados informados para analisar e responder à sua solicitação de acesso.</p>
+            <button type="submit" class="btn btn-primary">Solicitar acesso</button>
+        </form>
+    </section>
+}
