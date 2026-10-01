@@ -36,6 +36,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`use-cases/UC038-solicitar-acesso-precificador.md`](use-cases/UC038-solicitar-acesso-precificador.md) — solicitação pública controlada de acesso.
 - [`use-cases/UC040-ativar-conta-recuperar-acesso.md`](use-cases/UC040-ativar-conta-recuperar-acesso.md) — ativação da primeira senha e recuperação de acesso por token.
 - [`use-cases/UC039-administrar-empresas-solicitacoes.md`](use-cases/UC039-administrar-empresas-solicitacoes.md) — administração global de solicitações e Empresas.
+- [`use-cases/UC031-administrar-usuarios-vinculos.md`](use-cases/UC031-administrar-usuarios-vinculos.md) — administração tenant de usuários, perfis e vínculos.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
@@ -62,6 +63,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/UC038-solicitar-acesso-precificador.md`](codex/UC038-solicitar-acesso-precificador.md)
 - [`codex/UC040-ativar-conta-recuperar-acesso.md`](codex/UC040-ativar-conta-recuperar-acesso.md)
 - [`codex/UC039-administrar-empresas-solicitacoes.md`](codex/UC039-administrar-empresas-solicitacoes.md)
+- [`codex/UC031-administrar-usuarios-vinculos.md`](codex/UC031-administrar-usuarios-vinculos.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
