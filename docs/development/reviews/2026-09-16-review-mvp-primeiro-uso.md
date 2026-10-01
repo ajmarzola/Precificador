@@ -220,65 +220,180 @@ Produto sem Ficha deve abrir o formulário com `Rendimento = 1`, sem persistir n
 Isso não altera a precisão interna nem a regra de arredondamento comercial do Preço sugerido.
 
 
-## Regra atual de primeiro acesso
+## Decisões fechadas — bootstrap, administração e primeiro acesso
 
-O primeiro acesso da **instalação** já possui um bootstrap definido pela FT002:
+A direção original da FT002 é evoluída da seguinte forma.
 
-1. em `Development`, o startup aplica migrations pendentes automaticamente; nos demais ambientes, o banco deve chegar migrado por processo explícito;
-2. enquanto não houver usuários Identity, `/Setup` fica disponível;
-3. o Setup recebe Nome da Empresa, E-mail, Senha e Confirmação;
-4. cria o primeiro `UsuarioAplicacao`;
-5. cria um vínculo ativo `UsuarioEmpresa` com a Empresa inicial;
-6. após existir usuário, o Setup deixa de ser reutilizável;
-7. login com um único vínculo elegível seleciona automaticamente a Empresa;
-8. login com múltiplos vínculos exige seleção da Empresa Ativa.
+### Bootstrap da instalação
 
-Não criar usuário/senha padrão no código.
+`/Setup` permanece um fluxo excepcional e de uso único, mas deixa de criar Empresa e usuário vinculado.
 
-## Regra ainda pendente — primeiro acesso de usuários adicionais
+O novo objetivo do Setup será:
 
-A lacuna real é definir como um **segundo ou posterior usuário** passa a ter acesso.
+1. ficar disponível apenas quando ainda não existir Administrador do Sistema;
+2. criar o primeiro `UsuarioAplicacao` com autoridade global `SystemAdmin`;
+3. não criar `UsuarioEmpresa`;
+4. não selecionar Empresa Ativa;
+5. bloquear novo bootstrap após existir o primeiro `SystemAdmin`;
+6. não criar credenciais padrão em código/migration.
 
-Direção preservada:
+Após o bootstrap, a administração cotidiana ocorre em uma área separada, por exemplo `/Admin`; o Setup não se transforma em painel administrativo permanente.
 
-- não implementar auto-registro público;
-- manter `UsuarioEmpresa` N:N;
-- não permitir que a tela de Login crie conta implicitamente;
-- cadastro/vínculo deve ocorrer em fluxo administrativo explícito;
-- usuário sem vínculo elegível não deve acessar dados tenant-owned;
-- usuário com um vínculo elegível recebe a Empresa Ativa automaticamente;
-- usuário com vários vínculos elegíveis usa a seleção já existente.
+### Administrador do Sistema
 
-## Questões que UC031 deverá decidir antes da implementação
+O `SystemAdmin` é uma autoridade global do Precificador e não pertence a uma Empresa.
 
-1. **Quem pode cadastrar outro usuário?**
-   - ainda não há role/perfil administrativo formal.
+Direção aprovada:
 
-2. **Como o primeiro usuário ganha autoridade administrativa?**
-   - role Identity;
-   - permissão própria;
-   - outra regra explícita.
+- usar autorização global compatível com ASP.NET Core Identity para `SystemAdmin`;
+- `SystemAdmin` não depende de `UsuarioEmpresa`;
+- `SystemAdmin` não recebe Empresa Ativa por ser administrador do sistema;
+- a área administrativa global é separada das áreas tenant-owned;
+- acesso do `SystemAdmin` a dados comerciais de Empresas não é concedido implicitamente.
 
-3. **Como nasce a credencial do novo usuário?**
-   - administrador define senha inicial;
-   - convite/token para o próprio usuário definir senha;
-   - outro mecanismo local-first.
+### Solicitação pública de acesso
 
-4. **Senha temporária exige troca no primeiro login?**
+A Home pública poderá oferecer formulário para uma Empresa solicitar acesso ao Precificador.
 
-5. **No cadastro, o novo usuário pode receber um ou vários vínculos?**
+A solicitação:
 
-6. **Quem pode adicionar/remover vínculos `UsuarioEmpresa` depois?**
+- não cria conta utilizável;
+- não cria Empresa antes de aprovação;
+- não equivale a auto-registro;
+- permanece pendente até decisão do `SystemAdmin`.
 
-7. **É permitido desativar um usuário ou apenas vínculos individuais?**
+O `SystemAdmin` poderá aprovar ou recusar a solicitação.
 
-8. **Como evitar que uma Empresa fique sem nenhum usuário com capacidade administrativa?**
+Ao aprovar, o fluxo administrativo deverá criar a Empresa e definir seu primeiro Administrador da Empresa.
 
-9. **Precisamos distinguir administrador de usuário operacional já no MVP?**
+### Perfis no vínculo UsuarioEmpresa
 
-10. **Recuperação de senha continua fora do MVP ou passa a ser necessária para tornar o acesso utilizável?**
+A arquitetura N:N é preservada:
 
-Essas decisões devem ser fechadas antes de especificar UC031.
+~~~text
+UsuarioAplicacao N:N Empresa
+        via UsuarioEmpresa
+~~~
+
+A autoridade dentro de uma Empresa pertence ao vínculo, permitindo que o mesmo usuário tenha perfis diferentes em Empresas distintas.
+
+Conjunto mínimo previsto:
+
+~~~text
+Administrador
+Operacional
+~~~
+
+Exemplo válido:
+
+~~~text
+Usuario X
+- Empresa A => Administrador
+- Empresa B => Operacional
+~~~
+
+O `SystemAdmin` é distinto desses perfis e não depende de vínculo empresarial.
+
+### Administrador da Empresa
+
+O Administrador da Empresa pode administrar somente vínculos da própria Empresa.
+
+Ele poderá, conforme UC031:
+
+- convidar usuário para a Empresa;
+- vincular usuário já existente;
+- desvincular usuário da Empresa;
+- consultar usuários vinculados à Empresa;
+- atribuir perfil permitido dentro da Empresa.
+
+Ele não poderá:
+
+- administrar outra Empresa;
+- remover a conta global do usuário;
+- conhecer ou definir senha do usuário;
+- redefinir diretamente a credencial global;
+- enxergar vínculos de outras Empresas apenas por ser administrador local.
+
+Desvincular um usuário da Empresa A não afeta vínculos ativos que ele possua com outras Empresas.
+
+### Convite e ativação de conta
+
+Não usar senha temporária enviada por e-mail.
+
+O fluxo aprovado usa token de uso único:
+
+1. uma ação administrativa cria/localiza o `UsuarioAplicacao`;
+2. cria o vínculo necessário quando aplicável;
+3. emite token de ativação/convite com validade limitada;
+4. envia link ao e-mail do usuário;
+5. o usuário define a própria senha;
+6. não existe troca obrigatória de senha no primeiro login, pois a senha inicial já foi escolhida pelo próprio usuário.
+
+Se o e-mail já pertencer a um `UsuarioAplicacao` existente:
+
+- não criar conta duplicada;
+- não alterar senha existente;
+- criar apenas o novo vínculo permitido;
+- enviar convite/aviso compatível com aceitação do vínculo, conforme especificação da UC correspondente.
+
+### Recuperação de senha
+
+Recuperação de senha passa a fazer parte da linha de trabalho de acesso.
+
+Direção aprovada:
+
+- recuperação usa token enviado ao e-mail do próprio usuário;
+- o próprio usuário escolhe a nova senha;
+- `SystemAdmin` pode disparar/reemitir o fluxo de recuperação, mas não escolhe nem conhece a senha;
+- Administrador da Empresa não recebe poder direto sobre a credencial global de um usuário.
+
+### Ciclo de vida da Empresa
+
+A administração global deverá distinguir administração de Empresa de exclusão física de dados.
+
+Direção inicial:
+
+- `SystemAdmin` cria Empresa apenas após aprovação;
+- pode trocar o Administrador da Empresa;
+- deve existir proteção contra Empresa ficar sem Administrador válido;
+- suspensão/reativação/encerramento devem ser preferidos a hard delete;
+- exclusão física definitiva não deve ser tratada como operação comum sem especificação própria.
+
+## Linha de trabalho criada
+
+As decisões acima são divididas para evitar concentrar todo o fluxo na UC031:
+
+1. **FT003 — Fundação de administração e autorização**
+   - novo bootstrap do `SystemAdmin`;
+   - autoridade global do sistema;
+   - perfil no `UsuarioEmpresa`;
+   - policies/base de autorização administrativa.
+
+2. **UC038 — Solicitar acesso ao Precificador**
+   - formulário público;
+   - solicitação pendente;
+   - sem auto-registro e sem criação antecipada de Empresa.
+
+3. **UC040 — Ativar conta e recuperar acesso**
+   - envio de e-mail;
+   - tokens de ativação/convite;
+   - definição inicial da senha pelo usuário;
+   - recuperação de senha por token.
+
+4. **UC039 — Administrar Empresas e solicitações de acesso**
+   - área do `SystemAdmin`;
+   - aprovar/recusar solicitações;
+   - criar Empresa após aprovação;
+   - definir/trocar Administrador da Empresa;
+   - suspender/reativar/encerrar Empresa conforme regras a detalhar.
+
+5. **UC031 — Administrar usuários e vínculos com Empresas**
+   - Administrador da Empresa administra somente o próprio tenant;
+   - convite/vínculo/desvínculo;
+   - usuário pode pertencer a várias Empresas;
+   - perfil pertence ao vínculo `UsuarioEmpresa`.
+
+A fila normativa e os gates ficam no backlog.
 
 ## Ordem recomendada para tratar os achados
 
