@@ -600,6 +600,19 @@ Não editar migrations históricas.
 
 Atualizar `PrecificadorDbContextModelSnapshot`.
 
+## Evolução posterior — UC039
+
+A UC038 continua responsável apenas pela criação da solicitação Pendente e, nesse momento, não define EmpresaId.
+
+A UC039 evolui o modelo para permitir que uma solicitação Aprovada registre o EmpresaId da Empresa efetivamente criada, além dos metadados da decisão administrativa.
+
+Isso não altera a semântica da UC038:
+
+- nova solicitação continua pré-tenant;
+- submissão pública não escolhe EmpresaId;
+- Pendente continua sem EmpresaId;
+- a solicitação continua global e sem Global Query Filter.
+
 ## Relação com Empresa existente
 
 UC038 não consulta `Empresas` para decidir se uma solicitação pode ser criada.
