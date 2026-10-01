@@ -137,7 +137,7 @@ Linha planejada:
 
 | Item | Nome | Dependências funcionais |
 |---|---|---|
-| FT003 | Fundação de administração e autorização | FT002 |
+| [FT003](../development/foundation-administration-authorization.md) | Fundação de administração e autorização | FT002 |
 | UC038 | Solicitar acesso ao Precificador | FT003 |
 | UC040 | Ativar conta e recuperar acesso | FT003 |
 | UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
