@@ -411,6 +411,109 @@ Para Production, `None` não deve ser aceito por padrão.
 
 Não desabilitar validação de certificado TLS.
 
+## Configuração suportada para o MVP — Gmail SMTP
+
+Para o MVP/piloto, é oficialmente suportado usar uma **conta Gmail dedicada ao Precificador**, sem domínio próprio e sem contratação obrigatória de um provedor SMTP comercial.
+
+Essa é uma decisão operacional suportada, não uma dependência arquitetural.
+
+Configuração esperada:
+
+~~~text
+Email:Smtp:Enabled = true
+Email:Smtp:Host = smtp.gmail.com
+Email:Smtp:Port = 587
+Email:Smtp:Security = StartTls
+Email:Smtp:UserName = <conta dedicada @gmail.com>
+Email:Smtp:Password = <senha de app>
+Email:Smtp:FromAddress = <mesma conta @gmail.com>
+Email:Smtp:FromName = Precificador
+~~~
+
+### Credencial
+
+Não usar a senha normal da conta Google.
+
+Usar **senha de app** gerada especificamente para o Precificador, quando a conta/política Google permitir esse recurso.
+
+A conta deve possuir os requisitos necessários do Google para emissão de senha de app, incluindo verificação em duas etapas quando aplicável.
+
+A senha de app:
+
+- é tratada como segredo;
+- não entra no Git;
+- não entra em appsettings versionado;
+- no Azure fica em App Service Application Settings;
+- em desenvolvimento fica em user-secrets ou variável de ambiente;
+- pode ser revogada sem alterar código ou banco da aplicação.
+
+### Conta dedicada
+
+Recomenda-se criar uma conta exclusivamente para o sistema, por exemplo:
+
+~~~text
+precificador.<identificador>@gmail.com
+~~~
+
+Não usar conta pessoal do operador como remetente operacional permanente.
+
+### Remetente
+
+No cenário Gmail sem domínio próprio:
+
+~~~text
+FromAddress = conta Gmail autenticada
+FromName = Precificador
+~~~
+
+Não tentar forjar outro endereço de remetente.
+
+O destinatário verá algo equivalente a:
+
+~~~text
+Precificador <conta@gmail.com>
+~~~
+
+### Domínio próprio
+
+Domínio próprio **não é requisito da UC040**.
+
+A adoção futura de endereço como:
+
+~~~text
+acesso@dominio.com.br
+~~~
+
+poderá ser feita trocando a configuração SMTP/provedor, sem alterar:
+
+- tokens;
+- Identity;
+- páginas de ativação;
+- recuperação de senha;
+- regras RN062–RN064.
+
+### Provider-agnostic permanece obrigatório
+
+A existência dessa configuração recomendada não autoriza:
+
+- criar `GmailEmailSender`;
+- usar APIs proprietárias do Gmail;
+- colocar host/porta Gmail hardcoded no código;
+- acoplar testes à rede do Google.
+
+A implementação continua sendo:
+
+~~~text
+IEmailSenderAplicacao
+-> SmtpEmailSender
+-> MailKit
+-> servidor configurado
+~~~
+
+Testes automatizados usam fake sender e não fazem conexão real com Gmail.
+
+Um smoke manual de envio com a conta Gmail configurada pode ser executado no ambiente alvo após implementação, sem versionar credenciais.
+
 ## URL pública
 
 Links enviados por e-mail devem partir de:
@@ -969,6 +1072,8 @@ Tokens:
 - **CA54:** build Release fica verde.
 - **CA55:** unitários aplicáveis ficam verdes.
 - **CA56:** integração SQL Server/Web fica verde.
+- **CA57:** Gmail SMTP com conta dedicada + senha de app é uma configuração suportada para o MVP sem código específico do Gmail.
+- **CA58:** domínio próprio não é requisito para ativação/recuperação; trocar futuramente o provedor/remetente não altera os fluxos funcionais.
 
 ## Matriz mínima de testes
 
