@@ -33,6 +33,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`use-cases/UC001A-complementar-insumo-marca-observacao.md`](use-cases/UC001A-complementar-insumo-marca-observacao.md) — Marca e Observação do Insumo.
 - [`use-cases/UC001B-generalizar-categoria-unidades-insumo.md`](use-cases/UC001B-generalizar-categoria-unidades-insumo.md) — generalização de Matéria-prima e unidades.
 - [`use-cases/UC002-listar-consultar-insumos.md`](use-cases/UC002-listar-consultar-insumos.md) — listagem, pesquisa e detalhes tenant-aware.
+- [`use-cases/UC038-solicitar-acesso-precificador.md`](use-cases/UC038-solicitar-acesso-precificador.md) — solicitação pública controlada de acesso.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
@@ -56,6 +57,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/UC001A-complementar-insumo-marca-observacao.md`](codex/UC001A-complementar-insumo-marca-observacao.md)
 - [`codex/UC001B-generalizar-categoria-unidades-insumo.md`](codex/UC001B-generalizar-categoria-unidades-insumo.md)
 - [`codex/UC002-listar-consultar-insumos.md`](codex/UC002-listar-consultar-insumos.md)
+- [`codex/UC038-solicitar-acesso-precificador.md`](codex/UC038-solicitar-acesso-precificador.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
