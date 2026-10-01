@@ -2,7 +2,7 @@
 
 - **Área funcional:** Administração multiempresa e acesso controlado
 - **Dependência funcional:** FT003
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** sim
 - **Persistência:** sim
 - **Superfície principal:** Home pública

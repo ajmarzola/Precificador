@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Precificador.Core.Acessos;
 using Precificador.Core.Empresas;
 using Precificador.Core.FichasTecnicas;
 using Precificador.Core.Insumos;
@@ -16,6 +17,7 @@ public sealed class PrecificadorDbContext(
     private readonly IEmpresaContext empresaContext = empresaContext;
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
+    public DbSet<SolicitacaoAcessoEmpresa> SolicitacoesAcessoEmpresas => Set<SolicitacaoAcessoEmpresa>();
     public DbSet<ConfiguracaoPrecificacaoEmpresa> ConfiguracoesPrecificacaoEmpresas => Set<ConfiguracaoPrecificacaoEmpresa>();
     public DbSet<FichaTecnica> FichasTecnicas => Set<FichaTecnica>();
     public DbSet<ItemFichaTecnica> ItensFichaTecnica => Set<ItemFichaTecnica>();

@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace Precificador.Core.Empresas;
 
 public sealed class Empresa
@@ -57,7 +55,7 @@ public sealed class Empresa
         NomeNormalizado = Nome.ToUpperInvariant();
     }
 
-    private static string NormalizarNome(string? nome) => Regex.Replace(nome?.Trim() ?? string.Empty, @"\s+", " ");
+    private static string NormalizarNome(string? nome) => NormalizadorNome.Normalizar(nome);
 
     private static string ValidarTimeZone(string? timeZoneId)
     {
