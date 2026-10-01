@@ -13,7 +13,9 @@ Este documento preserva o racional duradouro de sequenciamento do projeto. A fil
 
 FT001 estabelece a base técnica do monólito local-first com EF Core, SQLite, testes, logging e CI.
 
-FT002 estabelece Empresa, autenticação, vínculo usuário-empresa, Empresa Ativa e isolamento tenant-aware. O bootstrap/login mínimo pertence à fundação porque é pré-requisito transversal; CRUD administrativo completo será detalhado depois.
+FT002 estabelece Empresa, autenticação, vínculo usuário-empresa, Empresa Ativa e isolamento tenant-aware.
+
+FT003 evolui a autorização em dois planos: `SystemAdmin` global e perfil Administrador/Operacional contextual no `UsuarioEmpresa`. Ela também substitui o bootstrap inicial por um Setup protegido que cria somente o primeiro Administrador do Sistema e prepara a área `/Admin`, sem antecipar solicitação de acesso, e-mail/token, administração de Empresas ou gestão de vínculos.
 
 ## Insumos Antes de Produtos
 
