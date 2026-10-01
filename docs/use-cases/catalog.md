@@ -140,7 +140,7 @@ Linha planejada:
 | [FT003](../development/foundation-administration-authorization.md) | Fundação de administração e autorização | FT002 |
 | [UC038](UC038-solicitar-acesso-precificador.md) | Solicitar acesso ao Precificador | FT003 |
 | [UC040](UC040-ativar-conta-recuperar-acesso.md) | Ativar conta e recuperar acesso | FT003 |
-| UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
+| [UC039](UC039-administrar-empresas-solicitacoes.md) | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
 | UC031 | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
 
 Direções já fechadas:
@@ -158,11 +158,15 @@ Direções já fechadas:
 - Empresas pendentes não são criadas antes de aprovação;
 - a UC038 recebe Nome da Empresa, responsável, e-mail e Observação opcional na Home pública e persiste somente uma solicitação Pendente;
 - solicitações públicas equivalentes são idempotentes por Empresa normalizada + e-mail normalizado e não expõem a existência/estado de pedido anterior;
-- suspensão/encerramento devem ser preferidos a exclusão física cotidiana.
+- suspensão/encerramento devem ser preferidos a exclusão física cotidiana;
+- UC039 distingue a Empresa técnica do tenant real sem marcar cegamente a Empresa 1 histórica;
+- aprovação cria Empresa + configuração + primeiro Administrador transacionalmente e reutiliza identidade global existente;
+- Empresa real pode ser suspensa, reativada ou encerrada logicamente; encerramento não executa hard delete;
+- Empresa legada sem Administrador é corrigida explicitamente pelo SystemAdmin, sem auto-promoção.
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
-A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A UC040 implementa SMTP configurável, ativação/recuperação por Identity e key ring persistente no SQL Server. A [configuração operacional](../development/configuracao-email-conta.md) descreve as App Settings. A análise administrativa permanece na UC039; UC039/UC031 não foram antecipadas.
+A UC038 persiste solicitações Pendentes e a UC040 entrega ativação/recuperação e e-mail. A UC039 passa a ser a camada global que decide solicitações, cria tenants reais, define o primeiro Administrador e administra o ciclo de vida da Empresa. A UC031 continua responsável pela gestão cotidiana dos vínculos do próprio tenant.
 
 ## Pós-MVP identificado
 
