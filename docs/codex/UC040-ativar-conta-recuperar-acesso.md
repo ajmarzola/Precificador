@@ -215,6 +215,37 @@ Não versionar password.
 
 Tests devem substituir sender por fake; não enviar e-mail real.
 
+## Configuração MVP suportada — Gmail
+
+A primeira configuração operacional poderá usar uma conta Gmail dedicada.
+
+Exemplo de App Settings:
+
+~~~text
+Email__Smtp__Enabled=true
+Email__Smtp__Host=smtp.gmail.com
+Email__Smtp__Port=587
+Email__Smtp__Security=StartTls
+Email__Smtp__UserName=<conta @gmail.com>
+Email__Smtp__Password=<senha de app>
+Email__Smtp__FromAddress=<mesma conta @gmail.com>
+Email__Smtp__FromName=Precificador
+~~~
+
+Regras:
+
+- usar senha de app, nunca a senha normal da conta Google;
+- não versionar a senha de app;
+- preferir conta Gmail dedicada ao sistema, não conta pessoal;
+- não exigir domínio próprio;
+- não criar implementação `GmailEmailSender`;
+- não hardcodar smtp.gmail.com no código;
+- não usar API proprietária Gmail;
+- testes automatizados continuam com fake sender e sem rede;
+- Gmail é uma configuração suportada, não uma dependência arquitetural.
+
+Se futuramente o SMTP mudar para outro provedor, somente configuração/transporte deve mudar; tokens, páginas e regras de conta permanecem.
+
 ## Serviço de e-mail
 
 Crie abstração pequena, por exemplo:
