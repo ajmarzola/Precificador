@@ -77,7 +77,7 @@ Regra operacional:
 | 17 | UC030 — Identificar produtos com precificação incompleta | UC | Concluído | UC017, UC028 e UC029 concluídos | [UC030](../use-cases/UC030-identificar-produtos-precificacao-incompleta.md) |
 | 18 | FT003 — Fundação de administração e autorização | FT | Concluído | FT002 concluída | [FT003](foundation-administration-authorization.md) |
 | 19 | UC038 — Solicitar acesso ao Precificador | UC | Concluído | FT003 concluída; formulário público persiste somente solicitação Pendente, sem auto-registro | [UC038](../use-cases/UC038-solicitar-acesso-precificador.md) |
-| 20 | UC040 — Ativar conta e recuperar acesso | UC | Planejado | FT003; infraestrutura de e-mail/token antes de convites administrativos | Documento a criar |
+| 20 | UC040 — Ativar conta e recuperar acesso | UC | Pronto | FT003 e UC038 concluídas; infraestrutura de e-mail/token antes de convites administrativos | [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md) |
 | 21 | UC039 — Administrar Empresas e solicitações de acesso | UC | Planejado | FT003, UC038, UC040 | Documento a criar |
 | 22 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT003, UC039, UC040 | Documento a criar |
 | 23 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |

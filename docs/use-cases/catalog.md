@@ -139,7 +139,7 @@ Linha planejada:
 |---|---|---|
 | [FT003](../development/foundation-administration-authorization.md) | Fundação de administração e autorização | FT002 |
 | [UC038](UC038-solicitar-acesso-precificador.md) | Solicitar acesso ao Precificador | FT003 |
-| UC040 | Ativar conta e recuperar acesso | FT003 |
+| [UC040](UC040-ativar-conta-recuperar-acesso.md) | Ativar conta e recuperar acesso | FT003 |
 | UC039 | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
 | UC031 | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
 
@@ -152,6 +152,8 @@ Direções já fechadas:
 - o mesmo `UsuarioAplicacao` pode pertencer a várias Empresas;
 - desvincular de uma Empresa não afeta os demais vínculos;
 - convite/ativação e recuperação de senha usam token enviado ao próprio usuário;
+- UC040 separa token de ativação (48 h) de recuperação (1 h), persiste o key ring do Data Protection no SQL Server e fornece transporte SMTP configurável;
+- identidade nova define a própria primeira senha; identidade já existente com senha nunca recebe reset apenas por novo vínculo;
 - administradores não conhecem nem escolhem a senha do usuário;
 - Empresas pendentes não são criadas antes de aprovação;
 - a UC038 recebe Nome da Empresa, responsável, e-mail e Observação opcional na Home pública e persiste somente uma solicitação Pendente;
@@ -160,7 +162,7 @@ Direções já fechadas:
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
-A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A análise administrativa e o envio de e-mail permanecem nas UC039/UC040; `/Admin` ainda não lista solicitações.
+A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A análise administrativa permanece na UC039; a UC040 passa a especificar e-mail, ativação e recuperação, sem fazer `/Admin` listar ou decidir solicitações.
 
 ## Pós-MVP identificado
 
