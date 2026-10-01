@@ -14,6 +14,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - desativar e reativar produto;
 - definir margem-alvo;
 - administrar Categorias de Produto (UC032);
+- administrar Coleções comerciais por período e Categorias envolvidas (UC033);
 - calcular Preço sugerido a partir do custo e da margem de referência;
 - registrar Preço de prateleira preservando snapshot da precificação;
 - consultar histórico de precificação do Produto;
@@ -127,6 +128,28 @@ Desativar uma Categoria não desvincula Produtos já associados a ela; apenas de
 
 A UC032 não implementa nenhuma regra de desgaste de equipamentos nem altera fórmula de precificação; prepara a base estruturada para a futura UC036.
 
+## Administrar Coleções — UC033
+
+A área `/Produtos/Colecoes` permite cadastrar e editar Coleções comerciais da Empresa Ativa.
+
+Cada Coleção possui:
+
+- Nome normalizado;
+- Data de lançamento obrigatória;
+- Data de finalização opcional;
+- situação temporal derivada pela data operacional da Empresa;
+- zero ou mais Categorias de Produto envolvidas.
+
+A identidade funcional é `EmpresaId + NomeNormalizado + DataLancamento`, permitindo repetir um conceito comercial em outro ciclo.
+
+Coleções podem se sobrepor. Uma Categoria pode participar de múltiplas Coleções simultaneamente.
+
+A associação de Categorias é organizacional e não inclui Produtos automaticamente. O vínculo Produto-Coleção permanece integralmente na UC034.
+
+Coleção não altera custo, margem, preço ou completude de precificação.
+
+`DataFinalizacao = null` representa período sem fim definido. Não existe coluna Ativo nem exclusão física na UC033.
+
 ## Regras relacionadas
 
 - RN018 a RN024, conforme aplicáveis;
@@ -193,6 +216,7 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md);
 - [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`;
 - [UC030 — Identificar Produtos com precificação incompleta](../use-cases/UC030-identificar-produtos-precificacao-incompleta.md) — adiciona classificação/motivos e o segundo recorte operacional à listagem.
+- [UC033 — Administrar coleções](../use-cases/UC033-administrar-colecoes.md) — organiza períodos comerciais e Categorias envolvidas, sem vincular Produtos ainda.
 
 ## Fora do escopo
 
