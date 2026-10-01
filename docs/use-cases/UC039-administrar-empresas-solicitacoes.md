@@ -230,7 +230,7 @@ MotivoRecusa opcional <= 500
 
 EmpresaId é FK Restrict para Empresas.
 
-DecididaPorUsuarioId identifica o SystemAdmin que decidiu; configurar FK Restrict para Identity se possível sem acoplamento indevido do Core.
+DecididaPorUsuarioId identifica o SystemAdmin que decidiu e deve possuir FK Restrict para Identity configurada na Infrastructure, sem navegação/dependência do Core em ASP.NET Core Identity.
 
 MotivoRecusa:
 
@@ -444,6 +444,28 @@ Obrigatório teste com SQL Server real provando:
 - sem estado parcial.
 
 Não depender apenas de botão desabilitado.
+
+## Concorrência entre solicitações diferentes
+
+A UC038 permite o mesmo e-mail solicitar Empresas diferentes.
+
+Se duas solicitações diferentes do mesmo e-mail forem aprovadas concorrentemente:
+
+- deve existir uma única UsuarioAplicacao para o e-mail;
+- cada Empresa aprovada recebe seu próprio vínculo Administrador;
+- nenhuma aprovação válida pode terminar em erro 500 apenas por corrida de criação da identidade.
+
+A implementação deve tratar a unicidade de e-mail do Identity como fonte de verdade. Se uma tentativa perder a corrida de criação da conta, deve resolver novamente a identidade já persistida e continuar de forma controlada quando a transação permitir/repetir a operação com segurança.
+
+Também é possível haver duas solicitações para o mesmo NomeEmpresaNormalizado com e-mails diferentes.
+
+Nesse caso:
+
+- apenas uma pode criar a Empresa daquele nome;
+- a outra continua Pendente;
+- a segunda não recebe vínculo automático no tenant criado pela primeira.
+
+Esses dois cenários devem possuir testes de integração com SQL Server real.
 
 ## Configuração padrão
 
@@ -902,6 +924,8 @@ Empresa 1 historicamente renomeada deve permanecer real.
 - **CA76:** Build Release verde.
 - **CA77:** unitários aplicáveis verdes.
 - **CA78:** integração SQL Server/Web verde.
+- **CA79:** duas solicitações concorrentes de Empresas diferentes para o mesmo e-mail resultam em uma identidade global e dois vínculos Administrador, sem erro 500.
+- **CA80:** duas solicitações concorrentes para o mesmo nome de Empresa criam no máximo um tenant; a perdedora continua Pendente e não é vinculada automaticamente.
 
 ## Matriz mínima de testes
 
@@ -999,6 +1023,22 @@ Dois POSTs simultâneos na mesma Pendente:
 - um vínculo;
 - no máximo um usuário novo;
 - resposta controlada para perdedor.
+
+### Concorrência cross-request
+
+Testar com SQL Server real:
+
+1. duas solicitações diferentes, mesmo e-mail, nomes de Empresa diferentes:
+   - duas aprovações válidas;
+   - duas Empresas;
+   - uma UsuarioAplicacao;
+   - dois vínculos Administrador;
+
+2. duas solicitações, mesmo NomeEmpresaNormalizado, e-mails diferentes:
+   - uma Empresa;
+   - uma Aprovada;
+   - outra permanece Pendente;
+   - nenhum vínculo automático do segundo solicitante.
 
 ### Falha de e-mail
 
