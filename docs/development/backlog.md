@@ -80,7 +80,7 @@ Regra operacional:
 | 20 | UC040 — Ativar conta e recuperar acesso | UC | Concluído | FT003 e UC038 concluídas; SMTP configurável, ativação/recuperação e key ring SQL Server implementados | [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md) |
 | 21 | UC039 — Administrar Empresas e solicitações de acesso | UC | Concluído | FT003, UC038 e UC040 concluídas; administração global, aprovação transacional e lifecycle implementados | [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md) |
 | 22 | UC031 — Administrar usuários e vínculos com Empresas | UC | Concluído | FT003, UC039 e UC040 concluídas; administração tenant, proteção concorrente do último Administrador e comunicação pós-commit implementadas | [UC031](../use-cases/UC031-administrar-usuarios-vinculos.md) |
-| 23 | UC033 — Administrar coleções | UC | Pronto | UC032 concluída | [UC033](../use-cases/UC033-administrar-colecoes.md) |
+| 23 | UC033 — Administrar coleções | UC | Concluído | UC032 concluída | [UC033](../use-cases/UC033-administrar-colecoes.md) |
 | 24 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
 | 25 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 26 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
