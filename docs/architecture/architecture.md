@@ -162,6 +162,21 @@ A UC039 mantém Empresa.Ativo como gate operacional consolidado e adiciona metad
 
 Ver [ADR-013](adr/ADR-013-ciclo-vida-empresa-seed-tecnico.md) e [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md).
 
+### Administração tenant de usuários
+
+A UC031 preserva a separação entre identidade global e autoridade contextual:
+
+- `UsuarioAplicacao` permanece global;
+- `UsuarioEmpresa` define acesso, situação e perfil na Empresa;
+- AdministradorEmpresa gerencia somente a Empresa Ativa;
+- convite cria ou reativa vínculo, sem entidade adicional de convite;
+- desvínculo é lógico por `Ativo = false`;
+- último Administrador ativo é protegido por transação/lock por Empresa;
+- corrida de criação de identidade continua protegida pela unicidade global de e-mail;
+- e-mail/ativação ocorre depois do commit.
+
+Ver [ADR-014](adr/ADR-014-administracao-tenant-vinculos.md) e [UC031](../use-cases/UC031-administrar-usuarios-vinculos.md).
+
 ## Diretrizes
 
 - Regras financeiras não devem residir na UI.
