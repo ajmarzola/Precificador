@@ -2,13 +2,21 @@
 
 - **Área funcional:** Administração tenant / multiempresa
 - **Dependências:** FT003, UC039, UC040
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** não prevista
 - **Autorização:** AdministradorEmpresa
 - **Superfícies:** /Usuarios e /Usuarios/Detalhes
 - **Regras principais:** RN071 a RN075
 
 ## Objetivo
+
+Implementação: `ServicoUsuariosEmpresa` e Razor Pages `/Usuarios` e `/Usuarios/Detalhes`, protegidas pela policy `AdministradorEmpresa`. O serviço aplica o tenant de `EmpresaContext` em todas as consultas de vínculo e revalida a autoridade do ator dentro da unidade de escrita. A navegação consulta a mesma policy; SystemAdmin permanece na área global.
+
+As escritas usam execution strategy, transação Serializable e `sp_getapplock` com recurso `Precificador.UC031.Empresa.<EmpresaId>` e proprietário Transaction. Conflitos Identity de e-mail/username repetem a resolução em até três tentativas, após rollback e limpeza do tracking; outros erros de persistência não são tratados como corrida Identity. A regra pura de proteção do último Administrador fica em `ProtecaoAdministradorEmpresa`, no Core, e sua leitura é feita dentro da transação.
+
+Não há mudança de schema. Identity e vínculo são persistidos pelo mesmo DbContext/transação. Comunicação usa `ServicoConta` após a liberação da transação/lock. Operação e limites estão descritos em [Administração de usuários da Empresa](../development/administracao-usuarios-empresa.md).
+
+Validação local: tool restore e restore da solution concluídos, build Release sem warnings, 288 testes unitários e 662 testes de integração SQL Server/Web aprovados, sem ignorados. A cobertura UC031 contém 50 cenários Web e quatro casos unitários da invariável; a suíte completa inclui regressões UC039/UC040/Login/seleção. CI do head da PR continua sendo gate obrigatório antes do merge humano.
 
 Permitir que o Administrador da Empresa gerencie usuários vinculados somente à Empresa Ativa, preservando a identidade global do usuário e o isolamento multiempresa.
 

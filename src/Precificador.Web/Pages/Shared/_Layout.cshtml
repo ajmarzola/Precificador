@@ -2,6 +2,7 @@
 @using Precificador.Web.Empresas
 @using Precificador.Web.Autorizacao
 @inject EmpresaContext EmpresaContext
+@inject Microsoft.AspNetCore.Authorization.IAuthorizationService Autorizacao
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -57,6 +58,10 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-page="/Configuracoes/Precificacao">Configurações</a>
                             </li>
+                            @if ((await Autorizacao.AuthorizeAsync(User, null, NomesAutorizacao.AdministradorEmpresa)).Succeeded)
+                            {
+                                <li class="nav-item"><a class="nav-link text-dark" asp-page="/Usuarios/Index">Usuários</a></li>
+                            }
                         }
                         else
                         {

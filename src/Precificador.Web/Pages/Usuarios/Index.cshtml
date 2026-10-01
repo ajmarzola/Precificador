@@ -1,0 +1,31 @@
+@page
+@model Precificador.Web.Pages.Usuarios.IndexModel
+@{ ViewData["Title"] = "Usuários"; }
+<h1>Usuários</h1>
+@if (Model.Mensagem is not null) { <div class="alert alert-info" role="status">@Model.Mensagem</div> }
+<div asp-validation-summary="All" class="text-danger"></div>
+<form method="get" class="mb-3">
+    <label for="situacao">Situação do vínculo</label>
+    <select id="situacao" name="situacao" class="form-select">
+        @foreach (var situacao in new[] { "Ativos", "Inativos", "Todos" })
+        { <option value="@situacao" selected="@(Model.Situacao == situacao)">@situacao</option> }
+    </select>
+    <button type="submit" class="btn btn-secondary">Filtrar</button>
+</form>
+<table class="table">
+    <thead><tr><th>E-mail</th><th>Perfil</th><th>Vínculo</th><th>Credencial</th><th>Ações</th></tr></thead>
+    <tbody>
+    @foreach (var usuario in Model.Usuarios)
+    {
+        <tr><td>@usuario.Email</td><td>@usuario.Perfil</td><td>@(usuario.Ativo ? "Ativo" : "Inativo")</td>
+            <td>@(usuario.SemSenha ? "Aguardando ativação" : "Ativado")</td>
+            <td><a asp-page="Detalhes" asp-route-usuarioId="@usuario.UsuarioId">Detalhes</a></td></tr>
+    }
+    </tbody>
+</table>
+<h2>Adicionar usuário</h2>
+<form method="post" asp-page-handler="Adicionar">
+    <div class="mb-3"><label asp-for="Input.Email">E-mail</label><input asp-for="Input.Email" class="form-control" /><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.Perfil">Perfil</label><select asp-for="Input.Perfil" class="form-select"><option value="">Selecione</option><option value="1">Operacional</option><option value="2">Administrador</option></select><span asp-validation-for="Input.Perfil" class="text-danger"></span></div>
+    <button class="btn btn-primary" type="submit">Adicionar usuário</button>
+</form>

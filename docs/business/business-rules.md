@@ -486,6 +486,8 @@ Perfil e situação pertencem ao vínculo, não à identidade global.
 
 Nenhuma operação local de usuários pode alterar vínculos de outras Empresas.
 
+Na UC031, a policy `AdministradorEmpresa` protege toda a área `/Usuarios`; as escritas revalidam o ator dentro da transação, depois de adquirir o lock da Empresa. SystemAdmin não recebe autoridade tenant por sua role global.
+
 ### RN072 — Identidade global é reutilizada sem alterar credencial
 
 Convidar um e-mail já existente reutiliza `UsuarioAplicacao`.
@@ -499,6 +501,8 @@ Identidade nova nasce sem senha e usa a ativação da UC040.
 Demover ou desvincular um Administrador só é permitido quando outro vínculo Ativo/Administrador permanece na mesma Empresa.
 
 A invariável deve ser protegida dentro de transação e ser resistente a operações concorrentes.
+
+A UC031 usa isolamento Serializable e application lock transacional por Empresa. Auto-demissão permitida mantém o contexto e segue ao Dashboard; auto-desvínculo permitido limpa a Empresa Ativa e segue à seleção de Empresa.
 
 ### RN074 — Desvínculo é lógico e local ao tenant
 

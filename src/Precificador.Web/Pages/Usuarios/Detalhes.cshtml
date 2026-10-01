@@ -1,0 +1,29 @@
+@page
+@model Precificador.Web.Pages.Usuarios.DetalhesModel
+@{ ViewData["Title"] = "Detalhes do usuário"; var usuario = Model.UsuarioEmpresa; }
+<h1>Detalhes do usuário</h1>
+@if (Model.Mensagem is not null) { <div class="alert alert-info" role="status">@Model.Mensagem</div> }
+<div asp-validation-summary="All" class="text-danger"></div>
+<dl>
+    <dt>E-mail</dt><dd>@usuario.Email</dd>
+    <dt>Perfil</dt><dd>@usuario.Perfil</dd>
+    <dt>Vínculo</dt><dd>@(usuario.Ativo ? "Ativo" : "Inativo")</dd>
+    <dt>Credencial</dt><dd>@(usuario.SemSenha ? "Aguardando ativação" : "Ativado")</dd>
+</dl>
+@if (usuario.Ativo)
+{
+    <form method="post" asp-page-handler="AlterarPerfil" asp-route-usuarioId="@usuario.UsuarioId" class="mb-3">
+        <label asp-for="Input.Perfil">Perfil</label><select asp-for="Input.Perfil" class="form-select"><option value="1">Operacional</option><option value="2">Administrador</option></select>
+        <button class="btn btn-primary" type="submit">Alterar perfil</button>
+    </form>
+    <form method="post" asp-page-handler="Desvincular" asp-route-usuarioId="@usuario.UsuarioId" class="mb-3"><button class="btn btn-danger" type="submit">Desvincular</button></form>
+    @if (usuario.SemSenha)
+    {
+        <form method="post" asp-page-handler="ReenviarAtivacao" asp-route-usuarioId="@usuario.UsuarioId" class="mb-3"><button class="btn btn-secondary" type="submit">Reenviar ativação</button></form>
+    }
+}
+else
+{
+    <form method="post" asp-page-handler="Reativar" asp-route-usuarioId="@usuario.UsuarioId" class="mb-3"><button class="btn btn-primary" type="submit">Reativar</button></form>
+}
+<a asp-page="Index">Voltar para usuários</a>

@@ -172,6 +172,8 @@ A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-revie
 
 A UC038 persiste solicitações Pendentes, a UC040 entrega ativação/recuperação e e-mail e a UC039 cria/administra o tenant globalmente. A UC031 fecha a gestão cotidiana: o Administrador da Empresa Ativa adiciona, reativa, altera perfil e desvincula usuários sem tocar a identidade global nem outras Empresas.
 
+Na UC031, `/Usuarios` lista vínculos ativos/inativos e `/Usuarios/Detalhes` oferece as ações locais. A proteção do último Administrador usa transação Serializable e lock por Empresa; auto-demissão vai ao Dashboard e auto-desvínculo limpa a Empresa Ativa antes de abrir a seleção. Veja [Administração de usuários da Empresa](../development/administracao-usuarios-empresa.md).
+
 ## Pós-MVP identificado
 
 - preparação intermediária reutilizável;
