@@ -19,6 +19,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Produtos", NomesAutorizacao.EmpresaAtiva);
     options.Conventions.AuthorizeFolder("/Configuracoes", NomesAutorizacao.EmpresaAtiva);
     options.Conventions.AuthorizeFolder("/Dashboard", NomesAutorizacao.EmpresaAtiva);
+    options.Conventions.AuthorizeFolder("/Admin", NomesAutorizacao.SystemAdmin);
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
@@ -56,6 +57,7 @@ builder.Services.AddOptions<OpcoesAplicacao>().BindConfiguration("Aplicacao")
     .PostConfigure(options => options.UrlPublica = options.UrlPublica.TrimEnd('/')).ValidateOnStart();
 builder.Services.AddScoped<IEmailSenderAplicacao, SmtpEmailSender>();
 builder.Services.AddScoped<ServicoConta>();
+builder.Services.AddScoped<Precificador.Web.Administracao.ServicoAdministracao>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;

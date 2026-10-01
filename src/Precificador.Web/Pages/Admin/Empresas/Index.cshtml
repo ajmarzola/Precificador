@@ -1,0 +1,18 @@
+@page
+@model Precificador.Web.Pages.Admin.Empresas.IndexModel
+@{ ViewData["Title"] = "Empresas"; }
+<h1>Empresas</h1>
+<nav aria-label="Situação da Empresa">
+@foreach (var filtro in new[] { "Todas", "Ativa", "Suspensa", "Encerrada" })
+{
+    <a asp-route-situacao="@filtro" aria-current="@(Model.Filtro == filtro ? "page" : null)">@filtro</a>
+}
+</nav>
+<table class="table"><thead><tr><th>Nome</th><th>Situação</th><th>Administradores ativos</th><th></th></tr></thead><tbody>
+@foreach (var linha in Model.Empresas)
+{
+    <tr><td>@linha.Empresa.Nome</td><td>@linha.Empresa.SituacaoAdministrativa</td><td>@linha.Administradores
+        @if (linha.Administradores == 0) { <span>Sem administrador</span> }
+    </td><td><a asp-page="Detalhes" asp-route-id="@linha.Empresa.Id">Detalhes</a></td></tr>
+}
+</tbody></table>

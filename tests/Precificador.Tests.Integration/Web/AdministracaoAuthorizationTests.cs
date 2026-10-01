@@ -4,11 +4,40 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Core.Acessos;
 
 namespace Precificador.Tests.Integration.Web;
 
 public sealed class AdministracaoAuthorizationTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
+    [Theory]
+    [InlineData(PerfilUsuarioEmpresa.Operacional)]
+    [InlineData(PerfilUsuarioEmpresa.Administrador)]
+    public async Task Todas_rotas_UC039_negam_anonimo_e_perfis_empresariais(PerfilUsuarioEmpresa perfil)
+    {
+        var web = new WebTestContext(factory);
+        var empresa = await web.CriarEmpresaAsync();
+        int solicitacao;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+            var pedido = SolicitacaoAcessoEmpresa.Criar("Pedido " + Guid.NewGuid(), "Ana", "ana@teste.local", null, DateTimeOffset.UtcNow);
+            db.SolicitacoesAcessoEmpresas.Add(pedido); await db.SaveChangesAsync(); solicitacao = pedido.Id;
+        }
+        var usuario = await web.CriarUsuarioAsync(perfil, empresa);
+        using var tenant = web.CriarCliente(); await web.LoginAsync(tenant, usuario.Email, usuario.Senha);
+        using var anonimo = web.CriarCliente();
+        foreach (var url in new[] { "/Admin", "/Admin/Solicitacoes", $"/Admin/Solicitacoes/Detalhes/{solicitacao}", "/Admin/Empresas", $"/Admin/Empresas/Detalhes/{empresa}" })
+        {
+            foreach (var client in new[] { tenant, anonimo })
+            {
+                Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync(url)).StatusCode);
+                var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, client == tenant ? "/Dashboard" : "/");
+                Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync(url + "?handler=Aprovar", new FormUrlEncodedContent(new Dictionary<string,string> { ["__RequestVerificationToken"] = token }))).StatusCode);
+            }
+        }
+    }
+
     [Fact]
     public async Task System_admin_acessa_admin_sem_empresa_ativa_e_nao_acessa_area_tenant()
     {

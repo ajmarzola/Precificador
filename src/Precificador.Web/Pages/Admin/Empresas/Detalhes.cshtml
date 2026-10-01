@@ -1,0 +1,63 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Admin.Empresas.DetalhesModel
+@using Precificador.Core.Empresas
+@{ ViewData["Title"] = "Empresa"; var empresa = Model.Empresa; }
+<h1>@empresa.Nome</h1>
+@if (Model.Mensagem is not null) { <p role="status">@Model.Mensagem</p> }
+<div asp-validation-summary="All" class="text-danger"></div>
+<dl>
+    <dt>Situação</dt><dd>@empresa.SituacaoAdministrativa</dd>
+    <dt>Fuso horário</dt><dd>@empresa.TimeZoneId</dd>
+    @if (empresa.EncerradaEmUtc.HasValue) { <dt>Encerrada em (UTC)</dt><dd>@empresa.EncerradaEmUtc.Value.ToString("dd/MM/yyyy HH:mm")</dd> }
+</dl>
+@if (Model.SolicitacaoId.HasValue) { <a asp-page="/Admin/Solicitacoes/Detalhes" asp-route-id="@Model.SolicitacaoId">Solicitação de origem</a> }
+<h2>Administradores ativos</h2>
+@if (Model.Administradores.Count == 0) { <p>Sem administrador</p> }
+<ul>
+@foreach (var admin in Model.Administradores)
+{
+    <li>@admin.Email
+    @if (admin.SemSenha && empresa.EncerradaEmUtc == null)
+    {
+        <form method="post" asp-page-handler="Reenviar">
+            <input type="hidden" name="usuarioId" value="@admin.Id" />
+            <button type="submit" class="btn btn-outline-primary">Reenviar ativação</button>
+        </form>
+    }
+    </li>
+}
+</ul>
+@if (empresa.EncerradaEmUtc == null)
+{
+    @if (Model.Administradores.Count == 0)
+    {
+        <form method="post" asp-page-handler="Definir">
+            <label asp-for="Input.Email">E-mail do Administrador</label><input asp-for="Input.Email" class="form-control" />
+            <button type="submit" class="btn btn-primary">Definir administrador</button>
+        </form>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Substituir">
+            <label asp-for="Input.AdministradorAtual">Administrador atual</label>
+            <select asp-for="Input.AdministradorAtual" class="form-select">
+            @foreach (var admin in Model.Administradores) { <option value="@admin.Id">@admin.Email</option> }
+            </select>
+            <label asp-for="Input.Email">Novo e-mail</label><input asp-for="Input.Email" class="form-control" />
+            <button type="submit" class="btn btn-primary">Substituir administrador</button>
+        </form>
+    }
+    @if (empresa.Ativo)
+    {
+        <form method="post" asp-page-handler="Suspender"><button type="submit" class="btn btn-outline-warning">Suspender</button></form>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Reativar"><button type="submit" class="btn btn-outline-primary">Reativar</button></form>
+    }
+    <form method="post" asp-page-handler="Encerrar">
+        <label><input asp-for="ConfirmarEncerramento" /> Confirmo o encerramento definitivo desta Empresa, preservando seus dados.</label>
+        <button type="submit" class="btn btn-danger">Encerrar</button>
+    </form>
+}
+<a asp-page="Index">Voltar às Empresas</a>

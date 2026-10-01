@@ -39,7 +39,7 @@ public sealed class SolicitacaoAcessoEmpresaPersistenceTests
         }
         var tipo = db.Model.FindEntityType(typeof(SolicitacaoAcessoEmpresa))!;
         Assert.Empty(tipo.GetDeclaredQueryFilters());
-        Assert.Null(tipo.FindProperty("EmpresaId"));
+        Assert.True(tipo.FindProperty("EmpresaId")!.IsNullable); // referência global de decisão introduzida pela UC039
         Assert.False(typeof(IEntidadeEmpresa).IsAssignableFrom(typeof(SolicitacaoAcessoEmpresa)));
         db.SolicitacoesAcessoEmpresas.Add(Pedido());
         await db.SaveChangesAsync();
@@ -60,7 +60,11 @@ public sealed class SolicitacaoAcessoEmpresaPersistenceTests
         db.Add(Pedido(email: "outro@teste.local"));
         await db.SaveChangesAsync();
         Assert.Equal(3, await db.SolicitacoesAcessoEmpresas.CountAsync());
-        await db.Database.ExecuteSqlRawAsync("UPDATE SolicitacoesAcessoEmpresas SET Situacao = 3");
+        db.Users.Add(new UsuarioAplicacao { Id = "decisor", UserName = "decisor@teste.local" });
+        await db.SaveChangesAsync();
+        foreach (var solicitacao in await db.SolicitacoesAcessoEmpresas.ToListAsync())
+            solicitacao.Recusar("decisor", DateTimeOffset.UtcNow, null);
+        await db.SaveChangesAsync();
         db.ChangeTracker.Clear();
         db.Add(Pedido());
         await db.SaveChangesAsync();

@@ -2,4 +2,11 @@
 @model Precificador.Web.Pages.Admin.IndexModel
 @{ ViewData["Title"] = "Administração do sistema"; }
 <h1>Administração do sistema</h1>
-<p>Esta é a área administrativa global do Precificador.</p>
+<dl>
+    <dt>Solicitações Pendentes</dt><dd>@Model.Pendentes</dd>
+    <dt>Empresas Ativas</dt><dd>@Model.Ativas</dd>
+    <dt>Empresas Suspensas</dt><dd>@Model.Suspensas</dd>
+    <dt>Empresas Encerradas</dt><dd>@Model.Encerradas</dd>
+</dl>
+<a asp-page="/Admin/Solicitacoes/Index">Solicitações de acesso</a>
+<a asp-page="/Admin/Empresas/Index">Empresas</a>

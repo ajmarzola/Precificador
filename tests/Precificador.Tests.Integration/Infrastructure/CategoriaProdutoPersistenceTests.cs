@@ -137,7 +137,7 @@ public sealed class CategoriaProdutoPersistenceTests
         });
         Assert.False(categorias.Single(c => c.EmpresaId == empresaDoisId).Ativo);
         Assert.NotNull(await contexto.Produtos.IgnoreQueryFilters().Where(p => p.Id == produtoId).Select(p => p.CategoriaProdutoId).SingleAsync());
-        Assert.Equal(["20261001110539_AddPerfilUsuarioEmpresa", "20261001125004_AddSolicitacaoAcessoEmpresa", "20261001140025_UC040_PersistirDataProtectionKeys"], await contexto.Database.GetPendingMigrationsAsync());
+        Assert.Equal(["20261001110539_AddPerfilUsuarioEmpresa", "20261001125004_AddSolicitacaoAcessoEmpresa", "20261001140025_UC040_PersistirDataProtectionKeys", "20261001152514_UC039_AdministracaoEmpresas"], await contexto.Database.GetPendingMigrationsAsync());
     }
 
     [Fact]

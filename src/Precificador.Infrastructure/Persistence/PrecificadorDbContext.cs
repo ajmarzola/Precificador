@@ -34,6 +34,8 @@ public sealed class PrecificadorDbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<UsuarioAplicacao>().HasIndex(x => x.NormalizedEmail)
+            .HasDatabaseName("EmailIndex").IsUnique().HasFilter("[NormalizedEmail] IS NOT NULL");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
         modelBuilder.Entity<ConfiguracaoPrecificacaoEmpresa>().HasQueryFilter(configuracao =>
             configuracao.EmpresaId == empresaContext.EmpresaIdOuSentinela);

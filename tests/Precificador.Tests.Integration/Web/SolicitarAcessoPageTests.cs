@@ -112,8 +112,16 @@ public sealed class SolicitarAcessoPageTests
         using var client = Cliente(factory);
         await Enviar(client, observacao: "original");
         var original = Assert.Single(await Pedidos(factory));
-        using (var scope = factory.Services.CreateScope())
-            await scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>().Database.ExecuteSqlAsync($"UPDATE SolicitacoesAcessoEmpresas SET Situacao = {situacao}");
+        if (situacao != 1)
+        {
+            var admin = await new WebTestContext(factory).CriarSystemAdminAsync();
+            using var scope = factory.Services.CreateScope();
+            var servico = scope.ServiceProvider.GetRequiredService<Precificador.Web.Administracao.ServicoAdministracao>();
+            var decisao = situacao == 2
+                ? await servico.AprovarAsync(original.Id, original.NomeEmpresa, admin.Id)
+                : await servico.RecusarAsync(original.Id, null, admin.Id);
+            Assert.True(decisao.Sucesso, decisao.Mensagem);
+        }
         var response = await Enviar(client, "  EMPRESA   teste ", "JOAO@TESTE.LOCAL", "alterada");
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Contains("Recebemos sua solicitação de acesso.", await WebTestHtml.LerHtmlDecodificadoAsync(await client.GetAsync("/")));

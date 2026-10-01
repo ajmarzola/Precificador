@@ -28,8 +28,9 @@ public sealed class TokensContaPersistenceTests
             await db.GetService<IMigrator>().MigrateAsync("20261001125004_AddSolicitacaoAcessoEmpresa");
             db.Users.Add(new UsuarioAplicacao { Id = "legado", UserName = "legado@teste.local", PasswordHash = "hash-preservado" });
             db.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = "legado", EmpresaId = 1, Ativo = true, Perfil = PerfilUsuarioEmpresa.Operacional });
-            db.SolicitacoesAcessoEmpresas.Add(SolicitacaoAcessoEmpresa.Criar("Empresa", "Responsável", "pedido@teste.local", "preservada", DateTimeOffset.UtcNow));
             await db.SaveChangesAsync();
+            // Preparação no schema histórico UC038, sem colunas de decisão da UC039.
+            await db.Database.ExecuteSqlRawAsync("INSERT INTO SolicitacoesAcessoEmpresas (NomeEmpresa, NomeEmpresaNormalizado, NomeResponsavel, EmailResponsavel, EmailResponsavelNormalizado, Observacao, DataSolicitacaoUtc, Situacao) VALUES (N'Empresa', N'EMPRESA', N'Responsável', 'pedido@teste.local', 'PEDIDO@TESTE.LOCAL', N'preservada', SYSDATETIMEOFFSET(), 1)");
         }
         await db.Database.MigrateAsync();
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());

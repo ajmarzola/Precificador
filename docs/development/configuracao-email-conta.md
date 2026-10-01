@@ -32,4 +32,6 @@ Ativação usa `ContaAtivacao` / `Precificador.AtivarConta` por 48 horas. Recupe
 
 O serviço interno `EnviarAtivacaoAsync` retorna `Enviado`, `NaoNecessario`, `Indisponivel` ou `Falhou`. Usuário com senha não recebe ativação. Falhas de transporte não alteram o usuário; na recuperação pública a resposta continua neutra. Logs de falha não incluem exceção SMTP, destinatário, token, URL, corpo ou credenciais.
 
+A UC039 usa esse serviço após o commit da aprovação ou definição/substituição de Administrador. Usuário com senha recebe aviso de acesso liberado com link canônico `/Conta/Login`, sem reset. Recusa envia mensagem simples sem motivo interno. Falha ou indisponibilidade SMTP mantém a decisão e apresenta aviso administrativo; o detalhe da Empresa oferece reenvio para Administrador ativo sem senha. Ver [Administração global](administracao-global.md).
+
 Não elevar o logging de requests/Identity/Data Protection a Debug/Trace nem habilitar sensitive data logging de EF em ambiente operacional: links e material criptográfico não devem aparecer em logs. A configuração versionada mantém `Microsoft.AspNetCore` em Warning.
