@@ -1,0 +1,16 @@
+@page
+@model Precificador.Web.Pages.Admin.Solicitacoes.IndexModel
+@{ ViewData["Title"] = "Solicitações de acesso"; }
+<h1>Solicitações de acesso</h1>
+<nav aria-label="Situação da solicitação">
+@foreach (var filtro in new[] { "Pendente", "Aprovada", "Recusada", "Todas" })
+{
+    <a asp-route-situacao="@filtro" aria-current="@(Model.Filtro == filtro ? "page" : null)">@filtro</a>
+}
+</nav>
+<table class="table"><thead><tr><th>Empresa solicitada</th><th>Responsável</th><th>E-mail</th><th>Data (UTC)</th><th>Situação</th><th></th></tr></thead><tbody>
+@foreach (var item in Model.Solicitacoes)
+{
+    <tr><td>@item.NomeEmpresa</td><td>@item.NomeResponsavel</td><td>@item.EmailResponsavel</td><td>@item.DataSolicitacaoUtc.ToString("dd/MM/yyyy HH:mm")</td><td>@item.Situacao</td><td><a asp-page="Detalhes" asp-route-id="@item.Id">Detalhes</a></td></tr>
+}
+</tbody></table>

@@ -1,0 +1,34 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Admin.Solicitacoes.DetalhesModel
+@using Precificador.Core.Acessos
+@{ ViewData["Title"] = "Solicitação de acesso"; var item = Model.Solicitacao; }
+<h1>Solicitação de acesso</h1>
+@if (Model.Mensagem is not null) { <p role="status">@Model.Mensagem</p> }
+<div asp-validation-summary="All" class="text-danger"></div>
+<dl>
+    <dt>Empresa solicitada</dt><dd>@item.NomeEmpresa</dd>
+    <dt>Responsável</dt><dd>@item.NomeResponsavel</dd>
+    <dt>E-mail</dt><dd>@item.EmailResponsavel</dd>
+    <dt>Observação</dt><dd style="white-space:pre-wrap">@item.Observacao</dd>
+    <dt>Solicitada em (UTC)</dt><dd>@item.DataSolicitacaoUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+    <dt>Situação</dt><dd>@item.Situacao</dd>
+    @if (item.DataDecisaoUtc.HasValue)
+    {
+        <dt>Decidida em (UTC)</dt><dd>@item.DataDecisaoUtc.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt>Administrador do Sistema (identificador)</dt><dd>@item.DecididaPorUsuarioId</dd>
+        <dt>Motivo interno</dt><dd>@item.MotivoRecusa</dd>
+    }
+</dl>
+@if (item.EmpresaId.HasValue) { <a asp-page="/Admin/Empresas/Detalhes" asp-route-id="@item.EmpresaId">Empresa criada</a> }
+@if (item.Situacao == SituacaoSolicitacaoAcessoEmpresa.Pendente)
+{
+    <form method="post" asp-page-handler="Aprovar">
+        <label asp-for="Aprovacao.Nome">Nome final da Empresa</label><input asp-for="Aprovacao.Nome" class="form-control" />
+        <button type="submit" class="btn btn-primary">Aprovar</button>
+    </form>
+    <form method="post" asp-page-handler="Recusar">
+        <label asp-for="Recusa.Motivo">Motivo interno (opcional)</label><textarea asp-for="Recusa.Motivo" class="form-control"></textarea>
+        <button type="submit" class="btn btn-outline-danger">Recusar</button>
+    </form>
+}
+<a asp-page="Index">Voltar às solicitações</a>

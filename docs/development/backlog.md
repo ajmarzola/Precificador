@@ -78,7 +78,7 @@ Regra operacional:
 | 18 | FT003 — Fundação de administração e autorização | FT | Concluído | FT002 concluída | [FT003](foundation-administration-authorization.md) |
 | 19 | UC038 — Solicitar acesso ao Precificador | UC | Concluído | FT003 concluída; formulário público persiste somente solicitação Pendente, sem auto-registro | [UC038](../use-cases/UC038-solicitar-acesso-precificador.md) |
 | 20 | UC040 — Ativar conta e recuperar acesso | UC | Concluído | FT003 e UC038 concluídas; SMTP configurável, ativação/recuperação e key ring SQL Server implementados | [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md) |
-| 21 | UC039 — Administrar Empresas e solicitações de acesso | UC | Pronto | FT003, UC038 e UC040 concluídas | [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md) |
+| 21 | UC039 — Administrar Empresas e solicitações de acesso | UC | Concluído | FT003, UC038 e UC040 concluídas; administração global, aprovação transacional e lifecycle implementados | [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md) |
 | 22 | UC031 — Administrar usuários e vínculos com Empresas | UC | Planejado | FT003, UC039, UC040 | Documento a criar |
 | 23 | UC033 — Administrar coleções | UC | Planejado | UC032 | Documento a criar |
 | 24 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |

@@ -14,6 +14,29 @@ public sealed class ServicoConta(UserManager<UsuarioAplicacao> usuarios, IEmailS
 {
     public bool Disponivel => sender.Disponivel;
 
+    public Task<ResultadoEnvioConta> EnviarAcessoLiberadoAsync(UsuarioAplicacao usuario, string empresa)
+        => EnviarComunicacaoAsync(usuario.Email!, "Acesso liberado ao Precificador",
+            $"Seu acesso à Empresa {empresa} foi liberado.\nEntre no Precificador usando sua credencial existente.\n{aplicacao.Value.UrlPublica.TrimEnd('/')}/Conta/Login");
+
+    public Task<ResultadoEnvioConta> EnviarRecusaAsync(string email)
+        => EnviarComunicacaoAsync(email, "Solicitação de acesso ao Precificador",
+            "Sua solicitação de acesso ao Precificador foi analisada e não foi aprovada neste momento.");
+
+    private async Task<ResultadoEnvioConta> EnviarComunicacaoAsync(string email, string assunto, string texto)
+    {
+        if (!Disponivel) return ResultadoEnvioConta.Indisponivel;
+        try
+        {
+            await sender.EnviarAsync(new MensagemEmail(email, assunto, texto, $"<p>{HtmlEncoder.Default.Encode(texto)}</p>"));
+            return ResultadoEnvioConta.Enviado;
+        }
+        catch (Exception)
+        {
+            logger.LogWarning("Envio de comunicação administrativa falhou.");
+            return ResultadoEnvioConta.Falhou;
+        }
+    }
+
     public async Task<ResultadoEnvioConta> EnviarAtivacaoAsync(UsuarioAplicacao usuario)
     {
         if (await usuarios.HasPasswordAsync(usuario)) return ResultadoEnvioConta.NaoNecessario;

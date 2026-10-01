@@ -2,12 +2,18 @@
 
 - **Área funcional:** Administração global / multiempresa
 - **Dependências:** FT003, UC038, UC040
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** sim
 - **Autorização:** SystemAdmin
 - **Regras principais:** RN065 a RN070
 
 ## Objetivo
+
+Implementação: `ServicoAdministracao` e Razor Pages em `/Admin/Solicitacoes` e `/Admin/Empresas`. A migration `UC039_AdministracaoEmpresas` adiciona lifecycle, decisão, FKs/constraints e unicidade de e-mail normalizado no Identity, com backfill condicional do seed técnico.
+
+As escritas administrativas usam execution strategy, transação Serializable e `sp_getapplock` com proprietário Transaction. O lock `Precificador.UC039` serializa as unidades curtas de banco entre instâncias; envio de e-mail ocorre após sua liberação. Corridas de unicidade Identity são reconsultadas em uma nova tentativa, limitada a três. Colisão de nome mantém a solicitação Pendente.
+
+A configuração padrão é criada por um contexto restrito à Empresa recém-criada, na mesma conexão/transação da aprovação. O Global Query Filter e o guard de escrita permanecem ativos; a sessão do SystemAdmin não recebe Empresa Ativa. A comunicação e as operações administrativas são descritas em [Administração global](../development/administracao-global.md).
 
 Permitir que o SystemAdmin transforme uma solicitação pública da UC038 em uma Empresa real e administrável, sem auto-registro e sem receber acesso implícito aos dados tenant-owned.
 

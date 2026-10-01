@@ -37,6 +37,8 @@
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole(NomesAutorizacao.SystemAdmin))
                         {
                             <li class="nav-item"><a class="nav-link text-dark" asp-page="/Admin/Index">Administração</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Admin/Solicitacoes/Index">Solicitações</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Admin/Empresas/Index">Empresas</a></li>
                         }
                         else if (User.Identity?.IsAuthenticated == true)
                         {

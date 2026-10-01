@@ -351,7 +351,7 @@ Toda nova `SolicitacaoAcessoEmpresa` nasce em situação `Pendente`.
 
 O visitante não escolhe a situação e a UC038 não aprova nem recusa solicitações.
 
-As transições para `Aprovada` ou `Recusada` pertencem à administração global e serão tratadas pela UC039.
+As transições para `Aprovada` ou `Recusada` pertencem à administração global implementada pela UC039.
 
 ### RN061 — Reenvio idempotente da solicitação de acesso
 

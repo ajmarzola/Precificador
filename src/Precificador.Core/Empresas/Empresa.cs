@@ -32,6 +32,11 @@ public sealed class Empresa
     public string NomeNormalizado { get; private set; }
     public string TimeZoneId { get; private set; }
     public bool Ativo { get; private set; }
+    public bool EhTecnica { get; private set; }
+    public DateTimeOffset? EncerradaEmUtc { get; private set; }
+    public SituacaoAdministrativaEmpresa SituacaoAdministrativa => EncerradaEmUtc.HasValue
+        ? SituacaoAdministrativaEmpresa.Encerrada
+        : Ativo ? SituacaoAdministrativaEmpresa.Ativa : SituacaoAdministrativaEmpresa.Suspensa;
 
     public static Empresa Criar(string nome) => new(nome, TimeZoneIdPadrao);
 
@@ -39,7 +44,7 @@ public sealed class Empresa
 
     public static Empresa CriarTecnica(int id, string nome)
     {
-        var empresa = new Empresa(nome, TimeZoneIdPadrao) { Id = id };
+        var empresa = new Empresa(nome, TimeZoneIdPadrao) { Id = id, EhTecnica = true };
         return empresa;
     }
 
@@ -53,6 +58,33 @@ public sealed class Empresa
         if (Nome.Length > TamanhoMaximoNome) throw new ArgumentException("O nome da empresa deve possuir no máximo 120 caracteres.", nameof(nome));
 
         NomeNormalizado = Nome.ToUpperInvariant();
+    }
+
+    public void Suspender()
+    {
+        ValidarAdministravel();
+        Ativo = false;
+    }
+
+    public void Reativar(bool possuiAdministradorAtivo)
+    {
+        ValidarAdministravel();
+        if (Ativo) throw new InvalidOperationException("A Empresa deve estar suspensa.");
+        if (!possuiAdministradorAtivo) throw new InvalidOperationException("Defina um Administrador ativo antes de reativar.");
+        Ativo = true;
+    }
+
+    public void Encerrar(TimeProvider timeProvider)
+    {
+        ValidarAdministravel();
+        EncerradaEmUtc = timeProvider.GetUtcNow();
+        Ativo = false;
+    }
+
+    public void ValidarAdministravel()
+    {
+        if (EhTecnica) throw new InvalidOperationException("A Empresa técnica não recebe ações administrativas.");
+        if (EncerradaEmUtc.HasValue) throw new InvalidOperationException("A Empresa está encerrada.");
     }
 
     private static string NormalizarNome(string? nome) => NormalizadorNome.Normalizar(nome);
