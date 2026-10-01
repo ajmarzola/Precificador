@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +12,13 @@ using System.Text;
 
 namespace Precificador.Web.Pages;
 
+[IgnoreAntiforgeryToken]
 public sealed class SetupModel(
     PrecificadorDbContext context,
     UserManager<UsuarioAplicacao> userManager,
     RoleManager<IdentityRole> roleManager,
-    IConfiguration configuration) : PageModel
+    IConfiguration configuration,
+    IAntiforgery antiforgery) : PageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
     public async Task<IActionResult> OnGetAsync()
@@ -28,6 +31,7 @@ public sealed class SetupModel(
     {
         if (await ExisteSystemAdminAsync()) return NotFound();
         if (!ChaveConfigurada()) return ConfiguracaoIndisponivel();
+        if (!await antiforgery.IsRequestValidAsync(HttpContext)) return BadRequest();
         if (!ModelState.IsValid) return Page();
         if (!ChaveValida())
         {

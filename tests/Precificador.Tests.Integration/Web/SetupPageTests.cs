@@ -52,9 +52,9 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
         Assert.Equal(HttpStatusCode.OK, invalida.StatusCode);
         using (var scope = factoryIsolada.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-            Assert.Empty(await db.Users.ToListAsync());
-            Assert.Empty(await db.Roles.ToListAsync());
+            var contextoInvalido = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+            Assert.Empty(await contextoInvalido.Users.ToListAsync());
+            Assert.Empty(await contextoInvalido.Roles.ToListAsync());
         }
 
         var semAntiforgery = await client.PostAsync("/Setup", Formulario(null, "chave-bootstrap-teste", "outro@teste.local"));
@@ -66,20 +66,38 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
     {
         using var factoryIsolada = new CustomWebApplicationFactory();
         string email;
+        string usuarioEmpresarialId;
         using (var scope = factoryIsolada.Services.CreateScope())
         {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+            var contextoInicial = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
             email = "empresarial@teste.local";
-            Assert.True((await users.CreateAsync(new UsuarioAplicacao { UserName = email, Email = email }, "SenhaTeste1")).Succeeded);
+            var usuario = new UsuarioAplicacao { UserName = email, Email = email };
+            Assert.True((await users.CreateAsync(usuario, "SenhaTeste1")).Succeeded);
+            usuarioEmpresarialId = usuario.Id;
+            contextoInicial.UsuariosEmpresas.Add(new UsuarioEmpresa
+            {
+                UsuarioId = usuario.Id,
+                EmpresaId = 1,
+                Ativo = true,
+                Perfil = PerfilUsuarioEmpresa.Operacional
+            });
+            await contextoInicial.SaveChangesAsync();
         }
         using var client = factoryIsolada.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Setup")).StatusCode);
         var token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync("/Setup"));
         var repetido = await client.PostAsync("/Setup", Formulario(token, "chave-bootstrap-teste", email));
         Assert.Equal(HttpStatusCode.OK, repetido.StatusCode);
+        token = WebTestHtml.ExtrairTokenAntiforgery(await client.GetStringAsync("/Setup"));
+        var bootstrap = await client.PostAsync("/Setup", Formulario(token, "chave-bootstrap-teste", "global@teste.local"));
+        Assert.Equal(HttpStatusCode.Redirect, bootstrap.StatusCode);
         using var verificacao = factoryIsolada.Services.CreateScope();
-        var db = verificacao.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Empty(await db.UserRoles.ToListAsync());
+        var contextoVerificacao = verificacao.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var membership = await contextoVerificacao.UserRoles.SingleAsync();
+        Assert.NotEqual(usuarioEmpresarialId, membership.UserId);
+        Assert.Equal("global@teste.local", await contextoVerificacao.Users.Where(user => user.Id == membership.UserId).Select(user => user.Email).SingleAsync());
+        Assert.Single(await contextoVerificacao.UsuariosEmpresas.Where(vinculo => vinculo.UsuarioId == usuarioEmpresarialId).ToListAsync());
     }
 
     [Fact]
@@ -88,7 +106,15 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
         using (var semChave = factory.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration((_, configuration) =>
                    configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["Bootstrap:SystemAdminKey"] = string.Empty }))))
         using (var client = semChave.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }))
+        {
             Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/Setup")).StatusCode);
+            var post = await client.PostAsync("/Setup", Formulario(null, "qualquer", "ausente@teste.local"));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, post.StatusCode);
+            using var escopoSemChave = semChave.Services.CreateScope();
+            var contextoSemChave = escopoSemChave.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+            Assert.Empty(await contextoSemChave.Users.ToListAsync());
+            Assert.Empty(await contextoSemChave.Roles.ToListAsync());
+        }
 
         using var factoryIsolada = new CustomWebApplicationFactory();
         using var clienteUm = factoryIsolada.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
@@ -99,9 +125,9 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
             clienteUm.PostAsync("/Setup", Formulario(tokenUm, "chave-bootstrap-teste", "primeiro@teste.local")),
             clienteDois.PostAsync("/Setup", Formulario(tokenDois, "chave-bootstrap-teste", "segundo@teste.local")));
         Assert.Single(respostas, resposta => resposta.StatusCode == HttpStatusCode.Redirect);
-        using var scope = factoryIsolada.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
-        Assert.Single(await db.UserRoles.ToListAsync());
+        using var escopoFinal = factoryIsolada.Services.CreateScope();
+        var contextoFinal = escopoFinal.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        Assert.Single(await contextoFinal.UserRoles.ToListAsync());
     }
 
     private static FormUrlEncodedContent Formulario(string? token, string chave, string email)
