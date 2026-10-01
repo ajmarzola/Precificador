@@ -478,6 +478,44 @@ Ele não aparece como Empresa real na administração global e não recebe açõ
 
 Uma Empresa Id 1 historicamente renomeada para um cliente real não deve ser marcada como técnica.
 
+### RN071 — Autoridade de usuário pertence ao vínculo da Empresa Ativa
+
+O Administrador da Empresa administra somente o vínculo `UsuarioEmpresa` pertencente à Empresa Ativa.
+
+Perfil e situação pertencem ao vínculo, não à identidade global.
+
+Nenhuma operação local de usuários pode alterar vínculos de outras Empresas.
+
+### RN072 — Identidade global é reutilizada sem alterar credencial
+
+Convidar um e-mail já existente reutiliza `UsuarioAplicacao`.
+
+Novo vínculo não cria conta duplicada e não altera senha, e-mail, security stamp, confirmação de e-mail ou roles globais.
+
+Identidade nova nasce sem senha e usa a ativação da UC040.
+
+### RN073 — Empresa não pode ficar sem Administrador ativo
+
+Demover ou desvincular um Administrador só é permitido quando outro vínculo Ativo/Administrador permanece na mesma Empresa.
+
+A invariável deve ser protegida dentro de transação e ser resistente a operações concorrentes.
+
+### RN074 — Desvínculo é lógico e local ao tenant
+
+Desvincular um usuário define `UsuarioEmpresa.Ativo = false`.
+
+Não remove a conta global e não afeta vínculos do usuário com outras Empresas.
+
+Reativação reutiliza o mesmo registro.
+
+### RN075 — Comunicação de acesso ocorre após persistência
+
+Ativação e aviso de acesso são efeitos externos posteriores ao commit.
+
+Falha de e-mail não desfaz vínculo, perfil ou reativação já persistidos.
+
+SMTP não participa de transação nem lock de banco.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
