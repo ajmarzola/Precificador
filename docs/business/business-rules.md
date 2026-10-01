@@ -520,6 +520,48 @@ Falha de e-mail não desfaz vínculo, perfil ou reativação já persistidos.
 
 SMTP não participa de transação nem lock de banco.
 
+### RN076 — Identidade da Coleção é tenant-aware e temporal
+
+Coleção pertence a uma única Empresa.
+
+Sua identidade funcional é:
+
+~~~text
+EmpresaId + NomeNormalizado + DataLancamento
+~~~
+
+O mesmo nome pode representar um novo ciclo comercial em outra data de lançamento, mas não pode existir duplicado na mesma Empresa e data.
+
+### RN077 — Período da Coleção usa datas comerciais inclusivas
+
+Toda Coleção possui DataLancamento obrigatória e DataFinalizacao opcional.
+
+Quando informada:
+
+~~~text
+DataFinalizacao >= DataLancamento
+~~~
+
+Datas futuras são válidas e as extremidades pertencem ao período.
+
+A situação Planejada/Em andamento/Finalizada é derivada por `IDataOperacionalEmpresa.Hoje` e não é persistida.
+
+### RN078 — Coleções podem sobrepor períodos e Categorias
+
+Coleções não são exclusivas entre si.
+
+Períodos podem se sobrepor total ou parcialmente e uma mesma Categoria pode participar de múltiplas Coleções simultaneamente.
+
+Nenhuma validação de conflito temporal deve ser inferida.
+
+### RN079 — Categorias da Coleção são metadados, não vínculo de Produto
+
+Uma Coleção pode possuir zero ou mais Categorias da mesma Empresa.
+
+Essa associação organiza o escopo comercial da Coleção, mas não inclui Produtos automaticamente nem restringe por si só a futura vinculação Produto-Coleção da UC034.
+
+Desativar ou renomear uma Categoria não remove sua associação já existente com a Coleção.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento

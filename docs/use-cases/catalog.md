@@ -61,10 +61,10 @@ UC011 congela Custo de referência, Margem de referência, Preço sugerido, Pre�
 A review manual identificou a necessidade de substituir a Categoria livre atual por estrutura cadastrável e introduzir o conceito de Coleção:
 
 - **[UC032](UC032-administrar-categorias-produto.md) — Administrar categorias de Produto:** substituir o texto livre por `CategoriaProduto` tenant-aware, migrar os dados existentes e administrar cadastro/situação;
-- **UC033 — Administrar coleções:** cadastrar Coleções com período de lançamento/finalização e Categorias envolvidas;
+- **[UC033](UC033-administrar-colecoes.md) — Administrar coleções:** cadastrar Coleções tenant-aware com período comercial e Categorias envolvidas;
 - **UC034 — Vincular Produtos a Coleções:** permitir acompanhar a participação/destaque de Produtos ao longo das Coleções.
 
-UC032 foi concluída (`CategoriaProduto` tenant-aware substituindo o texto livre, com migration e administração de cadastro/situação). UC033/UC034 permanecem para especificação posterior.
+UC032 foi concluída (`CategoriaProduto` tenant-aware substituindo o texto livre). A UC033 está especificada com período comercial, situação temporal derivada e associação N:N de Categorias; a UC034 permanece responsável pelo vínculo real de Produtos às Coleções.
 
 ## Ficha técnica
 
