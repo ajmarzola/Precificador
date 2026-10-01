@@ -374,6 +374,54 @@ Solicitação `Recusada` permite nova tentativa futura, desde que não exista ou
 
 A resposta pública não deve revelar a existência nem a situação de pedido anterior.
 
+### RN062 — Ativação sem senha temporária
+
+Uma identidade nova que precise de credencial recebe link de ativação no próprio e-mail.
+
+O próprio usuário define a primeira senha.
+
+Administrador da Empresa e SystemAdmin:
+
+- não escolhem a senha;
+- não recebem a senha;
+- não criam senha temporária;
+- não redefinem a senha apenas para conceder novo vínculo.
+
+Usuário que já possui senha não entra no fluxo de ativação e mantém sua credencial global ao receber acesso a outra Empresa.
+
+### RN063 — Recuperação de acesso não enumera contas
+
+O fluxo público de recuperação responde de forma neutra, sem revelar se o e-mail informado:
+
+- existe;
+- pertence a conta ativada;
+- pertence a identidade ainda sem senha.
+
+Quando a identidade possui senha, o usuário recebe link de recuperação.
+
+Quando a identidade existe mas ainda não possui senha, recebe novo link de ativação.
+
+Em ambos os casos, a senha é definida pelo próprio usuário.
+
+### RN064 — Tokens de conta são temporários e não persistidos
+
+Ativação e recuperação usam providers ASP.NET Core Identity/Data Protection separados.
+
+Validades normativas:
+
+~~~text
+Ativação = 48 horas
+Recuperação de senha = 1 hora
+~~~
+
+Tokens:
+
+- não são persistidos em tabela própria;
+- são enviados somente dentro de link;
+- não podem ser reutilizados depois de conclusão bem-sucedida da alteração de credencial;
+- dependem do security stamp e do key ring do Data Protection;
+- devem continuar validáveis através de restart enquanto ainda estiverem válidos e o key ring compartilhado permanecer disponível.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
