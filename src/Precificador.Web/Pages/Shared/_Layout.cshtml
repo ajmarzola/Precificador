@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 @using Precificador.Web.Empresas
+@using Precificador.Web.Autorizacao
 @inject EmpresaContext EmpresaContext
 <html lang="pt-BR">
 <head>
@@ -15,7 +16,11 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (User.Identity?.IsAuthenticated == true && User.IsInRole(NomesAutorizacao.SystemAdmin))
+                {
+                    <a class="navbar-brand" asp-area="" asp-page="/Admin/Index">Precificador</a>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
                 {
                     <a class="navbar-brand" asp-area="" asp-page="/Dashboard/Index">Precificador</a>
                 }
@@ -29,7 +34,11 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole(NomesAutorizacao.SystemAdmin))
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Admin/Index">Administração</a></li>
+                        }
+                        else if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard/Index">Início</a>
@@ -54,7 +63,11 @@
                             </li>
                         }
                     </ul>
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (User.Identity?.IsAuthenticated == true && User.IsInRole(NomesAutorizacao.SystemAdmin))
+                    {
+                        <form method="post" asp-page="/Conta/Logout"><button class="btn btn-link nav-link" type="submit">Sair</button></form>
+                    }
+                    else if (User.Identity?.IsAuthenticated == true)
                     {
                         <span class="navbar-text">Empresa ativa: @(EmpresaContext.Nome ?? "não selecionada")</span>
                         <form method="post" asp-page="/Conta/Logout"><button class="btn btn-link nav-link" type="submit">Sair</button></form>

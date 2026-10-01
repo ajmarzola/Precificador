@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Precificador.Core.Empresas;
@@ -30,6 +31,10 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         var connectionString = SqlServerTestDatabase.CriarConnectionStringAsync("Web").GetAwaiter().GetResult();
 
         builder.ConfigureLogging(logging => logging.ClearProviders());
+        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Bootstrap:SystemAdminKey"] = "chave-bootstrap-teste"
+        }));
         builder.ConfigureServices(services =>
         {
             services.AddDataProtection().UseEphemeralDataProtectionProvider();

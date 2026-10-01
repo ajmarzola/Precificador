@@ -42,7 +42,7 @@ public sealed class AutenticacaoPagesTests(CustomWebApplicationFactory factory) 
         var post = await client.PostAsync("/Setup", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.NomeEmpresa"] = "Empresa inicial",
+            ["Input.ChaveConfiguracao"] = "chave-bootstrap-teste",
             ["Input.Email"] = "admin@teste.local",
             ["Input.Senha"] = "SenhaTeste1",
             ["Input.ConfirmacaoSenha"] = "SenhaTeste1"

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Autorizacao;
 using Precificador.Web.Empresas;
 
 namespace Precificador.Web.Pages.Conta;
@@ -18,11 +19,12 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
     {
         if (User.Identity?.IsAuthenticated == true)
         {
+            if (User.IsInRole(NomesAutorizacao.SystemAdmin)) return RedirectToPage("/Admin/Index");
             return empresaContext.EmpresaId.HasValue
                 ? RedirectToPage("/Dashboard/Index")
                 : RedirectToPage("/Empresas/Selecionar");
         }
-        if (!await userManager.Users.AnyAsync()) return RedirectToPage("/Setup");
+        if (!await ExisteSystemAdminAsync()) return RedirectToPage("/Setup");
         return Page();
     }
 
@@ -37,6 +39,7 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
             return Page();
         }
         await signInManager.SignInAsync(usuario, false);
+        if (await userManager.IsInRoleAsync(usuario, NomesAutorizacao.SystemAdmin)) return RedirectToPage("/Admin/Index");
         var empresas = await context.UsuariosEmpresas.Where(v => v.UsuarioId == usuario.Id && v.Ativo)
             .Join(context.Empresas.Where(e => e.Ativo), v => v.EmpresaId, e => e.Id, (v, e) => new { e.Id, e.Nome, e.TimeZoneId }).ToListAsync();
         if (empresas.Count == 1)
@@ -49,5 +52,8 @@ public sealed class LoginModel(SignInManager<UsuarioAplicacao> signInManager, Us
             ? RedirectToPage("/Empresas/Selecionar", new { ReturnUrl })
             : RedirectToPage("/Empresas/Selecionar");
     }
+    private async Task<bool> ExisteSystemAdminAsync() => await context.UserRoles.Join(
+            context.Roles, membership => membership.RoleId, role => role.Id, (membership, role) => role.Name)
+        .AnyAsync(nome => nome == NomesAutorizacao.SystemAdmin);
     public sealed class InputModel { [Required, EmailAddress] public string Email { get; set; } = string.Empty; [Required, DataType(DataType.Password)] public string Senha { get; set; } = string.Empty; }
 }

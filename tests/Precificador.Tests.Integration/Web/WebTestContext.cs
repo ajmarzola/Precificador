@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
+using Precificador.Web.Autorizacao;
 
 namespace Precificador.Tests.Integration.Web;
 
@@ -18,40 +19,75 @@ internal sealed class WebTestContext(CustomWebApplicationFactory factory)
             HandleCookies = manterCookies
         });
 
-    public async Task<UsuarioTeste> CriarUsuarioAsync(params int[] empresaIds)
+    public Task<UsuarioTeste> CriarUsuarioAsync(params int[] empresaIds) => CriarUsuarioAsync(PerfilUsuarioEmpresa.Operacional, empresaIds);
+
+    public async Task<UsuarioTeste> CriarUsuarioAsync(PerfilUsuarioEmpresa perfil, params int[] empresaIds)
     {
         var email = $"usuario-{Guid.NewGuid():N}@teste.local";
         const string senha = "SenhaTeste1";
 
         using var scope = factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var context = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        await GarantirSystemAdminAsync(userManager, roleManager);
         var usuario = new UsuarioAplicacao { UserName = email, Email = email };
 
         Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
         foreach (var empresaId in empresaIds)
         {
-            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true });
+            context.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = usuario.Id, EmpresaId = empresaId, Ativo = true, Perfil = perfil });
         }
 
         await context.SaveChangesAsync();
         return new UsuarioTeste(usuario.Id, email, senha);
     }
 
-    public async Task<HttpResponseMessage> LoginAsync(HttpClient client, string email, string senha)
+    private static async Task GarantirSystemAdminAsync(UserManager<UsuarioAplicacao> userManager, RoleManager<IdentityRole> roleManager)
     {
-        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, "/Conta/Login");
-        return await client.PostAsync("/Conta/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        if (!await roleManager.RoleExistsAsync(NomesAutorizacao.SystemAdmin))
+            Assert.True((await roleManager.CreateAsync(new IdentityRole(NomesAutorizacao.SystemAdmin))).Succeeded);
+
+        if (await userManager.GetUsersInRoleAsync(NomesAutorizacao.SystemAdmin) is { Count: > 0 }) return;
+
+        var email = $"system-admin-{Guid.NewGuid():N}@teste.local";
+        var usuario = new UsuarioAplicacao { UserName = email, Email = email };
+        Assert.True((await userManager.CreateAsync(usuario, "SenhaTeste1")).Succeeded);
+        Assert.True((await userManager.AddToRoleAsync(usuario, NomesAutorizacao.SystemAdmin)).Succeeded);
+    }
+
+    public async Task<HttpResponseMessage> LoginAsync(HttpClient client, string email, string senha, string? returnUrl = null)
+    {
+        var url = returnUrl is null ? "/Conta/Login" : $"/Conta/Login?ReturnUrl={Uri.EscapeDataString(returnUrl)}";
+        var token = await WebTestHtml.ObterTokenAntiforgeryAsync(client, url);
+        var formulario = new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
             ["Input.Email"] = email,
             ["Input.Senha"] = senha
-        }));
+        };
+        if (returnUrl is not null) formulario["ReturnUrl"] = returnUrl;
+        return await client.PostAsync(url, new FormUrlEncodedContent(formulario));
+    }
+
+    public async Task<UsuarioTeste> CriarSystemAdminAsync()
+    {
+        var email = $"system-admin-{Guid.NewGuid():N}@teste.local";
+        const string senha = "SenhaTeste1";
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UsuarioAplicacao>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        if (!await roleManager.RoleExistsAsync(NomesAutorizacao.SystemAdmin))
+            Assert.True((await roleManager.CreateAsync(new IdentityRole(NomesAutorizacao.SystemAdmin))).Succeeded);
+        var usuario = new UsuarioAplicacao { UserName = email, Email = email };
+        Assert.True((await userManager.CreateAsync(usuario, senha)).Succeeded);
+        Assert.True((await userManager.AddToRoleAsync(usuario, NomesAutorizacao.SystemAdmin)).Succeeded);
+        return new UsuarioTeste(usuario.Id, email, senha);
     }
 
     public async Task<HttpClient> CriarClienteAutenticadoAsync(int empresaId = 1)
     {
-        var usuario = await CriarUsuarioAsync(empresaId);
+        var usuario = await CriarUsuarioAsync(PerfilUsuarioEmpresa.Operacional, empresaId);
         var client = CriarCliente();
         var response = await LoginAsync(client, usuario.Email, usuario.Senha);
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

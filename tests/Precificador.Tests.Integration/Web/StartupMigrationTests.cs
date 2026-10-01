@@ -24,7 +24,8 @@ public sealed class StartupMigrationTests
             {
                 configuration.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:Precificador"] = connectionString
+                    ["ConnectionStrings:Precificador"] = connectionString,
+                    ["Bootstrap:SystemAdminKey"] = "chave-bootstrap-teste"
                 });
             });
         });
