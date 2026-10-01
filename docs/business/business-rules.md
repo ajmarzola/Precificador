@@ -343,7 +343,7 @@ Ela não cria ou altera:
 - token/convite;
 - Empresa Ativa.
 
-A solicitação é global e pré-tenant: não possui `EmpresaId` e não participa do Global Query Filter de Empresa.
+No momento da submissão, a solicitação é global e pré-tenant: nasce sem `EmpresaId` e não participa do Global Query Filter de Empresa. A UC039 pode associá-la à Empresa criada somente depois de uma aprovação administrativa; essa associação posterior não transforma a solicitação em entidade tenant-owned.
 
 ### RN060 — Solicitação de acesso nasce Pendente
 
@@ -423,6 +423,60 @@ Tokens:
 - não podem ser reutilizados depois de conclusão bem-sucedida da alteração de credencial;
 - dependem do security stamp e do key ring do Data Protection;
 - devem continuar validáveis através de restart enquanto ainda estiverem válidos e o key ring compartilhado permanecer disponível.
+
+### RN065 — Aprovação cria tenant completo e um Administrador
+
+Aprovar uma Solicitação de acesso Pendente cria na mesma unidade transacional uma Empresa real, sua Configuração de precificação padrão, a identidade nova ou reutilizada do responsável, um vínculo Ativo/Administrador e a decisão Aprovada ligada à Empresa.
+
+Falha antes do commit não pode deixar estado parcial.
+
+### RN066 — Identidade global é reutilizada e credencial preservada
+
+E-mail existente no Identity identifica a mesma conta global.
+
+Conceder acesso a outra Empresa não cria identidade duplicada, não altera senha existente e não altera vínculos de outras Empresas.
+
+Usuário sem senha recebe ativação.
+
+Usuário com senha mantém a credencial existente.
+
+Uma identidade SystemAdmin não pode ser usada como Administrador de Empresa pela UC039.
+
+### RN067 — Solicitação decidida é terminal
+
+Somente Solicitação Pendente pode ser Aprovada ou Recusada.
+
+Aprovada/Recusada não volta a Pendente e não troca de decisão.
+
+Recusa não cria Empresa, usuário ou vínculo.
+
+### RN068 — Empresa real deve possuir caminho administrativo válido
+
+Toda nova Empresa nasce com ao menos um vínculo Ativo/Administrador.
+
+Reativar Empresa exige ao menos um Administrador ativo.
+
+Substituição administrativa promove o novo Administrador antes de demover o anterior na mesma transação.
+
+Empresa legada sem Administrador não recebe promoção automática; o SystemAdmin corrige explicitamente.
+
+### RN069 — Suspensão e encerramento preservam dados
+
+Suspensão e encerramento são estados lógicos.
+
+Nenhuma dessas ações remove fisicamente Empresa, vínculos, usuários ou dados tenant-owned.
+
+Suspensão é reversível.
+
+Encerramento é terminal na UC039.
+
+### RN070 — Empresa técnica não é tenant administrável
+
+O seed Empresa inicial é infraestrutura quando ainda preserva sua identidade técnica original.
+
+Ele não aparece como Empresa real na administração global e não recebe ações administrativas da UC039.
+
+Uma Empresa Id 1 historicamente renomeada para um cliente real não deve ser marcada como técnica.
 
 ## Produtos e ficha técnica
 

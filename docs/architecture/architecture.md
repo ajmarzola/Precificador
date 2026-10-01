@@ -95,7 +95,7 @@ Consultas comuns tenant-owned devem ser isoladas centralmente pelo EF Core, pref
 
 `Empresa`, `UsuarioEmpresa` e tabelas Identity precisam permanecer consultáveis para autenticação/resolução de contexto e não usam o filtro tenant padrão.
 
-Dados administrativos que existem **antes** da criação de um tenant também são globais. A partir da UC038, `SolicitacaoAcessoEmpresa` é pré-tenant: não possui `EmpresaId`, não recebe Global Query Filter e só poderá ser administrada globalmente pelo fluxo de `SystemAdmin` introduzido nas UCs seguintes.
+Dados administrativos que existem **antes** da criação de um tenant também são globais. A `SolicitacaoAcessoEmpresa` nasce pré-tenant na UC038, sem `EmpresaId` e sem Global Query Filter. A UC039 pode preencher um `EmpresaId` nullable apenas como referência da decisão Aprovada; a solicitação continua global e nunca passa a usar o filtro tenant.
 
 ## Autenticação e autorização
 
@@ -148,6 +148,19 @@ A partir da UC040:
 - links sensíveis usam uma URL pública canônica configurada, não o Host do request em Production.
 
 Ver [ADR-012](adr/ADR-012-email-tokens-data-protection.md) e [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md).
+
+### Administração global de Empresas
+
+A UC039 mantém Empresa.Ativo como gate operacional consolidado e adiciona metadados administrativos mínimos:
+
+- EhTecnica distingue o seed técnico de Empresas reais;
+- EncerradaEmUtc distingue suspensão reversível de encerramento lógico terminal;
+- SystemAdmin decide solicitações e cria o tenant real sem receber Empresa Ativa;
+- criação de Empresa inclui ConfiguracaoPrecificacaoEmpresa padrão e primeiro UsuarioEmpresa Administrador na mesma unidade transacional;
+- e-mail é side effect pós-commit;
+- hard delete de Empresa não faz parte do fluxo normal.
+
+Ver [ADR-013](adr/ADR-013-ciclo-vida-empresa-seed-tecnico.md) e [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md).
 
 ## Diretrizes
 
