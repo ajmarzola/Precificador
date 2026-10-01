@@ -209,6 +209,23 @@ Teste concorrência com SQL Server real.
 
 Não confiar somente em UI.
 
+## Concorrência entre solicitações diferentes
+
+UC038 permite o mesmo e-mail em Empresas diferentes.
+
+Trate corrida de criação Identity:
+
+- e-mail único continua protegido pelo Identity/índice;
+- duas aprovações concorrentes para Empresas diferentes devem convergir para uma UsuarioAplicacao;
+- não retornar 500 por DuplicateEmail esperado de corrida;
+- use retry/reconsulta/transação de forma controlada, sem engolir outros erros Identity.
+
+Também teste duas solicitações com mesmo NomeEmpresaNormalizado e e-mails diferentes:
+
+- uma Empresa no máximo;
+- a perdedora permanece Pendente;
+- não vincule automaticamente o segundo solicitante ao tenant existente.
+
 ## Pós-commit
 
 ### Usuário sem senha
