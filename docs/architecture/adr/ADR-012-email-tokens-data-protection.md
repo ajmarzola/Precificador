@@ -95,6 +95,33 @@ Quando desabilitado:
 
 Configuração parcialmente habilitada/inválida deve falhar na validação de opções.
 
+### Implantação inicial suportada — Gmail SMTP
+
+Para o MVP/piloto, uma conta Gmail dedicada é uma implantação suportada do transporte genérico SMTP.
+
+Configuração esperada:
+
+~~~text
+Host = smtp.gmail.com
+Port = 587
+Security = StartTls
+UserName = conta dedicada @gmail.com
+Password = senha de app
+FromAddress = mesma conta
+FromName = Precificador
+~~~
+
+Essa opção:
+
+- não exige domínio próprio;
+- não exige recurso Azure adicional;
+- não altera a arquitetura provider-agnostic;
+- não autoriza código específico do Gmail.
+
+A credencial deve ser uma senha de app separada da senha normal da conta e permanecer fora do repositório.
+
+Se Gmail deixar de atender ao cenário operacional, trocar de SMTP não deve exigir alteração nos fluxos de ativação/recuperação.
+
 ## Consequências
 
 ### Positivas
@@ -113,7 +140,8 @@ Configuração parcialmente habilitada/inválida deve falhar na validação de o
 - novo pacote de Data Protection EF;
 - dependência SMTP moderna;
 - App Service precisa receber novas App Settings;
-- suporte local de e-mail exige configuração própria.
+- suporte local de e-mail exige configuração própria;
+- a implantação inicial pode usar Gmail SMTP sem domínio próprio, mantendo a possibilidade de troca posterior.
 
 ## Alternativas rejeitadas
 
