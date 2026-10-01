@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Core.Acessos;
 using Precificador.Core.Empresas;
@@ -12,9 +13,10 @@ namespace Precificador.Infrastructure.Persistence;
 public sealed class PrecificadorDbContext(
     DbContextOptions<PrecificadorDbContext> options,
     IEmpresaContext empresaContext)
-    : IdentityDbContext<UsuarioAplicacao>(options)
+    : IdentityDbContext<UsuarioAplicacao>(options), IDataProtectionKeyContext
 {
     private readonly IEmpresaContext empresaContext = empresaContext;
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<SolicitacaoAcessoEmpresa> SolicitacoesAcessoEmpresas => Set<SolicitacaoAcessoEmpresa>();

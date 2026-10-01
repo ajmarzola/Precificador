@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Options;
+using Precificador.Web.Autenticacao;
+using Precificador.Web.Email;
 using Precificador.Core.Empresas;
 using Precificador.Infrastructure.Autenticacao;
 using Precificador.Infrastructure.Persistence;
@@ -34,13 +38,24 @@ builder.Services.AddDbContext<PrecificadorDbContext>(options =>
         sql => sql.EnableRetryOnFailure()));
 builder.Services.AddIdentity<UsuarioAplicacao, IdentityRole>(options =>
 {
+    options.Tokens.PasswordResetTokenProvider = TokensConta.Recuperacao;
     options.User.RequireUniqueEmail = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
-}).AddEntityFrameworkStores<PrecificadorDbContext>().AddDefaultTokenProviders();
+}).AddEntityFrameworkStores<PrecificadorDbContext>().AddDefaultTokenProviders()
+    .AddTokenProvider<TokenAtivacaoProvider>(TokensConta.Ativacao)
+    .AddTokenProvider<TokenRecuperacaoProvider>(TokensConta.Recuperacao);
+builder.Services.AddDataProtection().SetApplicationName("Precificador").PersistKeysToDbContext<PrecificadorDbContext>();
+builder.Services.AddSingleton<IValidateOptions<OpcoesSmtp>, ValidacaoSmtp>();
+builder.Services.AddSingleton<IValidateOptions<OpcoesAplicacao>, ValidacaoAplicacao>();
+builder.Services.AddOptions<OpcoesSmtp>().BindConfiguration("Email:Smtp").ValidateOnStart();
+builder.Services.AddOptions<OpcoesAplicacao>().BindConfiguration("Aplicacao")
+    .PostConfigure(options => options.UrlPublica = options.UrlPublica.TrimEnd('/')).ValidateOnStart();
+builder.Services.AddScoped<IEmailSenderAplicacao, SmtpEmailSender>();
+builder.Services.AddScoped<ServicoConta>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;

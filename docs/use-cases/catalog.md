@@ -162,7 +162,7 @@ Direções já fechadas:
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
-A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A análise administrativa permanece na UC039; a UC040 passa a especificar e-mail, ativação e recuperação, sem fazer `/Admin` listar ou decidir solicitações.
+A UC038 foi implementada na Home pública com validação no servidor, antiforgery e PRG. Ela persiste somente `SolicitacaoAcessoEmpresa` Pendente, com normalização compartilhada com `Empresa` e proteção de concorrência por índice único filtrado. A UC040 implementa SMTP configurável, ativação/recuperação por Identity e key ring persistente no SQL Server. A [configuração operacional](../development/configuracao-email-conta.md) descreve as App Settings. A análise administrativa permanece na UC039; UC039/UC031 não foram antecipadas.
 
 ## Pós-MVP identificado
 

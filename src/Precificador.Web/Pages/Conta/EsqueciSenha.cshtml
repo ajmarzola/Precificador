@@ -1,0 +1,14 @@
+@page
+@model Precificador.Web.Pages.Conta.EsqueciSenhaModel
+@{ ViewData["Title"] = "Esqueci minha senha"; }
+<h1>Esqueci minha senha</h1>
+@if (Model.Indisponivel)
+{
+    <p role="alert">A recuperação de acesso está temporariamente indisponível.</p>
+}
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.Email"></label><input asp-for="Input.Email" class="form-control" /></div>
+    <button type="submit" class="btn btn-primary">Solicitar recuperação</button>
+</form>
+<p><a asp-page="/Conta/Login">Voltar para entrar</a></p>

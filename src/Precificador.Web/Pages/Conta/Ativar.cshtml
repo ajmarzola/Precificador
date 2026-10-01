@@ -1,0 +1,20 @@
+@page
+@model Precificador.Web.Pages.Conta.AtivarModel
+@{ ViewData["Title"] = "Ativar conta"; }
+<h1>Ativar conta</h1>
+@if (!Model.LinkValido)
+{
+    <p role="alert">Este link de ativação é inválido ou expirou.</p>
+}
+else
+{
+    <form method="post">
+        <input type="hidden" asp-for="UserId" />
+        <input type="hidden" asp-for="Code" />
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3"><label asp-for="Input.Senha"></label><input asp-for="Input.Senha" class="form-control" /></div>
+        <div class="mb-3"><label asp-for="Input.Confirmacao"></label><input asp-for="Input.Confirmacao" class="form-control" /></div>
+        <button type="submit" class="btn btn-primary">Ativar conta</button>
+    </form>
+}
+<p><a asp-page="/Conta/Login">Voltar para entrar</a></p>

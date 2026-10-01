@@ -3,7 +3,7 @@
 - **Área funcional:** Administração multiempresa e acesso controlado
 - **Dependências funcionais:** FT003
 - **Gate operacional:** UC038 concluída
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de schema:** sim
 - **Persistência de token:** não
 - **Persistência adicional:** key ring do ASP.NET Core Data Protection
@@ -11,6 +11,8 @@
 - **Regras principais:** RN062, RN063 e RN064
 
 ## Objetivo
+
+Implementação: SMTP genérico via MailKit, `ServicoConta`, páginas públicas de ativação/recuperação e migration `UC040_PersistirDataProtectionKeys`. Configuração operacional: [E-mail e acesso](../development/configuracao-email-conta.md). Os testes usam sender falso, SQL Server real e nova instância de Data Protection com banco compartilhado.
 
 Disponibilizar a infraestrutura e os fluxos necessários para que o próprio usuário:
 
