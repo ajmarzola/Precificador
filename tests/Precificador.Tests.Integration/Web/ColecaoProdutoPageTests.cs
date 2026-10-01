@@ -1,6 +1,10 @@
+using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Precificador.Core.Produtos;
 using Precificador.Infrastructure.Persistence;
@@ -84,6 +88,56 @@ public sealed class ColecaoProdutoPageTests(CustomWebApplicationFactory factory)
     }
 
     [Fact]
+    public async Task Corrida_apos_precheck_retorna_duplicidade_sem_associacao_orfa()
+    {
+        var nome = "Colecao concorrente " + Guid.NewGuid().ToString("N");
+        var barreira = new BarreiraPreCheck(nome.ToUpperInvariant());
+        using var concorrente = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+            services.AddDbContext<PrecificadorDbContext>(options => options.AddInterceptors(barreira))));
+        var webConcorrente = new WebTestContext(concorrente);
+        using var primeiro = await webConcorrente.CriarClienteAutenticadoAsync(1);
+        using var segundo = await webConcorrente.CriarClienteAutenticadoAsync(1);
+        int categoriaId;
+        using (var scope = concorrente.Services.CreateScope())
+        {
+            var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PrecificadorDbContext>>();
+            await using var db = new PrecificadorDbContext(options, new ContextoEmpresaTeste(1));
+            var categoria = CategoriaProduto.Criar(1, "Categoria concorrente " + Guid.NewGuid().ToString("N"), FormaCalculoDesgasteEquipamento.ValorFixoPorLote, 0);
+            db.CategoriasProdutos.Add(categoria);
+            await db.SaveChangesAsync();
+            categoriaId = categoria.Id;
+        }
+
+        var token1 = await WebTestHtml.ObterTokenAntiforgeryAsync(primeiro, "/Produtos/Colecoes/Novo");
+        var token2 = await WebTestHtml.ObterTokenAntiforgeryAsync(segundo, "/Produtos/Colecoes/Novo");
+        var formulario1 = FormularioConcorrente(token1, nome, categoriaId);
+        var formulario2 = FormularioConcorrente(token2, nome.ToUpperInvariant(), categoriaId);
+        barreira.Ativa = true;
+        var respostas = await Task.WhenAll(
+            primeiro.PostAsync("/Produtos/Colecoes/Novo", new FormUrlEncodedContent(formulario1)),
+            segundo.PostAsync("/Produtos/Colecoes/Novo", new FormUrlEncodedContent(formulario2)));
+        barreira.Ativa = false;
+
+        Assert.Equal(2, barreira.Chegadas);
+        Assert.Single(respostas, r => r.StatusCode == HttpStatusCode.Redirect);
+        var perdedora = Assert.Single(respostas, r => r.StatusCode == HttpStatusCode.OK);
+        Assert.Contains("Já existe uma coleção com esse nome e data de lançamento.", await WebTestHtml.LerHtmlDecodificadoAsync(perdedora));
+        Assert.DoesNotContain(respostas, r => r.StatusCode == HttpStatusCode.InternalServerError);
+
+        using var verificacao = concorrente.Services.CreateScope();
+        var contexto = verificacao.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
+        var colecao = await contexto.ColecoesProdutos.IgnoreQueryFilters()
+            .SingleAsync(c => c.EmpresaId == 1 && c.NomeNormalizado == nome.ToUpperInvariant() && c.DataLancamento == new DateOnly(2028, 1, 1));
+        var associacoes = await contexto.ColecoesProdutosCategorias.IgnoreQueryFilters()
+            .Where(a => a.ColecaoProdutoId == colecao.Id).ToListAsync();
+        Assert.Single(associacoes);
+        Assert.Equal(categoriaId, associacoes[0].CategoriaProdutoId);
+        Assert.Equal(1, await contexto.ColecoesProdutos.IgnoreQueryFilters()
+            .CountAsync(c => c.EmpresaId == 1 && c.NomeNormalizado == nome.ToUpperInvariant() && c.DataLancamento == new DateOnly(2028, 1, 1)));
+        Assert.Equal(0, await contexto.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM ColecoesProdutosCategorias AS a LEFT JOIN ColecoesProdutos AS c ON c.Id = a.ColecaoProdutoId WHERE c.Id IS NULL").SingleAsync());
+    }
+
+    [Fact]
     public async Task Lista_mostra_situacao_derivada_e_ordenacao_por_lancamento()
     {
         using var client = await web.CriarClienteAutenticadoAsync(1);
@@ -115,6 +169,35 @@ public sealed class ColecaoProdutoPageTests(CustomWebApplicationFactory factory)
         };
         campos.AddRange(categorias.Select(id => new KeyValuePair<string,string>("Input.CategoriaProdutoIds", id.ToString())));
         return await client.PostAsync(url, new FormUrlEncodedContent(campos));
+    }
+
+    private static IEnumerable<KeyValuePair<string, string>> FormularioConcorrente(string token, string nome, int categoriaId) =>
+    [
+        new("__RequestVerificationToken", token),
+        new("Input.Nome", nome),
+        new("Input.DataLancamento", "2028-01-01"),
+        new("Input.DataFinalizacao", ""),
+        new("Input.CategoriaProdutoIds", categoriaId.ToString())
+    ];
+
+    private sealed class BarreiraPreCheck(string nomeNormalizado) : DbCommandInterceptor
+    {
+        private readonly ConcurrentDictionary<Guid, byte> contextos = new();
+        private readonly TaskCompletionSource liberar = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Ativa { get; set; }
+        public int Chegadas => contextos.Count;
+
+        public override async ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
+        {
+            if (Ativa && command.CommandText.Contains("FROM [ColecoesProdutos]", StringComparison.Ordinal)
+                && command.Parameters.Cast<DbParameter>().Any(p => string.Equals(p.Value?.ToString(), nomeNormalizado, StringComparison.Ordinal))
+                && contextos.TryAdd(eventData.Context!.ContextId.InstanceId, 0))
+            {
+                if (contextos.Count == 2) liberar.TrySetResult();
+                await liberar.Task.WaitAsync(TimeSpan.FromSeconds(20), cancellationToken);
+            }
+            return result;
+        }
     }
 
     private async Task<int> CriarCategoriaAsync(int empresaId, string nome, bool ativa)

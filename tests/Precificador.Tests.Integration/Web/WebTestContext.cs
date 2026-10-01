@@ -10,7 +10,7 @@ using Precificador.Web.Autorizacao;
 
 namespace Precificador.Tests.Integration.Web;
 
-internal sealed class WebTestContext(CustomWebApplicationFactory factory)
+internal sealed class WebTestContext(WebApplicationFactory<Program> factory)
 {
     public HttpClient CriarCliente(bool manterCookies = true) =>
         factory.CreateClient(new WebApplicationFactoryClientOptions
