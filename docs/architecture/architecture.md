@@ -149,6 +149,19 @@ A partir da UC040:
 
 Ver [ADR-012](adr/ADR-012-email-tokens-data-protection.md) e [UC040](../use-cases/UC040-ativar-conta-recuperar-acesso.md).
 
+### Administração global de Empresas
+
+A UC039 mantém Empresa.Ativo como gate operacional consolidado e adiciona metadados administrativos mínimos:
+
+- EhTecnica distingue o seed técnico de Empresas reais;
+- EncerradaEmUtc distingue suspensão reversível de encerramento lógico terminal;
+- SystemAdmin decide solicitações e cria o tenant real sem receber Empresa Ativa;
+- criação de Empresa inclui ConfiguracaoPrecificacaoEmpresa padrão e primeiro UsuarioEmpresa Administrador na mesma unidade transacional;
+- e-mail é side effect pós-commit;
+- hard delete de Empresa não faz parte do fluxo normal.
+
+Ver [ADR-013](adr/ADR-013-ciclo-vida-empresa-seed-tecnico.md) e [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md).
+
 ## Diretrizes
 
 - Regras financeiras não devem residir na UI.
