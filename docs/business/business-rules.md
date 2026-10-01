@@ -343,7 +343,7 @@ Ela não cria ou altera:
 - token/convite;
 - Empresa Ativa.
 
-A solicitação é global e pré-tenant: não possui `EmpresaId` e não participa do Global Query Filter de Empresa.
+No momento da submissão, a solicitação é global e pré-tenant: nasce sem `EmpresaId` e não participa do Global Query Filter de Empresa. A UC039 pode associá-la à Empresa criada somente depois de uma aprovação administrativa; essa associação posterior não transforma a solicitação em entidade tenant-owned.
 
 ### RN060 — Solicitação de acesso nasce Pendente
 
