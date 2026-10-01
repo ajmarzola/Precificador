@@ -403,6 +403,8 @@ Quando a identidade existe mas ainda não possui senha, recebe novo link de ativ
 
 Em ambos os casos, a senha é definida pelo próprio usuário.
 
+SMTP desabilitado retorna 503 antes da consulta de identidade. Falha transitória durante envio mantém a confirmação pública neutra e não modifica a credencial.
+
 ### RN064 — Tokens de conta são temporários e não persistidos
 
 Ativação e recuperação usam providers ASP.NET Core Identity/Data Protection separados.
