@@ -11,10 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AuthorizeFolder("/Insumos", "EmpresaAtiva");
-    options.Conventions.AuthorizeFolder("/Produtos", "EmpresaAtiva");
-    options.Conventions.AuthorizeFolder("/Configuracoes", "EmpresaAtiva");
-    options.Conventions.AuthorizeFolder("/Dashboard", "EmpresaAtiva");
+    options.Conventions.AuthorizeFolder("/Insumos", NomesAutorizacao.EmpresaAtiva);
+    options.Conventions.AuthorizeFolder("/Produtos", NomesAutorizacao.EmpresaAtiva);
+    options.Conventions.AuthorizeFolder("/Configuracoes", NomesAutorizacao.EmpresaAtiva);
+    options.Conventions.AuthorizeFolder("/Dashboard", NomesAutorizacao.EmpresaAtiva);
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
@@ -47,8 +47,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Conta/Login";
     options.AccessDeniedPath = "/Conta/Login";
 });
-builder.Services.AddAuthorization(options => options.AddPolicy("EmpresaAtiva", policy => policy.Requirements.Add(new EmpresaAtivaRequirement())));
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(NomesAutorizacao.EmpresaAtiva, policy => policy.Requirements.Add(new EmpresaAtivaRequirement()));
+    options.AddPolicy(NomesAutorizacao.SystemAdmin, policy => policy.RequireRole(NomesAutorizacao.SystemAdmin));
+    options.AddPolicy(NomesAutorizacao.AdministradorEmpresa, policy => policy.Requirements.Add(new AdministradorEmpresaRequirement()));
+});
 builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, EmpresaAtivaHandler>();
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, AdministradorEmpresaHandler>();
 
 var app = builder.Build();
 

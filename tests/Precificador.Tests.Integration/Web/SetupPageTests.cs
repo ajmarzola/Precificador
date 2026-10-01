@@ -10,7 +10,7 @@ namespace Precificador.Tests.Integration.Web;
 public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
     [Fact]
-    public async Task Setup_cria_primeiro_usuario_vinculo_e_empresa_e_so_pode_ocorrer_uma_vez()
+    public async Task Setup_cria_primeiro_system_admin_sem_vinculo_e_sem_alterar_empresa_e_so_pode_ocorrer_uma_vez()
     {
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         var pagina = await client.GetAsync("/Setup");
@@ -18,7 +18,7 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
         var resposta = await client.PostAsync("/Setup", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.NomeEmpresa"] = "Minha confeitaria",
+            ["Input.ChaveConfiguracao"] = "chave-bootstrap-teste",
             ["Input.Email"] = "admin@teste.local",
             ["Input.Senha"] = "SenhaTeste1",
             ["Input.ConfirmacaoSenha"] = "SenhaTeste1"
@@ -29,8 +29,10 @@ public sealed class SetupPageTests(CustomWebApplicationFactory factory) : IClass
         {
             var db = scope.ServiceProvider.GetRequiredService<PrecificadorDbContext>();
             Assert.Equal(1, await db.Users.CountAsync());
-            Assert.Equal("Minha confeitaria", (await db.Empresas.SingleAsync(empresa => empresa.Id == 1)).Nome);
-            Assert.Single(await db.UsuariosEmpresas.ToListAsync());
+            Assert.Equal("Empresa inicial", (await db.Empresas.SingleAsync(empresa => empresa.Id == 1)).Nome);
+            Assert.Empty(await db.UsuariosEmpresas.ToListAsync());
+            var usuario = await db.Users.SingleAsync();
+            Assert.Contains(await db.UserRoles.Join(db.Roles, membership => membership.RoleId, role => role.Id, (_, role) => role.Name).ToListAsync(), nome => nome == "SystemAdmin");
         }
         var repetido = await client.GetAsync("/Setup");
         Assert.Equal(HttpStatusCode.NotFound, repetido.StatusCode);

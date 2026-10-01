@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Precificador.Infrastructure.Persistence;
 using Precificador.Web.Empresas;
+using Precificador.Web.Autorizacao;
 
 namespace Precificador.Web.Pages.Empresas;
 
@@ -15,9 +16,15 @@ public sealed class SelecionarModel(PrecificadorDbContext context, EmpresaContex
     [BindProperty] public int EmpresaId { get; set; }
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
     public List<SelectListItem> Empresas { get; private set; } = [];
-    public async Task OnGetAsync() => Empresas = await ObterEmpresasAsync();
+    public async Task<IActionResult> OnGetAsync()
+    {
+        if (User.IsInRole(NomesAutorizacao.SystemAdmin)) return RedirectToPage("/Admin/Index");
+        Empresas = await ObterEmpresasAsync();
+        return Page();
+    }
     public async Task<IActionResult> OnPostAsync()
     {
+        if (User.IsInRole(NomesAutorizacao.SystemAdmin)) return RedirectToPage("/Admin/Index");
         var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var autorizada = await context.UsuariosEmpresas.AnyAsync(v => v.UsuarioId == usuarioId && v.EmpresaId == EmpresaId && v.Ativo && context.Empresas.Any(e => e.Id == EmpresaId && e.Ativo));
         if (!autorizada) { ModelState.AddModelError(string.Empty, "Empresa indisponível para este usuário."); Empresas = await ObterEmpresasAsync(); return Page(); }
