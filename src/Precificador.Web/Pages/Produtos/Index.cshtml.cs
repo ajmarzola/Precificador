@@ -11,15 +11,23 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
 {
     public IReadOnlyList<ProdutoListagem> Produtos { get; private set; } = [];
     public IReadOnlyList<SelectListItem> Categorias { get; private set; } = [];
+    public IReadOnlyList<SelectListItem> Colecoes { get; private set; } = [];
+    public string? Colecao { get; private set; }
     public string? Consulta { get; private set; }
     public string? Categoria { get; private set; }
     public string? Filtro { get; private set; }
     public bool FiltroInvalido { get; private set; }
-    public bool TemFiltros => Consulta is not null || Categoria is not null || Filtro is not null || FiltroInvalido;
+    public bool TemFiltros => Colecao is not null || Consulta is not null || Categoria is not null || Filtro is not null || FiltroInvalido;
     public bool TemPesquisa => Consulta is not null;
 
-    public async Task OnGetAsync(string? q, string? categoria = null, string? filtro = null)
+    public async Task OnGetAsync(string? q, string? categoria = null, string? filtro = null, string? colecao = null)
     {
+        Colecao = string.IsNullOrWhiteSpace(colecao) ? null : colecao.Trim();
+        var colecoes = await context.ColecoesProdutos.AsNoTracking()
+            .OrderByDescending(x => x.DataLancamento).ThenBy(x => x.NomeNormalizado).ToListAsync();
+        Colecoes = [new SelectListItem("Todas as coleções", "", Colecao is null),
+            new SelectListItem("Sem coleção", "sem-colecao", Colecao == "sem-colecao"),
+            .. colecoes.Select(x => new SelectListItem(x.Nome, x.Id.ToString(), Colecao == x.Id.ToString()))];
         Consulta = NormalizarConsulta(q);
         Categoria = NormalizarCategoria(categoria);
         var filtroMargem = NormalizarFiltro(filtro);
@@ -48,6 +56,13 @@ public sealed class IndexModel(PrecificadorDbContext context, ResumoPrecificacao
             return;
         }
         var consulta = context.Produtos.AsNoTracking();
+
+        if (Colecao == "sem-colecao")
+            consulta = consulta.Where(x => !context.ProdutosColecoes.Any(v => v.ProdutoId == x.Id));
+        else if (int.TryParse(Colecao, out var colecaoId) && colecoes.Any(x => x.Id == colecaoId))
+            consulta = consulta.Where(x => context.ProdutosColecoes.Any(v => v.ProdutoId == x.Id && v.ColecaoProdutoId == colecaoId));
+        else if (Colecao is not null)
+            consulta = consulta.Where(_ => false);
 
         if (Consulta is not null)
         {

@@ -1,0 +1,48 @@
+@page "{id:int}"
+@model Precificador.Web.Pages.Produtos.Colecoes.ProdutosModel
+@{ ViewData["Title"] = "Produtos da coleção"; }
+<h1>Produtos da coleção @Model.Colecao.Nome</h1>
+<p>Lançamento: @Model.Colecao.DataLancamento.ToString("dd/MM/yyyy") · Finalização: @(Model.Colecao.DataFinalizacao?.ToString("dd/MM/yyyy") ?? "Em aberto") · @Model.Situacao</p>
+<p>Categorias: @(Model.Categorias.Count == 0 ? "—" : string.Join(", ", Model.Categorias))</p>
+@if (Model.MensagemSucesso is not null)
+{
+    <div class="alert alert-success" role="alert">@Model.MensagemSucesso</div>
+}
+<form method="post" asp-page-handler="Vincular" class="mb-3">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <label asp-for="Input.ProdutoId">Produto</label>
+    <select asp-for="Input.ProdutoId" asp-items="Model.ProdutosDisponiveis" class="form-select"><option value="">Selecione um produto</option></select>
+    <label><input asp-for="Input.Destaque" /> Destaque</label>
+    <button type="submit" class="btn btn-primary">Vincular</button>
+</form>
+@if (Model.Vinculos.Count == 0)
+{
+    <p>Esta coleção ainda não possui produtos vinculados.</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Produto</th><th>Categoria</th><th>Situação do Produto</th><th>Destaque</th><th>Ações</th></tr></thead>
+        <tbody>
+        @foreach (var vinculo in Model.Vinculos)
+        {
+            <tr>
+                <td><a asp-page="/Produtos/Detalhes" asp-route-id="@vinculo.ProdutoId">@vinculo.Nome</a></td>
+                <td>@(vinculo.Categoria ?? "—")</td><td>@(vinculo.Ativo ? "Ativo" : "Inativo")</td><td>@(vinculo.Destaque ? "Sim" : "Não")</td>
+                <td>
+                    <form method="post" asp-page-handler="DefinirDestaque" class="d-inline">
+                        <input type="hidden" name="produtoId" value="@vinculo.ProdutoId" />
+                        <input type="hidden" name="destaque" value="@((!vinculo.Destaque).ToString().ToLowerInvariant())" />
+                        <button type="submit" class="btn btn-outline-primary">@(vinculo.Destaque ? "Remover destaque" : "Marcar como destaque")</button>
+                    </form>
+                    <form method="post" asp-page-handler="Desvincular" class="d-inline">
+                        <input type="hidden" name="produtoId" value="@vinculo.ProdutoId" />
+                        <button type="submit" class="btn btn-outline-danger">Desvincular</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+<a asp-page="/Produtos/Colecoes/Index">Voltar para coleções</a>

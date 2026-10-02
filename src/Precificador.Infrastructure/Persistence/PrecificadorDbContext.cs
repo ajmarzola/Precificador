@@ -27,6 +27,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<PrecoInsumo> PrecosInsumos => Set<PrecoInsumo>();
     public DbSet<RegistroPrecoProduto> RegistrosPrecosProdutos => Set<RegistroPrecoProduto>();
+    public DbSet<ProdutoColecao> ProdutosColecoes => Set<ProdutoColecao>();
     public DbSet<Produto> Produtos => Set<Produto>();
     public DbSet<CategoriaProduto> CategoriasProdutos => Set<CategoriaProduto>();
     public DbSet<ColecaoProduto> ColecoesProdutos => Set<ColecaoProduto>();
@@ -59,6 +60,8 @@ public sealed class PrecificadorDbContext(
             categoria.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<ColecaoProduto>().HasQueryFilter(colecao =>
             colecao.EmpresaId == empresaContext.EmpresaIdOuSentinela);
+        modelBuilder.Entity<ProdutoColecao>().HasQueryFilter(vinculo =>
+            vinculo.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<ColecaoProdutoCategoria>().HasQueryFilter(associacao =>
             associacao.EmpresaId == empresaContext.EmpresaIdOuSentinela);
     }
@@ -73,6 +76,7 @@ public sealed class PrecificadorDbContext(
         ValidarReferenciaProdutoDosRegistrosPrecos();
         ValidarReferenciaCategoriaProdutoDosProdutos();
         ValidarReferenciasDasColecoesCategorias();
+        ValidarReferenciasDosProdutosColecoes();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -86,7 +90,33 @@ public sealed class PrecificadorDbContext(
         await ValidarReferenciaProdutoDosRegistrosPrecosAsync(cancellationToken);
         await ValidarReferenciaCategoriaProdutoDosProdutosAsync(cancellationToken);
         await ValidarReferenciasDasColecoesCategoriasAsync(cancellationToken);
+        await ValidarReferenciasDosProdutosColecoesAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private IEnumerable<ProdutoColecao> ProdutosColecoesAlterados() =>
+        ChangeTracker.Entries<ProdutoColecao>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Select(entry => entry.Entity);
+
+    private void ValidarReferenciasDosProdutosColecoes()
+    {
+        foreach (var vinculo in ProdutosColecoesAlterados())
+        {
+            if (!Produtos.IgnoreQueryFilters().Any(x => x.Id == vinculo.ProdutoId && x.EmpresaId == vinculo.EmpresaId) ||
+                !ColecoesProdutos.IgnoreQueryFilters().Any(x => x.Id == vinculo.ColecaoProdutoId && x.EmpresaId == vinculo.EmpresaId))
+                throw new InvalidOperationException("O produto e a coleção devem pertencer à mesma empresa do vínculo.");
+        }
+    }
+
+    private async Task ValidarReferenciasDosProdutosColecoesAsync(CancellationToken cancellationToken)
+    {
+        foreach (var vinculo in ProdutosColecoesAlterados())
+        {
+            if (!await Produtos.IgnoreQueryFilters().AnyAsync(x => x.Id == vinculo.ProdutoId && x.EmpresaId == vinculo.EmpresaId, cancellationToken) ||
+                !await ColecoesProdutos.IgnoreQueryFilters().AnyAsync(x => x.Id == vinculo.ColecaoProdutoId && x.EmpresaId == vinculo.EmpresaId, cancellationToken))
+                throw new InvalidOperationException("O produto e a coleção devem pertencer à mesma empresa do vínculo.");
+        }
     }
 
     private void AplicarIsolamentoEmpresa()
