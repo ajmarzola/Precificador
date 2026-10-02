@@ -109,10 +109,11 @@ Isso e diferente de `AutoPause` por esgotamento da franquia Azure SQL Free. A pa
 Apos o deploy, validar no Azure real:
 
 - HTTPS responde em `https://<app>.azurewebsites.net`;
-- banco sem usuarios redireciona para Setup;
-- Setup cria o primeiro usuario e empresa;
-- login funciona;
-- Empresa Ativa e resolvida;
+- Login sem SystemAdmin redireciona para Setup, com `Bootstrap__SystemAdminKey` configurada;
+- Setup cria somente o primeiro SystemAdmin; seu login encaminha para `/Admin`;
+- solicitacao publica aprovada cria Empresa, configuracao padrao e vinculo Administrador;
+- Administrador com identidade nova define senha pelo link de ativacao enviado com SMTP configurado;
+- login do Administrador resolve Empresa Ativa ou permite selecao quando ha multiplas Empresas elegiveis;
 - cadastro e consulta de Insumo persistem;
 - cadastro e consulta de Produto persistem;
 - apos remover o IP temporario do operador, a Web App continua acessando o Azure SQL pela Managed Identity.
