@@ -81,7 +81,7 @@ Regra operacional:
 | 21 | UC039 — Administrar Empresas e solicitações de acesso | UC | Concluído | FT003, UC038 e UC040 concluídas; administração global, aprovação transacional e lifecycle implementados | [UC039](../use-cases/UC039-administrar-empresas-solicitacoes.md) |
 | 22 | UC031 — Administrar usuários e vínculos com Empresas | UC | Concluído | FT003, UC039 e UC040 concluídas; administração tenant, proteção concorrente do último Administrador e comunicação pós-commit implementadas | [UC031](../use-cases/UC031-administrar-usuarios-vinculos.md) |
 | 23 | UC033 — Administrar coleções | UC | Concluído | UC032 concluída | [UC033](../use-cases/UC033-administrar-colecoes.md) |
-| 24 | UC034 — Vincular Produtos a Coleções | UC | Planejado | UC032, UC033 | Documento a criar |
+| 24 | UC034 — Vincular Produtos a Coleções | UC | Pronto | UC032 e UC033 concluídas | [UC034](../use-cases/UC034-vincular-produtos-colecoes.md) |
 | 25 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 26 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
 | 27 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021; antes da próxima publicação em produção após a versão inicial | Documento a criar |

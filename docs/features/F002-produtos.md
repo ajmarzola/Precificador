@@ -150,6 +150,25 @@ Coleção não altera custo, margem, preço ou completude de precificação.
 
 `DataFinalizacao = null` representa período sem fim definido. Não existe coluna Ativo nem exclusão física na UC033.
 
+## Vincular Produtos a Coleções — UC034
+
+A UC034 introduz `ProdutoColecao` como relação N:N tenant-aware entre Produtos e Coleções.
+
+O vínculo possui apenas:
+
+- Empresa proprietária;
+- Produto;
+- Coleção;
+- indicador `Destaque`.
+
+A participação não possui datas próprias: herda integralmente o período comercial da Coleção. Isso mantém uma única fonte de vigência e permite que um Produto participe de várias Coleções simultaneamente.
+
+`Destaque` é não exclusivo e não altera precificação.
+
+Categorias cadastradas na Coleção continuam informativas. Produto sem Categoria, de outra Categoria, ativo ou inativo pode participar da Coleção.
+
+A área de Coleções ganha gerenciamento de Produtos; Detalhes do Produto passa a listar Coleções; `/Produtos` ganha filtro por Coleção, compondo por AND com pesquisa, Categoria e recortes de margem/completude.
+
 ## Regras relacionadas
 
 - RN018 a RN024, conforme aplicáveis;
@@ -216,7 +235,8 @@ O fluxo de edição preserva `Ativo`, mantém Editar disponível para Produto in
 - [UC025 — Consultar detalhamento da precificação atual](../use-cases/UC025-consultar-detalhamento-precificacao.md);
 - [UC029 — Filtrar Produtos abaixo da margem](../use-cases/UC029-filtrar-produtos-abaixo-margem.md) — também evolui a listagem `/Produtos`;
 - [UC030 — Identificar Produtos com precificação incompleta](../use-cases/UC030-identificar-produtos-precificacao-incompleta.md) — adiciona classificação/motivos e o segundo recorte operacional à listagem.
-- [UC033 — Administrar coleções](../use-cases/UC033-administrar-colecoes.md) — organiza períodos comerciais e Categorias envolvidas, sem vincular Produtos ainda.
+- [UC033 — Administrar coleções](../use-cases/UC033-administrar-colecoes.md) — organiza períodos comerciais e Categorias envolvidas.
+- [UC034 — Vincular Produtos a Coleções](../use-cases/UC034-vincular-produtos-colecoes.md) — relaciona Produtos N:N com Coleções, incluindo Destaque e filtro por Coleção.
 
 ## Fora do escopo
 

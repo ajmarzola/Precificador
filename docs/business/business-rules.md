@@ -558,9 +558,39 @@ Nenhuma validação de conflito temporal deve ser inferida.
 
 Uma Coleção pode possuir zero ou mais Categorias da mesma Empresa.
 
-Essa associação organiza o escopo comercial da Coleção, mas não inclui Produtos automaticamente nem restringe por si só a futura vinculação Produto-Coleção da UC034.
+Essa associação organiza o escopo comercial da Coleção, mas não inclui Produtos automaticamente nem restringe por si só a vinculação Produto-Coleção definida pela UC034.
 
 Desativar ou renomear uma Categoria não remove sua associação já existente com a Coleção.
+
+### RN080 — Produto e Coleção possuem relação N:N tenant-aware
+
+Um Produto pode participar de várias Coleções e uma Coleção pode possuir vários Produtos.
+
+O vínculo `ProdutoColecao` pertence à mesma Empresa dos dois lados e é único por Produto/Coleção.
+
+### RN081 — Participação do Produto herda o período da Coleção
+
+A relação Produto-Coleção não possui vigência própria no MVP.
+
+O período efetivo de participação do Produto é exatamente `DataLancamento` até `DataFinalizacao` da Coleção, respeitando período aberto quando a finalização é `null`.
+
+Alterar o período da Coleção altera o período efetivo de todos os Produtos vinculados.
+
+### RN082 — Destaque é atributo não exclusivo do vínculo
+
+`Destaque` pertence a `ProdutoColecao` e não ao Produto globalmente.
+
+Vários Produtos podem ser destaque na mesma Coleção e o mesmo Produto pode ser destaque em várias Coleções, inclusive sobrepostas.
+
+Destaque não altera custo, margem, preço ou completude da precificação.
+
+### RN083 — Categoria e situação do Produto não restringem o vínculo
+
+Categorias da Coleção permanecem metadados organizacionais e não formam regra de elegibilidade.
+
+Produtos ativos ou inativos, com ou sem Categoria, podem ser vinculados a Coleções da mesma Empresa.
+
+Alterar/desativar Categoria ou Produto não remove nem altera vínculos Produto-Coleção existentes.
 
 ## Produtos e ficha técnica
 
