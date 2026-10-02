@@ -38,6 +38,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`use-cases/UC039-administrar-empresas-solicitacoes.md`](use-cases/UC039-administrar-empresas-solicitacoes.md) — administração global de solicitações e Empresas.
 - [`use-cases/UC031-administrar-usuarios-vinculos.md`](use-cases/UC031-administrar-usuarios-vinculos.md) — administração tenant de usuários, perfis e vínculos.
 - [`use-cases/UC033-administrar-colecoes.md`](use-cases/UC033-administrar-colecoes.md) — administração tenant-aware de Coleções comerciais.
+- [`use-cases/UC034-vincular-produtos-colecoes.md`](use-cases/UC034-vincular-produtos-colecoes.md) — vínculo N:N de Produtos com Coleções.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
@@ -66,6 +67,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/UC039-administrar-empresas-solicitacoes.md`](codex/UC039-administrar-empresas-solicitacoes.md)
 - [`codex/UC031-administrar-usuarios-vinculos.md`](codex/UC031-administrar-usuarios-vinculos.md)
 - [`codex/UC033-administrar-colecoes.md`](codex/UC033-administrar-colecoes.md)
+- [`codex/UC034-vincular-produtos-colecoes.md`](codex/UC034-vincular-produtos-colecoes.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
