@@ -2,7 +2,7 @@
 
 - **Origem:** acabamento visual e apresentação institucional após MEL025.
 - **Classificação:** UX / apresentação pública / portfólio.
-- **Estado:** Pronto.
+- **Estado:** Concluído.
 - **Dependências:** MEL012 e MEL025 concluídas.
 - **Superfície principal:** `GET /`.
 - **Alteração de regra de negócio:** não.
@@ -24,9 +24,9 @@ A Home deve explicar, em poucos segundos:
 
 A MEL026 deve melhorar a apresentação pública sem transformar a Home em documentação técnica, catálogo de funcionalidades ou site comercial complexo.
 
-## Estado atual
+## Estado anterior
 
-A Home pública atualmente contém:
+Antes desta entrega, a Home pública continha:
 
 ~~~text
 Precificador
@@ -887,3 +887,11 @@ feat/mel026-home-publica
 ~~~text
 feat: enriquece home publica
 ~~~
+
+## Entrega implementada
+
+A Home anônima apresenta hero, proposta de valor, seis capacidades reais e o fluxo em três passos. Os CTAs usam Login e âncora nativa para o formulário integrado da UC038. O layout renderiza description somente quando fornecida por ViewData.
+
+A composição usa grid Bootstrap responsivo e classes locais com escopo home, sem estilos inline ou dependências externas. A responsividade foi validada estruturalmente; não houve teste visual pixel-perfect.
+
+IndexModel, contrato e markup interno do formulário, autenticação, persistência e regras de precificação permanecem preservados. HomePageTests cobre estrutura pública, CTAs, campos, navegação, description opcional e redirect do administrador; as suítes existentes preservam os fluxos UC038 e tenant.

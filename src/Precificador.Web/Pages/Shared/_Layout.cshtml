@@ -7,6 +7,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @if (ViewData["Description"] is string description && !string.IsNullOrWhiteSpace(description))
+    {
+        <meta name="description" content="@description" />
+    }
     <title>@ViewData["Title"] - Precificador</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />

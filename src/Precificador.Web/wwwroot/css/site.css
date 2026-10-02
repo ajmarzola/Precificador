@@ -29,3 +29,44 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.home-hero {
+  padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 3rem);
+  background: #eef4fc;
+  border-radius: 1rem;
+}
+
+.home-eyebrow {
+  font-weight: 600;
+  color: #344968;
+}
+
+.home-headline {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+}
+
+.home-intro {
+  max-width: 48rem;
+  font-size: 1.125rem;
+}
+
+.home-actions { margin-top: 1.75rem; }
+.home-section { padding-block: clamp(2rem, 5vw, 3.5rem); }
+.home-section > h2 { margin-bottom: 1.5rem; }
+
+.home-feature-card {
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: .75rem;
+}
+
+.home-feature-card p, .home-step p { margin-bottom: 0; }
+.home-steps { padding-left: 1.5rem; }
+.home-steps li::marker { font-weight: 700; color: #344968; }
+.home-step { padding: .5rem; }
+.home-access { max-width: 40rem; scroll-margin-top: 1rem; }
+.home-access small { display: block; margin-top: .25rem; }
+
+.home-hero, .home-section { overflow-wrap: anywhere; }
+.home-actions a:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }

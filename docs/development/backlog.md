@@ -83,7 +83,7 @@ Regra operacional:
 | 23 | UC033 — Administrar coleções | UC | Concluído | UC032 concluída | [UC033](../use-cases/UC033-administrar-colecoes.md) |
 | 24 | UC034 — Vincular Produtos a Coleções | UC | Concluído | UC032 e UC033 concluídas | [UC034](../use-cases/UC034-vincular-produtos-colecoes.md) |
 | 25 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Concluído | MEL021 concluída; fallback HTML seguro, GET/POST e status preservados | [MEL025](improvements/MEL025-erros-paginas-nao-encontradas.md) |
-| 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Pronto | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
+| 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Concluído | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
 | 27 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002 e UC031 concluídas; após MEL026 na fila | Documento a criar |
 | 28 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; após UC037 na fila e antes da próxima publicação em produção | Documento a criar |
 | 29 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
@@ -113,10 +113,9 @@ Regra operacional:
 
 A fila remanescente foi reorganizada deliberadamente para priorizar entregas menores e visíveis antes dos dois itens tecnicamente mais pesados.
 
-Sequência remanescente após a conclusão da MEL025:
+Sequência remanescente após a conclusão da MEL026:
 
 ~~~text
-MEL026
 UC037
 MEL027
 UC035
@@ -127,7 +126,7 @@ MEL014
 A mudança não viola dependências técnicas existentes:
 
 - MEL025 foi concluída após MEL021;
-- MEL026 depende de MEL012, já concluída;
+- MEL026 foi concluída após MEL012 e MEL025;
 - UC037 depende de FT002 e UC031, ambas concluídas;
 - MEL027 depende de MEL021 e continua antes da próxima publicação em produção;
 - UC035 depende de UC011, UC025 e UC034, todas concluídas;
