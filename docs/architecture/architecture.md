@@ -213,6 +213,8 @@ A publicação Azure inicial usa App Service F1/Linux e Azure SQL Database Free 
 
 Utilizar logging padrão do ASP.NET Core.
 
+A MEL025 padroniza o fallback Web de erros: exceções inesperadas em ambientes não Development usam página 500 amigável sem expor detalhes técnicos, enquanto 404 e demais status HTML vazios relevantes preservam o código HTTP e podem ser reexecutados em uma superfície de erro comum. A renderização de erro deve permanecer independente de banco, Empresa Ativa e autorização contextual para evitar falha recursiva. Development preserva diagnóstico técnico.
+
 ## Integração contínua
 
 Restore, build e testes permanecem gates mínimos do GitHub Actions.
