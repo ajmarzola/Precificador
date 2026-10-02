@@ -55,6 +55,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`development/melhorias.md`](development/melhorias.md) — backlog de melhorias não bloqueantes.
 - [`development/improvements/MEL025-erros-paginas-nao-encontradas.md`](development/improvements/MEL025-erros-paginas-nao-encontradas.md) — fallback Web amigável para erros e páginas não encontradas.
 - [`development/improvements/MEL026-home-publica.md`](development/improvements/MEL026-home-publica.md) — apresentação institucional responsiva da Home pública.
+- [`development/improvements/MEL013-execucao-teste-local.md`](development/improvements/MEL013-execucao-teste-local.md) — especificação do guia de execução e testes locais.
 - [`architecture/adr/ADR-015-logo-empresa-sql.md`](architecture/adr/ADR-015-logo-empresa-sql.md) — persistência do logo tenant no SQL Server/Azure SQL.
 
 ### Instruções para Codex
@@ -75,6 +76,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/MEL025-erros-paginas-nao-encontradas.md`](codex/MEL025-erros-paginas-nao-encontradas.md)
 - [`codex/MEL026-home-publica.md`](codex/MEL026-home-publica.md)
 - [`codex/UC037-identidade-visual-empresa.md`](codex/UC037-identidade-visual-empresa.md)
+- [`codex/MEL013-execucao-teste-local.md`](codex/MEL013-execucao-teste-local.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
