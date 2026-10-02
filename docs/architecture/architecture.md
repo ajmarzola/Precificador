@@ -217,6 +217,14 @@ A MEL025 padroniza o fallback Web de erros em `/Erro/{codigo:int}`: exceções i
 
 A página atende GET e POST, preserva o status (códigos diretos fora de 400–599 são normalizados em 500), desabilita cache e ignora apenas seu próprio antiforgery por ser somente leitura. Erros 5xx exibem `Activity.Current?.Id ?? HttpContext.TraceIdentifier` como referência. O layout `_LayoutErro` contém somente marca, CSS estático e retorno a `/`, sem consulta ao banco, Empresa Ativa ou autorização contextual. Development preserva diagnóstico técnico; HSTS/HTTPS e policies permanecem iguais.
 
+## Apresentação pública
+
+A rota `/` é a Home pública do Precificador para visitantes anônimos. Usuários autenticados continuam sendo redirecionados para suas superfícies canônicas (`/Dashboard` ou `/Admin`).
+
+A MEL026 define a Home como uma landing page server-rendered, responsiva e sem dependências externas obrigatórias. A apresentação institucional deve refletir apenas capacidades já entregues e reutilizar Bootstrap/CSS local. O formulário público da UC038 permanece integrado à Home sem alterar seu contrato ou persistência.
+
+A Home pública não consulta dados operacionais para compor conteúdo institucional e não antecipa branding tenant-aware da UC037.
+
 ## Integração contínua
 
 Restore, build e testes permanecem gates mínimos do GitHub Actions.
