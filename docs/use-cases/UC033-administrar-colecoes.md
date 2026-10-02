@@ -286,7 +286,7 @@ Não bloquear:
 - uma Coleção contida em outra;
 - múltiplas Coleções sem finalização definida.
 
-A futura UC034 também não deve inferir exclusividade de Produto apenas a partir desta UC.
+A UC034 confirma relação N:N: não há exclusividade de Produto entre Coleções.
 
 ## Categorias envolvidas
 
@@ -307,7 +307,7 @@ Ela **não significa**:
 - que Categoria é copiada para Produto;
 - que a Coleção altera cálculo ou precificação.
 
-A elegibilidade/vínculo de Produtos será definida exclusivamente na UC034.
+A UC034 define o vínculo de Produtos sem usar as Categorias da Coleção como regra de elegibilidade.
 
 ## Categorias elegíveis no cadastro
 
@@ -368,7 +368,7 @@ Remover uma Categoria da Coleção:
 - não altera Fichas;
 - não altera precificação.
 
-Após a futura UC034, essa remoção também não deverá apagar automaticamente vínculos Produto-Coleção já existentes, salvo decisão explícita daquela UC.
+A UC034 define que remover uma Categoria da Coleção não apaga vínculos Produto-Coleção existentes.
 
 ## Sem exclusão física de Coleção
 
