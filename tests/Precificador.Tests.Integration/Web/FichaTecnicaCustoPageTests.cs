@@ -296,8 +296,10 @@ public sealed class FichaTecnicaCustoPageTests
         }));
         var html = await WebTestHtml.LerHtmlDecodificadoAsync(post);
 
-        Assert.DoesNotContain("999", html);
-        Assert.Contains("10", html);
+        var custosNasCelulas = Regex.Matches(html, @"<td>\s*(R\$ [^<]+?)\s*</td>")
+            .Select(match => match.Groups[1].Value).ToArray();
+        Assert.Equal(new[] { "R$ 5,00", "R$ 10,00", "R$ 0,00" }, custosNasCelulas);
+        Assert.Matches(@"Custo base dos itens:</strong>\s*R\$ 10,00\s*</p>", html);
         Assert.Contains("O rendimento deve ser maior que zero.", html);
         Assert.Equal(2m, await ambiente.RendimentoAsync(ficha, 1));
     }
