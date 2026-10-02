@@ -82,13 +82,13 @@ Regra operacional:
 | 22 | UC031 — Administrar usuários e vínculos com Empresas | UC | Concluído | FT003, UC039 e UC040 concluídas; administração tenant, proteção concorrente do último Administrador e comunicação pós-commit implementadas | [UC031](../use-cases/UC031-administrar-usuarios-vinculos.md) |
 | 23 | UC033 — Administrar coleções | UC | Concluído | UC032 concluída | [UC033](../use-cases/UC033-administrar-colecoes.md) |
 | 24 | UC034 — Vincular Produtos a Coleções | UC | Concluído | UC032 e UC033 concluídas | [UC034](../use-cases/UC034-vincular-produtos-colecoes.md) |
-| 25 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025; gate operacional após UC034 | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 26 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031, UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 27 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021; antes da próxima publicação em produção após a versão inicial | Documento a criar |
-| 28 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Planejado | MEL021; após estabilização funcional e técnica da publicação | Documento a criar |
-| 29 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Planejado | MEL012; após MEL025 na fila | Documento a criar |
-| 30 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002, UC031; após MEL026 na fila | Documento a criar |
-| 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; MVP funcional e experiência do usuário consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 25 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Pronto | MEL021 concluída; primeiro item da nova rodada de acabamento | [MEL025](improvements/MEL025-erros-paginas-nao-encontradas.md) |
+| 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Planejado | MEL012 concluída; após MEL025 na fila | Documento a criar |
+| 27 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002 e UC031 concluídas; após MEL026 na fila | Documento a criar |
+| 28 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; após UC037 na fila e antes da próxima publicação em produção | Documento a criar |
+| 29 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 30 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031 e UC035; após UC035 na fila | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; produto, infraestrutura e experiência consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -103,11 +103,37 @@ Regra operacional:
 - **16–17 — fechamento do escopo original:** concluir filtros/identificação de problemas de margem e precificação sobre o Dashboard;
 - **18–22 — acesso controlado, administração e multiusuário:** separar o bootstrap do sistema da administração cotidiana; criar um `SystemAdmin` global sem vínculo com Empresa; receber solicitações públicas sem auto-registro; ativar contas e recuperar acesso por token; permitir ao SystemAdmin aprovar/administrar Empresas e, em seguida, ao Administrador da Empresa gerenciar somente os vínculos do próprio tenant;
 - **23–24 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
-- **25 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
-- **26 — documentação técnica:** consolidar execução e teste local depois da infraestrutura e dos fluxos técnicos relevantes estarem estabilizados;
-- **27 — entrega contínua:** automatizar o deploy no Azure após o fluxo manual da MEL021 estar estabilizado; MEL027 é gate da próxima publicação em produção, sem bloquear a implementação local das UCs funcionais anteriores;
-- **28–30 — acabamento e experiência do usuário:** tratar erros/404 de forma amigável, enriquecer a Home pública e permitir identidade visual tenant-aware por Empresa, sem misturar essas preocupações às regras de precificação;
-- **31 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais e a experiência visual estarem consolidados.
+- **25–27 — acabamento e apresentação:** tratar erros/404 de forma amigável, enriquecer a Home pública e aplicar identidade visual tenant-aware antes de voltar a expansões mais profundas;
+- **28 — entrega contínua:** automatizar o deploy no Azure após o fluxo manual da MEL021 estar estabilizado e antes da próxima publicação em produção;
+- **29 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
+- **30 — documentação técnica:** consolidar execução e teste local somente depois da infraestrutura, CD e UC035 estarem estabilizados;
+- **31 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais, infraestrutura e experiência visual estarem consolidados.
+
+### Reordenação da fila restante — 02/10/2026
+
+A fila remanescente foi reorganizada deliberadamente para priorizar entregas menores e visíveis antes dos dois itens tecnicamente mais pesados.
+
+Nova sequência:
+
+~~~text
+MEL025
+MEL026
+UC037
+MEL027
+UC035
+MEL013
+MEL014
+~~~
+
+A mudança não viola dependências técnicas existentes:
+
+- MEL025 depende apenas de MEL021, já concluída;
+- MEL026 depende de MEL012, já concluída;
+- UC037 depende de FT002 e UC031, ambas concluídas;
+- MEL027 depende de MEL021 e continua antes da próxima publicação em produção;
+- UC035 depende de UC011, UC025 e UC034, todas concluídas;
+- MEL013 continua depois de UC035;
+- MEL014 permanece como fechamento final.
 
 ## Melhorias concluídas
 
