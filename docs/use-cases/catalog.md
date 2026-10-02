@@ -54,6 +54,7 @@ O UC007 inaugurou o domínio Produto sem antecipar Ficha Técnica ou precificaç
 | [UC012](UC012-consultar-historico-precificacao-produto.md) | Consultar histórico de precificação do produto | UC011; derivar desconto histórico pela reserva congelada conforme MEL009 |
 | [UC032](UC032-administrar-categorias-produto.md) | Administrar categorias de Produto | UC007–UC010 |
 | [UC033](UC033-administrar-colecoes.md) | Administrar coleções | UC032 |
+| [UC034](UC034-vincular-produtos-colecoes.md) | Vincular Produtos a Coleções | UC032, UC033 |
 
 UC011 congela Custo de referência, Margem de referência, Preço sugerido, Preço de prateleira e Reserva comercial de referência. UC012 consulta esse histórico, deriva o registro atual por `DataReferencia DESC, Id DESC` e calcula o Desconto de referência somente a partir dos snapshots, sem reinterpretar registros antigos com configuração vigente.
 
@@ -63,9 +64,9 @@ A review manual identificou a necessidade de substituir a Categoria livre atual 
 
 - **[UC032](UC032-administrar-categorias-produto.md) — Administrar categorias de Produto:** substituir o texto livre por `CategoriaProduto` tenant-aware, migrar os dados existentes e administrar cadastro/situação;
 - **[UC033](UC033-administrar-colecoes.md) — Administrar coleções:** cadastrar Coleções tenant-aware com período comercial e Categorias envolvidas;
-- **UC034 — Vincular Produtos a Coleções:** permitir acompanhar a participação/destaque de Produtos ao longo das Coleções.
+- **[UC034](UC034-vincular-produtos-colecoes.md) — Vincular Produtos a Coleções:** relação N:N tenant-aware, Destaque por vínculo e participação herdando o período da Coleção.
 
-UC032 foi concluída (`CategoriaProduto` tenant-aware substituindo o texto livre). A UC033 também foi concluída com período comercial, situação temporal derivada e associação N:N de Categorias; a UC034 permanece responsável pelo vínculo real de Produtos às Coleções.
+UC032 e UC033 estão concluídas. A UC034 está especificada como relação N:N `ProdutoColecao`, sem vigência própria: a participação herda o período da Coleção, com `Destaque` não exclusivo por vínculo e sem impacto na precificação.
 
 ## Ficha técnica
 
