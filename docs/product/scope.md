@@ -16,6 +16,7 @@ O MVP contempla:
 - cálculo do custo unitário de compra;
 - cadastro, edição, consulta e desativação de produtos;
 - categorias estruturadas e coleções comerciais tenant-aware;
+- participação e destaque de Produtos em Coleções;
 - ficha técnica por lote/execução;
 - rendimento do lote em unidades de venda;
 - composição por insumos;
