@@ -2,7 +2,7 @@
 
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependência funcional:** UC032
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de domínio:** sim
 - **Alteração de schema:** sim
 - **Migration:** sim

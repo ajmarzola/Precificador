@@ -1,0 +1,22 @@
+@page
+@model Precificador.Web.Pages.Produtos.Colecoes.NovoModel
+@{
+    ViewData["Title"] = "Cadastrar coleção";
+}
+<h1>Cadastrar coleção</h1>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.Nome" class="form-label"></label><input asp-for="Input.Nome" class="form-control" maxlength="120" /><span asp-validation-for="Input.Nome" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.DataLancamento" class="form-label"></label><input asp-for="Input.DataLancamento" type="date" class="form-control" /><span asp-validation-for="Input.DataLancamento" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Input.DataFinalizacao" class="form-label"></label><input asp-for="Input.DataFinalizacao" type="date" class="form-control" /><span asp-validation-for="Input.DataFinalizacao" class="text-danger"></span></div>
+    <fieldset class="mb-3"><legend>Categorias envolvidas</legend>
+        @foreach (var categoria in Model.Categorias)
+        {
+            <div class="form-check"><input class="form-check-input" type="checkbox" name="Input.CategoriaProdutoIds" value="@categoria.Id" id="categoria-@categoria.Id" checked="@(Model.Input.CategoriaProdutoIds.Contains(categoria.Id) ? "checked" : null)" /><label class="form-check-label" for="categoria-@categoria.Id">@categoria.Nome</label></div>
+        }
+        <span asp-validation-for="Input.CategoriaProdutoIds" class="text-danger"></span>
+    </fieldset>
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+    <a asp-page="/Produtos/Colecoes/Index" class="btn btn-secondary">Cancelar</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
