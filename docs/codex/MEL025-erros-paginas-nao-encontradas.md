@@ -2,6 +2,8 @@
 
 Você está implementando a MEL025 no repositório ajmarzola/Precificador.
 
+Entrega implementada em `feat/mel025-erros-amigaveis`: a superfície `/Erro/{codigo:int}` substitui o scaffold `Error`, com layout independente, negociação HTML e testes Web em Production/Development. Esta instrução preserva o roteiro normativo da implementação; a especificação MEL025 registra o resultado.
+
 ## Fonte normativa
 
 Leia:

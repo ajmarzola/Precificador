@@ -213,7 +213,9 @@ A publicação Azure inicial usa App Service F1/Linux e Azure SQL Database Free 
 
 Utilizar logging padrão do ASP.NET Core.
 
-A MEL025 padroniza o fallback Web de erros: exceções inesperadas em ambientes não Development usam página 500 amigável sem expor detalhes técnicos, enquanto 404 e demais status HTML vazios relevantes preservam o código HTTP e podem ser reexecutados em uma superfície de erro comum. A renderização de erro deve permanecer independente de banco, Empresa Ativa e autorização contextual para evitar falha recursiva. Development preserva diagnóstico técnico.
+A MEL025 padroniza o fallback Web de erros em `/Erro/{codigo:int}`: exceções inesperadas em ambientes não Development usam HTTP 500 amigável sem expor detalhes técnicos. Respostas vazias 4xx/5xx são reexecutadas apenas quando o request aceita `text/html` com qualidade positiva e não solicita um asset. Respostas com corpo próprio e redirects permanecem intactos; clientes não HTML recebem o status sem o layout amigável, inclusive em exceções.
+
+A página atende GET e POST, preserva o status (códigos diretos fora de 400–599 são normalizados em 500), desabilita cache e ignora apenas seu próprio antiforgery por ser somente leitura. Erros 5xx exibem `Activity.Current?.Id ?? HttpContext.TraceIdentifier` como referência. O layout `_LayoutErro` contém somente marca, CSS estático e retorno a `/`, sem consulta ao banco, Empresa Ativa ou autorização contextual. Development preserva diagnóstico técnico; HSTS/HTTPS e policies permanecem iguais.
 
 ## Integração contínua
 

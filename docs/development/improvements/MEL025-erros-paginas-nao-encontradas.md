@@ -3,11 +3,20 @@
 - **Origem:** acabamento pós-publicação / experiência de uso.
 - **Classificação:** UX / resiliência de apresentação / hardening de produção.
 - **Prioridade:** alta na nova fila de acabamento.
-- **Estado:** Pronto.
+- **Estado:** Concluído.
 - **Dependências:** MEL021 concluída.
 - **Alteração de regra de negócio:** não.
 - **Alteração de domínio/schema:** não.
 - **Migration:** não.
+
+## Entrega implementada
+
+- `/Erro/{codigo:int}` atende GET e POST com layout mínimo `_LayoutErro`, sem banco, contexto empresarial ou autorização dinâmica.
+- Exception handler não Development aponta para `/Erro/500`; status pages reexecutam respostas vazias apenas para navegação HTML, com status original preservado.
+- `Accept: application/json`, HTML com qualidade zero e assets não recebem layout amigável; a regra também vale para exceções e acesso direto à página de erro.
+- Antiforgery permanece nos handlers normais; somente a página de erro de leitura o ignora. Respostas com corpo e redirects não são substituídos.
+- `ErroPageTests` valida o fallback em host Production que falha ao resolver `PrecificadorDbContext`; `ErroRecursoPageTests` cobre SQL Server real, recurso inexistente/cross-tenant, POST protegido e diagnóstico Development.
+- Scaffold `Error` removido; nenhuma alteração de domínio, policies ou schema.
 
 ## Objetivo
 
