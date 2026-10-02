@@ -66,7 +66,7 @@ A review manual identificou a necessidade de substituir a Categoria livre atual 
 - **[UC033](UC033-administrar-colecoes.md) — Administrar coleções:** cadastrar Coleções tenant-aware com período comercial e Categorias envolvidas;
 - **[UC034](UC034-vincular-produtos-colecoes.md) — Vincular Produtos a Coleções:** relação N:N tenant-aware, Destaque por vínculo e participação herdando o período da Coleção.
 
-UC032 e UC033 estão concluídas. A UC034 está especificada como relação N:N `ProdutoColecao`, sem vigência própria: a participação herda o período da Coleção, com `Destaque` não exclusivo por vínculo e sem impacto na precificação.
+UC032, UC033 e UC034 estão concluídas. A UC034 implementa relação N:N `ProdutoColecao`, sem vigência própria: a participação herda o período da Coleção, com `Destaque` não exclusivo por vínculo e sem impacto na precificação.
 
 ## Ficha técnica
 

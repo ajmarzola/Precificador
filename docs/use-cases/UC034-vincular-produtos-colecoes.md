@@ -2,7 +2,7 @@
 
 - **Funcionalidade:** F002 — Gestão de Produtos
 - **Dependências funcionais:** UC032, UC033
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de domínio:** sim
 - **Alteração de schema:** sim
 - **Migration:** sim
@@ -1025,6 +1025,17 @@ UC034 está concluída quando:
 - RN080–RN083 estão alinhadas;
 - CI completa fica verde;
 - backlog marca UC034 como Concluído após implementação.
+
+## Entrega e validação
+
+Implementado na branch `feat/uc034-vincular-produtos-colecoes`, a partir da `master` pós-merge da especificação UC034 (`45a3cab`).
+
+- Migration evolutiva `20261002024501_UC034_ProdutosColecoes`, sem backfill e sem alterar tabelas existentes.
+- Guard central valida ownership real de Produto e Coleção em gravações síncronas e assíncronas; consultas Web usam GQF.
+- Gerenciamento, Detalhes e filtro por Coleção implementados sem alteração de precificação.
+- Teste concorrente sincroniza dois POSTs após o pre-check, valida uma linha e resposta perdedora controlada.
+- Restore e build Release aprovados, sem warnings; 297 testes unitários e 676 testes de integração SQL Server/Web aprovados; `git diff --check` aprovado.
+- UC035 continua Planejado, sem integração externa nesta entrega.
 
 ## Branch sugerida
 

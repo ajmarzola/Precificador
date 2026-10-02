@@ -28,7 +28,7 @@ else
                 <td>@(colecao.DataFinalizacao?.ToString("dd/MM/yyyy") ?? "Em aberto")</td>
                 <td>@colecao.SituacaoTexto</td>
                 <td>@(colecao.Categorias.Count == 0 ? "—" : string.Join(", ", colecao.Categorias))</td>
-                <td><a asp-page="/Produtos/Colecoes/Editar" asp-route-id="@colecao.Id">Editar</a></td>
+                <td><a asp-page="/Produtos/Colecoes/Editar" asp-route-id="@colecao.Id">Editar</a> · <a asp-page="/Produtos/Colecoes/Produtos" asp-route-id="@colecao.Id">Gerenciar produtos</a></td>
             </tr>
         }
         </tbody>

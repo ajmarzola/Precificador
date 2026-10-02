@@ -15,6 +15,7 @@ Manter os itens comercializados e seus parâmetros cadastrais/estratégicos por 
 - definir margem-alvo;
 - administrar Categorias de Produto (UC032);
 - administrar Coleções comerciais por período e Categorias envolvidas (UC033);
+- vincular Produtos a Coleções, gerenciar Destaque e filtrar a listagem por Coleção (UC034);
 - calcular Preço sugerido a partir do custo e da margem de referência;
 - registrar Preço de prateleira preservando snapshot da precificação;
 - consultar histórico de precificação do Produto;
@@ -167,13 +168,16 @@ A participação não possui datas próprias: herda integralmente o período com
 
 Categorias cadastradas na Coleção continuam informativas. Produto sem Categoria, de outra Categoria, ativo ou inativo pode participar da Coleção.
 
-A área de Coleções ganha gerenciamento de Produtos; Detalhes do Produto passa a listar Coleções; `/Produtos` ganha filtro por Coleção, compondo por AND com pesquisa, Categoria e recortes de margem/completude.
+O gerenciamento ocorre em `/Produtos/Colecoes/Produtos/{id}` por POST antiforgery para vincular, definir Destaque e desvincular somente a associação, inclusive em Coleção Finalizada. Duplicidade sequencial ou concorrente recebe mensagem controlada sem alterar Destaque implicitamente. Detalhes do Produto lista Coleções com período, situação temporal e Destaque; `/Produtos` ganha filtro por Coleção, compondo por AND com pesquisa, Categoria e recortes de margem/completude.
+
+O filtro `colecao` oferece Todas as coleções, `sem-colecao` e cada Coleção local, inclusive Finalizada. Sem recorte operacional que exija Ativo, Produtos inativos continuam visíveis.
 
 ## Regras relacionadas
 
 - RN018 a RN024, conforme aplicáveis;
 - RN035 a RN039;
-- RN041 a RN046.
+- RN041 a RN046;
+- RN076 a RN083.
 
 ## Consulta — UC008
 

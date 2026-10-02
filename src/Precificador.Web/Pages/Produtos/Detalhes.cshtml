@@ -79,3 +79,24 @@ else
     </form>
 }
 <a asp-page="/Produtos/Index">Voltar para produtos</a>
+
+<h2>Coleções</h2>
+@if (Model.Colecoes.Count == 0)
+{
+    <p>Este produto ainda não participa de nenhuma coleção.</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Coleção</th><th>Lançamento</th><th>Finalização</th><th>Situação</th><th>Destaque</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model.Colecoes)
+        {
+            <tr><td><a asp-page="/Produtos/Colecoes/Produtos" asp-route-id="@item.Colecao.Id">@item.Colecao.Nome</a></td>
+                <td>@item.Colecao.DataLancamento.ToString("dd/MM/yyyy")</td>
+                <td>@(item.Colecao.DataFinalizacao?.ToString("dd/MM/yyyy") ?? "Em aberto")</td>
+                <td>@item.SituacaoTexto</td><td>@(item.Destaque ? "Sim" : "Não")</td></tr>
+        }
+        </tbody>
+    </table>
+}
