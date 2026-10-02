@@ -346,16 +346,19 @@ public sealed class UsuariosEmpresaPageTests
     [InlineData(false)] [InlineData(true)]
     public async Task Ultimos_admins_concorrentes_preservam_admin_em_SQL_Server(bool misto)
     {
-        using var h = new Cenario(); await h.Preparar();
+        var corridaAdmins = new CorridaAdministradores();
+        using var h = new Cenario(corridaAdmins: corridaAdmins); await h.Preparar();
         var b = await h.Usuario("admin-b@teste.local", true, true, PerfilUsuarioEmpresa.Administrador);
         using var clientB = h.Cliente(); await h.Login(h.Client, h.Admin.Email!); await h.Login(clientB, b.Email!);
         var tokenA = await WebTestHtml.ObterTokenAntiforgeryAsync(h.Client, Cenario.Detalhe(b.Id));
         var tokenB = await WebTestHtml.ObterTokenAntiforgeryAsync(clientB, Cenario.Detalhe(h.Admin.Id));
+        corridaAdmins.Ativa = true;
         var respostas = await Task.WhenAll(
             h.Post(h.Client, Cenario.Detalhe(b.Id), misto ? "AlterarPerfil" : "Desvincular", new() { ["Input.Perfil"] = "1" }, tokenA),
             h.Post(clientB, Cenario.Detalhe(h.Admin.Id), "Desvincular", new(), tokenB));
         Assert.All(respostas, x => Assert.Contains(x.StatusCode, new[] { HttpStatusCode.OK, HttpStatusCode.Redirect }));
         Assert.Single(respostas, x => x.StatusCode == HttpStatusCode.Redirect);
+        Assert.Equal(2, corridaAdmins.Chegadas);
         await h.Verificar(async db => Assert.Equal(1, await db.UsuariosEmpresas.CountAsync(x => x.EmpresaId == h.EmpresaId && x.Ativo && x.Perfil == PerfilUsuarioEmpresa.Administrador)));
     }
 
@@ -459,6 +462,28 @@ public sealed class UsuariosEmpresaPageTests
         }
     }
 
+    // Ambas as policies devem terminar antes de a primeira mutação obter o lock.
+    // Sem a barreira, a segunda policy pode negar o ator já demovido/desvinculado,
+    // produzindo outro redirect legítimo e deixando de exercitar a corrida transacional.
+    private sealed class CorridaAdministradores : DbCommandInterceptor
+    {
+        private readonly ConcurrentDictionary<Guid, byte> contextos = new();
+        private readonly TaskCompletionSource liberar = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Ativa { get; set; }
+        public int Chegadas => contextos.Count;
+        public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData,
+            InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            if (Ativa && command.CommandText.Contains("sp_getapplock", StringComparison.Ordinal) &&
+                contextos.TryAdd(eventData.Context!.ContextId.InstanceId, 0))
+            {
+                if (contextos.Count == 2) liberar.TrySetResult();
+                await liberar.Task.WaitAsync(TimeSpan.FromSeconds(20), cancellationToken);
+            }
+            return result;
+        }
+    }
+
     private sealed class Sender : IEmailSenderAplicacao
     {
         public bool Habilitado { get; set; } = true;
@@ -486,7 +511,7 @@ public sealed class UsuariosEmpresaPageTests
         public int EmpresaId { get; private set; }
         public int OutraId { get; private set; }
         public UsuarioAplicacao Admin { get; private set; } = null!;
-        public Cenario(FalhaVinculo? falha = null, CorridaEmail? corrida = null)
+        public Cenario(FalhaVinculo? falha = null, CorridaEmail? corrida = null, CorridaAdministradores? corridaAdmins = null)
         {
             Factory = original.WithWebHostBuilder(builder =>
             {
@@ -499,6 +524,7 @@ public sealed class UsuariosEmpresaPageTests
                         options.UseSqlServer(sql => sql.EnableRetryOnFailure());
                         if (falha is not null) options.AddInterceptors(falha);
                         if (corrida is not null) options.AddInterceptors(corrida);
+                        if (corridaAdmins is not null) options.AddInterceptors(corridaAdmins);
                     });
                     services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, EndpointContexto>();
                 });

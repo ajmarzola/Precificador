@@ -19,6 +19,7 @@ public sealed class PrecificadorDbContext(
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
+    public DbSet<IdentidadeVisualEmpresa> IdentidadesVisuaisEmpresas => Set<IdentidadeVisualEmpresa>();
     public DbSet<SolicitacaoAcessoEmpresa> SolicitacoesAcessoEmpresas => Set<SolicitacaoAcessoEmpresa>();
     public DbSet<ConfiguracaoPrecificacaoEmpresa> ConfiguracoesPrecificacaoEmpresas => Set<ConfiguracaoPrecificacaoEmpresa>();
     public DbSet<FichaTecnica> FichasTecnicas => Set<FichaTecnica>();
@@ -40,6 +41,8 @@ public sealed class PrecificadorDbContext(
         modelBuilder.Entity<UsuarioAplicacao>().HasIndex(x => x.NormalizedEmail)
             .HasDatabaseName("EmailIndex").IsUnique().HasFilter("[NormalizedEmail] IS NOT NULL");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrecificadorDbContext).Assembly);
+        modelBuilder.Entity<IdentidadeVisualEmpresa>().HasQueryFilter(x =>
+            x.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<ConfiguracaoPrecificacaoEmpresa>().HasQueryFilter(configuracao =>
             configuracao.EmpresaId == empresaContext.EmpresaIdOuSentinela);
         modelBuilder.Entity<FichaTecnica>().HasQueryFilter(ficha =>

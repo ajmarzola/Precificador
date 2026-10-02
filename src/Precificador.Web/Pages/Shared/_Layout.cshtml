@@ -2,7 +2,9 @@
 @using Precificador.Web.Empresas
 @using Precificador.Web.Autorizacao
 @inject EmpresaContext EmpresaContext
+@inject IdentidadeVisualEmpresaAtual IdentidadeAtual
 @inject Microsoft.AspNetCore.Authorization.IAuthorizationService Autorizacao
+@{ var identidade = await IdentidadeAtual.ObterAsync(); }
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -17,9 +19,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Precificador.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body style="@(identidade is null ? null : $"--empresa-cor-primaria: {identidade.CorPrimaria}")">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 @(identidade is null ? null : "empresa-navbar")">
             <div class="container">
                 @if (User.Identity?.IsAuthenticated == true && User.IsInRole(NomesAutorizacao.SystemAdmin))
                 {
@@ -65,6 +67,7 @@
                             @if ((await Autorizacao.AuthorizeAsync(User, null, NomesAutorizacao.AdministradorEmpresa)).Succeeded)
                             {
                                 <li class="nav-item"><a class="nav-link text-dark" asp-page="/Usuarios/Index">Usuários</a></li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-page="/Configuracoes/IdentidadeVisual">Identidade visual</a></li>
                             }
                         }
                         else
@@ -80,6 +83,10 @@
                     }
                     else if (User.Identity?.IsAuthenticated == true)
                     {
+                        @if (identidade?.TemLogo == true)
+                        {
+                            <img class="empresa-logo-navbar" src="/Empresa/Logo" alt="Logo da @EmpresaContext.Nome" />
+                        }
                         <span class="navbar-text">Empresa ativa: @(EmpresaContext.Nome ?? "não selecionada")</span>
                         <form method="post" asp-page="/Conta/Logout"><button class="btn btn-link nav-link" type="submit">Sair</button></form>
                     }
