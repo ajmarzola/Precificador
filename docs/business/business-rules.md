@@ -592,6 +592,30 @@ Produtos ativos ou inativos, com ou sem Categoria, podem ser vinculados a Coleç
 
 Alterar/desativar Categoria ou Produto não remove nem altera vínculos Produto-Coleção existentes.
 
+### RN084 — Identidade visual pertence à Empresa Ativa
+
+A identidade visual é tenant-owned e pertence à Empresa, nunca ao usuário.
+
+Somente a identidade da Empresa Ativa pode ser aplicada à experiência autenticada. Ausência de configuração usa o padrão visual do Precificador.
+
+### RN085 — Somente AdministradorEmpresa configura identidade
+
+Todos os usuários vinculados à Empresa podem consumir sua identidade visual, mas somente um AdministradorEmpresa pode criar, alterar, remover logo ou restaurar o padrão.
+
+SystemAdmin não recebe autoridade tenant implícita.
+
+### RN086 — Logo é conteúdo binário controlado e persistido no banco
+
+Logo aceita somente PNG/JPEG válido, detectado por assinatura binária, com tamanho máximo de 512 KiB.
+
+O conteúdo fica persistido no SQL Server/Azure SQL. Extensão, FileName e ContentType enviados pelo cliente não são fonte de verdade.
+
+### RN087 — Identidade visual é apenas apresentação
+
+Cor e logo não alteram precificação, Produtos, Insumos, Fichas, Coleções, histórico, autorização ou qualquer cálculo.
+
+A cor configurada é somente acento visual controlado pela aplicação; CSS arbitrário não é permitido.
+
 ## Produtos e ficha técnica
 
 ### RN009 — Rendimento
