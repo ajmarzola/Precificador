@@ -225,6 +225,23 @@ A MEL026 define a Home como uma landing page server-rendered, responsiva e sem d
 
 A Home pública não consulta dados operacionais para compor conteúdo institucional e não antecipa branding tenant-aware da UC037.
 
+## Identidade visual tenant-aware
+
+A UC037 introduz `IdentidadeVisualEmpresa` como configuração 1:1 opcional da Empresa, separada da entidade `Empresa`.
+
+Decisões:
+
+- ausência de linha usa identidade padrão do Precificador;
+- cor primária é um valor hexadecimal validado usado apenas como acento visual;
+- logo é PNG/JPEG de até 512 KiB persistido no SQL Server/Azure SQL;
+- a entidade participa de GQF/guard tenant;
+- configuração exige `AdministradorEmpresa`, mas o branding é consumido por qualquer usuário da Empresa Ativa;
+- `EmpresaContext` não armazena cor/logo;
+- logo é servido por endpoint baseado somente na Empresa Ativa, sem `EmpresaId` no request e com `Cache-Control: no-store`;
+- Home pública, SystemAdmin e layout de erro não carregam branding tenant.
+
+Ver [ADR-015](adr/ADR-015-logo-empresa-sql.md) e [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md).
+
 ## Integração contínua
 
 Restore, build e testes permanecem gates mínimos do GitHub Actions.
