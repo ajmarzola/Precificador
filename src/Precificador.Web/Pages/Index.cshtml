@@ -1,27 +1,103 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Início";
+    ViewData["Title"] = "Formação e acompanhamento de preços";
+    ViewData["Description"] = "Centralize insumos, fichas técnicas, custos, preços e margens para acompanhar a precificação de produtos artesanais.";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Precificador</h1>
-    <p>Aplicação local para formação e acompanhamento de preços.</p>
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <p><a asp-page="/Produtos/Novo">Cadastrar produto</a></p>
-    }
-    else
-    {
-        <p><a asp-page="/Conta/Login">Entrar</a></p>
-    }
-</div>
-
-@if (User.Identity?.IsAuthenticated != true)
+@if (User.Identity?.IsAuthenticated == true)
 {
-    <section class="mx-auto" style="max-width: 640px" aria-labelledby="solicitar-acesso">
-        <h2 id="solicitar-acesso">Solicitar acesso</h2>
-        <p>A solicitação será analisada e não concede acesso imediato. O contato será feito pelo e-mail informado.</p>
+    <h1>Precificador</h1>
+    <p><a asp-page="/Produtos/Novo">Cadastrar produto</a></p>
+}
+else
+{
+    <section class="home-hero" aria-labelledby="home-title">
+        <p class="home-eyebrow">Formação e acompanhamento de preços</p>
+        <h1 id="home-title" class="display-4 fw-bold">Precificador</h1>
+        <p class="home-headline">Precifique com clareza. Acompanhe sua margem.</p>
+        <p class="home-intro">Centralize insumos, fichas técnicas, custos e históricos para entender quanto seu produto custa hoje e quando o preço precisa ser revisto.</p>
+        <div class="d-grid gap-3 d-sm-flex home-actions">
+            <a class="btn btn-primary btn-lg" asp-page="/Conta/Login">Entrar</a>
+            <a class="btn btn-outline-primary btn-lg" href="#solicitar-acesso">Solicitar acesso</a>
+        </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="home-value-title">
+        <h2 id="home-value-title">Um insumo muda. Seus custos também.</h2>
+        <p class="home-intro">Quando o preço de um insumo muda, várias fichas e produtos podem ser afetados. Para negócios artesanais, o Precificador reúne essas relações em uma fonte única por Empresa, sem depender de planilhas espalhadas.</p>
+        <p>Veja custos, preço sugerido e margem com os dados atuais. A decisão do preço de prateleira continua sendo sua.</p>
+    </section>
+
+    <section class="home-section" aria-labelledby="home-features-title">
+        <h2 id="home-features-title">Da composição à revisão do preço</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Insumos e histórico de preços</h3>
+                    <p>Cadastre insumos e acompanhe o preço vigente e seu histórico, com atualização centralizada por Empresa.</p>
+                </article>
+            </div>
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Ficha Técnica e custos</h3>
+                    <p>Reúna rendimento, insumos, perdas, mão de obra, energia e equipamentos, incluindo desgaste quando aplicável.</p>
+                </article>
+            </div>
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Formação de preço</h3>
+                    <p>Consulte custo atual, preço teórico e sugerido a partir da margem-alvo. Você define o preço de prateleira.</p>
+                </article>
+            </div>
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Margem e revisão</h3>
+                    <p>Compare margem atual e alvo. Identifique produtos abaixo da margem e com precificação incompleta.</p>
+                </article>
+            </div>
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Histórico e explicabilidade</h3>
+                    <p>Consulte os registros de precificação preservados para entender decisões passadas e os dados usados em cada preço.</p>
+                </article>
+            </div>
+            <div class="col">
+                <article class="home-feature-card">
+                    <h3 class="h5">Catálogo e multiempresa</h3>
+                    <p>Organize produtos em Categorias e Coleções. Trabalhe com múltiplas Empresas e usuários com isolamento de acesso.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="home-how-title">
+        <h2 id="home-how-title">Como funciona</h2>
+        <ol class="row row-cols-1 row-cols-md-3 g-4 home-steps">
+            <li class="col">
+                <div class="home-step">
+                    <h3 class="h5">Centralize os dados</h3>
+                    <p>Cadastre insumos, preços e a composição real dos produtos.</p>
+                </div>
+            </li>
+            <li class="col">
+                <div class="home-step">
+                    <h3 class="h5">Calcule com dados vigentes</h3>
+                    <p>O Precificador consolida custos e aplica as configurações comerciais da Empresa.</p>
+                </div>
+            </li>
+            <li class="col">
+                <div class="home-step">
+                    <h3 class="h5">Decida com contexto</h3>
+                    <p>Compare preço, margem e histórico para saber quais produtos precisam de revisão.</p>
+                </div>
+            </li>
+        </ol>
+    </section>
+
+    <section id="solicitar-acesso" class="home-section home-access mx-auto" aria-labelledby="home-access-title">
+        <h2 id="home-access-title">Solicitar acesso</h2>
+        <p>O acesso é liberado de forma controlada. Envie os dados da Empresa e a solicitação será analisada. O envio não cria uma conta nem concede acesso imediato.</p>
         @if (Model.MensagemSucesso is not null)
         {
             <div class="alert alert-success" role="status">@Model.MensagemSucesso</div>
