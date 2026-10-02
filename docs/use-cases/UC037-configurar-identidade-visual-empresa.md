@@ -2,7 +2,7 @@
 
 - **Área funcional:** Administração tenant / apresentação
 - **Dependências funcionais:** FT002, UC031
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Alteração de domínio/schema:** sim
 - **Migration:** sim
 - **Autorização de configuração:** AdministradorEmpresa
@@ -688,7 +688,17 @@ UC037 está concluída quando:
 - CI completa fica verde;
 - backlog marca UC037 como Concluído após implementação.
 
-## Branch sugerida
+## Implementação e validação
+
+A configuração é persistida em `IdentidadesVisuaisEmpresas`, pela migration `20261002144803_UC037_IdentidadeVisualEmpresa`, sem seed/backfill e sem alterar migrations históricas. PK/FK por EmpresaId, Restrict e checks reforçam cor uppercase, consistência do logo e limite de 512 KiB.
+
+`ServicoIdentidadeVisualEmpresa` serializa salvar/restaurar com execution strategy, transação Serializable e `sp_getapplock` por Empresa; revalida Empresa e vínculo Administrador dentro da transação. `IdentidadeVisualEmpresaAtual` é scoped e compartilha uma projeção leve por request entre layout, Dashboard e configuração, sem carregar bytes do logo ou alterar sessão.
+
+O multipart fica limitado a 1 MiB, com buffering em memória e leitura lógica limitada a 512 KiB. Assinatura PNG/JPEG determina o MIME, independentemente dos metadados do cliente. `/Empresa/Logo` usa EmpresaAtiva, GQF e headers `nosniff`/`no-store`.
+
+As suítes `IdentidadeVisualEmpresaTests`, `IdentidadeVisualEmpresaPersistenceTests` e `IdentidadeVisualEmpresaPageTests` cobrem domínio, checks, clean/upgrade, isolamento, autorização, ciclo de edição, concorrência, aplicação por perfil, troca de Empresa, logo e neutralidade das superfícies públicas/globais/erro. A suíte completa inclui regressões existentes de Dashboard, precificação e renderização de erros com banco indisponível.
+
+## Branch de implementação
 
 ~~~text
 feat/uc037-identidade-visual-empresa

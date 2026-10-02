@@ -1,0 +1,19 @@
+@page
+@model Precificador.Web.Pages.Configuracoes.IdentidadeVisualModel
+@{ ViewData["Title"] = "Identidade visual"; }
+<h1>Identidade visual</h1>
+<p>@Model.NomeEmpresa</p>
+@if (Model.Mensagem is not null) { <p role="status">@Model.Mensagem</p> }
+@if (Model.Identidade.Padrao) { <p>Padrão do Precificador</p> }
+<div class="empresa-identidade mb-3" style="--empresa-cor-primaria: @Model.Identidade.CorPrimaria">
+    <span>Cor atual: @Model.Identidade.CorPrimaria</span>
+    @if (Model.Identidade.TemLogo) { <img class="empresa-logo-dashboard" src="/Empresa/Logo" alt="Logo da @Model.NomeEmpresa" /> }
+</div>
+<form method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="Input.CorPrimaria">Cor primária (#RRGGBB)</label><input asp-for="Input.CorPrimaria" class="form-control" maxlength="7" /></div>
+    <div class="mb-3"><label asp-for="Input.Logo">Logo (PNG/JPEG, até 512 KiB)</label><input asp-for="Input.Logo" type="file" accept="image/png,image/jpeg" class="form-control" /></div>
+    <div class="mb-3"><input asp-for="Input.RemoverLogo" /><label asp-for="Input.RemoverLogo">Remover logo atual</label></div>
+    <button class="btn btn-primary" type="submit">Salvar</button>
+</form>
+<form method="post" asp-page-handler="RestaurarPadrao" class="mt-3"><button class="btn btn-outline-secondary" type="submit">Restaurar padrão</button></form>

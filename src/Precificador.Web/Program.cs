@@ -29,6 +29,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<EmpresaContext>();
+builder.Services.AddScoped<IdentidadeVisualEmpresaAtual>();
+builder.Services.AddScoped<ServicoIdentidadeVisualEmpresa>();
 builder.Services.AddScoped<IEmpresaContext>(provider => provider.GetRequiredService<EmpresaContext>());
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDataOperacionalEmpresa, DataOperacionalEmpresa>();

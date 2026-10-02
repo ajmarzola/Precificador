@@ -1,10 +1,19 @@
 @page
 @model Precificador.Web.Pages.Dashboard.IndexModel
 @using Precificador.Web.Apresentacao
+@inject Precificador.Web.Empresas.IdentidadeVisualEmpresaAtual IdentidadeAtual
+@inject Precificador.Web.Empresas.EmpresaContext EmpresaContext
 @{
     ViewData["Title"] = "Dashboard";
 }
-<h1>Dashboard</h1>
+@{ var identidade = await IdentidadeAtual.ObterAsync(); }
+<div class="empresa-identidade mb-3" style="@(identidade is null ? null : $"--empresa-cor-primaria: {identidade.CorPrimaria}")">
+    @if (identidade?.TemLogo == true)
+    {
+        <img class="empresa-logo-dashboard" src="/Empresa/Logo" alt="Logo da @EmpresaContext.Nome" />
+    }
+    <div><h1>Dashboard</h1><p class="mb-0">@EmpresaContext.Nome</p></div>
+</div>
 <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
     <div class="col"><div class="card h-100"><div class="card-body"><div>Produtos ativos</div><strong>@Model.ProdutosAtivos</strong></div></div></div>
     <div class="col"><div class="card h-100"><div class="card-body"><div>Insumos ativos</div><strong>@Model.InsumosAtivos</strong></div></div></div>

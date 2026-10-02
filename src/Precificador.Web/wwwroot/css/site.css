@@ -70,3 +70,8 @@ body {
 
 .home-hero, .home-section { overflow-wrap: anywhere; }
 .home-actions a:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }
+
+.empresa-navbar { border-bottom: 3px solid var(--empresa-cor-primaria) !important; }
+.empresa-identidade { border-left: 4px solid var(--empresa-cor-primaria); padding: 1rem; display: flex; align-items: center; gap: 1rem; }
+.empresa-logo-navbar { width: 32px; height: 32px; object-fit: contain; margin-right: .5rem; }
+.empresa-logo-dashboard { width: 72px; height: 72px; object-fit: contain; }
