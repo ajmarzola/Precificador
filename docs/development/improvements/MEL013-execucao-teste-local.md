@@ -3,7 +3,7 @@
 - **Origem:** Review MVP 2026-09-16
 - **Classificação:** Documentação / DX
 - **Prioridade:** média
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Dependências materiais:** FT001, FT002, MEL011, MEL020, MEL021, MEL028, FT003, UC038–UC040, UC039, UC031 e UC037 concluídos
 - **Dependência de MEL027:** não
 - **Dependência de UC035:** não
@@ -53,6 +53,8 @@ docs/development/execucao-teste-local.md
 ~~~
 
 O documento MEL013 continua como especificação/histórico do incremento.
+
+Entrega: [guia de execução e testes locais](../execucao-teste-local.md), com referências nos READMEs e validação documental. Os critérios CA01–CA04 registram a preparação/liberação anterior à implementação; o estado final desta entrega é Concluído.
 
 O README raiz e `docs/README.md` devem apontar para o novo guia após a implementação.
 

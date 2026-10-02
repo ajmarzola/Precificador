@@ -45,6 +45,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 
 ### Desenvolvimento
 
+- [`development/execucao-teste-local.md`](development/execucao-teste-local.md) — guia operacional de preparação, Setup, Empresa, migrations, testes e diagnóstico local.
 - [`development/foundation-technical.md`](development/foundation-technical.md) — FT001.
 - [`development/foundation-multiempresa-auth.md`](development/foundation-multiempresa-auth.md) — FT002.
 - [`development/foundation-administration-authorization.md`](development/foundation-administration-authorization.md) — FT003.

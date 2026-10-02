@@ -85,7 +85,7 @@ Regra operacional:
 | 25 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Concluído | MEL021 concluída; fallback HTML seguro, GET/POST e status preservados | [MEL025](improvements/MEL025-erros-paginas-nao-encontradas.md) |
 | 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Concluído | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
 | 27 | UC037 — Configurar identidade visual da Empresa | UC | Concluído | FT002, UC031 e MEL026 concluídas; cor/logo tenant-aware, SQL Server sem backfill e escrita concorrente protegida implementados | [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md) |
-| 28 | MEL013 — Documentar execução e teste local | MEL | Pronto | infraestrutura local, SQL Server, publicação manual, CI, acesso/administração e identidade visual concluídos; exceção explícita para fechar o primeiro bloco antes de MEL027/UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 28 | MEL013 — Documentar execução e teste local | MEL | Concluído | guia local entregue sobre infraestrutura e fluxos atuais; exceção operacional atendida antes de MEL027/UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
 | 29 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; adiado por decisão operacional; antes da próxima publicação automatizada em produção | Documento a criar |
 | 30 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; permanece após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027 e UC035 concluídos; produto, infraestrutura e experiência consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
@@ -149,6 +149,14 @@ Motivos:
 - a infraestrutura necessária à MEL013 já está estabilizada por MEL011, MEL020, MEL021, MEL028, FT003, UC038–UC040, UC039, UC031 e UC037.
 
 A alteração é de **ordem operacional**, não de escopo: MEL027 e UC035 permanecem Planejado e continuam obrigatórios antes do fechamento final MEL014.
+
+Após a conclusão documental da MEL013, a fila pendente permanece:
+
+~~~text
+MEL027 -> UC035 -> MEL014
+~~~
+
+O [guia local](execucao-teste-local.md) não implementa CD nem referências de mercado e não antecipa o Manual do Usuário.
 
 ## Melhorias concluídas
 
