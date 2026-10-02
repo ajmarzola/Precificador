@@ -558,7 +558,7 @@ Nenhuma validação de conflito temporal deve ser inferida.
 
 Uma Coleção pode possuir zero ou mais Categorias da mesma Empresa.
 
-Essa associação organiza o escopo comercial da Coleção, mas não inclui Produtos automaticamente nem restringe por si só a futura vinculação Produto-Coleção da UC034.
+Essa associação organiza o escopo comercial da Coleção, mas não inclui Produtos automaticamente nem restringe por si só a vinculação Produto-Coleção definida pela UC034.
 
 Desativar ou renomear uma Categoria não remove sua associação já existente com a Coleção.
 
