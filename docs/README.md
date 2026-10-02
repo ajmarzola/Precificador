@@ -39,6 +39,7 @@ Esta pasta é a fonte de verdade funcional e arquitetural do projeto.
 - [`use-cases/UC031-administrar-usuarios-vinculos.md`](use-cases/UC031-administrar-usuarios-vinculos.md) — administração tenant de usuários, perfis e vínculos.
 - [`use-cases/UC033-administrar-colecoes.md`](use-cases/UC033-administrar-colecoes.md) — administração tenant-aware de Coleções comerciais.
 - [`use-cases/UC034-vincular-produtos-colecoes.md`](use-cases/UC034-vincular-produtos-colecoes.md) — vínculo N:N de Produtos com Coleções.
+- [`use-cases/UC037-configurar-identidade-visual-empresa.md`](use-cases/UC037-configurar-identidade-visual-empresa.md) — cor e logo tenant-aware da Empresa.
 
 Cada caso de uso deve possuir um documento individual antes de sua implementação.
 
@@ -54,6 +55,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`development/melhorias.md`](development/melhorias.md) — backlog de melhorias não bloqueantes.
 - [`development/improvements/MEL025-erros-paginas-nao-encontradas.md`](development/improvements/MEL025-erros-paginas-nao-encontradas.md) — fallback Web amigável para erros e páginas não encontradas.
 - [`development/improvements/MEL026-home-publica.md`](development/improvements/MEL026-home-publica.md) — apresentação institucional responsiva da Home pública.
+- [`architecture/adr/ADR-015-logo-empresa-sql.md`](architecture/adr/ADR-015-logo-empresa-sql.md) — persistência do logo tenant no SQL Server/Azure SQL.
 
 ### Instruções para Codex
 
@@ -72,6 +74,7 @@ Cada caso de uso deve possuir um documento individual antes de sua implementaç�
 - [`codex/UC034-vincular-produtos-colecoes.md`](codex/UC034-vincular-produtos-colecoes.md)
 - [`codex/MEL025-erros-paginas-nao-encontradas.md`](codex/MEL025-erros-paginas-nao-encontradas.md)
 - [`codex/MEL026-home-publica.md`](codex/MEL026-home-publica.md)
+- [`codex/UC037-identidade-visual-empresa.md`](codex/UC037-identidade-visual-empresa.md)
 
 A especificação normativa e a instrução para o agente são documentos distintos: a especificação define **o que deve ser verdadeiro**; a instrução orienta **como executar a entrega sem extrapolar o escopo**.
 
