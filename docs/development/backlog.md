@@ -86,7 +86,7 @@ Regra operacional:
 | 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Concluído | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
 | 27 | UC037 — Configurar identidade visual da Empresa | UC | Concluído | FT002, UC031 e MEL026 concluídas; cor/logo tenant-aware, SQL Server sem backfill e escrita concorrente protegida implementados | [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md) |
 | 28 | MEL013 — Documentar execução e teste local | MEL | Concluído | guia local entregue sobre infraestrutura e fluxos atuais; exceção operacional atendida antes de MEL027/UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 29 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; adiado por decisão operacional; antes da próxima publicação automatizada em produção | Documento a criar |
+| 29 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Pronto | MEL021, MEL028 e MEL013 concluídas; OIDC, artefato imutável, migration explícita e deploy automático especificados | [MEL027](improvements/MEL027-continuous-deployment-azure.md) |
 | 30 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; permanece após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027 e UC035 concluídos; produto, infraestrutura e experiência consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
 
