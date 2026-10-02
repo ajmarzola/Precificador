@@ -4,7 +4,7 @@ O transporte usa SMTP via MailKit, separado do `ServicoConta`. Não há envio re
 
 ## App Settings
 
-No Azure, configurar os nomes abaixo em App Service Application Settings. Localmente, usar variáveis de ambiente ou user-secrets. Não versionar credenciais.
+No Azure, configurar os nomes abaixo em App Service Application Settings. Localmente, o caminho padrão documentado pela MEL013 é usar variáveis de ambiente. O projeto não possui `UserSecretsId` versionado; `user-secrets` só deve ser usado se essa capacidade for configurada explicitamente em trabalho separado. Não versionar credenciais.
 
 | App Setting / variável | Finalidade |
 |---|---|

@@ -85,10 +85,10 @@ Regra operacional:
 | 25 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Concluído | MEL021 concluída; fallback HTML seguro, GET/POST e status preservados | [MEL025](improvements/MEL025-erros-paginas-nao-encontradas.md) |
 | 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Concluído | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
 | 27 | UC037 — Configurar identidade visual da Empresa | UC | Concluído | FT002, UC031 e MEL026 concluídas; cor/logo tenant-aware, SQL Server sem backfill e escrita concorrente protegida implementados | [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md) |
-| 28 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; após UC037 na fila e antes da próxima publicação em produção | Documento a criar |
-| 29 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 30 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031 e UC035; após UC035 na fila | [MEL013](improvements/MEL013-execucao-teste-local.md) |
-| 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | todos os itens anteriores da fila; produto, infraestrutura e experiência consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 28 | MEL013 — Documentar execução e teste local | MEL | Pronto | infraestrutura local, SQL Server, publicação manual, CI, acesso/administração e identidade visual concluídos; exceção explícita para fechar o primeiro bloco antes de MEL027/UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
+| 29 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; adiado por decisão operacional; antes da próxima publicação automatizada em produção | Documento a criar |
+| 30 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; permanece após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 31 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027 e UC035 concluídos; produto, infraestrutura e experiência consolidados | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -104,10 +104,10 @@ Regra operacional:
 - **18–22 — acesso controlado, administração e multiusuário:** separar o bootstrap do sistema da administração cotidiana; criar um `SystemAdmin` global sem vínculo com Empresa; receber solicitações públicas sem auto-registro; ativar contas e recuperar acesso por token; permitir ao SystemAdmin aprovar/administrar Empresas e, em seguida, ao Administrador da Empresa gerenciar somente os vínculos do próprio tenant;
 - **23–24 — expansão de catálogo:** introduzir Coleções sobre a Categoria estruturada já entregue;
 - **25–27 — acabamento e apresentação:** tratar erros/404 de forma amigável, enriquecer a Home pública e aplicar identidade visual tenant-aware antes de voltar a expansões mais profundas;
-- **28 — entrega contínua:** automatizar o deploy no Azure após o fluxo manual da MEL021 estar estabilizado e antes da próxima publicação em produção;
-- **29 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
-- **30 — documentação técnica:** consolidar execução e teste local somente depois da infraestrutura, CD e UC035 estarem estabilizados;
-- **31 — documentação do usuário:** criar o Manual do Usuário somente depois de os fluxos funcionais, infraestrutura e experiência visual estarem consolidados.
+- **28 — fechamento técnico do primeiro bloco:** consolidar a execução e os testes locais sobre a infraestrutura e os fluxos já estabilizados;
+- **29 — entrega contínua:** automatizar o deploy no Azure quando houver ambiente adequado para manipular credenciais e contexto Azure, antes da próxima publicação automatizada em produção;
+- **30 — inteligência de mercado:** consultar referências externas comparáveis como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial;
+- **31 — documentação do usuário:** criar o Manual do Usuário depois de MEL013, MEL027 e UC035, quando produto, infraestrutura e experiência estiverem consolidados.
 
 ### Reordenação da fila restante — 02/10/2026
 
@@ -133,15 +133,22 @@ A mudança não viola dependências técnicas existentes:
 - MEL013 continua depois de UC035;
 - MEL014 permanece como fechamento final.
 
-### Fila após UC037
+### Exceção operacional após UC037 — MEL013 antes de MEL027/UC035
 
-Após a conclusão da UC037, a próxima fila permanece:
+Em 02/10/2026 foi tomada uma decisão explícita para concluir primeiro a documentação técnica local:
 
 ~~~text
-MEL027 -> UC035 -> MEL013 -> MEL014
+MEL013 -> MEL027 -> UC035 -> MEL014
 ~~~
 
-MEL027 continua Planejado e sua implementação depende da especificação/liberação própria; a UC037 não implementa CD nem antecipa UC035.
+Motivos:
+
+- MEL027 envolve contexto Azure, credenciais e pipeline; sua execução foi adiada para uma máquina/ambiente apropriado;
+- MEL013 não depende tecnicamente de CD automatizado;
+- UC035 também não é dependência técnica para documentar preparação, execução, migrations e testes locais;
+- a infraestrutura necessária à MEL013 já está estabilizada por MEL011, MEL020, MEL021, MEL028, FT003, UC038–UC040, UC039, UC031 e UC037.
+
+A alteração é de **ordem operacional**, não de escopo: MEL027 e UC035 permanecem Planejado e continuam obrigatórios antes do fechamento final MEL014.
 
 ## Melhorias concluídas
 

@@ -65,10 +65,6 @@ Um teste de integração deve iniciar a aplicação em `Development` apontando p
 
 ## Observação sobre o arquivo SQLite
 
-A connection string atual continua:
+À época da MEL011, a persistência local ainda era SQLite e usava `precificador.db`. Essa decisão foi posteriormente substituída pela MEL020.
 
-~~~text
-Data Source=precificador.db
-~~~
-
-O caminho relativo ainda deve ser explicado pelo MEL013, inclusive para evitar confusão sobre qual arquivo está sendo utilizado no ambiente local.
+A MEL013 deve documentar apenas o estado vigente: SQL Server em desenvolvimento, LocalDB como padrão Windows e `ConnectionStrings__Precificador` como override. O trecho histórico de SQLite não deve ser tratado como instrução atual.
