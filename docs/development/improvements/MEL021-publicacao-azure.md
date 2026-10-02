@@ -441,15 +441,18 @@ Não expor Detailed Errors em Production.
 
 ## Primeiro uso
 
-Com banco migrado e sem usuários:
+Fluxo atual após FT003 e UC038–UC040, com banco migrado e sem SystemAdmin (o registro da publicação original acima é histórico):
 
 ```text
 Entrar
 -> /Conta/Login
--> zero usuários
+-> nenhum SystemAdmin
 -> /Setup
--> cria primeiro usuário/empresa
--> login normal
+-> com Bootstrap__SystemAdminKey, cria somente SystemAdmin
+-> login em /Admin
+-> solicitação pública e aprovação criam Empresa/Administrador
+-> identidade nova ativa senha por e-mail
+-> login do Administrador resolve/seleciona Empresa Ativa
 ```
 
 FT002, MEL011 e MEL012 permanecem válidos.
@@ -484,10 +487,10 @@ Após deploy:
 
 1. HTTPS responde;
 2. Home carrega;
-3. zero usuários leva a Setup;
-4. Setup cria usuário/empresa;
-5. login funciona;
-6. Empresa Ativa é resolvida;
+3. Login sem SystemAdmin leva a Setup;
+4. com chave de bootstrap configurada, Setup cria somente SystemAdmin e seu login leva a `/Admin`;
+5. solicitação aprovada cria Empresa/Administrador e identidade nova ativa senha com SMTP configurado;
+6. login do Administrador resolve Empresa Ativa ou permite seleção multiempresa;
 7. cadastrar/consultar Insumo;
 8. cadastrar/consultar Produto;
 9. aplicação acessa SQL via Managed Identity;

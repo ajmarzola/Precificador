@@ -27,6 +27,8 @@ A publicação inicial usa Azure App Service F1/Linux e Azure SQL Database Free 
 
 A documentação normativa do projeto está em [`docs/`](docs/README.md).
 
+Para preparar o ambiente, executar a aplicação e validar as suítes, siga o [guia de execução e testes locais](docs/development/execucao-teste-local.md).
+
 Antes de implementar qualquer alteração, consulte também [`AGENTS.md`](AGENTS.md), que define as regras de trabalho para agentes de código.
 
 ## Escopo
