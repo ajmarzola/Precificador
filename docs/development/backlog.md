@@ -84,7 +84,7 @@ Regra operacional:
 | 24 | UC034 — Vincular Produtos a Coleções | UC | Concluído | UC032 e UC033 concluídas | [UC034](../use-cases/UC034-vincular-produtos-colecoes.md) |
 | 25 | MEL025 — Tratar erros e páginas não encontradas com experiência amigável | MEL | Concluído | MEL021 concluída; fallback HTML seguro, GET/POST e status preservados | [MEL025](improvements/MEL025-erros-paginas-nao-encontradas.md) |
 | 26 | MEL026 — Enriquecer Home pública com apresentação do Precificador | MEL | Concluído | MEL012 e MEL025 concluídas | [MEL026](improvements/MEL026-home-publica.md) |
-| 27 | UC037 — Configurar identidade visual da Empresa | UC | Planejado | FT002 e UC031 concluídas; após MEL026 na fila | Documento a criar |
+| 27 | UC037 — Configurar identidade visual da Empresa | UC | Pronto | FT002, UC031 e MEL026 concluídas | [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md) |
 | 28 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Planejado | MEL021 concluída; após UC037 na fila e antes da próxima publicação em produção | Documento a criar |
 | 29 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | UC011, UC025 e UC034 concluídas; após MEL027 na fila | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
 | 30 | MEL013 — Documentar execução e teste local | MEL | Planejado | MEL011, MEL020, MEL021, FT003, UC038–UC040, UC031 e UC035; após UC035 na fila | [MEL013](improvements/MEL013-execucao-teste-local.md) |

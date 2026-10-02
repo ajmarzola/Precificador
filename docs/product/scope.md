@@ -11,6 +11,7 @@ O MVP contempla:
 - bootstrap protegido do primeiro Administrador do Sistema, separado de Empresas;
 - solicitação controlada de acesso, ativação/recuperação de conta por e-mail, administração de Empresas e gestão de usuários/vínculos;
 - perfis Administrador/Operacional contextualizados por Empresa;
+- identidade visual mínima por Empresa, com cor primária e logo opcional;
 - cadastro, edição, consulta e desativação de insumos;
 - histórico de preços de insumos;
 - cálculo do custo unitário de compra;

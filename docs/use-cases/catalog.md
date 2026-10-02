@@ -144,6 +144,7 @@ Linha planejada:
 | [UC040](UC040-ativar-conta-recuperar-acesso.md) | Ativar conta e recuperar acesso | FT003 |
 | [UC039](UC039-administrar-empresas-solicitacoes.md) | Administrar Empresas e solicitações de acesso | FT003, UC038, UC040 |
 | [UC031](UC031-administrar-usuarios-vinculos.md) | Administrar usuários e vínculos com Empresas | FT003, UC039, UC040 |
+| [UC037](UC037-configurar-identidade-visual-empresa.md) | Configurar identidade visual da Empresa | FT002, UC031 |
 
 Direções já fechadas:
 
@@ -169,6 +170,10 @@ Direções já fechadas:
 - convite cria/reativa vínculo imediatamente e reutiliza ativação/aviso da UC040, sem tabela de convite;
 - desvínculo é lógico por `UsuarioEmpresa.Ativo = false`;
 - demissão/desvínculo nunca podem deixar uma Empresa Ativa sem Administrador, inclusive sob concorrência.
+- UC037 adiciona identidade visual tenant-aware separada da entidade Empresa, com cor primária e logo opcional;
+- somente AdministradorEmpresa configura identidade; Operacionais apenas consomem o branding do tenant ativo;
+- logo é persistido no SQL Server/Azure SQL, limitado a PNG/JPEG de até 512 KiB e servido somente pela Empresa Ativa;
+- Home pública, SystemAdmin e página de erro permanecem neutros.
 
 A [review de primeiro uso de 2026-09-16](../development/reviews/2026-09-16-review-mvp-primeiro-uso.md) registra essas decisões e a separação de responsabilidades.
 
