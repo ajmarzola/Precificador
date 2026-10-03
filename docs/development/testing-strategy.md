@@ -125,4 +125,8 @@ Novos pushes na mesma PR podem cancelar runs anteriores ainda ativos. O job poss
 
 ### Relação com CD
 
-CI responde se a mudança pode entrar em `master`. A MEL027/Continuous Deployment deverá executar a validação completa antes da publicação, sem reutilizar o caminho documental rápido como gate de deploy.
+CI responde se a mudança pode entrar em `master`. A MEL027 mantém o gate full antes da publicação: somente push em `master` gera ZIP e migration bundle após todos os testes, e `deploy-production` depende de `build-and-test`. PR documental continua rápido; PR com scripts/workflow exige full e nunca acessa Azure.
+
+O deploy promove o artefato da mesma execução/SHA, valida hashes e preflight, executa migration passwordless com identidade dedicada, confirma cleanup do firewall e só então publica e faz GET anônimo de `/` e `/Conta/Login`. Não recompila nem repete testes no job de deploy. Validar os scripts em PowerShell 7, sintaxe do workflow, geração dos dois artefatos e os cenários fail-closed/cleanup conforme a matriz da MEL027.
+
+A primeira evidência operacional exige CI full master verde, OIDC, migration, cleanup, ZIP deploy e smoke reais. Até essa evidência pós-merge, MEL027 permanece `Pronto`; validação local e CI da PR não substituem o primeiro CD.

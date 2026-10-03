@@ -23,6 +23,8 @@ Projeto reiniciado em setembro de 2026 com novo escopo. A implementação será 
 
 A publicação inicial usa Azure App Service F1/Linux e Azure SQL Database Free offer, com custo alvo zero, Managed Identity e migrations explícitas de deploy. O procedimento reproduzível fica em [`infra/azure/`](infra/azure/README.md).
 
+A MEL027 implementa `master -> CI full -> artefato imutável -> OIDC -> migration explícita -> ZIP deploy -> smoke`. PRs preservam a classificação MEL028 e nunca fazem deploy. A ativação exige bootstrap Azure e configuração do environment `production`; a conclusão operacional depende do primeiro deployment automático real pós-merge. O deploy manual permanece disponível como fallback.
+
 ## Documentação
 
 A documentação normativa do projeto está em [`docs/`](docs/README.md).
