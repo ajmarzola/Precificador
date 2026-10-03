@@ -12,7 +12,7 @@ Evoluir `ci.yml`: `master` sempre executa restore/build/unit/integration, public
 
 O environment `production` restringe deployments a `master`, sem aprovação obrigatória por execução. GitHub OIDC usa uma User Assigned Managed Identity dedicada, com subject `repo:ajmarzola/Precificador:environment:production`, issuer GitHub e audience `api://AzureADTokenExchange`.
 
-RBAC: Website Contributor somente na Web App; SQL Security Manager somente no SQL logical server; Reader somente no App Service Plan para o preflight F1. A permissão de leitura no plano é necessária porque a atribuição na Web App não cobre o recurso irmão do plano. O bootstrap descobre e valida as roles built-in; nunca amplia para Owner/Contributor no Resource Group.
+RBAC em quatro escopos: Website Contributor somente na Web App; SQL Security Manager somente no SQL logical server para firewall; Reader somente no App Service Plan para o preflight F1; Reader somente no Azure SQL Database específico para consultar Free/AutoPause. A atribuição na Web App não cobre o recurso irmão do plano, e SQL Security Manager não concede `Microsoft.Sql/servers/databases/read`. O bootstrap obtém e valida o ID do database antes de atribuir RBAC, descobre as roles built-in e recusa permissões inesperadas; nunca amplia leitura ao SQL server inteiro nem para Owner/Contributor no Resource Group.
 
 O usuário SQL CD usa SID derivado do **client ID**, com `db_ddladmin`, `db_datareader` e `db_datawriter`. A identidade runtime permanece separada, sem DDL. O bootstrap administrativo é idempotente e falha diante de confiança, SID ou permissões divergentes.
 
@@ -30,7 +30,7 @@ Deployments usam concurrency `precificador-production` e `cancel-in-progress: fa
 
 ## Consequências
 
-O bootstrap Azure e a configuração do environment são administrativos e antecedem o primeiro run pós-merge. F1 não tem slot; migrations futuras devem ser compatíveis com a aplicação imediatamente anterior. Falha de migration ou cleanup impede ZIP deploy; falha de deploy/smoke mantém job vermelho, sem executar Down. O fallback manual continua disponível em PowerShell 7.
+O bootstrap Azure e as oito variables do environment devem estar concluídos e confirmados **antes do merge**, pois o push resultante em `master` dispara o primeiro CD real. A PR permanece draft enquanto esse gate administrativo estiver pendente. F1 não tem slot; migrations futuras devem ser compatíveis com a aplicação imediatamente anterior. Falha de migration ou cleanup impede ZIP deploy; falha de deploy/smoke mantém job vermelho, sem executar Down. O fallback manual continua disponível em PowerShell 7.
 
 `finally` e `always()` cobrem falhas normais e interrupções em que o runner ainda executa cleanup. Perda total do runner/processo pode exigir remoção administrativa da regra específica; essa ocorrência bloqueia a conclusão operacional até haver evidência de cleanup. Não existe garantia de cleanup executável em uma máquina destruída.
 

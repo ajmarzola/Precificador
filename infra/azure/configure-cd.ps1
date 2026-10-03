@@ -17,6 +17,11 @@ Set-StrictMode -Version Latest
 Import-Module SqlServer -ErrorAction Stop
 $webApp = Assert-DeploymentTarget
 $server = Invoke-AzJson @("sql", "server", "show", "-g", $ResourceGroupName, "-n", $SqlServerName)
+$database = Invoke-AzJson @("sql", "db", "show", "-g", $ResourceGroupName, "-s", $SqlServerName, "-n", $SqlDatabaseName)
+$expectedDatabaseId = "$($server.id)/databases/$SqlDatabaseName"
+if ($null -eq $database -or $database.id -ne $expectedDatabaseId) {
+    throw "Database nao corresponde ao recurso esperado; bootstrap interrompido."
+}
 $plan = Invoke-AzJson @("appservice", "plan", "show", "-g", $ResourceGroupName, "-n", $AppServicePlanName)
 $identities = @(Invoke-AzJson @("identity", "list", "-g", $ResourceGroupName))
 $identity = $identities | Where-Object { $_.name -eq $IdentityName } | Select-Object -First 1
@@ -43,7 +48,9 @@ $desired = @(
     @{ Scope = $webApp.id; Role = "Website Contributor" },
     @{ Scope = $server.id; Role = "SQL Security Manager" },
     # Website Contributor na Web App nao concede leitura no recurso irmao serverFarm.
-    @{ Scope = $plan.id; Role = "Reader" }
+    @{ Scope = $plan.id; Role = "Reader" },
+    # SQL Security Manager no servidor nao concede databases/read ao preflight.
+    @{ Scope = $database.id; Role = "Reader" }
 )
 $assignments = @(Invoke-AzJson @("role", "assignment", "list", "--assignee-object-id", $identity.principalId, "--all", "--include-inherited"))
 foreach ($assignment in $assignments) {

@@ -15,7 +15,9 @@
 
 ## Handoff da implementação
 
-O workflow e os scripts implementam o fluxo descrito nesta especificação; [ADR-016](../../architecture/adr/ADR-016-continuous-deployment-oidc-azure.md) registra a decisão e a leitura adicional restrita ao plano necessária ao preflight. O [procedimento Azure](../../../infra/azure/README.md) descreve bootstrap, environment e fallback manual.
+O workflow e os scripts implementam o fluxo descrito nesta especificação; [ADR-016](../../architecture/adr/ADR-016-continuous-deployment-oidc-azure.md) registra a decisão e a leitura adicional restrita ao plano e ao database específico necessária ao preflight. O [procedimento Azure](../../../infra/azure/README.md) descreve bootstrap, environment e fallback manual.
+
+Gate obrigatório **antes do merge**: confirmar bootstrap Azure (UAMI/federação/quatro escopos RBAC/usuário SQL) e as oito environment variables. A PR permanece draft até esse gate estar atendido, pois o merge já dispara CD em `master`.
 
 O estado permanece `Pronto` até a CI da PR estar verde, a configuração administrativa estar confirmada e o primeiro run real pós-merge comprovar OIDC, migration, remoção do firewall, deploy e smoke. Não fazer merge pelo agente nem liberar UC035 com base somente no código entregue.
 

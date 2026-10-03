@@ -90,7 +90,7 @@ O fallback manual requer PowerShell 7 e Azure CLI. Executa o gate completo, gera
 
 ## Configuração única do Continuous Deployment — MEL027
 
-Pré-requisitos administrativos: contexto Azure explicitamente selecionado, permissão de criar UAMI/federação e atribuir RBAC nos três recursos específicos; acesso SQL como Entra administrator. O script não troca tenant/subscription, não cria plano/banco e não configura o GitHub.
+Pré-requisitos administrativos: contexto Azure explicitamente selecionado, permissão de criar UAMI/federação e atribuir RBAC nos quatro recursos específicos; acesso SQL como Entra administrator. O script não troca tenant/subscription, não cria plano/banco e não configura o GitHub.
 
 Em PowerShell 7, disponibilize o módulo administrativo `SqlServer` (por exemplo, `Install-Module SqlServer -Scope CurrentUser`) e execute com os nomes reais do piloto:
 
@@ -105,7 +105,7 @@ Em PowerShell 7, disponibilize o módulo administrativo `SqlServer` (por exemplo
   -SubscriptionId <SubscriptionId>
 ```
 
-O bootstrap é idempotente: cria/localiza `mi-precificador-cd`, valida confiança GitHub restrita ao repo/environment production, descobre as roles built-in e confirma as atribuições. Concede Website Contributor na Web App, SQL Security Manager no SQL logical server e Reader apenas no plano (leitura F1). Recusa atribuições/federações divergentes; não usa Owner/Contributor amplo. Cria usuário SQL pelo SID do **client ID** com `db_ddladmin`, `db_datareader` e `db_datawriter`, sem promover runtime. Um SID divergente exige revisão administrativa, sem apagar usuários automaticamente.
+O bootstrap é idempotente: cria/localiza `mi-precificador-cd`, valida confiança GitHub restrita ao repo/environment production, descobre as roles built-in e confirma as atribuições. Concede Website Contributor na Web App, SQL Security Manager no SQL logical server para firewall, Reader apenas no plano (leitura F1) e Reader apenas no database específico (leitura Free/AutoPause). Obtém e valida `$database.id`: SQL Security Manager não concede `Microsoft.Sql/servers/databases/read`. Recusa atribuições/federações divergentes, inclusive Reader no SQL server inteiro ou Resource Group; não usa Owner/Contributor amplo. Cria usuário SQL pelo SID do **client ID** com `db_ddladmin`, `db_datareader` e `db_datawriter`, sem promover runtime. Um SID divergente exige revisão administrativa, sem apagar usuários automaticamente.
 
 No GitHub, em Settings → Environments:
 
@@ -135,6 +135,8 @@ Concurrency `precificador-production` impede deployments simultâneos e não can
 
 ## Validação e primeiro run pós-merge
 
+**Gate antes do merge:** concluir e confirmar bootstrap Azure (UAMI, federação, quatro escopos RBAC e usuário SQL) e as oito environment variables. Manter a PR em draft enquanto houver pendência: o merge em `master` já dispara o primeiro CD real. CI verde não substitui esse gate administrativo.
+
 Antes do merge, validar restore/build/unit/integration, sintaxe YAML/actions e PowerShell 7, geração real do ZIP e bundle e guards/cleanup. `build-artifact.ps1` pressupõe gate full já aprovado e diretório de saída novo:
 
 ```powershell
@@ -147,7 +149,7 @@ O estado MEL027 permanece `Pronto`. A evidência final exige CI full master verd
 ## Troubleshooting do CD
 
 - OIDC: revisar environment, branch permitida, subject/audience e identifiers; não substituir por segredo.
-- RBAC/preflight: confirmar roles e escopos com Azure CLI; Reader no plano é necessário ao guard F1. Falha de leitura interrompe; não ampliar ao Resource Group.
+- RBAC/preflight: confirmar os quatro escopos com Azure CLI; Reader no plano permite o guard F1 e Reader no database permite Free/AutoPause. Falha de leitura interrompe; não ampliar ao SQL server inteiro ou Resource Group.
 - Migration: conferir usuário/SID client ID, roles SQL, firewall e disponibilidade Free/AutoPause. O EF preserva retry transitório; não repetir falha de autorização ou migration inválida indefinidamente.
 - Cleanup: se falhar, job fica vermelho e ZIP não é publicado; remover a regra específica e confirmar. Não criar allowlist genérica 0.0.0.0.
 - Deploy/smoke: conferir logs operacionais sem tokens/settings sensíveis; seis tentativas por endpoint cobrem cold start. 5xx persistente é falha, sem Setup/POST/dados de produção.
