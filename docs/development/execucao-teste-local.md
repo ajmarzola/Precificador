@@ -249,4 +249,4 @@ Confirme que o daemon responde. No Windows, Docker Desktop/WSL2 pode ser a infra
 
 Execução local não exige Azure CLI ou login Azure. Testes usam SQL Server temporário, sem Azure SQL. Não copie a connection string local para Production nem habilite migrations automáticas nesse ambiente.
 
-Production usa Managed Identity e migrations explícitas conforme a [MEL021](improvements/MEL021-publicacao-azure.md) e o [procedimento Azure](../../infra/azure/README.md). Consulte também a [arquitetura](../architecture/architecture.md). MEL027/CD e UC035 permanecem Planejado; MEL014 será o fechamento posterior com o Manual do Usuário. Este guia cobre a preparação técnica local.
+Production usa Managed Identity e migrations explícitas conforme a [MEL021](improvements/MEL021-publicacao-azure.md) e o [procedimento Azure](../../infra/azure/README.md). Consulte também a [arquitetura](../architecture/architecture.md). MEL027/CD permanece Pronto até o primeiro deployment automático real validado; UC035 permanece Planejado e MEL014 será o fechamento posterior com o Manual do Usuário. Este guia cobre a preparação técnica local e não exige Azure/CD.
