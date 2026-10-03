@@ -1,4 +1,4 @@
-# Publica??o Azure ? MEL021 / MEL027
+# Publicação Azure — MEL021 / MEL027
 
 Scripts reproduziveis para provisionar e publicar o Precificador em Azure App Service F1 e Azure SQL Database Free offer, sem fallback pago.
 
@@ -86,13 +86,13 @@ Se qualquer pre-condicao gratuita ou passwordless falhar, o script interrompe. E
   -SubscriptionId <SubscriptionId>
 ```
 
-O fallback manual requer PowerShell 7 e Azure CLI. Executa o gate completo, gera ZIP port?vel e migration bundle do build Release, aplica o bundle explicitamente, confirma remo??o da regra tempor?ria e publica. O smoke valida `/` e `/Conta/Login` sem autentica??o, com retry limitado.
+O fallback manual requer PowerShell 7 e Azure CLI. Executa o gate completo, gera ZIP portável e migration bundle do build Release, aplica o bundle explicitamente, confirma remoção da regra temporária e publica. O smoke valida `/` e `/Conta/Login` sem autenticação, com retry limitado.
 
-## Configura??o ?nica do Continuous Deployment ? MEL027
+## Configuração única do Continuous Deployment — MEL027
 
-Pr?-requisitos administrativos: contexto Azure explicitamente selecionado, permiss?o de criar UAMI/federa??o e atribuir RBAC nos tr?s recursos espec?ficos; acesso SQL como Entra administrator. O script n?o troca tenant/subscription, n?o cria plano/banco e n?o configura o GitHub.
+Pré-requisitos administrativos: contexto Azure explicitamente selecionado, permissão de criar UAMI/federação e atribuir RBAC nos três recursos específicos; acesso SQL como Entra administrator. O script não troca tenant/subscription, não cria plano/banco e não configura o GitHub.
 
-Em PowerShell 7, disponibilize o m?dulo administrativo `SqlServer` (por exemplo, `Install-Module SqlServer -Scope CurrentUser`) e execute com os nomes reais do piloto:
+Em PowerShell 7, disponibilize o módulo administrativo `SqlServer` (por exemplo, `Install-Module SqlServer -Scope CurrentUser`) e execute com os nomes reais do piloto:
 
 ```powershell
 ./infra/azure/configure-cd.ps1 `
@@ -105,53 +105,53 @@ Em PowerShell 7, disponibilize o m?dulo administrativo `SqlServer` (por exemplo,
   -SubscriptionId <SubscriptionId>
 ```
 
-O bootstrap ? idempotente: cria/localiza `mi-precificador-cd`, valida confian?a GitHub restrita ao repo/environment production, descobre as roles built-in e confirma as atribui??es. Concede Website Contributor na Web App, SQL Security Manager no SQL logical server e Reader apenas no plano (leitura F1). Recusa atribui??es/federa??es divergentes; n?o usa Owner/Contributor amplo. Cria usu?rio SQL pelo SID do **client ID** com `db_ddladmin`, `db_datareader` e `db_datawriter`, sem promover runtime. Um SID divergente exige revis?o administrativa, sem apagar usu?rios automaticamente.
+O bootstrap é idempotente: cria/localiza `mi-precificador-cd`, valida confiança GitHub restrita ao repo/environment production, descobre as roles built-in e confirma as atribuições. Concede Website Contributor na Web App, SQL Security Manager no SQL logical server e Reader apenas no plano (leitura F1). Recusa atribuições/federações divergentes; não usa Owner/Contributor amplo. Cria usuário SQL pelo SID do **client ID** com `db_ddladmin`, `db_datareader` e `db_datawriter`, sem promover runtime. Um SID divergente exige revisão administrativa, sem apagar usuários automaticamente.
 
-No GitHub, em Settings ? Environments:
+No GitHub, em Settings → Environments:
 
-1. Criar `production` sem required reviewers/espera obrigat?ria por execu??o.
-2. Em Deployment branches and tags, selecionar branches espec?ficas e permitir somente a branch `master`, sem regra para tags.
+1. Criar `production` sem required reviewers/espera obrigatória por execução.
+2. Em Deployment branches and tags, selecionar branches específicas e permitir somente a branch `master`, sem regra para tags.
 3. Registrar como **environment variables** os oito identificadores impressos pelo bootstrap: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `AZURE_WEBAPP_NAME`, `AZURE_SQL_SERVER`, `AZURE_SQL_DATABASE` e `AZURE_APP_SERVICE_PLAN`.
-4. Confirmar subject `repo:ajmarzola/Precificador:environment:production`, issuer `https://token.actions.githubusercontent.com` e audience `api://AzureADTokenExchange` na federa??o.
+4. Confirmar subject `repo:ajmarzola/Precificador:environment:production`, issuer `https://token.actions.githubusercontent.com` e audience `api://AzureADTokenExchange` na federação.
 
-Nenhum segredo GitHub ? necess?rio. N?o criar client secret, publish profile ou SQL password. Valores reais ficam no ambiente administrativo/GitHub, nunca no reposit?rio ou na PR.
+Nenhum segredo GitHub é necessário. Não criar client secret, publish profile ou SQL password. Valores reais ficam no ambiente administrativo/GitHub, nunca no repositório ou na PR.
 
-## Deploy autom?tico
+## Deploy automático
 
 ```text
-push master ? build-and-test full ? ZIP + bundle ? upload por SHA
-? deploy-production/production ? download da mesma execu??o ? OIDC
-? preflight ? firewall por run/attempt ? bundle ? cleanup confirmado
-? az webapp deploy ZIP ? GET / e /Conta/Login ? Step Summary
+push master -> build-and-test full -> ZIP + bundle -> upload por SHA
+-> deploy-production/production -> download da mesma execução -> OIDC
+-> preflight -> firewall por run/attempt -> bundle -> cleanup confirmado
+-> az webapp deploy ZIP -> GET / e /Conta/Login -> Step Summary
 ```
 
-PRs preservam MEL028 e nunca fazem deploy. `deploy-production` n?o executa build/test/publish; consome o artefato `precificador-deploy-<SHA>` retido por 30 dias. `manifest.json` registra SHA e SHA256 do ZIP/bundle. O bundle self-contained Linux n?o precisa de SDK no job de deploy; `appsettings.json` vazio acompanha a factory que recebe a conex?o pelo ambiente. O ZIP usa `/` nas entradas, inclusive quando gerado no Windows.
+PRs preservam MEL028 e nunca fazem deploy. `deploy-production` não executa build/test/publish; consome o artefato `precificador-deploy-<SHA>` retido por 30 dias. `manifest.json` registra SHA e SHA256 do ZIP/bundle. O bundle self-contained Linux não precisa de SDK no job de deploy; `appsettings.json` vazio acompanha a factory que recebe a conexão pelo ambiente. O ZIP usa `/` nas entradas, inclusive quando gerado no Windows.
 
-`common.ps1` centraliza o preflight dos fluxos manual/CD/bootstrap: contexto Enabled e tenant/subscription corretos, plano efetivo da Web App F1, SQL Free/AutoPause, HTTPS Only, runtime Managed Identity sem User ID/Password/UID/PWD, timeout m?nimo e mesmo servidor/database da migration. Qualquer diverg?ncia falha antes de migration. Application Settings, SMTP, URL p?blica e Setup s?o preservados.
+`common.ps1` centraliza o preflight dos fluxos manual/CD/bootstrap: contexto Enabled e tenant/subscription corretos, plano efetivo da Web App F1, SQL Free/AutoPause, HTTPS Only, runtime Managed Identity sem User ID/Password/UID/PWD, timeout mínimo e mesmo servidor/database da migration. Qualquer divergência falha antes de migration. Application Settings, SMTP, URL pública e Setup são preservados.
 
-Firewall usa `github-cd-<run-id>-<attempt>` e apenas o IPv4 detectado. `finally` remove e consulta novamente as regras; erro no cleanup bloqueia deploy. O workflow tamb?m executa cleanup com `always()`. N?o assumir que finally pode rodar ap?s perda total de runner: nessa ocorr?ncia, remover administrativamente a regra exata e confirmar aus?ncia antes de concluir o incidente.
+Firewall usa `github-cd-<run-id>-<attempt>` e apenas o IPv4 detectado. `finally` remove e consulta novamente as regras; erro no cleanup bloqueia deploy. O workflow também executa cleanup com `always()`. Não assumir que finally pode rodar após perda total de runner: nessa ocorrência, remover administrativamente a regra exata e confirmar ausência antes de concluir o incidente.
 
-Concurrency `precificador-production` impede deployments simult?neos e n?o cancela o job em execu??o. O GitHub pode substituir um job ainda pendente por push posterior; n?o h? garantia FIFO de cada commit. Rerun de execu??o master autorizada ? permitido; n?o h? workflow_dispatch de SHA arbitr?rio.
+Concurrency `precificador-production` impede deployments simultâneos e não cancela o job em execução. O GitHub pode substituir um job ainda pendente por push posterior; não há garantia FIFO de cada commit. Rerun de execução master autorizada é permitido; não há workflow_dispatch de SHA arbitrário.
 
-## Valida??o e primeiro run p?s-merge
+## Validação e primeiro run pós-merge
 
-Antes do merge, validar restore/build/unit/integration, sintaxe YAML/actions e PowerShell 7, gera??o real do ZIP e bundle e guards/cleanup. `build-artifact.ps1` pressup?e gate full j? aprovado e diret?rio de sa?da novo:
+Antes do merge, validar restore/build/unit/integration, sintaxe YAML/actions e PowerShell 7, geração real do ZIP e bundle e guards/cleanup. `build-artifact.ps1` pressupõe gate full já aprovado e diretório de saída novo:
 
 ```powershell
 ./infra/azure/build-artifact.ps1 -OutputDirectory <DiretorioNovo> -Runtime linux-x64 -CommitSha <SHA>
 ./infra/azure/validate-cd.ps1
 ```
 
-O estado MEL027 permanece `Pronto`. A evid?ncia final exige CI full master verde, login OIDC, migration, firewall cleanup, ZIP deploy e smoke reais, com produ??o acess?vel e nenhuma regra tempor?ria restante. Somente ap?s esse run atualizar MEL027/backlog para `Conclu?do` em outra PR. O agente n?o faz merge.
+O estado MEL027 permanece `Pronto`. A evidência final exige CI full master verde, login OIDC, migration, firewall cleanup, ZIP deploy e smoke reais, com produção acessível e nenhuma regra temporária restante. Somente após esse run atualizar MEL027/backlog para `Concluído` em outra PR. O agente não faz merge.
 
 ## Troubleshooting do CD
 
-- OIDC: revisar environment, branch permitida, subject/audience e identifiers; n?o substituir por segredo.
-- RBAC/preflight: confirmar roles e escopos com Azure CLI; Reader no plano ? necess?rio ao guard F1. Falha de leitura interrompe; n?o ampliar ao Resource Group.
-- Migration: conferir usu?rio/SID client ID, roles SQL, firewall e disponibilidade Free/AutoPause. O EF preserva retry transit?rio; n?o repetir falha de autoriza??o ou migration inv?lida indefinidamente.
-- Cleanup: se falhar, job fica vermelho e ZIP n?o ? publicado; remover a regra espec?fica e confirmar. N?o criar allowlist gen?rica 0.0.0.0.
-- Deploy/smoke: conferir logs operacionais sem tokens/settings sens?veis; seis tentativas por endpoint cobrem cold start. 5xx persistente ? falha, sem Setup/POST/dados de produ??o.
-- F1 sem slot: migrations futuras precisam ser compat?veis com a aplica??o anterior durante a janela migration/deploy. Nunca executar Down automaticamente; revert de aplica??o exige compatibilidade com schema vigente.
+- OIDC: revisar environment, branch permitida, subject/audience e identifiers; não substituir por segredo.
+- RBAC/preflight: confirmar roles e escopos com Azure CLI; Reader no plano é necessário ao guard F1. Falha de leitura interrompe; não ampliar ao Resource Group.
+- Migration: conferir usuário/SID client ID, roles SQL, firewall e disponibilidade Free/AutoPause. O EF preserva retry transitório; não repetir falha de autorização ou migration inválida indefinidamente.
+- Cleanup: se falhar, job fica vermelho e ZIP não é publicado; remover a regra específica e confirmar. Não criar allowlist genérica 0.0.0.0.
+- Deploy/smoke: conferir logs operacionais sem tokens/settings sensíveis; seis tentativas por endpoint cobrem cold start. 5xx persistente é falha, sem Setup/POST/dados de produção.
+- F1 sem slot: migrations futuras precisam ser compatíveis com a aplicação anterior durante a janela migration/deploy. Nunca executar Down automaticamente; revert de aplicação exige compatibilidade com schema vigente.
 
 ## Azure SQL Serverless pausado
 
