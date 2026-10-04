@@ -107,6 +107,8 @@ Em PowerShell 7, disponibilize o módulo administrativo `SqlServer` (por exemplo
 
 O bootstrap é idempotente: cria/localiza `mi-precificador-cd`, valida confiança GitHub restrita ao repo/environment production, descobre as roles built-in e confirma as atribuições. Concede Website Contributor na Web App, SQL Security Manager no SQL logical server para firewall, Reader apenas no plano (leitura F1) e Reader apenas no database específico (leitura Free/AutoPause). Obtém e valida `$database.id`: SQL Security Manager não concede `Microsoft.Sql/servers/databases/read`. Recusa atribuições/federações divergentes, inclusive Reader no SQL server inteiro ou Resource Group; não usa Owner/Contributor amplo. Cria usuário SQL pelo SID do **client ID** com `db_ddladmin`, `db_datareader` e `db_datawriter`, sem promover runtime. Um SID divergente exige revisão administrativa, sem apagar usuários automaticamente.
 
+O lookup da UAMI usa `az identity show` com nome e Resource Group explícitos, sem enumerar a forma bruta de `identity list`. Somente erro Azure `ResourceNotFound` confirma ausência e permite criação; falhas de autorização/rede, Resource Group ausente, JSON vazio/null/inválido ou identidade divergente interrompem o bootstrap. `validate-cd.ps1` cobre ausência, identidade existente válida e esses erros, sob StrictMode. Após correção de bootstrap, aguardar CI verde antes de tentar novamente no Azure real.
+
 No GitHub, em Settings → Environments:
 
 1. Criar `production` sem required reviewers/espera obrigatória por execução.

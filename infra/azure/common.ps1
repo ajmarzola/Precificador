@@ -30,6 +30,52 @@ function Invoke-AzJson {
     return $text | ConvertFrom-Json
 }
 
+function Invoke-AzJsonOrNull {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = & az @Arguments --only-show-errors -o json 2>&1
+        $exitCode = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $previousErrorActionPreference }
+    $text = $output -join [Environment]::NewLine
+    if ($exitCode -ne 0) {
+        # Apenas o codigo explicito do recurso ausente autoriza criacao.
+        # ResourceGroupNotFound, autorizacao, rede e outros erros falham fechado.
+        if ($text -match '(?m)^\s*ERROR:\s*\(ResourceNotFound\)') { return $null }
+        throw "Leitura Azure falhou na operacao $($Arguments[0]) (exit $exitCode)."
+    }
+    if ([string]::IsNullOrWhiteSpace($text)) { throw "Leitura Azure retornou resposta vazia." }
+    $result = $text | ConvertFrom-Json -NoEnumerate -ErrorAction Stop
+    if ($null -eq $result) { throw "Leitura Azure retornou null sem confirmar ausencia." }
+    if ($result -is [array] -or $result -isnot [pscustomobject]) { throw "Leitura Azure nao retornou objeto unico." }
+    return $result
+}
+
+function Get-CdIdentityOrNull {
+    param([string]$IdentityName)
+    $identity = Invoke-AzJsonOrNull @("identity", "show", "-g", $ResourceGroupName, "-n", $IdentityName)
+    if ($null -eq $identity) { return $null }
+    if ($identity -isnot [pscustomobject]) { throw "Resposta de identidade Azure invalida." }
+    foreach ($property in @("id", "name", "tenantId", "clientId", "principalId")) {
+        if ($null -eq $identity.PSObject.Properties[$property] -or
+            [string]::IsNullOrWhiteSpace([string]$identity.PSObject.Properties[$property].Value)) {
+            throw "Resposta de identidade Azure incompleta."
+        }
+    }
+    $expectedId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$IdentityName"
+    if ($identity.name -ne $IdentityName -or $identity.id -ne $expectedId -or $identity.tenantId -ne $TenantId) {
+        throw "Identidade Azure retornada diverge do destino esperado."
+    }
+    foreach ($property in @("tenantId", "clientId", "principalId")) {
+        $parsed = [guid]::Empty
+        if (-not [guid]::TryParse([string]$identity.$property, [ref]$parsed) -or $parsed -eq [guid]::Empty) {
+            throw "Identificador de identidade Azure invalido."
+        }
+    }
+    return $identity
+}
+
 function Get-AzTsv {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
 

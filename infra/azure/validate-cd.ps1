@@ -121,4 +121,41 @@ try {
         if ($script:scenario -ne "cleanup-delete-failure" -and $script:rulePresent) { throw "Regra temporaria permaneceu." }
     }
 } finally { $env:ConnectionStrings__Precificador = $previousConnection }
-Write-Host "Sintaxe PowerShell, preflight fail-closed e cleanup: OK (sem acesso Azure)."
+$TenantId = "11111111-1111-1111-1111-111111111111"
+$script:identityReadScenario = "existing"
+function az {
+    $Arguments = @($args)
+    if (($Arguments[0..1] -join ' ') -ne 'identity show') { throw "Lookup executou comando inesperado." }
+    $global:LASTEXITCODE = 0
+    switch ($script:identityReadScenario) {
+        "missing" { $global:LASTEXITCODE = 3; return "ERROR: (ResourceNotFound) Identity not found." }
+        "forbidden" { $global:LASTEXITCODE = 1; return "ERROR: (AuthorizationFailed) Access denied." }
+        "network" { $global:LASTEXITCODE = 1; return "Connection failed." }
+        "missing-group" { $global:LASTEXITCODE = 3; return "ERROR: (ResourceGroupNotFound) Group not found." }
+        "empty" { return "" }
+        "null" { return "null" }
+        "invalid-json" { return "not-json" }
+        "invalid-shape" { return '{"unexpected":true}' }
+        "array" { return '[{"name":"mi-precificador-cd"}]' }
+    }
+    $payload = @{
+        name = "mi-precificador-cd"
+        id = $(if ($script:identityReadScenario -eq "wrong-id") { "/other" } else {
+            "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/mi-precificador-cd"
+        })
+        tenantId = $TenantId
+        clientId = "22222222-2222-2222-2222-222222222222"
+        principalId = "33333333-3333-3333-3333-333333333333"
+    }
+    if ($script:identityReadScenario -eq "valid-object-array") { return (ConvertTo-Json -InputObject @($payload)) }
+    $payload | ConvertTo-Json
+}
+$identity = Get-CdIdentityOrNull -IdentityName "mi-precificador-cd"
+if ($null -eq $identity -or $identity.name -ne "mi-precificador-cd") { throw "Identidade existente nao foi localizada." }
+$script:identityReadScenario = "missing"
+if ($null -ne (Get-CdIdentityOrNull -IdentityName "mi-precificador-cd")) { throw "Ausencia confirmada nao retornou null." }
+foreach ($case in @("forbidden", "network", "missing-group", "empty", "null", "invalid-json", "invalid-shape", "array", "valid-object-array", "wrong-id")) {
+    $script:identityReadScenario = $case
+    Assert-Rejected { Get-CdIdentityOrNull -IdentityName "mi-precificador-cd" }
+}
+Write-Host "Sintaxe PowerShell, preflight, cleanup e lookup UAMI fail-closed: OK (sem acesso Azure)."

@@ -23,8 +23,7 @@ if ($null -eq $database -or $database.id -ne $expectedDatabaseId) {
     throw "Database nao corresponde ao recurso esperado; bootstrap interrompido."
 }
 $plan = Invoke-AzJson @("appservice", "plan", "show", "-g", $ResourceGroupName, "-n", $AppServicePlanName)
-$identities = @(Invoke-AzJson @("identity", "list", "-g", $ResourceGroupName))
-$identity = $identities | Where-Object { $_.name -eq $IdentityName } | Select-Object -First 1
+$identity = Get-CdIdentityOrNull -IdentityName $IdentityName
 if ($null -eq $identity) {
     $identity = Invoke-AzJson @("identity", "create", "-g", $ResourceGroupName, "-n", $IdentityName, "-l", $webApp.location)
 }
