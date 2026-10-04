@@ -9,6 +9,7 @@ Get-ChildItem -LiteralPath $PSScriptRoot -Filter *.ps1 | ForEach-Object {
     if ($errors.Count) { throw "Sintaxe PowerShell invalida em $($_.Name): $errors" }
 }
 . (Join-Path $PSScriptRoot "common.ps1")
+$invokeAzImplementation = (Get-Item Function:Invoke-Az).ScriptBlock
 $TenantId = "tenant-test"
 $SubscriptionId = "subscription-test"
 $ResourceGroupName = "rg-test"
@@ -158,4 +159,63 @@ foreach ($case in @("forbidden", "network", "missing-group", "empty", "null", "i
     $script:identityReadScenario = $case
     Assert-Rejected { Get-CdIdentityOrNull -IdentityName "mi-precificador-cd" }
 }
-Write-Host "Sintaxe PowerShell, preflight, cleanup e lookup UAMI fail-closed: OK (sem acesso Azure)."
+Set-Item Function:Invoke-Az -Value $invokeAzImplementation
+$subject = "repo:ajmarzola/Precificador:environment:production"
+function az {
+    $Arguments = @($args)
+    if (($Arguments[0..2] -join ' ') -ne 'identity federated-credential list' -or
+        $Arguments[3] -ne '-g' -or $Arguments[4] -ne $ResourceGroupName -or
+        $Arguments[5] -ne '--identity-name' -or $Arguments[6] -ne 'mi-precificador-cd') {
+        throw "Leitura de federacao executou comando inesperado."
+    }
+    $global:LASTEXITCODE = 0
+    switch ($script:scenario) {
+        "credentials-empty" { return '[]' }
+        "credentials-forbidden" { $global:LASTEXITCODE = 1; return 'ERROR: (AuthorizationFailed) Access denied.' }
+        "credentials-network" { $global:LASTEXITCODE = 1; return 'Connection failed.' }
+        "credentials-missing" { $global:LASTEXITCODE = 3; return 'ERROR: (ResourceNotFound) Identity not found.' }
+        "credentials-envelope" { return '{"value":[],"nextLink":"https://example.invalid/page"}' }
+        "credentials-object" { return '{"name":"github-production"}' }
+        "credentials-null" { return 'null' }
+        "credentials-blank" { return '' }
+        "credentials-json" { return 'not-json' }
+        "credentials-null-item" { return '[null]' }
+        "credentials-scalar-item" { return '[42]' }
+        "credentials-nested" { return '[[]]' }
+        "credentials-shape" { return '[{"unexpected":true}]' }
+    }
+    $credential = @{
+        name = 'github-production'; issuer = 'https://token.actions.githubusercontent.com'
+        subject = $subject; audiences = @('api://AzureADTokenExchange')
+    }
+    switch ($script:scenario) {
+        "credentials-issuer" { $credential.issuer = 'https://example.invalid' }
+        "credentials-subject" { $credential.subject = 'repo:other/repo:environment:production' }
+        "credentials-audience" { $credential.audiences = @('other') }
+        "credentials-audiences-empty" { $credential.audiences = @() }
+        "credentials-audiences-extra" { $credential.audiences = @('api://AzureADTokenExchange', 'other') }
+        "credentials-audiences-scalar" { $credential.audiences = 'api://AzureADTokenExchange' }
+        "credentials-field-type" { $credential.issuer = @('https://token.actions.githubusercontent.com') }
+    }
+    if ($script:scenario -eq 'credentials-mixed') {
+        return (ConvertTo-Json -InputObject @($credential, @{ unexpected = $true }) -Depth 5)
+    }
+    return (ConvertTo-Json -InputObject @($credential) -Depth 5)
+}
+$script:scenario = 'credentials-empty'
+$credentials = @(Get-CdFederatedCredentials -IdentityName 'mi-precificador-cd' -Subject $subject)
+if ($credentials.Count -ne 0) { throw "Colecao vazia nao normalizada." }
+$script:scenario = 'credentials-valid'
+$credentials = @(Get-CdFederatedCredentials -IdentityName 'mi-precificador-cd' -Subject $subject)
+if ($credentials.Count -ne 1 -or $credentials[0].name -ne 'github-production') {
+    throw "Credential valida nao foi preservada como item unico."
+}
+foreach ($case in @('credentials-forbidden', 'credentials-network', 'credentials-missing',
+    'credentials-envelope', 'credentials-object', 'credentials-null', 'credentials-blank', 'credentials-json',
+    'credentials-null-item', 'credentials-scalar-item', 'credentials-nested', 'credentials-shape',
+    'credentials-issuer', 'credentials-subject', 'credentials-audience', 'credentials-audiences-empty',
+    'credentials-audiences-extra', 'credentials-audiences-scalar', 'credentials-field-type', 'credentials-mixed')) {
+    $script:scenario = $case
+    Assert-Rejected { Get-CdFederatedCredentials -IdentityName 'mi-precificador-cd' -Subject $subject }
+}
+Write-Host "Sintaxe PowerShell, preflight, cleanup, lookup UAMI e federacao fail-closed: OK (sem acesso Azure)."

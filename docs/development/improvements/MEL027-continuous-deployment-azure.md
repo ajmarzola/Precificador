@@ -27,6 +27,8 @@ GitHub Environment `production` criado e política lida novamente: somente branc
 
 ## Objetivo
 
+Correção do bootstrap: a leitura de federated credentials valida explicitamente o array JSON e o shape/confiança de todos os itens antes de decidir pela criação, preservando StrictMode e fail-closed. A confirmação final reutiliza a mesma validação. Respostas envelope/paginadas, itens incompletos e erros de leitura são rejeitados; somente uma coleção vazia válida autoriza criação. A próxima tentativa administrativa exige leitura do estado parcial e CI verde no head corrigido.
+
 Automatizar a publicação do Precificador no ambiente Azure existente após alteração chegar a `master`, preservando os gates de qualidade atuais, a política de custo controlado da MEL021 e o modelo de segurança baseado em Microsoft Entra/Managed Identity.
 
 Fluxo desejado:

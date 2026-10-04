@@ -76,6 +76,38 @@ function Get-CdIdentityOrNull {
     return $identity
 }
 
+function Get-CdFederatedCredentials {
+    param([string]$IdentityName, [string]$Subject)
+    $output = Invoke-Az @("identity", "federated-credential", "list", "-g", $ResourceGroupName,
+        "--identity-name", $IdentityName, "-o", "json")
+    $text = $output -join [Environment]::NewLine
+    if ([string]::IsNullOrWhiteSpace($text)) { throw "Leitura de federacao Azure retornou resposta vazia." }
+    # Preservar o array JSON: [] e [objeto] nao podem virar null ou objeto isolado.
+    $credentials = ConvertFrom-Json -InputObject $text -NoEnumerate -ErrorAction Stop
+    if ($credentials -isnot [array]) { throw "Leitura de federacao Azure nao retornou uma colecao JSON." }
+    foreach ($credential in $credentials) {
+        if ($credential -isnot [pscustomobject]) { throw "Item de federacao Azure nao e um objeto." }
+        foreach ($property in @("name", "issuer", "subject")) {
+            $field = $credential.PSObject.Properties[$property]
+            if ($null -eq $field -or $field.Value -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($field.Value)) {
+                throw "Resposta de federacao Azure incompleta ou invalida."
+            }
+        }
+        $audiences = $credential.PSObject.Properties["audiences"]
+        if ($null -eq $audiences -or $audiences.Value -isnot [array]) {
+            throw "Audiences de federacao Azure nao e uma colecao JSON."
+        }
+        if ($credential.issuer -cne "https://token.actions.githubusercontent.com" -or
+            $credential.subject -cne $Subject -or $audiences.Value.Count -ne 1 -or
+            $audiences.Value[0] -isnot [string] -or $audiences.Value[0] -cne "api://AzureADTokenExchange") {
+            throw "Federacao existente diverge da confianca restrita esperada."
+        }
+    }
+    # Emitir somente os itens apos validar a colecao inteira; [] emite zero itens.
+    foreach ($credential in $credentials) { Write-Output $credential }
+}
+
 function Get-AzTsv {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
 

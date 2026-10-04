@@ -31,13 +31,7 @@ if ($identity.tenantId -ne $TenantId -or $identity.principalId -eq $webApp.ident
     throw "Identidade CD invalida ou igual a runtime."
 }
 $subject = "repo:${Repository}:environment:production"
-$credentials = @(Invoke-AzJson @("identity", "federated-credential", "list", "-g", $ResourceGroupName, "--identity-name", $IdentityName))
-foreach ($credential in $credentials) {
-    if ($credential.issuer -ne "https://token.actions.githubusercontent.com" -or $credential.subject -ne $subject -or
-        @($credential.audiences).Count -ne 1 -or $credential.audiences[0] -ne "api://AzureADTokenExchange") {
-        throw "Federacao existente diverge da confianca restrita esperada."
-    }
-}
+$credentials = @(Get-CdFederatedCredentials -IdentityName $IdentityName -Subject $subject)
 if ($credentials.Count -eq 0) {
     Invoke-Az @("identity", "federated-credential", "create", "-g", $ResourceGroupName, "--identity-name", $IdentityName,
         "-n", "github-production", "--issuer", "https://token.actions.githubusercontent.com", "--subject", $subject,
@@ -141,8 +135,8 @@ try {
     $token = $null
     Remove-SqlFirewallRuleIfExists -RuleName $ruleName
 }
-$confirmedCredentials = @(Invoke-AzJson @("identity", "federated-credential", "list", "-g", $ResourceGroupName, "--identity-name", $IdentityName))
-if (-not ($confirmedCredentials | Where-Object { $_.subject -eq $subject -and $_.issuer -eq "https://token.actions.githubusercontent.com" })) {
+$confirmedCredentials = @(Get-CdFederatedCredentials -IdentityName $IdentityName -Subject $subject)
+if ($confirmedCredentials.Count -eq 0) {
     throw "Federacao nao confirmada."
 }
 Write-Host "Configure estas variables nao secretas no GitHub Environment production:"

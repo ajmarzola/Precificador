@@ -109,6 +109,8 @@ O bootstrap é idempotente: cria/localiza `mi-precificador-cd`, valida confianç
 
 O lookup da UAMI usa `az identity show` com nome e Resource Group explícitos, sem enumerar a forma bruta de `identity list`. Somente erro Azure `ResourceNotFound` confirma ausência e permite criação; falhas de autorização/rede, Resource Group ausente, JSON vazio/null/inválido ou identidade divergente interrompem o bootstrap. `validate-cd.ps1` cobre ausência, identidade existente válida e esses erros, sob StrictMode. Após correção de bootstrap, aguardar CI verde antes de tentar novamente no Azure real.
 
+A leitura de federated credentials preserva o array JSON e valida todos os itens antes de usá-los, tanto na descoberta quanto na confirmação final. Somente `[]` permite criar a credential; objetos devem conter `name`, `issuer`, `subject` e array `audiences`, com a confiança GitHub esperada. Envelopes/paginação, itens incompletos, respostas vazias/null/inválidas e erros de autorização/rede interrompem o bootstrap. `validate-cd.ps1` cobre esses cenários sob StrictMode. Antes de repetir uma tentativa interrompida, consultar a UAMI e suas credentials por leitura e aguardar CI verde no commit corrigido.
+
 No GitHub, em Settings → Environments:
 
 1. Criar `production` sem required reviewers/espera obrigatória por execução.
