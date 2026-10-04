@@ -6,6 +6,9 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -71,6 +74,10 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+      - name: Validate Azure script guards without Azure access
+        if: steps.classify.outputs.mode == 'full'
+        shell: pwsh
+        run: ./infra/azure/validate-cd.ps1
       - name: Restore
         if: steps.classify.outputs.mode == 'full'
         run: dotnet restore Precificador.slnx
@@ -83,3 +90,88 @@ jobs:
       - name: Integration tests
         if: steps.classify.outputs.mode == 'full'
         run: dotnet test tests/Precificador.Tests.Integration/Precificador.Tests.Integration.csproj --configuration Release --no-build
+      - name: Restore EF tool
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: dotnet tool restore
+      - name: Build deployment artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        shell: pwsh
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+        run: ./infra/azure/build-artifact.ps1 -OutputDirectory "$env:RUNNER_TEMP/deployment" -CommitSha $env:COMMIT_SHA
+      - name: Upload immutable artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: precificador-deploy-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/deployment/app.zip
+            ${{ runner.temp }}/deployment/migration-bundle
+            ${{ runner.temp }}/deployment/appsettings.json
+            ${{ runner.temp }}/deployment/manifest.json
+          if-no-files-found: error
+          retention-days: 30
+
+  deploy-production:
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    concurrency:
+      group: precificador-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+      AZURE_SQL_SERVER: ${{ vars.AZURE_SQL_SERVER }}
+      AZURE_SQL_DATABASE: ${{ vars.AZURE_SQL_DATABASE }}
+      AZURE_APP_SERVICE_PLAN: ${{ vars.AZURE_APP_SERVICE_PLAN }}
+      COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout deployment scripts at tested SHA
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - name: Validate environment identifiers
+        shell: pwsh
+        run: |
+          foreach ($name in @('AZURE_CLIENT_ID', 'AZURE_TENANT_ID', 'AZURE_SUBSCRIPTION_ID', 'AZURE_RESOURCE_GROUP', 'AZURE_WEBAPP_NAME', 'AZURE_SQL_SERVER', 'AZURE_SQL_DATABASE', 'AZURE_APP_SERVICE_PLAN')) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) { throw "Variable ausente: $name" }
+          }
+      - name: Download artifact from this run
+        uses: actions/download-artifact@v4
+        with:
+          name: precificador-deploy-${{ github.sha }}
+          path: ${{ runner.temp }}/deployment
+      - name: Azure OIDC login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Preflight, migration, firewall cleanup, ZIP deploy and smoke
+        id: deploy
+        shell: pwsh
+        run: |
+          ./infra/azure/deploy.ps1 -ResourceGroupName $env:AZURE_RESOURCE_GROUP -AppName $env:AZURE_WEBAPP_NAME -SqlServerName $env:AZURE_SQL_SERVER -SqlDatabaseName $env:AZURE_SQL_DATABASE -AppServicePlanName $env:AZURE_APP_SERVICE_PLAN -TenantId $env:AZURE_TENANT_ID -SubscriptionId $env:AZURE_SUBSCRIPTION_ID -ArtifactDirectory "$env:RUNNER_TEMP/deployment" -RunId $env:GITHUB_RUN_ID -RunAttempt $env:GITHUB_RUN_ATTEMPT -CommitSha $env:COMMIT_SHA
+      # Defesa adicional se o processo for interrompido antes de executar finally.
+      - name: Verify temporary firewall cleanup
+        if: always()
+        shell: pwsh
+        run: |
+          . ./infra/azure/common.ps1
+          $ResourceGroupName = $env:AZURE_RESOURCE_GROUP
+          $SqlServerName = $env:AZURE_SQL_SERVER
+          $TenantId = $env:AZURE_TENANT_ID
+          $SubscriptionId = $env:AZURE_SUBSCRIPTION_ID
+          Assert-AzLogin
+          Remove-SqlFirewallRuleIfExists -RuleName "github-cd-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"

@@ -13,7 +13,21 @@
 - **Alteração de GitHub Actions:** sim
 - **Alteração de código de produção:** não prevista
 
+## Handoff da implementação
+
+O workflow e os scripts implementam o fluxo descrito nesta especificação; [ADR-016](../../architecture/adr/ADR-016-continuous-deployment-oidc-azure.md) registra a decisão e a leitura adicional restrita ao plano e ao database específico necessária ao preflight. O [procedimento Azure](../../../infra/azure/README.md) descreve bootstrap, environment e fallback manual.
+
+Gate obrigatório **antes do merge**: confirmar bootstrap Azure (UAMI/federação/quatro escopos RBAC/usuário SQL) e as oito environment variables. A PR permanece draft até esse gate estar atendido, pois o merge já dispara CD em `master`.
+
+O estado permanece `Pronto` até a CI da PR estar verde, a configuração administrativa estar confirmada e o primeiro run real pós-merge comprovar OIDC, migration, remoção do firewall, deploy e smoke. Não fazer merge pelo agente nem liberar UC035 com base somente no código entregue.
+
+Validação local da implementação em 02/10/2026: tool restore/restore/build Release aprovados, sem warnings; 323 testes unitários e 740 testes de integração aprovados com SQL Server temporário. ZIP produzido com entradas portáveis; migration bundle Linux gerado e executado contra base SQL Server descartável. `actionlint` e validação dos scripts em PowerShell 7 no Windows/Linux aprovados, incluindo preflight e falhas de migration/cleanup. Nenhuma migration de negócio ou configuração paga foi adicionada.
+
+GitHub Environment `production` criado e política lida novamente: somente branch `master`, sem required reviewers por execução. Bootstrap Azure (identidade/federação/RBAC/usuário SQL) e as oito variables do environment ainda precisam ser executados/configurados com o destino confirmado pelo operador. CI da PR e primeiro CD real são evidências separadas da validação local acima.
+
 ## Objetivo
+
+Correção do bootstrap: a leitura de federated credentials valida explicitamente o array JSON e o shape/confiança de todos os itens antes de decidir pela criação, preservando StrictMode e fail-closed. A confirmação final reutiliza a mesma validação. Respostas envelope/paginadas, itens incompletos e erros de leitura são rejeitados; somente uma coleção vazia válida autoriza criação. A próxima tentativa administrativa exige leitura do estado parcial e CI verde no head corrigido.
 
 Automatizar a publicação do Precificador no ambiente Azure existente após alteração chegar a `master`, preservando os gates de qualidade atuais, a política de custo controlado da MEL021 e o modelo de segurança baseado em Microsoft Entra/Managed Identity.
 

@@ -425,6 +425,8 @@ Não criar recurso pago durante deploy.
 
 CI/CD automático está fora de escopo.
 
+A evolução posterior [MEL027](MEL027-continuous-deployment-azure.md) automatiza esse mesmo modelo de publicação com OIDC e promoção de artefato. O deploy manual da MEL021 permanece como fallback; seu histórico de validação não é alterado por essa evolução.
+
 Deploy manual reproduzível é suficiente.
 
 Não criar deploy automático a cada push em `master`.
