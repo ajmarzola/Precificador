@@ -3,7 +3,7 @@
 - **Origem:** Backlog / evolução da MEL021
 - **Classificação:** Infraestrutura / DevOps / Continuous Deployment
 - **Prioridade:** alta
-- **Estado:** Pronto
+- **Estado:** Concluído
 - **Dependências materiais:** MEL021, MEL028 e MEL013 concluídas
 - **Dependência de UC035:** não
 - **Alteração de domínio/regra de negócio:** não
@@ -17,13 +17,34 @@
 
 O workflow e os scripts implementam o fluxo descrito nesta especificação; [ADR-016](../../architecture/adr/ADR-016-continuous-deployment-oidc-azure.md) registra a decisão e a leitura adicional restrita ao plano e ao database específico necessária ao preflight. O [procedimento Azure](../../../infra/azure/README.md) descreve bootstrap, environment e fallback manual.
 
-Gate obrigatório **antes do merge**: confirmar bootstrap Azure (UAMI/federação/quatro escopos RBAC/usuário SQL) e as oito environment variables. A PR permanece draft até esse gate estar atendido, pois o merge já dispara CD em `master`.
 
-O estado permanece `Pronto` até a CI da PR estar verde, a configuração administrativa estar confirmada e o primeiro run real pós-merge comprovar OIDC, migration, remoção do firewall, deploy e smoke. Não fazer merge pelo agente nem liberar UC035 com base somente no código entregue.
+## Fechamento — 04/10/2026
+
+A MEL027 foi concluída após validação do primeiro Continuous Deployment real em `master`.
+
+Evidência principal:
+
+- PR de implementação: **#172**;
+- commit publicado em `master`: `db0a0c29e11d5a2bb0bbd7bac7873fa4e891e8dd`;
+- workflow: **CI #433**, run `37231980643`;
+- primeira tentativa: OIDC, preflight, migrations, cleanup e ZIP deploy avançaram, mas o smoke de `/Conta/Login` falhou porque a base legada ainda não possuía `SystemAdmin` e o fluxo previsto pela FT003 redirecionava para `/Setup`, indisponível sem `Bootstrap__SystemAdminKey`;
+- bootstrap operacional legado concluído com criação explícita do primeiro `SystemAdmin`, sem promover automaticamente usuário empresarial existente;
+- `Bootstrap__SystemAdminKey` removida do App Service após o bootstrap;
+- validação manual pós-bootstrap: `/` = 200, `/Conta/Login` = 200 e `/Setup` = 404; usuário empresarial legado da Carinho e Amor permaneceu funcional;
+- rerun somente de `deploy-production`, **attempt 2** do mesmo run: OIDC OK, preflight OK, banco sem migrations pendentes, ZIP deploy OK, smoke dos dois endpoints OK e cleanup da regra temporária de firewall OK;
+- conclusão final do workflow: **success**.
+
+A falha da primeira tentativa funcionou como gate operacional: o CD detectou uma pré-condição de upgrade prevista na arquitetura, sem promoção implícita de privilégios nem intervenção destrutiva no banco. Após o bootstrap explícito, o mesmo artefato/commit foi promovido e validado com sucesso.
+
+Com essa evidência, os critérios CA55–CA58 foram atendidos e o backlog pode marcar a MEL027 como `Concluído`.
+
+Gate obrigatório **antes do merge**, já cumprido na entrega: bootstrap Azure (UAMI/federação/quatro escopos RBAC/usuário SQL), oito environment variables e CI da PR verde. O merge da #172 disparou o primeiro CD real em `master`.
+
+Historicamente, a MEL027 permaneceu `Pronto` até o run pós-merge comprovar OIDC, migration, remoção do firewall, deploy e smoke. Essa condição foi satisfeita no CI #433, attempt 2, e o estado atual é `Concluído`.
 
 Validação local da implementação em 02/10/2026: tool restore/restore/build Release aprovados, sem warnings; 323 testes unitários e 740 testes de integração aprovados com SQL Server temporário. ZIP produzido com entradas portáveis; migration bundle Linux gerado e executado contra base SQL Server descartável. `actionlint` e validação dos scripts em PowerShell 7 no Windows/Linux aprovados, incluindo preflight e falhas de migration/cleanup. Nenhuma migration de negócio ou configuração paga foi adicionada.
 
-GitHub Environment `production` criado e política lida novamente: somente branch `master`, sem required reviewers por execução. Bootstrap Azure (identidade/federação/RBAC/usuário SQL) e as oito variables do environment ainda precisam ser executados/configurados com o destino confirmado pelo operador. CI da PR e primeiro CD real são evidências separadas da validação local acima.
+GitHub Environment `production` configurado para somente a branch `master`, sem required reviewers por execução. Bootstrap Azure (identidade/federação/RBAC/usuário SQL) e as oito variables do environment foram concluídos antes do merge. A CI da PR e o primeiro CD real permaneceram evidências separadas; ambas foram validadas no fechamento.
 
 ## Objetivo
 
@@ -614,7 +635,7 @@ MEL013 continua independente de Azure.
 
 ## Critérios de aceitação
 
-- **CA01:** documento normativo da MEL027 existe e estado é `Pronto`.
+- **CA01:** documento normativo da MEL027 existe e, após a validação final, estado é `Concluído`.
 - **CA02:** MEL021, MEL028 e MEL013 são bases concluídas.
 - **CA03:** UC035 permanece fora do escopo.
 - **CA04:** `build-and-test` mantém nome e função de required check.
