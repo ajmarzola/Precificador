@@ -148,7 +148,9 @@ Antes do merge, validar restore/build/unit/integration, sintaxe YAML/actions e P
 ./infra/azure/validate-cd.ps1
 ```
 
-O estado MEL027 permanece `Pronto`. A evidência final exige CI full master verde, login OIDC, migration, firewall cleanup, ZIP deploy e smoke reais, com produção acessível e nenhuma regra temporária restante. Somente após esse run atualizar MEL027/backlog para `Concluído` em outra PR. O agente não faz merge.
+A MEL027 foi concluída em 04/10/2026 após o CI #433 / run `37231980643`, attempt 2, no commit `db0a0c29e11d5a2bb0bbd7bac7873fa4e891e8dd`. O rerun reutilizou o artefato já validado, autenticou por OIDC, confirmou zero migrations pendentes, removeu a regra temporária de firewall, publicou o ZIP e aprovou os smokes de `/` e `/Conta/Login`. A produção permaneceu acessível.
+
+A primeira tentativa do mesmo run falhou no smoke porque a instalação legada ainda não possuía `SystemAdmin`, situação prevista pela FT003. O primeiro `SystemAdmin` foi criado explicitamente via Setup com chave temporária de bootstrap; a chave foi removida em seguida e `/Setup` passou a 404. Nenhum usuário empresarial existente foi promovido implicitamente. O agente não faz merge.
 
 ## Troubleshooting do CD
 
