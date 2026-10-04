@@ -64,6 +64,9 @@ function Invoke-AzJson {
 }
 function Invoke-Az {
     param([string[]]$Arguments)
+    if ($Arguments -contains 'list') {
+        return (ConvertTo-Json -InputObject @(Invoke-AzJson $Arguments) -Depth 10)
+    }
     $script:writes++
     if ($script:scenario -eq "cleanup-delete-failure") { throw "Falha de delete simulada" }
     if ($script:scenario -ne "cleanup-remains") { $script:rulePresent = $false }
@@ -203,8 +206,15 @@ function az {
     return (ConvertTo-Json -InputObject @($credential) -Depth 5)
 }
 $script:scenario = 'credentials-empty'
+$items = Invoke-AzJsonArray @('identity', 'federated-credential', 'list', '-g', $ResourceGroupName,
+    '--identity-name', 'mi-precificador-cd')
+if ($items -isnot [array] -or $items.Count -ne 0) { throw "JSON [] nao preservou array vazio real." }
+$iterations = 0
+foreach ($item in $items) { $iterations++; throw "JSON [] iterou um item inesperado." }
+if ($iterations -ne 0) { throw "JSON [] nao deve iterar." }
 $credentials = @(Get-CdFederatedCredentials -IdentityName 'mi-precificador-cd' -Subject $subject)
 if ($credentials.Count -ne 0) { throw "Colecao vazia nao normalizada." }
+foreach ($credential in $credentials) { throw "JSON [] produziu credential inesperada." }
 $script:scenario = 'credentials-valid'
 $credentials = @(Get-CdFederatedCredentials -IdentityName 'mi-precificador-cd' -Subject $subject)
 if ($credentials.Count -ne 1 -or $credentials[0].name -ne 'github-production') {

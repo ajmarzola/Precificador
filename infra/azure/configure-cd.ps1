@@ -45,14 +45,14 @@ $desired = @(
     # SQL Security Manager no servidor nao concede databases/read ao preflight.
     @{ Scope = $database.id; Role = "Reader" }
 )
-$assignments = @(Invoke-AzJson @("role", "assignment", "list", "--assignee-object-id", $identity.principalId, "--all", "--include-inherited"))
+$assignments = Invoke-AzJsonArray @("role", "assignment", "list", "--assignee-object-id", $identity.principalId, "--all", "--include-inherited")
 foreach ($assignment in $assignments) {
     if (-not ($desired | Where-Object { $_.Scope -eq $assignment.scope -and $_.Role -eq $assignment.roleDefinitionName })) {
         throw "Identidade CD possui RBAC fora dos escopos/roles permitidos. Revisao administrativa necessaria."
     }
 }
 foreach ($target in $desired) {
-    $definitions = @(Invoke-AzJson @("role", "definition", "list", "--name", $target.Role))
+    $definitions = Invoke-AzJsonArray @("role", "definition", "list", "--name", $target.Role)
     if ($definitions.Count -ne 1 -or $definitions[0].roleName -ne $target.Role -or $definitions[0].roleType -ne "BuiltInRole") {
         throw "Role built-in nao confirmada: $($target.Role). Nenhum fallback amplo."
     }
@@ -60,7 +60,7 @@ foreach ($target in $desired) {
         Invoke-Az @("role", "assignment", "create", "--assignee-object-id", $identity.principalId,
             "--assignee-principal-type", "ServicePrincipal", "--role", $definitions[0].name, "--scope", $target.Scope) | Out-Null
     }
-    $confirmed = @(Invoke-AzJson @("role", "assignment", "list", "--assignee-object-id", $identity.principalId, "--scope", $target.Scope))
+    $confirmed = Invoke-AzJsonArray @("role", "assignment", "list", "--assignee-object-id", $identity.principalId, "--scope", $target.Scope)
     if (-not ($confirmed | Where-Object { $_.scope -eq $target.Scope -and $_.roleDefinitionName -eq $target.Role })) {
         throw "RBAC nao confirmado: $($target.Role)."
     }

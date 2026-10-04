@@ -76,15 +76,24 @@ function Get-CdIdentityOrNull {
     return $identity
 }
 
+function Invoke-AzJsonArray {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    $output = Invoke-Az ($Arguments + @("-o", "json"))
+    $text = $output -join [Environment]::NewLine
+    if ([string]::IsNullOrWhiteSpace($text)) { throw "Leitura Azure retornou resposta vazia." }
+    $items = ConvertFrom-Json -InputObject $text -NoEnumerate -ErrorAction Stop
+    if ($items -isnot [array]) { throw "Leitura Azure nao retornou uma colecao JSON." }
+    foreach ($item in $items) {
+        if ($item -isnot [pscustomobject]) { throw "Item da colecao Azure nao e um objeto." }
+    }
+    # Contrato: atribuir diretamente, sem @(...); [] continua sendo um array real.
+    return ,$items
+}
+
 function Get-CdFederatedCredentials {
     param([string]$IdentityName, [string]$Subject)
-    $output = Invoke-Az @("identity", "federated-credential", "list", "-g", $ResourceGroupName,
-        "--identity-name", $IdentityName, "-o", "json")
-    $text = $output -join [Environment]::NewLine
-    if ([string]::IsNullOrWhiteSpace($text)) { throw "Leitura de federacao Azure retornou resposta vazia." }
-    # Preservar o array JSON: [] e [objeto] nao podem virar null ou objeto isolado.
-    $credentials = ConvertFrom-Json -InputObject $text -NoEnumerate -ErrorAction Stop
-    if ($credentials -isnot [array]) { throw "Leitura de federacao Azure nao retornou uma colecao JSON." }
+    $credentials = Invoke-AzJsonArray @("identity", "federated-credential", "list", "-g", $ResourceGroupName,
+        "--identity-name", $IdentityName)
     foreach ($credential in $credentials) {
         if ($credential -isnot [pscustomobject]) { throw "Item de federacao Azure nao e um objeto." }
         foreach ($property in @("name", "issuer", "subject")) {
@@ -171,11 +180,11 @@ function Add-SqlFirewallIp {
 function Remove-SqlFirewallRuleIfExists {
     param([string]$RuleName)
     # Uma falha de leitura nunca equivale a regra ausente.
-    $rules = @(Invoke-AzJson @("sql", "server", "firewall-rule", "list", "-g", $ResourceGroupName, "-s", $SqlServerName))
+    $rules = Invoke-AzJsonArray @("sql", "server", "firewall-rule", "list", "-g", $ResourceGroupName, "-s", $SqlServerName)
     if ($rules | Where-Object { $_.name -eq $RuleName }) {
         Invoke-Az @("sql", "server", "firewall-rule", "delete", "-g", $ResourceGroupName, "-s", $SqlServerName, "-n", $RuleName) | Out-Null
     }
-    $remaining = @(Invoke-AzJson @("sql", "server", "firewall-rule", "list", "-g", $ResourceGroupName, "-s", $SqlServerName))
+    $remaining = Invoke-AzJsonArray @("sql", "server", "firewall-rule", "list", "-g", $ResourceGroupName, "-s", $SqlServerName)
     if ($remaining | Where-Object { $_.name -eq $RuleName }) { throw "Firewall temporario nao foi removido." }
 }
 
@@ -222,7 +231,7 @@ function Assert-DeploymentTarget {
         throw "Deploy interrompido: HTTPS Only nao esta habilitado na Web App."
     }
 
-    $settings = Invoke-AzJson @("webapp", "config", "appsettings", "list", "-g", $ResourceGroupName, "-n", $AppName)
+    $settings = Invoke-AzJsonArray @("webapp", "config", "appsettings", "list", "-g", $ResourceGroupName, "-n", $AppName)
     $connectionSetting = $settings | Where-Object { $_.name -eq "ConnectionStrings__Precificador" } | Select-Object -First 1
     if ($null -eq $connectionSetting) { throw "ConnectionStrings__Precificador ausente." }
     $planId = Get-AzTsv @("appservice", "plan", "show", "-g", $ResourceGroupName, "-n", $AppServicePlanName, "--query", "id")
