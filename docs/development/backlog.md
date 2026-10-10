@@ -90,10 +90,11 @@ Regra operacional:
 | 30 | MEL030 — Reautenticar quando a sessão da aplicação for perdida | MEL | Planejado | concluir a bateria de testes manuais; FT002 e autenticação atual concluídas; cookie Identity válido sem marcador/contexto de sessão não pode manter área autenticada parcial; preservar fluxo legítimo de seleção de Empresa e SystemAdmin | A especificar |
 | 31 | MEL031 — Expor Categorias de Produto no menu principal | MEL | Planejado | concluir a bateria de testes manuais; UC032 concluída; adicionar acesso direto a `/Produtos/Categorias/Index` na navegação tenant sem alterar regras/autorização da funcionalidade | A especificar |
 | 32 | MEL029 — Centralizar configurações da Empresa | MEL | Planejado | concluir a bateria de testes manuais da versão publicada; UC026, UC027 e UC037 concluídas; criar `/Configuracoes` como hub sem misturar autorizações distintas | A especificar |
-| 33 | UC042 — Identificar preços de Insumos desatualizados | UC | Planejado | concluir a bateria de testes manuais; UC005, UC006 e MEL006 concluídas; sinalizar preço vigente com mais de 6 meses e orientar registro de atualização sem alteração automática | A especificar |
-| 34 | UC041 — Consultar preços de fornecedores para atualização de Insumos | UC | Planejado | concluir a bateria de testes manuais; UC005 e UC006 concluídas; executar depois da UC042 na fila; consulta externa assistiva, com fonte verificável e confirmação humana antes de registrar novo preço | A especificar |
-| 35 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | concluir a bateria de testes manuais; UC011, UC025, UC034 e MEL027 concluídas; permanece separada da consulta de fornecedores e pode reutilizar infraestrutura externa comum | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 36 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027, MEL029, MEL030, MEL031, UC041, UC042 e UC035 concluídos; produto, infraestrutura e experiência consolidados após estabilização | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 33 | MEL032 — Definir Matéria-prima como categoria padrão no cadastro de Insumo | MEL | Planejado | concluir a bateria de testes manuais; UC001B e cadastro atual de Insumo concluídos; no novo cadastro, iniciar Categoria como Matéria-prima sem impedir escolha de outra categoria antes de salvar; não alterar edição nem dados existentes | A especificar |
+| 34 | UC042 — Identificar preços de Insumos desatualizados | UC | Planejado | concluir a bateria de testes manuais; UC005, UC006 e MEL006 concluídas; sinalizar preço vigente com mais de 6 meses e orientar registro de atualização sem alteração automática | A especificar |
+| 35 | UC041 — Consultar preços de fornecedores para atualização de Insumos | UC | Planejado | concluir a bateria de testes manuais; UC005 e UC006 concluídas; executar depois da UC042 na fila; consulta externa assistiva, com fonte verificável e confirmação humana antes de registrar novo preço | A especificar |
+| 36 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | concluir a bateria de testes manuais; UC011, UC025, UC034 e MEL027 concluídas; permanece separada da consulta de fornecedores e pode reutilizar infraestrutura externa comum | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 37 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027, MEL029, MEL030, MEL031, MEL032, UC041, UC042 e UC035 concluídos; produto, infraestrutura e experiência consolidados após estabilização | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -114,10 +115,11 @@ Regra operacional:
 - **30 — consistência de autenticação/sessão:** eliminar o estado inválido de usuário autenticado sem sessão da aplicação, exigindo novo login quando a sessão for perdida sem quebrar seleção legítima de Empresa nem SystemAdmin;
 - **31 — navegação de catálogo:** expor Categorias de Produto diretamente no menu principal tenant, reutilizando a rota e as regras existentes da UC032;
 - **32 — organização das configurações:** transformar Configurações em ponto de entrada coerente para recursos tenant, mantendo Precificação e Identidade visual em superfícies especializadas e respeitando autorizações distintas;
-- **33 — saúde dos custos:** identificar preço vigente de Insumo com mais de 6 meses e pedir atualização ao usuário, sem substituir o histórico append-only nem alterar preço automaticamente;
-- **34 — apoio à atualização de Insumos:** consultar preços atuais de fornecedores, normalizar contexto de embalagem/unidade quando seguro e levar o usuário ao registro explícito de um novo preço;
-- **35 — inteligência de mercado:** consultar referências externas comparáveis do Produto como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial e sem confundir referência de fornecedor com concorrência de produto final;
-- **36 — documentação do usuário:** criar o Manual do Usuário depois da estabilização pós-testes e da conclusão dos itens funcionais restantes.
+- **33 — default de cadastro de Insumo:** iniciar Categoria como Matéria-prima somente no novo cadastro, preservando escolha explícita do usuário, edição e dados existentes;
+- **34 — saúde dos custos:** identificar preço vigente de Insumo com mais de 6 meses e pedir atualização ao usuário, sem substituir o histórico append-only nem alterar preço automaticamente;
+- **35 — apoio à atualização de Insumos:** consultar preços atuais de fornecedores, normalizar contexto de embalagem/unidade quando seguro e levar o usuário ao registro explícito de um novo preço;
+- **36 — inteligência de mercado:** consultar referências externas comparáveis do Produto como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial e sem confundir referência de fornecedor com concorrência de produto final;
+- **37 — documentação do usuário:** criar o Manual do Usuário depois da estabilização pós-testes e da conclusão dos itens funcionais restantes.
 
 ### Reordenação da fila restante — 02/10/2026
 
@@ -179,6 +181,7 @@ bateria de testes manuais
 -> MEL030 — Reautenticar quando a sessão da aplicação for perdida
 -> MEL031 — Expor Categorias de Produto no menu principal
 -> MEL029 — Centralizar configurações da Empresa
+-> MEL032 — Matéria-prima como categoria padrão do novo Insumo
 -> UC042 — Identificar preços de Insumos desatualizados
 -> UC041 — Consultar preços de fornecedores
 -> UC035 — Consultar referências de mercado
@@ -190,6 +193,7 @@ Decisões de escopo registradas:
 - MEL030 é o primeiro item da fila por tratar consistência de autenticação: cookie Identity sobrevivente sem sessão da aplicação deve exigir novo login; o desenho deve distinguir esse caso do estado legítimo de usuário autenticado aguardando seleção de Empresa;
 - MEL031 adiciona acesso direto a Categorias de Produto no menu principal tenant, apontando para a rota existente `/Produtos/Categorias/Index`; não cria nova regra de negócio nem amplia autorização;
 - MEL029 resolve o buraco de navegação entre Configurações de precificação e Identidade visual; não incorpora formulários com autorizações diferentes na mesma página;
+- MEL032 altera apenas o estado inicial do formulário de **novo Insumo**: Categoria começa em `Matéria-prima`, permanece editável antes do POST e não modifica edição nem registros já persistidos;
 - UC042 usa a data operacional da Empresa e o preço vigente do Insumo para sinalizar valores com **mais de 6 meses**, pedindo atualização sem sobrescrever histórico nem registrar preço automaticamente;
 - UC041 atua sobre **Insumos/custo de compra** e permanece separada da UC035, que atua sobre **Produtos/Preço de Prateleira**;
 - consultas de fornecedor e de mercado podem compartilhar infraestrutura técnica de pesquisa externa, mas não compartilham decisão de negócio;
