@@ -87,11 +87,13 @@ Regra operacional:
 | 27 | UC037 — Configurar identidade visual da Empresa | UC | Concluído | FT002, UC031 e MEL026 concluídas; cor/logo tenant-aware, SQL Server sem backfill e escrita concorrente protegida implementados | [UC037](../use-cases/UC037-configurar-identidade-visual-empresa.md) |
 | 28 | MEL013 — Documentar execução e teste local | MEL | Concluído | guia local entregue sobre infraestrutura e fluxos atuais; exceção operacional atendida antes de MEL027/UC035 | [MEL013](improvements/MEL013-execucao-teste-local.md) |
 | 29 | MEL027 — Automatizar Continuous Deployment do Precificador no Azure | MEL | Concluído | PR #172 e CI #433/run 37231980643 attempt 2 validados: OIDC, preflight, migration sem pendências, cleanup de firewall, ZIP deploy e smoke reais concluídos; produção permaneceu funcional após bootstrap explícito do SystemAdmin legado | [MEL027](improvements/MEL027-continuous-deployment-azure.md) |
-| 30 | MEL029 — Centralizar configurações da Empresa | MEL | Planejado | concluir a bateria de testes manuais da versão publicada; UC026, UC027 e UC037 concluídas; criar `/Configuracoes` como hub sem misturar autorizações distintas | A especificar |
-| 31 | UC042 — Identificar preços de Insumos desatualizados | UC | Planejado | concluir a bateria de testes manuais; UC005, UC006 e MEL006 concluídas; sinalizar preço vigente com mais de 6 meses e orientar registro de atualização sem alteração automática | A especificar |
-| 32 | UC041 — Consultar preços de fornecedores para atualização de Insumos | UC | Planejado | concluir a bateria de testes manuais; UC005 e UC006 concluídas; executar depois da UC042 na fila; consulta externa assistiva, com fonte verificável e confirmação humana antes de registrar novo preço | A especificar |
-| 33 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | concluir a bateria de testes manuais; UC011, UC025, UC034 e MEL027 concluídas; permanece separada da consulta de fornecedores e pode reutilizar infraestrutura externa comum | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
-| 34 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027, MEL029, UC041, UC042 e UC035 concluídos; produto, infraestrutura e experiência consolidados após estabilização | [MEL014](improvements/MEL014-manual-usuario.md) |
+| 30 | MEL030 — Reautenticar quando a sessão da aplicação for perdida | MEL | Planejado | concluir a bateria de testes manuais; FT002 e autenticação atual concluídas; cookie Identity válido sem marcador/contexto de sessão não pode manter área autenticada parcial; preservar fluxo legítimo de seleção de Empresa e SystemAdmin | A especificar |
+| 31 | MEL031 — Expor Categorias de Produto no menu principal | MEL | Planejado | concluir a bateria de testes manuais; UC032 concluída; adicionar acesso direto a `/Produtos/Categorias/Index` na navegação tenant sem alterar regras/autorização da funcionalidade | A especificar |
+| 32 | MEL029 — Centralizar configurações da Empresa | MEL | Planejado | concluir a bateria de testes manuais da versão publicada; UC026, UC027 e UC037 concluídas; criar `/Configuracoes` como hub sem misturar autorizações distintas | A especificar |
+| 33 | UC042 — Identificar preços de Insumos desatualizados | UC | Planejado | concluir a bateria de testes manuais; UC005, UC006 e MEL006 concluídas; sinalizar preço vigente com mais de 6 meses e orientar registro de atualização sem alteração automática | A especificar |
+| 34 | UC041 — Consultar preços de fornecedores para atualização de Insumos | UC | Planejado | concluir a bateria de testes manuais; UC005 e UC006 concluídas; executar depois da UC042 na fila; consulta externa assistiva, com fonte verificável e confirmação humana antes de registrar novo preço | A especificar |
+| 35 | UC035 — Consultar referências de mercado para apoio ao preço de prateleira | UC | Planejado | concluir a bateria de testes manuais; UC011, UC025, UC034 e MEL027 concluídas; permanece separada da consulta de fornecedores e pode reutilizar infraestrutura externa comum | [UC035](../use-cases/UC035-consultar-referencias-mercado.md) |
+| 36 | MEL014 — Criar Manual do Usuário | MEL | Planejado | MEL013, MEL027, MEL029, MEL030, MEL031, UC041, UC042 e UC035 concluídos; produto, infraestrutura e experiência consolidados após estabilização | [MEL014](improvements/MEL014-manual-usuario.md) |
 
 ### Critério da ordem
 
@@ -109,11 +111,13 @@ Regra operacional:
 - **25–27 — acabamento e apresentação:** tratar erros/404 de forma amigável, enriquecer a Home pública e aplicar identidade visual tenant-aware antes de voltar a expansões mais profundas;
 - **28 — fechamento técnico do primeiro bloco:** consolidar a execução e os testes locais sobre a infraestrutura e os fluxos já estabilizados;
 - **29 — entrega contínua:** automatizar o deploy no Azure quando houver ambiente adequado para manipular credenciais e contexto Azure, antes da próxima publicação automatizada em produção;
-- **30 — organização das configurações:** transformar Configurações em ponto de entrada coerente para recursos tenant, mantendo Precificação e Identidade visual em superfícies especializadas e respeitando autorizações distintas;
-- **31 — saúde dos custos:** identificar preço vigente de Insumo com mais de 6 meses e pedir atualização ao usuário, sem substituir o histórico append-only nem alterar preço automaticamente;
-- **32 — apoio à atualização de Insumos:** consultar preços atuais de fornecedores, normalizar contexto de embalagem/unidade quando seguro e levar o usuário ao registro explícito de um novo preço;
-- **33 — inteligência de mercado:** consultar referências externas comparáveis do Produto como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial e sem confundir referência de fornecedor com concorrência de produto final;
-- **34 — documentação do usuário:** criar o Manual do Usuário depois da estabilização pós-testes e da conclusão dos itens funcionais restantes.
+- **30 — consistência de autenticação/sessão:** eliminar o estado inválido de usuário autenticado sem sessão da aplicação, exigindo novo login quando a sessão for perdida sem quebrar seleção legítima de Empresa nem SystemAdmin;
+- **31 — navegação de catálogo:** expor Categorias de Produto diretamente no menu principal tenant, reutilizando a rota e as regras existentes da UC032;
+- **32 — organização das configurações:** transformar Configurações em ponto de entrada coerente para recursos tenant, mantendo Precificação e Identidade visual em superfícies especializadas e respeitando autorizações distintas;
+- **33 — saúde dos custos:** identificar preço vigente de Insumo com mais de 6 meses e pedir atualização ao usuário, sem substituir o histórico append-only nem alterar preço automaticamente;
+- **34 — apoio à atualização de Insumos:** consultar preços atuais de fornecedores, normalizar contexto de embalagem/unidade quando seguro e levar o usuário ao registro explícito de um novo preço;
+- **35 — inteligência de mercado:** consultar referências externas comparáveis do Produto como apoio à decisão de Preço de Prateleira, sem automatizar a decisão comercial e sem confundir referência de fornecedor com concorrência de produto final;
+- **36 — documentação do usuário:** criar o Manual do Usuário depois da estabilização pós-testes e da conclusão dos itens funcionais restantes.
 
 ### Reordenação da fila restante — 02/10/2026
 
@@ -172,6 +176,8 @@ Fila remanescente atual:
 
 ~~~text
 bateria de testes manuais
+-> MEL030 — Reautenticar quando a sessão da aplicação for perdida
+-> MEL031 — Expor Categorias de Produto no menu principal
 -> MEL029 — Centralizar configurações da Empresa
 -> UC042 — Identificar preços de Insumos desatualizados
 -> UC041 — Consultar preços de fornecedores
@@ -181,6 +187,8 @@ bateria de testes manuais
 
 Decisões de escopo registradas:
 
+- MEL030 é o primeiro item da fila por tratar consistência de autenticação: cookie Identity sobrevivente sem sessão da aplicação deve exigir novo login; o desenho deve distinguir esse caso do estado legítimo de usuário autenticado aguardando seleção de Empresa;
+- MEL031 adiciona acesso direto a Categorias de Produto no menu principal tenant, apontando para a rota existente `/Produtos/Categorias/Index`; não cria nova regra de negócio nem amplia autorização;
 - MEL029 resolve o buraco de navegação entre Configurações de precificação e Identidade visual; não incorpora formulários com autorizações diferentes na mesma página;
 - UC042 usa a data operacional da Empresa e o preço vigente do Insumo para sinalizar valores com **mais de 6 meses**, pedindo atualização sem sobrescrever histórico nem registrar preço automaticamente;
 - UC041 atua sobre **Insumos/custo de compra** e permanece separada da UC035, que atua sobre **Produtos/Preço de Prateleira**;
